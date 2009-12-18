@@ -1,8 +1,14 @@
 /*
-	jQuery.sheet() Spreadsheet with Calculations Plugin
-	Verison: 0.53
-	Copywrite Robert Plummer 2008-2009
-	
+jQuery.sheet() Spreadsheet with Calculations Plugin
+Version: 0.54
+http://code.google.com/p/jquerysheet/
+		
+Copyright (C) 2009 Robert Plummer
+Dual licensed under the LGPL and GPL licenses.
+http://www.gnu.org/licenses/
+*/
+
+/*
 	Dimensions Info:
 		When dealing with size, it seems that outerHeight is generally the most stable cross browser
 		attribute to use for bar sizing.  We try to use this as much as possible.  But because col's
@@ -16,6 +22,7 @@
 	'with' statement:
 		SPEED HOG!  they are only used for shorthand on the jQuery.calculationEngine.fn objects
 */
+
 jQuery.fn.extend({
 	sheet: function(settings) {
 		settings = jQuery.extend({
@@ -52,7 +59,8 @@ jQuery.fn.extend({
 				}
 			},
 			fnClose: 		function() {},
-			joinedResizing: false //this joins the column/row with the resize bar
+			joinedResizing: false, //this joins the column/row with the resize bar
+			useBoxModelCorrection: true //this little guy can have a massive impact on viewing a sheet correctly or not
 		}, settings);
 		jQuery.fn.sheet.settings = jS.s = settings;
 		settings.fnBefore();
@@ -111,7 +119,7 @@ jQuery.fn.extend({
 });
 
 var jS = jQuery.sheet = {
-	version: 0.53,
+	version: 0.54,
 	s: {},//s = settings object, used for shorthand, populated from jQuery.sheet
 	obj: {//obj = object references
 		parent: 		function() { return jQuery(jS.s.parent) },
@@ -223,7 +231,7 @@ var jS = jQuery.sheet = {
 		},
 		boxModelCorrection: function(skipCorrection) {
 			var correction = 0;
-			if (jQuery.support.boxModel && !skipCorrection) {
+			if (jQuery.support.boxModel && !skipCorrection && jS.s.useBoxModelCorrection) {
 				correction = 2;
 			}
 			return correction;
@@ -1527,6 +1535,136 @@ var jS = jQuery.sheet = {
 		//Let's recalculate the sheet just in case
 		jS.setTdIds();
 		jS.calc(jS.obj.sheet());
+	},
+	importSheet: {
+		json: function() {
+			sheet = eval('('+data+')');
+			size_c = sheet["metadata"]["columns"]*1+5;
+			size_r = sheet["metadata"]["rows"]*1+1;
+			var div = jQuery("<div />").append("<table />");
+			var table = div.find("table:first").attr("id", "jSheet").addClass("jSheet");
+			
+			for(var x = 1; x <= size_r; x++)
+			{
+				cur_row = table.append('<tr height="18" />').find("tr:last");
+				for(var y = 1; y <= size_c; y++)
+				{
+					cur_column = jQuery('<td />').attr("id", 'cell_c'+y+'_r'+x);
+					cur_row.append(cur_column);
+				}
+			}
+			
+			for (row in sheet["data"])
+			{
+				for (column in sheet["data"][row])
+				{
+					cur_val = sheet["data"][row][column];
+					cur_column = table.find("td#cell_"+column+"_"+row).text(cur_val);
+					
+					if (cur_val.substr(0,1) == '=')
+					{
+						cur_column.attr("formula", cur_val);
+					}
+				}
+			}
+			
+			return div.html();
+		}
+	},
+	exportSheet: {
+		xml: function () {
+			var sheetClone = jS.obj.sheet().clone()[0];
+			jS.sheetDecorateRemove(sheetClone);
+			var s = jQuery('<div />').html(sheetClone).html();
+			
+			var x = '';
+			var count = 0;
+			var cur_column = cur_row = '';
+			var max_column = max_row = 0;
+			$(s).find('tr').each(function(){
+				count = 0;
+				$(this).find('td').each(function(){
+					count++;
+					
+					var id = $(this).attr('id');
+					var txt = $.trim($(this).text());
+					var pos = id.search(/cell_c/i);
+					var pos2 = id.search(/_r/i);
+					
+					if (txt != '' && pos != -1 && pos2 != -1) {
+						cur_column = id.substr(pos+6, pos2-(pos+6));
+						cur_row = id.substr(pos2+2);
+						
+						if (max_column < cur_column) max_column = cur_column;
+						
+						if (max_row < cur_row) max_row = cur_row;
+						
+						if (count == 1) x += '<r'+cur_row+'>';
+						
+						formula = $(this).attr('formula');
+						if (formula != undefined)
+						{
+							txt = formula;
+						}
+						
+						x += '<c'+cur_column+'><![CDATA['+txt+']]></c'+cur_column+'>';
+					}
+				});
+				
+				if (cur_row != '')
+					x += '</r'+cur_row+'>';
+				cur_column = cur_row = '';
+			});
+			
+			return '<document><metadata><columns>'+max_column+'</columns><rows>'+max_row+'</rows></metadata><data>'+x+'</data></document>';
+		},
+		json: function() {
+			var sheetClone = jS.obj.sheet().clone()[0];
+			jS.sheetDecorateRemove(sheetClone);
+			var s = jQuery('<div />').html(sheetClone).html();
+			var x = {metadata:{},data:{}};
+			var count = 0;
+			var cur_column = cur_row = '';
+			var max_column = max_row = 0;
+			$(s).find('tr').each(function(){
+				count = 0;
+				$(this).find('td').each(function(){
+					count++;
+					
+					var id = $(this).attr('id');
+					var txt = $.trim($(this).text());
+					var pos = id.search(/cell_c/i);
+					var pos2 = id.search(/_r/i);
+					
+					if (txt != '' && pos != -1 && pos2 != -1) {
+						cur_column = id.substr(pos+6, pos2-(pos+6));
+						cur_row = id.substr(pos2+2);
+						
+						if (max_column < cur_column) max_column = cur_column;
+						
+						if (max_row < cur_row) max_row = cur_row;
+						
+						if (count == 1) x['data']['r'+cur_row] = {};
+						
+						formula = $(this).attr('formula');
+						if (formula != undefined)
+						{
+							txt = formula;
+						}
+						
+						x['data']['r'+cur_row]['c'+cur_column] = txt;
+					}
+				});
+				
+				cur_column = cur_row = '';
+			});
+			
+			x['metadata'] = {
+				"columns": max_column,
+				"rows": max_row
+			};
+			return x;
+		}
 	},
 	buildSheet: function(size) {
 		if (!size) {
