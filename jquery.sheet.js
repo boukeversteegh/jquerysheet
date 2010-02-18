@@ -1737,7 +1737,7 @@ var jS = jQuery.sheet = {
 			setDesinationSize: function(w) {
 				jS.sheetSyncSizeToDivs();
 				
-				jS.obj.sheet().find('col').eq(this.i)
+				jS.obj.sheet().find('col').eq(this.i - 1)
 					.width(w)
 					.css('width', w)
 					.attr('width', w);
