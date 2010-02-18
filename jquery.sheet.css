@@ -7,7 +7,7 @@
 
 #jSheetControls_formula
 {
-    width: 100%;
+	width: 99%;
     height: 30px;
 }
 
@@ -153,14 +153,18 @@
 
 #jSheetBarTopParent
 {
+    position: relative ! important;
 	background-image: none ! important;
 	vertical-align: middle;
+	overflow: hidden ! important;
 }
 
 #jSheetBarLeftParent
 {
+    position: relative ! important;
 	background-image: none ! important;
 	vertical-align: middle;
+	overflow: hidden ! important;
 }
 
 #jSheetEditPane
@@ -173,13 +177,13 @@
 
 #jSheetBarTop
 {
-    position: relative;
+    position: relative ! important;
 	border-width: 0px ! important;
 }
 
 #jSheetBarLeft
 {
-    position: relative;
+	position: relative ! important;
 	border-width: 0px ! important;
 }
 #jSheetBarLeft div
