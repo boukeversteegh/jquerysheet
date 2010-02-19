@@ -96,15 +96,15 @@ jQuery.fn.extend({
 							'<td id="' + jS.id.barCornerParent + '">' + //corner
 								'<div style="height: ' + jS.s.colMargin + '; width: ' + jS.s.colMargin + ';" id="' + jS.id.barCorner + '" class="ui-icon ui-icon-refresh" onclick="jS.cellEditAbandon();">&nbsp;</div>' +
 							'</td>' + 
-							'<td>' + //barTop
+							'<td class="' + jS.cl.barTop + '">' + //barTop
 								'<div style="overflow: hidden;" id="' + jS.id.barTopParent + '"></div>' +
 							'</td>' +
 						'</tr>' +
 						'<tr>' +
-							'<td>' + //barLeft
+							'<td class="' + jS.cl.barLeft + '">' + //barLeft
 								'<div style="overflow: hidden;width: ' + jS.s.colMargin + ';" id="' + jS.id.barLeftParent + '"></div>' +
 							'</td>' +
-							'<td>' + //pane
+							'<td class="' + jS.cl.sheetPane + '">' + //pane
 								'<div id="' + jS.id.pane + '"></div>' +
 							'</td>' +
 						'</tr>' +
@@ -201,7 +201,10 @@ var jS = jQuery.sheet = {
 		uiCell:			'themeRoller_activeCell',
 		uiCellHighlighted: 'ui-state-highlight',
 		toggle:			'cellStyleToggle',
-		tableControl:	'tableControl'
+		tableControl:	'tableControl',
+		barTop:			'barTop',
+		barLeft:		'barLeft',
+		sheetPane:		'sheetPane'
 	},
 	ERROR: function() { return cE.ERROR; },
 	tuneTableForSheetUse: function(obj, r) {
@@ -257,7 +260,7 @@ var jS = jQuery.sheet = {
 			
 			switch(from) {
 				case 'cell':
-					obj = (obj ? obj : jS.obj.barLeft().find('div').eq(i))
+					obj = (obj ? obj : jS.obj.barLeft().find('div').eq(i));
 					h = jS.attrH.height(jQuery(jS.getTd(i + 1, 1)).parent().andSelf(), skipCorrection);
 					break;
 				case 'bar':
@@ -413,7 +416,7 @@ var jS = jQuery.sheet = {
 				.mousedown(function(e) { 
 					jS.barResizer(e, jQuery(this), 'row');
 					return false;
-				})
+				});
 			if (jS.s.editable) { //only let editable select
 				obj.dblclick(function() {
 					jS.cellEditAbandon();
@@ -430,7 +433,7 @@ var jS = jQuery.sheet = {
 				.mousedown(function(e) {
 					jS.barResizer(e, jQuery(this), 'column');
 					return false;
-				})
+				});
 			if (jS.s.editable) { //only let editable select
 					obj.dblclick(function() {
 						jS.cellEditAbandon();
@@ -1049,7 +1052,7 @@ var jS = jQuery.sheet = {
 			atRowQ = ':last';
 			atRow = false;
 		} else if (atRow == true) {//if atRow is boolean, then lets add it just after the currently selected row.
-			atRowQ = ':eq(' + (jS.cellEditLastLoc[1] - 1) + ')';
+			atRowQ = ':eq(' + (jS.cellLast.row - 1) + ')';
 		} else {
 			//If atRow is a number, lets add it at that row
 			atRowQ = ':eq(' + (atRow - 1) + ')';
@@ -1112,7 +1115,7 @@ var jS = jQuery.sheet = {
 			atColumn = ':last';
 		} else if (atColumn == true) {
 			//if atColumn is boolean, then lets add it just after the currently selected row.
-			atColumn = ':eq(' + (jS.cellEditLastLoc[2] - 1) + ')';
+			atColumn = ':eq(' + (jS.cellLast.col - 1) + ')';
 		} else {
 			//If atColumn is a number, lets add it at that row
 			atColumn = ':eq(' + (atColumn - 1) + ')';
@@ -2029,7 +2032,7 @@ var jS = jQuery.sheet = {
 			.hide()
 			.attr('src', src);
 	}
-}
+};
 
 jS.tableCellProvider.prototype = {
 	getCell: function(row, col) {
