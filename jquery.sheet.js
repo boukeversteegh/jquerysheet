@@ -843,6 +843,7 @@ var jS = jQuery.sheet = {
 					
 					jS.obj.formula().focus().select();
 					jS.cellLast.isEdit = false;
+					jS.setDirty(true);
 				}
 				break;
 			default:
@@ -1106,6 +1107,7 @@ var jS = jQuery.sheet = {
 			});
 		}
 
+		jS.setDirty(true);
 		jS.setTdIds();
 		jS.obj.pane().scroll();
 	},
@@ -1180,6 +1182,7 @@ var jS = jQuery.sheet = {
 		
 		jS.attrH.syncSheetWidthFromTds();
 		
+		jS.setDirty(true);
 		jS.setTdIds();
 		jS.obj.pane().scroll();
 	},
@@ -1193,6 +1196,7 @@ var jS = jQuery.sheet = {
 				jS.obj.formula().val('');
 				jS.setTdIds();
 				jS.refreshLabelsRows();
+				jS.setDirty(true);
 			}
 		}
 		jS.obj.pane().scroll();
@@ -1215,6 +1219,7 @@ var jS = jQuery.sheet = {
 				var w = jS.refreshLabelsColumns();
 				jS.setTdIds();
 				jS.obj.sheet().width(w);
+				jS.setDirty(true);
 			}
 		}
 		jS.obj.pane().scroll();
@@ -1268,6 +1273,7 @@ var jS = jQuery.sheet = {
 			data: 's=' + s,
 			dataType: 'html',
 			success: function(data) {
+				jS.setDirty(false);
 				alert('Success! - ' + data);
 			}
 		});
@@ -1447,6 +1453,7 @@ var jS = jQuery.sheet = {
 				jS.s.fnAfter();
 			}
 
+			jS.setDirty(false);
 			jS.log('End startup');
 		}
 		if (skipNotify ? true : confirm("Are you sure you want to open a different sheet?  All unsaved changes will be lost.")) {
@@ -2031,7 +2038,9 @@ var jS = jQuery.sheet = {
 			})
 			.hide()
 			.attr('src', src);
-	}
+	},
+	isDirty:  false,
+	setDirty: function(dirty) { jS.isDirty = dirty; }
 };
 
 jS.tableCellProvider.prototype = {
