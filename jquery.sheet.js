@@ -2106,7 +2106,9 @@ var jS = jQuery.sheet = {
 				});
 			})
 			.attr('src', src);
-	}
+	},
+	isDirty:  false,
+	setDirty: function(dirty) { jS.isDirty = dirty; }
 }
 
 jS.tableCellProvider.prototype = {
