@@ -39,7 +39,6 @@ jQuery.fn.extend({
 			urlJGCharts: 	'plugins/jgcharts.pack.js', 		//set to bool false if you don't want to use
 			loading: 		'Loading Spreadsheet...',
 			newColumnWidth: 120,
-			ajaxSaveType: 	'POST',
 			buildSheet: 	false,	//'10x30', this can be slow
 			calcOff: 		false,
 			log: 			false,
@@ -99,6 +98,16 @@ jQuery.fn.extend({
 		if (tempSheet) {
 			jS.obj.pane().html(tempSheet);
 		}
+		
+		jS.s.ajaxCallsCount = (jS.s.urlBaseCss ? 1 : 0);
+		jS.s.ajaxCallsCount += (jS.s.urlTheme ? 1 : 0);
+		jS.s.ajaxCallsCount += (jS.s.urlMenu ? 1 : 0);
+		jS.s.ajaxCallsCount += (jS.s.urlMenuJs ? 1 : 0);
+		jS.s.ajaxCallsCount += (jS.s.urlMetaData ? 1 : 0);
+		jS.s.ajaxCallsCount += (jS.s.urlJGCharts ? 1 : 0);
+		jS.s.afterAjax = function() {
+			jS.sheetSyncSize();
+		};
 		
 		jS.openSheet(jS.s.urlGet, jS.s.buildSheet, true);
 	}
@@ -484,67 +493,66 @@ var jS = jQuery.sheet = {
 			.appendTo(jS.obj.tabContainer());
 	},
 	makeControls: function(parent) {
-		jS.obj.controls().remove();
+		jS.obj.controls().remove();	
+		var controls = jQuery('<div id="' + jS.id.controls + '"><table cellpadding="0" cellspacing="0" border="0"><tbody><tr id="topContainer" /></tbody></table></div>');
 		if (jS.s.editable) {
-			var controls = jQuery('<div id="' + jS.id.controls + '"><table cellpadding="0" cellspacing="0" border="0"><tbody><tr id="topContainer" /></tbody></table></div>');
-			//Lets get the page title information			
+			//Page Menu Control	
 			if (jS.s.urlMenuJs && jS.s.urlMenuCss && jS.s.urlMetaData && jS.s.urlMenu) {
-				jQuery.getScript(jS.s.urlMetaData);
-				jQuery.getScript(jS.s.urlMenuJs, function() {
-					jS.getCss(jS.s.urlMenuCss);
-					var menuObj = jQuery('<div />').load(jS.s.urlMenu, function() {
-						controls.find('#topContainer').prepend(jQuery('<td />').append(menuObj.html()));
-						jS.obj.menu()
-							.buildMenu({
-								additionalData:"pippo=1",
-								menuWidth: 100,
-								openOnRight:false,
-								menuSelector: ".menuContainer",
-								hasImages:false,
-								fadeInTime: 0,
-								fadeOutTime:0,
-								adjustLeft:2,
-								minZindex:"auto",
-								adjustTop:10,
-								opacity:.95,
-								shadow:true,
-								closeOnMouseOut:false,
-								closeAfter:1000
-							});
-							
-						jS.sheetSyncSize();
+				jQuery.getScript(jS.s.urlMetaData, function() {
+					jQuery.getScript(jS.s.urlMenuJs, function() {
+						jS.getCss(jS.s.urlMenuCss);
+						var menuObj = jQuery('<div />').load(jS.s.urlMenu, function() {
+							controls.find('#topContainer').prepend(jQuery('<td />').append(menuObj.html()));
+							jS.obj.menu()
+								.buildMenu({
+									additionalData:"pippo=1",
+									menuWidth: 100,
+									openOnRight:false,
+									menuSelector: ".menuContainer",
+									hasImages:false,
+									fadeInTime: 0,
+									fadeOutTime:0,
+									adjustLeft:2,
+									minZindex:"auto",
+									adjustTop:10,
+									opacity:.95,
+									shadow:true,
+									closeOnMouseOut:false,
+									closeAfter:1000
+								});
+							//there are 3 ajax calls here
+							jS.ajaxCalled(3);
+						});
 					});
 				});
 			}
 			
-			controls.find('#topContainer').append(jQuery('<td id="' + jS.id.tabContainer + '"/>').append(jS.addTitle(false)));
-			
+			//Edit box menu
 			controls.append('<table cellpadding="0" cellspacing="0" border="0">' +
-							'<tr>' +
-								'<td style="width: 35px; text-align: right;" id="' + jS.id.label + '"></td>' +
-								'<td style="width: 10px;" id="' + jS.id.fx + '">fx</td>' + 
-								'<td>' +
-									'<textarea id="' + jS.id.formula + '"></textarea>' +
-								'</td>' +
-							'</tr>' +
-						'</table>');
-			
-			
-			
-			//Get the scrollTo Pluggin
-			if (jS.s.urlScrollTo) {
-				jQuery.getScript(jS.s.urlScrollTo);
-			}
-			
+					'<tr>' +
+						'<td style="width: 35px; text-align: right;" id="' + jS.id.label + '"></td>' +
+						'<td style="width: 10px;" id="' + jS.id.fx + '">fx</td>' + 
+						'<td>' +
+							'<textarea id="' + jS.id.formula + '"></textarea>' +
+						'</td>' +
+					'</tr>' +
+				'</table>');
 			controls.keydown(function(e) {
 				return jS.formulaKeyDown(e);
 			});
-
-			jS.obj.ui().prepend(controls);
-			jS.sheetSyncSize();
-		} else {
-			jS.sheetSyncSize();
 		}
+
+		//Get the scrollTo Pluggin
+		if (jS.s.urlScrollTo) {
+			jQuery.getScript(jS.s.urlScrollTo);
+		}
+		
+		//Tabs control
+		controls.find('#topContainer').append(jQuery('<td id="' + jS.id.tabContainer + '"/>').append(jS.addTitle(false)));
+		
+		jS.sheetSyncSize();
+		
+		jS.obj.ui().prepend(controls);
 	},
 	sheetDecorate: function(o) {	
 		jS.formatSheet(o);
@@ -577,8 +585,8 @@ var jS = jQuery.sheet = {
 		jQuery('head').append('<link rel="stylesheet" type="text/css" href="' + url + '"></link>');
 	},
 	themeRoller: {
-		start: function() {
-			jS.getCss(jS.s.urlTheme);		
+		start: function(isAppend) {
+			if (!isAppend) { jS.getCss(jS.s.urlTheme); }
 			//Style sheet			
 			jS.obj.parent().addClass(jS.cl.uiParent);
 			jS.obj.sheet().addClass(jS.cl.uiParent);
@@ -983,10 +991,10 @@ var jS = jQuery.sheet = {
 		return false;
 	},
 	context: {},
-	calc: function(tableBody, fuel) {
+	calc: function(fuel) {
 		jS.log('Calculation Started');
-		if (tableBody && !jS.s.calcOff) {
-			cE.calc(new jS.tableCellProvider(tableBody.id), jS.context, fuel);
+		if (!jS.s.calcOff) {
+			cE.calc(new jS.tableCellProvider(), jS.context, fuel);
 			jS.isSheetEdit = false;
 		}
 		jS.log('Calculation Ended');
@@ -1294,7 +1302,7 @@ var jS = jQuery.sheet = {
 
 		jQuery.ajax({
 			url: jS.s.urlSave,
-			type: jS.s.ajaxSaveType,
+			type: 'POST',
 			data: 's=' + s,
 			dataType: 'html',
 			success: function(data) {
@@ -1429,8 +1437,8 @@ var jS = jQuery.sheet = {
 			return jS.getBarTopLocatoin(jS.obj.barTop().find('div:last').text());
 		}
 	},
-	initSheet: function(reloadBars, obj, appendSheet) {
-		if (!appendSheet) {
+	initSheet: function(reloadBars, obj, isAppend) {
+		if (!isAppend) {
 			if (obj) {
 				jS.obj.pane().html(jQuery(obj).show());
 			} else {
@@ -1460,7 +1468,7 @@ var jS = jQuery.sheet = {
 				.click(jS.s.lockFormulas ? jS.cellOnClickLocked : jS.cellOnClickReg);
 		}
 		
-		jS.themeRoller.start();
+		jS.themeRoller.start(isAppend);
 
 		jS.setTdIds(obj);
 		
@@ -1468,7 +1476,8 @@ var jS = jQuery.sheet = {
 		
 		//We load the plugins
 		if (jS.s.urlJGCharts) { //When loading the charts, we need to make sure that the namespace exists before we fire fnAfter();
-			jQuery.getScript(jS.s.urlJGCharts, function() {
+			jQuery.getScript(jS.s.urlJGCharts, function() {		
+				jS.ajaxCalled(1);
 				jS.calc(jS.obj.sheet());
 				jS.s.fnAfter();
 			});
@@ -1500,6 +1509,7 @@ var jS = jQuery.sheet = {
 	openSheet: function(url, size, skipNotify) {
 		jS.obj.parent().html(jS.sheetUI());
 		jS.makeControls();
+		jS.sheetSyncSize();
 
 		if (skipNotify ? true : confirm("Are you sure you want to open a different sheet?  All unsaved changes will be lost.")) {
 			jS.cellEditAbandon(true);
@@ -1755,7 +1765,14 @@ var jS = jQuery.sheet = {
 		});
 		o.width(newSheetWidth);
 	},
-	sheetSyncSize: function() {
+	ajaxCallCount: null,
+	ajaxCalled: function() {
+		jS.s.ajaxCallsCount--;
+		if (!jS.s.ajaxCallsCount) {
+			jS.s.afterAjax();
+		}
+	},
+	sheetSyncSize: function(isAppend) {
 		var h = jS.s.height;
 		if (!h) {
 			h = 400; //Height really needs to be set by the parent
@@ -1763,7 +1780,7 @@ var jS = jQuery.sheet = {
 			h = 200;
 		}
 		var w = jS.s.width;
-
+		
 		jS.obj.pane()
 			.height(
 				(h - jS.attrH.height(jS.obj.controls())) -
@@ -1780,8 +1797,6 @@ var jS = jQuery.sheet = {
 		jS.obj.barTopParent()
 			.height(jS.s.colMargin)
 			.width(w).parent().width(w);
-		
-		jS.themeRoller.start();
 	},
 	columnResizer: {
 			xyDimension: 0,
@@ -2024,12 +2039,12 @@ var jS = jQuery.sheet = {
 		var i = cE.columnLabelIndex(jQuery.trim(jQuery(o).text()));
 		return parseInt(i) - 1;
 	},
-	tableCellProvider: function(tableBodyId) {
-		this.tableBodyId = tableBodyId;
+	tableCellProvider: function() {
+		this.tableBodyId = jS.id.sheet + jS.i;
 		this.cells = {};
 	},
-	tableCell: function(tableBody, row, col) {
-		this.tableBodyId = tableBody.id;
+	tableCell: function(row, col) {
+		this.tableBodyId = jS.id.sheet + jS.i;
 		this.row = row;
 		this.col = col;
 		this.value = jS.EMPTY_VALUE;
@@ -2112,6 +2127,9 @@ var jS = jQuery.sheet = {
 }
 
 jS.tableCellProvider.prototype = {
+	getTd: function() {
+		return document.getElementById(jS.getTdId(this.row - 1, this.col - 1));
+	},
 	getCell: function(row, col) {
 		if (typeof(col) == "string") {
 			col = cE.columnLabelIndex(col);
@@ -2121,9 +2139,9 @@ jS.tableCellProvider.prototype = {
 		if (!cell) {
 			var tableBody = jS.obj.tableBody();
 			if (tableBody) {
-				var td = jS.getTd(row - 1, col - 1);
+				var td = this.getTd(row - 1, col - 1);
 				if (td) {
-					cell = this.cells[key] = new jS.tableCell(tableBody, row, col);
+					cell = this.cells[key] = new jS.tableCell(row, col);
 				}
 			}
 		}
