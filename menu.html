@@ -1,11 +1,11 @@
-<div id="jSheetMenu">
-	<table class="rootVoices" style="width: 100%;">
+<span id="jSheetMenu">
+	<table class="rootVoices">
 		<tr>
 			<td class="rootVoice {menu: 'menu'}" style="width: 15px;">MENU</td>
-			<td id="titleHolder" style="font-size: 12px;"></td>
 		</tr>
 	</table>
-</div>
+</span>
+
 
 <div id="menu" class="menu">
 	<a class="{menu: 'menuFile'}">File</a>
@@ -86,6 +86,7 @@
 	<a onclick="jS.toggleHide.row();" title="Hides or shows the currently selected row.">Toggle Hide Row</a>-->
 </div>
 <div id="menuEditSheet" class="menu">
+	<a onclick="jS.addSheet();" title="Add new spreadsheet.">Add Spreadsheet</a>
 	<a onclick="jS.calc(jS.obj.tableBody());" title="Recompiles the current sheet">Refresh Calculations</a>
 	<a onclick="jS.sheetTitle();" title="Change the title of the sheet.">Title</a>
 </div>

@@ -19,11 +19,13 @@
 	position: relative;
 }
 
-.rootVoices, #jSheetMenu, #jSheetControls
+.rootVoices, #jSheetMenu, #jSheetControls, #jSheetControls table
 {
 	padding: 0px ! important;
 	background-color: transparent ! important;
 	border: none ! important;
+	width: 100%; 
+	margin: 0px; 
 }
 #jSheetMenu *
 {
@@ -38,13 +40,22 @@
 {
 	padding-left: 10px;
 }
-#jSheetUI
+.jSheetUI
 {
 	width: inherit;
 	height: inherit;
 	border-color: inherit ! important;
 }
-
+#jSheetTabContainer
+{
+	vertical-align: bottom;
+}
+#jSheetTabContainer span
+{
+	
+	padding: 2px 5px 0 5px ! important;
+	cursor: pointer;
+}
 #sheetTitle
 {
 	border: none ! important;
@@ -62,6 +73,7 @@
 	border: none ! important;
 	margin: none ! important;
 	padding: none ! important;
+	position: absolute ! important;
 }
 
 /* Sheet styling */
@@ -135,39 +147,41 @@
 {
 	border: none ! important;
 }
- #jSheetUI, #jSheetUI table, #jSheetUI tr, #jSheetUI td, #jSheetUI tbody, #jSheetUI #jSheetControls textarea
+ .jSheetUI, .jSheetUI table, .jSheetUI tr, .jSheetUI td, .jSheetUI tbody, .jSheetUI #jSheetControls textarea
 {
 	border-width: 1px ! important;
 }
 /* Containers styleing*/
-#jSheetBarCorner
+.jSheetBarCorner
 {
 	cursor: pointer;
 	border-width: 1px ! important;
 }
 
-#jSheetBarCornerParent
+.jSheetBarCornerParent
 {
 	border: none ! important;
 }
 
-#jSheetBarTopParent
+.jSheetBarTopParent
 {
     position: relative ! important;
 	background-image: none ! important;
 	vertical-align: middle;
 	overflow: hidden ! important;
+	cursor: pointer;
 }
 
-#jSheetBarLeftParent
+.jSheetBarLeftParent
 {
     position: relative ! important;
 	background-image: none ! important;
 	vertical-align: middle;
 	overflow: hidden ! important;
+	cursor: pointer;
 }
 
-#jSheetEditPane
+.jSheetEditPane
 {
     overflow: scroll;
 	background-image: none ! important;
@@ -175,20 +189,19 @@
 }
 /* Bar item styling */
 
-#jSheetBarTop
+.jSheetBarTop
 {
     position: relative ! important;
 	border-width: 0px ! important;
 }
 
-#jSheetBarLeft
+.jSheetBarLeft
 {
 	position: relative ! important;
 	border-width: 0px ! important;
 }
-#jSheetBarLeft div
+.jSheetBarLeft div
 {
-	cursor: s-resize;
 	text-align: center;
 	font-size: 10px;
 	height: inherit;
@@ -196,9 +209,8 @@
 	position: relative ! important;
 	vertical-align: middle ! important;
 }
-#jSheetBarTop div
+.jSheetBarTop div
 {
-	cursor: w-resize;
 	text-align: center ! important;
 	font-size: 10px;
 	float: left;
@@ -207,6 +219,11 @@
 	padding-top: 2px;
 	overflow: hidden;
 	border-top: none ! important;
+}
+
+.safeImg
+{
+	display: inline;
 }
 
 /* Cell styler classes */
