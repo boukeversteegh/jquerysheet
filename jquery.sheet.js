@@ -51,8 +51,7 @@ jQuery.fn.extend({
 			fnOpen: 		function() { 
 				var t = prompt('Paste your table html here');
 				if (t) {
-					jS.obj.pane().html(t);
-					jS.openSheet('', false, true);
+					jS.openSheet(t);
 				}
 			},
 			fnClose: 		function() {},
@@ -62,14 +61,17 @@ jQuery.fn.extend({
 		jQuery.fn.sheet.settings = jS.s = settings;
 		jS.s.fnBefore();
 		
+		var obj = null;
 		if (jS.s.buildSheet) {//override urlGet, this has some effect on how the topbar is sized
 			jS.s.urlGet = null;
+			obj = jS.buildSheet(jS.s.buildSheet);
+		} else if (!jS.s.urlGet && !jS.s.buildSheet) {
+			obj = jQuery(this).find('table').hide();
 		}
 		
 		jS.getCss(jS.s.urlBaseCss);
 		
 		//We need to take the sheet out of the parent in order to get an accurate reading of it's height and width
-		var tempSheet = jQuery(this).find('table').hide();
 		jQuery(this).html(jS.s.loading);
 
 		jS.s.width = jQuery(jS.s.parent).width();
@@ -95,12 +97,6 @@ jQuery.fn.extend({
 			}
 		}
 		
-		if (tempSheet) {
-			jS.obj.pane().html(tempSheet);
-		}
-		
-		jS.s.ajaxCallsCount = (jS.s.urlBaseCss ? 1 : 0);
-		jS.s.ajaxCallsCount += (jS.s.urlTheme ? 1 : 0);
 		jS.s.ajaxCallsCount += (jS.s.urlMenu ? 1 : 0);
 		jS.s.ajaxCallsCount += (jS.s.urlMenuJs ? 1 : 0);
 		jS.s.ajaxCallsCount += (jS.s.urlMetaData ? 1 : 0);
@@ -109,7 +105,7 @@ jQuery.fn.extend({
 			jS.sheetSyncSize();
 		};
 		
-		jS.openSheet(jS.s.urlGet, jS.s.buildSheet, true);
+		jS.openSheet(obj, true);
 	}
 });
 
@@ -171,7 +167,6 @@ var jS = jQuery.sheet = {
 	cl: {//cl = class references
 		sheet: 			'jSheet',
 		cell: 			'jSheetCellActive',
-		calcOff: 		'jSheetCalcOff',
 		barSelected: 	'jSheetBarItemSelected',
 		uiDefault:		'ui-state-default',
 		uiActive:		'ui-state-active',
@@ -282,6 +277,12 @@ var jS = jQuery.sheet = {
 			}
 
 			return obj;
+		},
+		hide: function(obj) {
+			obj.css('z-index', '-1');
+		},
+		show: function(obj) {
+			obj.css('z-index', '100');
 		}
 	},
 	makeBarItemLeft: function(reload, o) {//Works great!
@@ -492,7 +493,7 @@ var jS = jQuery.sheet = {
 		return jQuery('<span class="ui-corner-top ui-state-default"><a class="' + jS.cl.tab + '" id="' + jS.id.tab + jS.i + '" OnDblClick="jS.sheetTitle(); return false;" onclick="jS.setActiveSheet(jQuery(\'#' + jS.id.tableControl + jS.i + '\'), ' + jS.i + ', this); return false;">' + jS.sheetTitle(true) + '</a></span>')
 			.appendTo(jS.obj.tabContainer());
 	},
-	makeControls: function(parent) {
+	makeControls: function() {
 		jS.obj.controls().remove();	
 		var controls = jQuery('<div id="' + jS.id.controls + '"><table cellpadding="0" cellspacing="0" border="0"><tbody><tr id="topContainer" /></tbody></table></div>');
 		if (jS.s.editable) {
@@ -502,7 +503,7 @@ var jS = jQuery.sheet = {
 					jQuery.getScript(jS.s.urlMenuJs, function() {
 						jS.getCss(jS.s.urlMenuCss);
 						var menuObj = jQuery('<div />').load(jS.s.urlMenu, function() {
-							controls.find('#topContainer').prepend(jQuery('<td />').append(menuObj.html()));
+							controls.find('#topContainer').prepend(jQuery('<td style="width: 50px; text-align: center;"/>').append(menuObj.html()));
 							jS.obj.menu()
 								.buildMenu({
 									additionalData:"pippo=1",
@@ -550,9 +551,9 @@ var jS = jQuery.sheet = {
 		//Tabs control
 		controls.find('#topContainer').append(jQuery('<td id="' + jS.id.tabContainer + '"/>').append(jS.addTitle(false)));
 		
-		jS.sheetSyncSize();
+		jS.ajaxCalled();
 		
-		jS.obj.ui().prepend(controls);
+		jS.obj.parent().html(controls);
 	},
 	sheetDecorate: function(o) {	
 		jS.formatSheet(o);
@@ -991,10 +992,10 @@ var jS = jQuery.sheet = {
 		return false;
 	},
 	context: {},
-	calc: function(fuel) {
+	calc: function(tableBody, fuel) {
 		jS.log('Calculation Started');
-		if (!jS.s.calcOff) {
-			cE.calc(new jS.tableCellProvider(), jS.context, fuel);
+		if (tableBody && !jS.s.calcOff) {
+			cE.calc(new jS.tableCellProvider(tableBody.id + jS.i), jS.context, fuel);
 			jS.isSheetEdit = false;
 		}
 		jS.log('Calculation Ended');
@@ -1478,57 +1479,53 @@ var jS = jQuery.sheet = {
 		if (jS.s.urlJGCharts) { //When loading the charts, we need to make sure that the namespace exists before we fire fnAfter();
 			jQuery.getScript(jS.s.urlJGCharts, function() {		
 				jS.ajaxCalled(1);
-				jS.calc(jS.obj.sheet());
+				jS.calc(obj);
 				jS.s.fnAfter();
 			});
 		} else {
-			jS.calc(jS.obj.sheet());
+			jS.calc(obj);
 			jS.s.fnAfter();
 		}
 
 		jS.addTitle();
-		
-		jS.setActiveSheet();
-		
+		jS.ajaxCalled();
 		jS.log('Sheet Initialized');
 	},
 	setActiveSheet: function(control, i, o) {
 		if (control) {
-			jS.obj.ui().children('table').hide();
-			control.show();
+			control.show().siblings().not(':first').hide();
+			jS.obj.sheet().show();
 			jS.obj.tabContainer().find('.ui-state-highlight').removeClass('ui-state-highlight');
 			jS.i = i;
 			jS.obj.tab().parent().addClass('ui-state-highlight');
-			jS.sheetSyncSize();
+			jS.ajaxCalled();
 		} else {
-			jS.obj.ui().children('table').not(':last').hide();
+			jS.obj.tabContainer().siblings().not('div').hide();
 			jS.obj.tabContainer().find('.ui-state-highlight').removeClass('ui-state-highlight');
 			jS.obj.tab().parent().addClass('ui-state-highlight');
 		}
 	},
-	openSheet: function(url, size, skipNotify) {
-		jS.obj.parent().html(jS.sheetUI());
+	openSheet: function(obj, skipNotify) {
 		jS.makeControls();
-		jS.sheetSyncSize();
+		jS.obj.parent().append(jS.sheetUI());
 
 		if (skipNotify ? true : confirm("Are you sure you want to open a different sheet?  All unsaved changes will be lost.")) {
 			jS.cellEditAbandon(true);
-			if (!size) {
-				if (url) {
-					jQuery('<div />').load(url, function() {
-						jQuery(this).find('table').each(function(i) {
-							jS.i = i;
-							jS.initSheet(true, jQuery(this), i);
-						});
+			
+			if (!obj) {
+				jQuery('<div />').load(jS.s.urlGet, function() {
+					jQuery(this).find('table').each(function(i) {
+						jS.i = i;
+						jS.initSheet(true, jQuery(this), i);
+						jS.setActiveSheet();
+						jS.sheetSyncSize();
 					});
-				} else {
-					jS.initSheet();
-				}
-			} else if (size.toLowerCase().match('x')) {
-				jS.s.title = '';
-				jS.initSheet(false, jS.buildSheet(size));
+				});
 			} else {
-				jS.initSheet();
+				jQuery(obj).find('table').show().each(function(i) {
+					jS.i = i;
+					jS.initSheet(true, jQuery(this), i);
+				});
 			}
 		}
 	},
@@ -1536,7 +1533,7 @@ var jS = jQuery.sheet = {
 	newSheet: function() {
 		var size = prompt(jS.newSheetDialog);
 		if (size) {
-			jS.openSheet('', size);
+			jS.openSheet(jS.buildSheet(size));
 		}
 	},
 	importRow: function(rowArray) {
@@ -1766,9 +1763,11 @@ var jS = jQuery.sheet = {
 		o.width(newSheetWidth);
 	},
 	ajaxCallCount: null,
-	ajaxCalled: function() {
-		jS.s.ajaxCallsCount--;
-		if (!jS.s.ajaxCallsCount) {
+	ajaxCalled: function(i) {
+		if (i) {
+			jS.s.ajaxCallsCount = jS.s.ajaxCallsCount - i;
+		}
+		if (jS.s.ajaxCallsCount < 1) {
 			jS.s.afterAjax();
 		}
 	},
@@ -2020,7 +2019,7 @@ var jS = jQuery.sheet = {
 		return firstLabel + ":" + lastLabel;
 	},
 	getTdId: function(row, col) {
-		return 'table_' + jS.i + '_cell_c' + col + '_r' + row;
+		return 'table' + jS.i + '_cell_c' + col + '_r' + row;
 	},
 	getTd: function(row, col) {
 		return document.getElementById(jS.getTdId(row, col));
@@ -2039,12 +2038,12 @@ var jS = jQuery.sheet = {
 		var i = cE.columnLabelIndex(jQuery.trim(jQuery(o).text()));
 		return parseInt(i) - 1;
 	},
-	tableCellProvider: function() {
-		this.tableBodyId = jS.id.sheet + jS.i;
+	tableCellProvider: function(tableBodyId) {
+		this.tableBodyId = tableBodyId;
 		this.cells = {};
 	},
-	tableCell: function(row, col) {
-		this.tableBodyId = jS.id.sheet + jS.i;
+	tableCell: function(tableBody, row, col) {
+		this.tableBodyId = tableBody.id;
 		this.row = row;
 		this.col = col;
 		this.value = jS.EMPTY_VALUE;
@@ -2127,9 +2126,6 @@ var jS = jQuery.sheet = {
 }
 
 jS.tableCellProvider.prototype = {
-	getTd: function() {
-		return document.getElementById(jS.getTdId(this.row - 1, this.col - 1));
-	},
 	getCell: function(row, col) {
 		if (typeof(col) == "string") {
 			col = cE.columnLabelIndex(col);
@@ -2139,9 +2135,9 @@ jS.tableCellProvider.prototype = {
 		if (!cell) {
 			var tableBody = jS.obj.tableBody();
 			if (tableBody) {
-				var td = this.getTd(row - 1, col - 1);
+				var td = jS.getTd(row - 1, col - 1);
 				if (td) {
-					cell = this.cells[key] = new jS.tableCell(row, col);
+					cell = this.cells[key] = new jS.tableCell(tableBody, row, col);
 				}
 			}
 		}
@@ -2603,7 +2599,7 @@ var cE = jQuery.calculationEngine = {
 				if (dependencies != null) {
 					dependencies[colStr + rowStr] = [parseInt(rowStr), cE.columnLabelIndex(colStr)]; 
 				}
-				return "(getCell((" + (rowStr) + "),\"" + (colStr) + "\").getValue())";
+				return "(cE.calcState.cellProvider.getCell((" + (rowStr) + "),\"" + (colStr) + "\").getValue())";
 			}
 		);
 		return result;
@@ -2681,13 +2677,13 @@ var cE = jQuery.calculationEngine = {
 								var dependencies = {};
 								var body = cE.parseFormula(formula.substring(1), dependencies);
 								formulaFunc = function() {
-													with (cE.calcState.cellProvider) {
+													//with (cE.calcState.cellProvider) {
 														with (cE.fn) {
 															with (cE.calcState.context) {
 																return eval(body);
 															}
 														}
-													}
+													//}
 												};
 								
 								formulaFunc.formula = formula;
@@ -2750,7 +2746,7 @@ var cE = jQuery.calculationEngine = {
 				
 			} catch (e) {
 				//This shouldn't need to be used, usually throws an error when a cell is empty
-				//cell.setValue(cE.ERROR + ': ' + e);
+				cell.setValue(cE.ERROR + ': ' + e);
 			}
 		};
 		fn.row = row;
