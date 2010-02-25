@@ -8,7 +8,7 @@
 #jSheetControls_formula
 {
 	width: 99%;
-    height: 30px;
+    height: 17px;
 }
 
 #jSheetLog
@@ -19,7 +19,7 @@
 	position: relative;
 }
 
-.rootVoices, #jSheetMenu, #jSheetControls, #jSheetControls table
+#jSheetControls, #jSheetControls table
 {
 	padding: 0px ! important;
 	background-color: transparent ! important;
@@ -27,6 +27,12 @@
 	width: 100%; 
 	margin: 0px; 
 }
+
+#jSheetMenu
+{
+	background-color: transparent ! important;
+}
+
 #jSheetMenu *
 {
 	color: inherit;

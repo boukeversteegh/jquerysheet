@@ -39,6 +39,7 @@ jQuery.fn.extend({
 			urlJGCharts: 	'plugins/jgcharts.pack.js', 		//set to bool false if you don't want to use
 			loading: 		'Loading Spreadsheet...',
 			newColumnWidth: 120,
+			title: 			null,
 			buildSheet: 	false,	//'10x30', this can be slow
 			calcOff: 		false,
 			log: 			false,
@@ -187,29 +188,26 @@ var jS = jQuery.sheet = {
 	ERROR: function() { return cE.ERROR; },
 	sheetUI: function(isAppend) {
 		return jQuery(
-			(!isAppend ? '<div id="' + jS.id.ui + '" class="' + jS.id.ui + '">' : "") +
-				'<table cellpadding="0" cellspacing="0" border="0" id="' + jS.id.tableControl + jS.i + '" class="' + jS.id.tableControl + ' ui-corner-bottom">' +
-					'<tbody>' +
-						'<tr>' + 
-							'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.id.barCornerParent + '">' + //corner
-								'<div style="height: ' + jS.s.colMargin + '; width: ' + jS.s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="ui-icon ui-icon-refresh ' + jS.id.barCorner +'" onClick="jS.cellEditAbandon();" onDblclick="jS.cellSetActiveAll();">&nbsp;</div>' +
-							'</td>' + 
-							'<td>' + //barTop
-								'<div style="overflow: hidden;" id="' + jS.id.barTopParent + jS.i + '" class="' + jS.id.barTopParent + '"></div>' +
-							'</td>' +
-						'</tr>' +
-						'<tr>' +
-							'<td>' + //barLeft
-								'<div style="overflow: hidden;width: ' + jS.s.colMargin + ';" id="' + jS.id.barLeftParent + jS.i + '"></div>' +
-							'</td>' +
-							'<td>' + //pane
-								'<div id="' + jS.id.pane + jS.i + '" class="' + jS.id.pane + '"></div>' +
-							'</td>' +
-						'</tr>' +
-					'</tbody>' +
-				'</table>' +
-			(!isAppend ? '</div>' : "")
-		);
+			'<table cellpadding="0" cellspacing="0" border="0" id="' + jS.id.tableControl + jS.i + '" class="' + jS.id.tableControl + ' ui-corner-bottom">' +
+				'<tbody>' +
+					'<tr>' + 
+						'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.id.barCornerParent + '">' + //corner
+							'<div style="height: ' + jS.s.colMargin + '; width: ' + jS.s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="ui-icon ui-icon-refresh ' + jS.id.barCorner +'" onClick="jS.cellEditAbandon();" onDblclick="jS.cellSetActiveAll();">&nbsp;</div>' +
+						'</td>' + 
+						'<td>' + //barTop
+							'<div style="overflow: hidden;" id="' + jS.id.barTopParent + jS.i + '" class="' + jS.id.barTopParent + '"></div>' +
+						'</td>' +
+					'</tr>' +
+					'<tr>' +
+						'<td>' + //barLeft
+							'<div style="overflow: hidden;width: ' + jS.s.colMargin + ';" id="' + jS.id.barLeftParent + jS.i + '"></div>' +
+						'</td>' +
+						'<td>' + //pane
+							'<div id="' + jS.id.pane + jS.i + '" class="' + jS.id.pane + '"></div>' +
+						'</td>' +
+					'</tr>' +
+				'</tbody>' +
+			'</table>');
 	},
 	tuneTableForSheetUse: function(obj) {
 		obj
@@ -279,28 +277,33 @@ var jS = jQuery.sheet = {
 			return obj;
 		},
 		hide: function(obj) {
-			obj.css('z-index', '-1');
+			obj
+				.fadeTo(0, 0.01, function() {
+					jQuery(this).css('z-index', '-1')
+				});
 		},
 		show: function(obj) {
-			obj.css('z-index', '100');
+			obj
+				.css('z-index', '100')
+				.fadeTo(0, 1);
 		}
 	},
-	makeBarItemLeft: function(reload, o) {//Works great!
+	makeBarItemLeft: function(o) {//Works great!
 		jS.obj.barLeft().remove();
 		var barLeft = jQuery('<div border="1px" id="' + jS.id.barLeft + jS.i + '" class="' + jS.id.barLeft + '" />').height('10000px');
 		var heightFn;
-		if (reload) { //This is our standard way of detecting height when a sheet loads from a url
-			heightFn = function(i, objSource, objBar) {
-				objBar.height(parseInt(objSource.outerHeight()) - jS.attrH.boxModelCorrection());
-			};
-		} else { //This way of detecting height is used becuase the object has some problems getting
+		//if (reload) { //This is our standard way of detecting height when a sheet loads from a url
+		heightFn = function(i, objSource, objBar) {
+			objBar.height(parseInt(objSource.outerHeight()) - jS.attrH.boxModelCorrection());
+		};
+/*		} else { //This way of detecting height is used becuase the object has some problems getting
 				//height because both tr and td have height set
 				//This corrects the problem
 				//This is only used when a sheet is already loaded in the pane
 			heightFn = function(i, objSource, objBar) {
 				objBar.height(parseInt(objSource.css('height').replace('px','')) - jS.attrH.boxModelCorrection());
 			};
-		}
+		}*/
 		
 		jS.resizeFn.height(barLeft);
 		
@@ -311,7 +314,7 @@ var jS = jQuery.sheet = {
 		});
 		barLeft.appendTo(jS.obj.barLeftParent());
 	},
-	makeBarItemTop: function(reload, o) { //Works great!
+	makeBarItemTop: function(o) { //Works great!
 		jS.obj.barTop().remove();
 		var barTop = jQuery('<div id="' + jS.id.barTop + jS.i + '" class="' + jS.id.barTop + '" />').width('10000px');
 		barTop.height(jS.s.colMargin);
@@ -319,17 +322,17 @@ var jS = jQuery.sheet = {
 		var parents;
 		var widthFn;
 		
-		if (reload) {
-			parents = o.find('tr:first td');
-			widthFn = function(obj) {
-				return jS.attrH.width(obj);
-			};
-		} else {
+		/*if (reload) {*/
+		parents = o.find('tr:first td');
+		widthFn = function(obj) {
+			return jS.attrH.width(obj);
+		};
+		/*} else {
 			parents = o.find('col');
 			widthFn = function(obj) {
 				return parseInt(jQuery(obj).css('width').replace('px','')) - jS.attrH.boxModelCorrection();
 			};
-		}
+		}*/
 		
 		jS.resizeFn.width(barTop);
 		
@@ -489,21 +492,30 @@ var jS = jQuery.sheet = {
 			}
 		}
 	},
-	addTitle: function() {
-		return jQuery('<span class="ui-corner-top ui-state-default"><a class="' + jS.cl.tab + '" id="' + jS.id.tab + jS.i + '" OnDblClick="jS.sheetTitle(); return false;" onclick="jS.setActiveSheet(jQuery(\'#' + jS.id.tableControl + jS.i + '\'), ' + jS.i + ', this); return false;">' + jS.sheetTitle(true) + '</a></span>')
+	addTab: function() {
+		return jQuery('<span class="ui-corner-bottom ui-state-default"><a class="' + jS.cl.tab + '" id="' + jS.id.tab + jS.i + '" OnDblClick="jS.sheetTab(); return false;" onclick="jS.setActiveSheet(jQuery(\'#' + jS.id.tableControl + jS.i + '\'), ' + jS.i + '); return false;">' + jS.sheetTab(true) + '</a></span>')
 			.appendTo(jS.obj.tabContainer());
 	},
 	makeControls: function() {
-		jS.obj.controls().remove();	
-		var controls = jQuery('<div id="' + jS.id.controls + '"><table cellpadding="0" cellspacing="0" border="0"><tbody><tr id="topContainer" /></tbody></table></div>');
+		jS.obj.controls().remove();
+
+		var controls = jQuery('<div id="' + jS.id.controls + '"></div>');
+		
+		var menuAndTitleTable = jQuery('<table cellpadding="0" cellspacing="0" border="0"><tbody><tr /></tbody></table>').prependTo(controls);
+		if (jS.s.title) {
+			menuAndTitleTable.find('tr').append(jQuery('<td />').html(jS.s.title));
+		}
+		
 		if (jS.s.editable) {
 			//Page Menu Control	
 			if (jS.s.urlMenuJs && jS.s.urlMenuCss && jS.s.urlMetaData && jS.s.urlMenu) {
 				jQuery.getScript(jS.s.urlMetaData, function() {
 					jQuery.getScript(jS.s.urlMenuJs, function() {
 						jS.getCss(jS.s.urlMenuCss);
-						var menuObj = jQuery('<div />').load(jS.s.urlMenu, function() {
-							controls.find('#topContainer').prepend(jQuery('<td style="width: 50px; text-align: center;"/>').append(menuObj.html()));
+						var menuObj = jQuery('<div />').load(jS.s.urlMenu, function(o) {
+							jQuery('<td style="width: 50px; text-align: center;" />')
+								.html(o)
+								.prependTo(menuAndTitleTable.find('tr'));
 							jS.obj.menu()
 								.buildMenu({
 									additionalData:"pippo=1",
@@ -547,13 +559,12 @@ var jS = jQuery.sheet = {
 		if (jS.s.urlScrollTo) {
 			jQuery.getScript(jS.s.urlScrollTo);
 		}
-		
-		//Tabs control
-		controls.find('#topContainer').append(jQuery('<td id="' + jS.id.tabContainer + '"/>').append(jS.addTitle(false)));
-		
-		jS.ajaxCalled();
-		
-		jS.obj.parent().html(controls);
+
+		jS.obj.parent()
+			.html('')
+			.append(controls) //add user controls
+			.append('<div id="' + jS.id.ui + '" class="' + jS.id.ui + '">') //add spreadsheet control
+			.after('<div id="' + jS.id.tabContainer + '"/>'); //add tab control
 	},
 	sheetDecorate: function(o) {	
 		jS.formatSheet(o);
@@ -644,7 +655,7 @@ var jS = jQuery.sheet = {
 				.replace(/<br>/g, '\r')
 				.replace(/<BR>/g, '\n');
 
-			jS.log("from html to text");
+			//jS.log("from html to text");
 		}
 		return v;
 	},
@@ -658,7 +669,7 @@ var jS = jQuery.sheet = {
 				.replace(/\n/g, '<br>')
 				.replace(/\r/g, '<br>');
 			
-			jS.log("from text to html");
+			//jS.log("from text to html");
 		}
 		return v;
 	},
@@ -1076,8 +1087,7 @@ var jS = jQuery.sheet = {
 	addSheet: function(size) {
 		size = (size ? size : prompt(jS.newSheetDialog));
 		if (size) {
-			jS.obj.tableControl().hide();
-			jS.initSheet(true, jS.buildSheet(size), true);
+			jS.initSheet(jS.buildSheet(size), jS.i + 1);
 		}
 	},
 	addRowMulti: function(qty) {
@@ -1267,22 +1277,22 @@ var jS = jQuery.sheet = {
 		}
 		jS.obj.pane().scroll();
 	},
-	sheetTitle: function(get) {
-		var sheetTitle = '';
+	sheetTab: function(get) {
+		var sheetTab = '';
 		if (get) {
-			sheetTitle = jS.obj.sheet().attr('sheettitle');
-			sheetTitle = (sheetTitle ? sheetTitle : 'Spreadsheet ' + jS.i);
+			sheetTab = jS.obj.sheet().attr('title');
+			sheetTab = (sheetTab ? sheetTab : 'Spreadsheet ' + jS.i);
 		} else {
-			var newTitle = prompt("What would you like the sheet's title to be?", jS.sheetTitle(true));
+			var newTitle = prompt("What would you like the sheet's title to be?", jS.sheetTab(true));
 			if (!newTitle) {
 				newTitle = 'Spreadsheet' + jS.i;
 			}
-			jS.obj.sheet().attr('sheettitle', newTitle);
+			jS.obj.sheet().attr('sheetTab', newTitle);
 			jS.obj.tab().html(newTitle);
 			
-			sheetTitle = newTitle;
+			sheetTab = newTitle;
 		}
-		return sheetTitle;
+		return sheetTab;
 	},
 	viewSource: function(pretty) {
 		var sheetClone = jS.sheetDecorateRemove(true);
@@ -1438,30 +1448,28 @@ var jS = jQuery.sheet = {
 			return jS.getBarTopLocatoin(jS.obj.barTop().find('div:last').text());
 		}
 	},
-	initSheet: function(reloadBars, obj, isAppend) {
-		if (!isAppend) {
-			if (obj) {
-				jS.obj.pane().html(jQuery(obj).show());
-			} else {
-				obj = jS.obj.pane().find('table').show();
-			}
+	initSheet: function(obj, i) {
+		if (!i) {
+			jQuery('.tableControl').remove();
+			jS.sheetCount = 0;
+			jS.i = 0;
 		} else {
 			jS.sheetCount++;
 			jS.i = jS.sheetCount;
-			jS.sheetUI(true).appendTo(jS.obj.ui());
-			jS.obj.pane().append(obj);
+			i = jS.i;
 		}
 		
-		jS.replaceWithSafeImg(obj.find('img')); //correct height issue
-		
+		var objContainer = jS.sheetUI(true).appendTo(jS.obj.ui());
+		jS.obj.pane().html(obj);
+				
 		jS.tuneTableForSheetUse(obj);
 					
 		jS.sheetDecorate(obj);
 		
-		jS.makeBarItemTop(reloadBars, obj);
-		jS.makeBarItemLeft(reloadBars, obj);
+		jS.makeBarItemTop(obj);
+		jS.makeBarItemLeft(obj);
 	
-		jS.sheetTitle(true);
+		jS.sheetTab(true);
 		
 		if (jS.s.editable) {
 			jS.obj.pane()
@@ -1469,7 +1477,7 @@ var jS = jQuery.sheet = {
 				.click(jS.s.lockFormulas ? jS.cellOnClickLocked : jS.cellOnClickReg);
 		}
 		
-		jS.themeRoller.start(isAppend);
+		jS.themeRoller.start(i);
 
 		jS.setTdIds(obj);
 		
@@ -1487,18 +1495,20 @@ var jS = jQuery.sheet = {
 			jS.s.fnAfter();
 		}
 
-		jS.addTitle();
-		jS.ajaxCalled();
+		jS.addTab();
+		jS.sheetSyncSize();
 		jS.log('Sheet Initialized');
 	},
-	setActiveSheet: function(control, i, o) {
-		if (control) {
-			control.show().siblings().not(':first').hide();
-			jS.obj.sheet().show();
+	setActiveSheet: function(o, i) {
+		if (o) {
+			/*jS.attrH.hide(o.siblings().not('div'));
+			jS.attrH.show(o);*/
+			o.show().siblings().not('div').hide();
 			jS.obj.tabContainer().find('.ui-state-highlight').removeClass('ui-state-highlight');
 			jS.i = i;
 			jS.obj.tab().parent().addClass('ui-state-highlight');
-			jS.ajaxCalled();
+			jS.sheetSyncSize();
+			jS.replaceWithSafeImg(jS.obj.sheet().find('img'));
 		} else {
 			jS.obj.tabContainer().siblings().not('div').hide();
 			jS.obj.tabContainer().find('.ui-state-highlight').removeClass('ui-state-highlight');
@@ -1506,26 +1516,25 @@ var jS = jQuery.sheet = {
 		}
 	},
 	openSheet: function(obj, skipNotify) {
-		jS.makeControls();
-		jS.obj.parent().append(jS.sheetUI());
-
 		if (skipNotify ? true : confirm("Are you sure you want to open a different sheet?  All unsaved changes will be lost.")) {
-			jS.cellEditAbandon(true);
-			
+			jS.makeControls();
+			var setFirstActive = function() {
+				jS.i = 0;
+				jS.setActiveSheet();
+				jS.sheetSyncSize();
+			};
 			if (!obj) {
 				jQuery('<div />').load(jS.s.urlGet, function() {
 					jQuery(this).find('table').each(function(i) {
-						jS.i = i;
-						jS.initSheet(true, jQuery(this), i);
-						jS.setActiveSheet();
-						jS.sheetSyncSize();
+						jS.initSheet(jQuery(this), i);
 					});
+					setFirstActive();
 				});
 			} else {
-				jQuery(obj).find('table').show().each(function(i) {
-					jS.i = i;
-					jS.initSheet(true, jQuery(this), i);
+				jQuery(obj).show().each(function(i) {
+					jS.initSheet(jQuery(this), i);
 				});
+				setFirstActive();
 			}
 		}
 	},
@@ -2125,6 +2134,15 @@ var jS = jQuery.sheet = {
 	setDirty: function(dirty) { jS.isDirty = dirty; }
 }
 
+var TABLE = function(i, row, col) {
+	try {
+		col = cE.columnLabelIndex(col);
+		return jQuery('#table' + (i - 1) + '_cell_c' + (col - 1) + '_r' + (row - 1)).html();
+	} catch (e) {
+		return e;
+	}
+};
+
 jS.tableCellProvider.prototype = {
 	getCell: function(row, col) {
 		if (typeof(col) == "string") {
@@ -2551,9 +2569,11 @@ var cE = jQuery.calculationEngine = {
 		return c.join("");
 	},
 	regEx: {
-		n: 		/[\$,\s]/g,
-		cell: 	/\$?([a-zA-Z]+)\$?([0-9]+)/g,
-		range: 	/\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g,
+		n: 				/[\$,\s]/g,
+		cell: 			/\$?([a-zA-Z]+)\$?([0-9]+)/g,
+		range: 			/\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g,
+		tableCell:		/\$?(table+)\$?([0-9]+)\$?([a-zA-Z]+)\$?([0-9]+)/,
+		tableCellRange: /\$?(table+)\$?([0-9]+)\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g,
 		amp: 	/&/g,
 		gt: 	/</g,
 		lt: 	/>/g,
@@ -2599,7 +2619,7 @@ var cE = jQuery.calculationEngine = {
 				if (dependencies != null) {
 					dependencies[colStr + rowStr] = [parseInt(rowStr), cE.columnLabelIndex(colStr)]; 
 				}
-				return "(cE.calcState.cellProvider.getCell((" + (rowStr) + "),\"" + (colStr) + "\").getValue())";
+				return "(cE.calcState.cellProvider.getCell((" + (rowStr) + "),\"" + (colStr) + "\")).getValue()";
 			}
 		);
 		return result;
@@ -2679,9 +2699,10 @@ var cE = jQuery.calculationEngine = {
 								formulaFunc = function() {
 													//with (cE.calcState.cellProvider) {
 														with (cE.fn) {
-															with (cE.calcState.context) {
+															//with (cE.calcState.context) {
+																//jS.log(body);
 																return eval(body);
-															}
+															//}
 														}
 													//}
 												};
@@ -2746,7 +2767,7 @@ var cE = jQuery.calculationEngine = {
 				
 			} catch (e) {
 				//This shouldn't need to be used, usually throws an error when a cell is empty
-				cell.setValue(cE.ERROR + ': ' + e);
+				//cell.setValue(cE.ERROR + ': ' + e);
 			}
 		};
 		fn.row = row;
