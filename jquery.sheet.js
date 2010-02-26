@@ -90,14 +90,6 @@ jQuery.fn.extend({
 			}
 		}
 		
-		jS.s.ajaxCallsCount += (jS.s.urlMenu ? 1 : 0);
-		jS.s.ajaxCallsCount += (jS.s.urlMenuJs ? 1 : 0);
-		jS.s.ajaxCallsCount += (jS.s.urlMetaData ? 1 : 0);
-		jS.s.ajaxCallsCount += (jS.s.urlJGCharts ? 1 : 0);
-		jS.s.afterAjax = function() {
-			jS.sheetSyncSize();
-		};
-		
 		jS.openSheet(obj, true);
 	}
 });
@@ -525,8 +517,6 @@ var jS = jQuery.sheet = {
 									closeOnMouseOut:false,
 									closeAfter:1000
 								});
-							//there are 3 ajax calls here
-							jS.ajaxCalled(3);
 						});
 					});
 				});
@@ -1478,7 +1468,6 @@ var jS = jQuery.sheet = {
 		//We load the plugins
 		if (jS.s.urlJGCharts) { //When loading the charts, we need to make sure that the namespace exists before we fire fnAfter();
 			jQuery.getScript(jS.s.urlJGCharts, function() {		
-				jS.ajaxCalled(1);
 				jS.calc(obj);
 				jS.s.fnAfter();
 			});
@@ -1769,15 +1758,6 @@ var jS = jQuery.sheet = {
 			newSheetWidth += jQuery(this).width();
 		});
 		o.width(newSheetWidth);
-	},
-	ajaxCallCount: null,
-	ajaxCalled: function(i) {
-		if (i) {
-			jS.s.ajaxCallsCount = jS.s.ajaxCallsCount - i;
-		}
-		if (jS.s.ajaxCallsCount < 1) {
-			jS.s.afterAjax();
-		}
 	},
 	sheetSyncSize: function(isAppend) {
 		var h = jS.s.height;
@@ -2133,17 +2113,29 @@ var jS = jQuery.sheet = {
 	setDirty: function(dirty) { jS.isDirty = dirty; }
 }
 
-var TABLE = function(i, row, col) {
-	try {
-		col = cE.columnLabelIndex(col);
-		return jQuery('#table' + (i - 1) + '_cell_c' + (col - 1) + '_r' + (row - 1)).html();
-	} catch (e) {
-		return e;
-	}
-};
-
 jS.tableCellProvider.prototype = {
-	getCell: function(row, col) {
+	getCellArrayRemoteValue: function(tableI, startCol, startRow, endCol, endRow) {
+		var res = [];
+		for (var i = startCol; i <= endCol; i++) {
+			for (var j = startRow; j <= endRow; j++) {
+				try {
+					res.push(document.getElementById('table' + (tableI - 1) + '_cell_c' + (i - 1) + '_r' + (j - 1)).innerHTML);
+				} catch (e) {
+					//res.push(e);
+				}
+			}
+		}
+		return res.join(",");
+	},
+	getCellRemoteValue: function(tableI, row, col) {
+		try {
+			col = cE.columnLabelIndex(col);
+			return document.getElementById('table' + (tableI - 1) + '_cell_c' + (col - 1) + '_r' + (row - 1)).innerHTML;
+		} catch (e) {
+			return e;
+		}
+	},
+	getCell: function(row, col, i) {
 		if (typeof(col) == "string") {
 			col = cE.columnLabelIndex(col);
 		}
@@ -2180,7 +2172,7 @@ jS.tableCellProvider.prototype = {
 };
 
 jS.tableCell.prototype = {
-	getTd: function() {
+	getTd: function(i) {
 		return document.getElementById(jS.getTdId(this.row - 1, this.col - 1));
 	},
 	setValue: function(v, e) {
@@ -2571,8 +2563,8 @@ var cE = jQuery.calculationEngine = {
 		n: 				/[\$,\s]/g,
 		cell: 			/\$?([a-zA-Z]+)\$?([0-9]+)/g,
 		range: 			/\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g,
-		tableCell:		/\$?(table+)\$?([0-9]+)\$?([a-zA-Z]+)\$?([0-9]+)/,
-		tableCellRange: /\$?(table+)\$?([0-9]+)\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g,
+		tableCell:		/\$?(TABLE+)\$?([0-9]+)\$?([a-zA-Z]+)\$?([0-9]+)/g,
+		tableCellRange: /\$?(TABLE+)\$?([0-9]+)\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g,
 		amp: 	/&/g,
 		gt: 	/</g,
 		lt: 	/>/g,
@@ -2591,7 +2583,43 @@ var cE = jQuery.calculationEngine = {
 			nrows = cE.calcState.cellProvider.nrows;
 			ncols = cE.calcState.cellProvider.ncols;
 		}
-		var arrayReferencesFixed = formula.replace(cE.regEx.range, 
+		
+		//Cell References Range - Other Tables
+		formula = formula.replace(cE.regEx.tableCellRange, 
+			function(ignored, TableStr, tableI, startColStr, startRowStr, endColStr, endRowStr) {
+				//var res = [];
+				var startCol = cE.columnLabelIndex(startColStr);
+				var startRow = parseInt(startRowStr);
+				var endCol   = cE.columnLabelIndex(endColStr);
+				var endRow   = parseInt(endRowStr);
+				/*if (ncols != null) {
+					endCol = Math.min(endCol, ncols);
+				}
+				if (nrows != null) {
+					endRow = Math.min(endRow, nrows);
+				}
+				for (var r = startRow; r <= endRow; r++) {
+					for (var c = startCol; c <= endCol; c++) {
+						res.push(cE.columnLabelString(c) + r);
+					}
+				}*/
+				return "[cE.calcState.cellProvider.getCellArrayRemoteValue((" + (tableI) + "), (" + (startCol) + "), (" + (startRow) + "), (" + (endCol) + "),(" + (endRow) + "))]";
+			}
+		);
+		
+		//Cell References Fixed - Other Tables
+		formula = formula.replace(cE.regEx.tableCell, 
+			function(ignored, tableStr, tableI, colStr, rowStr) {
+				colStr = colStr.toUpperCase();
+				if (dependencies != null) {
+					dependencies[colStr + rowStr] = [parseInt(rowStr), cE.columnLabelIndex(colStr)]; 
+				}
+				return "(cE.calcState.cellProvider.getCellRemoteValue((" + (tableI) + "),(" + (rowStr) + "),\"" + colStr + "\"))";
+			}
+		);
+		
+		//Cell References Range
+		formula = formula.replace(cE.regEx.range, 
 			function(ignored, startColStr, startRowStr, endColStr, endRowStr) {
 				var res = [];
 				var startCol = cE.columnLabelIndex(startColStr);
@@ -2612,7 +2640,9 @@ var cE = jQuery.calculationEngine = {
 				return "[" + res.join(",") + "]";
 			}
 		);
-		var result = arrayReferencesFixed.replace(cE.regEx.cell, 
+		
+		//Cell References Fixed
+		formula = formula.replace(cE.regEx.cell, 
 			function(ignored, colStr, rowStr) {
 				colStr = colStr.toUpperCase();
 				if (dependencies != null) {
@@ -2621,7 +2651,7 @@ var cE = jQuery.calculationEngine = {
 				return "(cE.calcState.cellProvider.getCell((" + (rowStr) + "),\"" + (colStr) + "\")).getValue()";
 			}
 		);
-		return result;
+		return formula;
 	},	
 	parseFormulaStatic: function(formula) { // Parse static formula value like "123.0" or "hello" or "'hello world" into JavaScript value.
 		if (formula == null) {
