@@ -13,14 +13,6 @@ http://www.gnu.org/licenses/
 		When dealing with size, it seems that outerHeight is generally the most stable cross browser
 		attribute to use for bar sizing.  We try to use this as much as possible.  But because col's
 		don't have boarders, we subtract or add jS.attrH.boxModelCorrection() for those browsers.
-	
-	If vs Switch:
-		I try to use case over If as much as possible, especially on loops, because it's faster, even on try false, not much,
-		but a little (100ms in some cases).  So if you have 10 if statements firing at the same time,
-		the difference is notable.
-		
-	'with' statement:
-		SPEED HOG!  they are only used for shorthand on the jQuery.calculationEngine.fn objects
 */
 
 jQuery.fn.extend({
@@ -30,7 +22,7 @@ jQuery.fn.extend({
 			urlSave: 		"save.html",
 			editable: 		true,
 			urlBaseCss: 	'jquery.sheet.css',
-			urlTheme: 		"theme/jquery-ui-1.7.2.custom.css",
+			urlTheme: 		"theme/jquery-ui-1.8rc2.custom.css",
 			urlMenu: 		"menu.html",
 			urlMenuJs: 		"plugins/mbMenu.min.js", 			//set to bool false if you don't want to use
 			urlMenuCss: 	"plugins/menu.css", 				//set to bool false if you don't want to use
@@ -141,7 +133,7 @@ var jS = jQuery.sheet = {
 		uiCell:			function() { return jQuery('.' + jS.cl.uiCell); },
 		toggle:			function() { return jQuery('.' + jS.cl.toggle); },
 		tableBody: 		function() { return document.getElementById(jS.id.sheet + jS.i); },
-		tableControl:	function() { return jQuery('#' + jS.cl.tableControl + jS.i); },
+		tableControl:	function() { return jQuery('#' + jS.id.tableControl + jS.i); },
 		tab:			function() { return jQuery('#' + jS.id.tab + jS.i); },
 		tabContainer:	function() { return jQuery('#' + jS.id.tabContainer); }
 	},
@@ -1448,7 +1440,7 @@ var jS = jQuery.sheet = {
 			return jS.getBarTopLocatoin(jS.obj.barTop().find('div:last').text());
 		}
 	},
-	initSheet: function(obj, i) {
+	initSheet: function(obj, i, fn) {
 		if (!i) {
 			jQuery('.tableControl').remove();
 			jS.sheetCount = 0;
@@ -1496,43 +1488,50 @@ var jS = jQuery.sheet = {
 		}
 
 		jS.addTab();
-		jS.sheetSyncSize();
+		if (fn) {
+			fn();
+		}
 		jS.log('Sheet Initialized');
 	},
 	setActiveSheet: function(o, i) {
 		if (o) {
-			/*jS.attrH.hide(o.siblings().not('div'));
-			jS.attrH.show(o);*/
-			o.show().siblings().not('div').hide();
+			o.show().siblings().hide();
 			jS.obj.tabContainer().find('.ui-state-highlight').removeClass('ui-state-highlight');
 			jS.i = i;
 			jS.obj.tab().parent().addClass('ui-state-highlight');
-			jS.sheetSyncSize();
-			jS.replaceWithSafeImg(jS.obj.sheet().find('img'));
+			
 		} else {
-			jS.obj.tabContainer().siblings().not('div').hide();
+			jS.obj.tableControl().siblings().not('div').hide();
 			jS.obj.tabContainer().find('.ui-state-highlight').removeClass('ui-state-highlight');
 			jS.obj.tab().parent().addClass('ui-state-highlight');
 		}
+		jS.sheetSyncSize();
+		jS.replaceWithSafeImg(jS.obj.sheet().find('img'));
 	},
 	openSheet: function(obj, skipNotify) {
 		if (skipNotify ? true : confirm("Are you sure you want to open a different sheet?  All unsaved changes will be lost.")) {
 			jS.makeControls();
-			var setFirstActive = function() {
-				jS.i = 0;
-				jS.setActiveSheet();
-				jS.sheetSyncSize();
+			var setFirstActive = function(i, l) {
+				if (i == (l - 1)) {
+					jS.i = 0;
+					jS.setActiveSheet();
+				}
 			};
+			
 			if (!obj) {
 				jQuery('<div />').load(jS.s.urlGet, function() {
-					jQuery(this).find('table').each(function(i) {
-						jS.initSheet(jQuery(this), i);
+					var sheets = jQuery(this).find('table');
+					sheets.each(function(i) {
+						jS.initSheet(jQuery(this), i, function() { 
+							setFirstActive(i, sheets.length);
+						});
 					});
-					setFirstActive();
 				});
 			} else {
 				jQuery(obj).show().each(function(i) {
-					jS.initSheet(jQuery(this), i);
+					jS.initSheet(jQuery(this), i,  function() { 
+						setFirstActive(i, sheetz.length);
+					});
 				});
 				setFirstActive();
 			}
