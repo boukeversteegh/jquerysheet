@@ -167,31 +167,33 @@ var jS = jQuery.sheet = {
 		uiCell:			'themeRoller_activeCell',
 		uiCellHighlighted: 'ui-state-highlight',
 		toggle:			'cellStyleToggle',
-		tab:			'jSheetTab'
+		tab:			'jSheetTab',
+		barTop:			'barTop',
+		barLeft:		'barLeft',
+		sheetPane:		'sheetPane'
 	},
 	ERROR: function() { return cE.ERROR; },
 	sheetUI: function(isAppend) {
-		return jQuery(
-			'<table cellpadding="0" cellspacing="0" border="0" id="' + jS.id.tableControl + jS.i + '" class="' + jS.id.tableControl + ' ui-corner-bottom">' +
-				'<tbody>' +
-					'<tr>' + 
-						'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.id.barCornerParent + '">' + //corner
-							'<div style="height: ' + jS.s.colMargin + '; width: ' + jS.s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="ui-icon ui-icon-refresh ' + jS.id.barCorner +'" onClick="jS.cellEditAbandon();" onDblclick="jS.cellSetActiveAll();">&nbsp;</div>' +
-						'</td>' + 
-						'<td>' + //barTop
-							'<div style="overflow: hidden;" id="' + jS.id.barTopParent + jS.i + '" class="' + jS.id.barTopParent + '"></div>' +
-						'</td>' +
-					'</tr>' +
-					'<tr>' +
-						'<td>' + //barLeft
-							'<div style="overflow: hidden;width: ' + jS.s.colMargin + ';" id="' + jS.id.barLeftParent + jS.i + '"></div>' +
-						'</td>' +
-						'<td>' + //pane
-							'<div id="' + jS.id.pane + jS.i + '" class="' + jS.id.pane + '"></div>' +
-						'</td>' +
-					'</tr>' +
-				'</tbody>' +
-			'</table>');
+		return jQuery('<table cellpadding="0" cellspacing="0" border="0" id="' + jS.id.tableControl + jS.i + '" class="' + jS.id.tableControl + ' ui-corner-bottom">' +
+			'<tbody>' +
+				'<tr>' + 
+					'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.id.barCornerParent + '">' + //corner
+						'<div style="height: ' + jS.s.colMargin + '; width: ' + jS.s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="ui-icon ui-icon-refresh ' + jS.id.barCorner +'" onClick="jS.cellEditAbandon();" onDblclick="jS.cellSetActiveAll();">&nbsp;</div>' +
+					'</td>' + 
+					'<td class="' + jS.cl.barTop + '">' + //barTop
+						'<div style="overflow: hidden;" id="' + jS.id.barTopParent + jS.i + '" class="' + jS.id.barTopParent + '"></div>' +
+					'</td>' +
+				'</tr>' +
+				'<tr>' +
+					'<td class="' + jS.cl.barLeft + '">' + //barLeft
+						'<div style="overflow: hidden;width: ' + jS.s.colMargin + ';" id="' + jS.id.barLeftParent + jS.i + '"></div>' +
+					'</td>' +
+					'<td class="' + jS.cl.sheetPane + '">' + //pane
+						'<div id="' + jS.id.pane + jS.i + '" class="' + jS.id.pane + '"></div>' +
+					'</td>' +
+				'</tr>' +
+			'</tbody>' +
+		'</table>');
 	},
 	tuneTableForSheetUse: function(obj) {
 		obj
