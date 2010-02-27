@@ -91,6 +91,18 @@ jQuery.fn.extend({
 		}
 		
 		jS.openSheet(obj, true);
+		
+		// add resizable jquery.ui if available
+		if (jQuery.ui) {
+			jQuery(this).resizable({minWidth: jQuery(this).width() * 0.5, resize: function() {
+				jQuery(jS.id.ui).width(jQuery(this).width()).height(jQuery(this).height());
+				jQuery("#" + jS.id.ui + " ." + jS.id.barTopParent + ", #" + jS.id.ui + " ." + jS.cl.sheetPane + ", #" + jS.id.ui + " ." + jS.id.pane)
+					.width(jQuery(this).width() - jQuery("#" + jS.id.ui + " ." + jS.id.barCornerParent).width());
+				jQuery("#" + jS.id.ui + " .barLeft>div, #" + jS.id.ui + " ." + jS.cl.sheetPane + ", #" + jS.id.ui + " ." + jS.id.pane)
+					.height(jQuery(this).height() - jQuery("#" + jS.id.ui + " ." + jS.id.barCornerParent).height() - jQuery("#" + jS.id.controls).height());
+			}});
+		}
+		
 	}
 });
 
