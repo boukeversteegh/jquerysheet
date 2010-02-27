@@ -244,7 +244,7 @@ var jS = jQuery.sheet = {
 			
 			switch(from) {
 				case 'cell':
-					obj = (obj ? obj : jS.obj.barLeft().find('div').eq(i))
+					obj = (obj ? obj : jS.obj.barLeft().find('div').eq(i));
 					h = jS.attrH.height(jQuery(jS.getTd(i, 0)).parent().andSelf(), skipCorrection);
 					break;
 				case 'bar':
@@ -265,7 +265,7 @@ var jS = jQuery.sheet = {
 		hide: function(obj) {
 			obj
 				.fadeTo(0, 0.01, function() {
-					jQuery(this).css('z-index', '-1')
+					jQuery(this).css('z-index', '-1');
 				});
 		},
 		show: function(obj) {
@@ -436,7 +436,7 @@ var jS = jQuery.sheet = {
 					jS.resizeFn.select(o, e, selectRow, jS.rowResizer);
 					
 					return false;
-				})
+				});
 			if (jS.s.editable) { //only let editable select
 				selectRow = function(o, keepCurrent) {
 					if (!keepCurrent) { 
@@ -462,7 +462,7 @@ var jS = jQuery.sheet = {
 					jS.resizeFn.select(o, e, selectColumn, jS.columnResizer);
 					
 					return false;
-				})
+				});
 			if (jS.s.editable) { //only let editable select
 				selectColumn = function(o, keepCurrent) {
 					if (!keepCurrent) { 
@@ -1520,8 +1520,9 @@ var jS = jQuery.sheet = {
 				});
 			} else {
 				jQuery(obj).show().each(function(i) {
+					var sheets = jQuery(this).find('table');
 					jS.initSheet(jQuery(this), i,  function() { 
-						setFirstActive(i, sheetz.length);
+						setFirstActive(i, sheets.length);
 					});
 				});
 				setFirstActive();
@@ -2075,7 +2076,7 @@ var jS = jQuery.sheet = {
 		}
 		
 		if (data) {
-			data = data.filter(function(v) { return (v ? v : 0) }); //remove nulls
+			data = data.filter(function(v) { return (v ? v : 0); }); //remove nulls
 			o.data = data;
 		}
 		
@@ -2113,7 +2114,7 @@ var jS = jQuery.sheet = {
 	},
 	isDirty:  false,
 	setDirty: function(dirty) { jS.isDirty = dirty; }
-}
+};
 
 jS.tableCellProvider.prototype = {
 	getCellArrayRemoteValue: function(tableI, startCol, startRow, endCol, endRow) {
