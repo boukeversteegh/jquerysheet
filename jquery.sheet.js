@@ -94,6 +94,7 @@ jQuery.fn.extend({
 		
 		// add resizable jquery.ui if available
 		if (jQuery.ui) {
+			// resizable container div
 			jQuery(this).resizable({minWidth: jQuery(this).width() * 0.5, resize: function() {
 				jQuery(jS.id.ui).width(jQuery(this).width()).height(jQuery(this).height());
 				jQuery("#" + jS.id.ui + " ." + jS.id.barTopParent + ", #" + jS.id.ui + " ." + jS.cl.sheetPane + ", #" + jS.id.ui + " ." + jS.id.pane)
@@ -101,6 +102,8 @@ jQuery.fn.extend({
 				jQuery("#" + jS.id.ui + " .barLeft>div, #" + jS.id.ui + " ." + jS.cl.sheetPane + ", #" + jS.id.ui + " ." + jS.id.pane)
 					.height(jQuery(this).height() - jQuery("#" + jS.id.ui + " ." + jS.id.barCornerParent).height() - jQuery("#" + jS.id.controls).height());
 			}});
+			// resizable formula area - a bit hard to grab the handle but is there!
+			jQuery("#" + jS.id.formula).resizable({minHeight: 20, maxHeight: 62, handles: "s"});
 		}
 		
 	}

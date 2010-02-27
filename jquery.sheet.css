@@ -189,7 +189,7 @@
 
 .jSheetEditPane
 {
-    overflow: scroll;
+    overflow: auto;
 	background-image: none ! important;
 	border-width: 0px;
 }
