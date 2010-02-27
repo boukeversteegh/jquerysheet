@@ -1101,8 +1101,8 @@ var jS = jQuery.sheet = {
 			//if atRow has no value, lets just add it to the end.
 			atRowQ = ':last';
 			atRow = false;
-		} else if (atRow == true) {//if atRow is boolean, then lets add it just after the currently selected row.
-			atRowQ = ':eq(' + (jS.cellEditLastLoc[1] - 1) + ')';
+		} else if (atRow === true) {//if atRow is boolean, then lets add it just after the currently selected row.
+			atRowQ = ':eq(' + (jS.cellLast.row - 1) + ')';
 		} else {
 			//If atRow is a number, lets add it at that row
 			atRowQ = ':eq(' + (atRow - 1) + ')';
@@ -1154,12 +1154,12 @@ var jS = jQuery.sheet = {
 		jS.obj.pane().scroll();
 	},
 	addColumn: function(atColumn, insertBefore) {
-		if (!atColumn) {
+		if (!atColumn || jS.cellLast.col < 1) {
 			//if atColumn has no value, lets just add it to the end.
 			atColumn = ':last';
-		} else if (atColumn == true) {
+		} else if (atColumn === true) {
 			//if atColumn is boolean, then lets add it just after the currently selected row.
-			atColumn = ':eq(' + (jS.cellEditLastLoc[2] - 1) + ')';
+			atColumn = ':eq(' + (jS.cellLast.col - 1) + ')';
 		} else {
 			//If atColumn is a number, lets add it at that row
 			atColumn = ':eq(' + (atColumn - 1) + ')';
