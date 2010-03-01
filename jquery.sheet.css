@@ -153,7 +153,7 @@
 {
 	border: none ! important;
 }
- .jSheetUI, .jSheetUI table, .jSheetUI tr, .jSheetUI td, .jSheetUI tbody, .jSheetUI #jSheetControls textarea
+ .jSheetUI, .jSheetUI tr, .jSheetUI td, .jSheetUI tbody, .jSheetUI #jSheetControls textarea
 {
 	border-width: 1px ! important;
 }

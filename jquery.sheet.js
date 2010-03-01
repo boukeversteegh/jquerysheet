@@ -56,10 +56,12 @@ jQuery.fn.extend({
 		
 		var obj = null;
 		if (jS.s.buildSheet) {//override urlGet, this has some effect on how the topbar is sized
-			jS.s.urlGet = null;
-			obj = jS.buildSheet(jS.s.buildSheet);
-		} else if (!jS.s.urlGet && !jS.s.buildSheet) {
-			obj = jQuery(this).find('table').hide();
+			obj = jQuery(this).find('table');
+			if (jS.s.buildSheet == true) {
+				obj = jQuery(this).find('table');
+			} else {
+				obj = jS.buildSheet(jS.s.buildSheet);
+			}
 		}
 		
 		jS.getCss(jS.s.urlBaseCss);
@@ -81,7 +83,8 @@ jQuery.fn.extend({
 		}
 		
 		jS.log('Startup');
-			
+		
+
 		//Make functions upper and lower case compatible
 		for (var k in cE.fn) {
 			var kLower = k.toLowerCase();
@@ -166,6 +169,13 @@ var jS = jQuery.sheet = {
 	},
 	cl: {//cl = class references
 		sheet: 			'jSheet',
+		barTop: 		'jSheetBarTop',
+		barTopParent: 	'jSheetBarTopParent',
+		barLeft: 		'jSheetBarLeft',
+		barLeftParent: 	'jSheetBarLeftParent',
+		barCorner:		'jSheetBarCorner',
+		barCornerParent:'jSheetBarCornerParent',
+		pane: 			'jSheetEditPane',
 		cell: 			'jSheetCellActive',
 		barSelected: 	'jSheetBarItemSelected',
 		uiDefault:		'ui-state-default',
@@ -189,22 +199,22 @@ var jS = jQuery.sheet = {
 	},
 	ERROR: function() { return cE.ERROR; },
 	sheetUI: function(isAppend) {
-		return jQuery('<table cellpadding="0" cellspacing="0" border="0" id="' + jS.id.tableControl + jS.i + '" class="' + jS.id.tableControl + ' ui-corner-bottom">' +
+		return jQuery('<table cellpadding="0" cellspacing="0" border="0" id="' + jS.id.tableControl + jS.i + '" class="' + jS.cl.tableControl + ' ui-corner-bottom">' +
 			'<tbody>' +
 				'<tr>' + 
-					'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.id.barCornerParent + '">' + //corner
-						'<div style="height: ' + jS.s.colMargin + '; width: ' + jS.s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="ui-icon ui-icon-refresh ' + jS.id.barCorner +'" onClick="jS.cellEditAbandon();" onDblclick="jS.cellSetActiveAll();">&nbsp;</div>' +
+					'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.cl.barCornerParent + '">' + //corner
+						'<div style="height: ' + jS.s.colMargin + '; width: ' + jS.s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="ui-icon ui-icon-refresh ' + jS.cl.barCorner +'" onClick="jS.cellEditAbandon();" onDblclick="jS.cellSetActiveAll();">&nbsp;</div>' +
 					'</td>' + 
 					'<td class="' + jS.cl.barTop + '">' + //barTop
-						'<div style="overflow: hidden;" id="' + jS.id.barTopParent + jS.i + '" class="' + jS.id.barTopParent + '"></div>' +
+						'<div style="overflow: hidden;" id="' + jS.id.barTopParent + jS.i + '" class="' + jS.cl.barTopParent + '"></div>' +
 					'</td>' +
 				'</tr>' +
 				'<tr>' +
 					'<td class="' + jS.cl.barLeft + '">' + //barLeft
-						'<div style="overflow: hidden;width: ' + jS.s.colMargin + ';" id="' + jS.id.barLeftParent + jS.i + '"></div>' +
+						'<div style="overflow: hidden;width: ' + jS.s.colMargin + ';" id="' + jS.id.barLeftParent + jS.i + '" class="' + jS.cl.barLeftParent + '"></div>' +
 					'</td>' +
 					'<td class="' + jS.cl.sheetPane + '">' + //pane
-						'<div id="' + jS.id.pane + jS.i + '" class="' + jS.id.pane + '"></div>' +
+						'<div id="' + jS.id.pane + jS.i + '" class="' + jS.cl.pane + '"></div>' +
 					'</td>' +
 				'</tr>' +
 			'</tbody>' +
@@ -289,22 +299,22 @@ var jS = jQuery.sheet = {
 				.fadeTo(0, 1);
 		}
 	},
-	makeBarItemLeft: function(o) {//Works great!
+	makeBarItemLeft: function(reload, o) {//Works great!
 		jS.obj.barLeft().remove();
 		var barLeft = jQuery('<div border="1px" id="' + jS.id.barLeft + jS.i + '" class="' + jS.id.barLeft + '" />').height('10000px');
 		var heightFn;
-		//if (reload) { //This is our standard way of detecting height when a sheet loads from a url
-		heightFn = function(i, objSource, objBar) {
-			objBar.height(parseInt(objSource.outerHeight()) - jS.attrH.boxModelCorrection());
-		};
-/*		} else { //This way of detecting height is used becuase the object has some problems getting
+		if (reload) { //This is our standard way of detecting height when a sheet loads from a url
+			heightFn = function(i, objSource, objBar) {
+				objBar.height(parseInt(objSource.outerHeight()) - jS.attrH.boxModelCorrection());
+			};
+		} else { //This way of detecting height is used becuase the object has some problems getting
 				//height because both tr and td have height set
 				//This corrects the problem
 				//This is only used when a sheet is already loaded in the pane
 			heightFn = function(i, objSource, objBar) {
 				objBar.height(parseInt(objSource.css('height').replace('px','')) - jS.attrH.boxModelCorrection());
 			};
-		}*/
+		}
 		
 		jS.resizeFn.height(barLeft);
 		
@@ -315,7 +325,7 @@ var jS = jQuery.sheet = {
 		});
 		barLeft.appendTo(jS.obj.barLeftParent());
 	},
-	makeBarItemTop: function(o) { //Works great!
+	makeBarItemTop: function(reload, o) { //Works great!
 		jS.obj.barTop().remove();
 		var barTop = jQuery('<div id="' + jS.id.barTop + jS.i + '" class="' + jS.id.barTop + '" />').width('10000px');
 		barTop.height(jS.s.colMargin);
@@ -323,17 +333,17 @@ var jS = jQuery.sheet = {
 		var parents;
 		var widthFn;
 		
-		/*if (reload) {*/
-		parents = o.find('tr:first td');
-		widthFn = function(obj) {
-			return jS.attrH.width(obj);
-		};
-		/*} else {
+		if (reload) {
+			parents = o.find('tr:first td');
+			widthFn = function(obj) {
+				return jS.attrH.width(obj);
+			};
+		} else {
 			parents = o.find('col');
 			widthFn = function(obj) {
 				return parseInt(jQuery(obj).css('width').replace('px','')) - jS.attrH.boxModelCorrection();
 			};
-		}*/
+		}
 		
 		jS.resizeFn.width(barTop);
 		
@@ -511,31 +521,30 @@ var jS = jQuery.sheet = {
 			//Page Menu Control	
 			if (jS.s.urlMenuJs && jS.s.urlMenuCss && jS.s.urlMetaData && jS.s.urlMenu) {
 				jQuery.getScript(jS.s.urlMetaData, function() {
-					jQuery.getScript(jS.s.urlMenuJs, function() {
+					//jQuery.getScript(jS.s.urlMenuJs, function() {
 						jS.getCss(jS.s.urlMenuCss);
 						var menuObj = jQuery('<div />').load(jS.s.urlMenu, function(o) {
 							jQuery('<td style="width: 50px; text-align: center;" />')
 								.html(o)
 								.prependTo(menuAndTitleTable.find('tr'));
-							jS.obj.menu()
-								.buildMenu({
-									additionalData:"pippo=1",
-									menuWidth: 100,
-									openOnRight:false,
-									menuSelector: ".menuContainer",
-									hasImages:false,
-									fadeInTime: 0,
-									fadeOutTime:0,
-									adjustLeft:2,
-									minZindex:"auto",
-									adjustTop:10,
-									opacity:.95,
-									shadow:true,
-									closeOnMouseOut:false,
-									closeAfter:1000
-								});
+							jS.obj.menu().buildMenu({
+								additionalData:"pippo=1",
+								menuWidth:100,
+								openOnRight:false,
+								menuSelector: ".menuContainer",
+								containment: jS.s.parent.id,
+								hasImages:false,
+								fadeInTime:0,
+								fadeOutTime:0,
+								adjustLeft:2,
+								minZindex:"auto",
+								adjustTop:10,
+								opacity:.95,
+								shadow:true,
+								closeOnMouseOut:true,
+								closeAfter:1000});
 						});
-					});
+					//});
 				});
 			}
 			
@@ -585,9 +594,15 @@ var jS = jQuery.sheet = {
 				//	.attr('width', w);
 				jQuery('<col />')
 					.width(jS.s.newColumnWidth)
-					.css('width', jS.s.newColumnWidth)
-					.attr('width', jS.s.newColumnWidth)
+					.css('width', jS.s.newColumnWidth + 'px')
+					.attr('width', jS.s.newColumnWidth + 'px')
 					.appendTo(colgroup);
+			});
+			o.find('tr').each(function() {
+				jQuery(this)
+					.height(jS.s.colMargin)
+					.css('height', jS.s.colMargin + 'px')
+					.attr('height', jS.s.colMargin + 'px')
 			});
 			colgroup.prependTo(o);
 		}
@@ -1286,7 +1301,7 @@ var jS = jQuery.sheet = {
 			if (!newTitle) {
 				newTitle = 'Spreadsheet' + jS.i;
 			}
-			jS.obj.sheet().attr('sheetTab', newTitle);
+			jS.obj.sheet().attr('title', newTitle);
 			jS.obj.tab().html(newTitle);
 			
 			sheetTab = newTitle;
@@ -1316,6 +1331,7 @@ var jS = jQuery.sheet = {
 			data: 's=' + s,
 			dataType: 'html',
 			success: function(data) {
+				jS.setDirty(false);
 				alert('Success! - ' + data);
 			}
 		});
@@ -1420,12 +1436,13 @@ var jS = jQuery.sheet = {
 		var o = { //cut down on recursion, grabe them once
 			pane: jS.obj.pane(), 
 			barLeft: jS.obj.barLeftParent(), 
-			barTop: jS.obj.barTopParent()
+			barTop: jS.obj.barTopParent(),
+			boxModelCorrection: jS.attrH.boxModelCorrection()
 		};
 		
 		jS.obj.pane().scroll(function() {
-			o.barTop.scrollLeft(o.pane.scrollLeft());//2 lines of beautiful jQuery js
-			o.barLeft.scrollTop(o.pane.scrollTop());
+			o.barTop.scrollLeft(o.pane.scrollLeft() + o.boxModelCorrection);//2 lines of beautiful jQuery js
+			o.barLeft.scrollTop(o.pane.scrollTop() + o.boxModelCorrection);
 		});
 	},
 	followMe: function(td) {
@@ -1447,7 +1464,7 @@ var jS = jQuery.sheet = {
 			return jS.getBarTopLocatoin(jS.obj.barTop().find('div:last').text());
 		}
 	},
-	initSheet: function(obj, i, fn) {
+	initSheet: function(obj, i, fn, reloadBars) {
 		if (!i) {
 			jQuery('.tableControl').remove();
 			jS.sheetCount = 0;
@@ -1465,8 +1482,8 @@ var jS = jQuery.sheet = {
 					
 		jS.sheetDecorate(obj);
 		
-		jS.makeBarItemTop(obj);
-		jS.makeBarItemLeft(obj);
+		jS.makeBarItemTop(reloadBars, obj);
+		jS.makeBarItemLeft(reloadBars, obj);
 	
 		jS.sheetTab(true);
 		
@@ -1530,17 +1547,16 @@ var jS = jQuery.sheet = {
 					sheets.each(function(i) {
 						jS.initSheet(jQuery(this), i, function() { 
 							setFirstActive(i, sheets.length);
-						});
+						}, true);
 					});
 				});
 			} else {
-				jQuery(obj).show().each(function(i) {
-					var sheets = jQuery(this).find('table');
+				var sheets = jQuery(obj);
+				sheets.each(function(i) {
 					jS.initSheet(jQuery(this), i,  function() { 
 						setFirstActive(i, sheets.length);
-					});
+					}, false);
 				});
-				setFirstActive();
 			}
 		}
 	},
