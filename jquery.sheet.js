@@ -358,7 +358,7 @@ var jS = jQuery.sheet = {
 				'<tbody>' +
 					'<tr>' + 
 						'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.cl.barCornerParent + '">' + //corner
-							'<div style="height: ' + jS.s.colMargin + '; width: ' + jS.s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="ui-icon ui-icon-refresh ' + jS.cl.barCorner +'" onClick="jS.cellSetActiveAll();">&nbsp;</div>' +
+							'<div style="height: ' + jS.s.colMargin + '; width: ' + jS.s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="' + jS.cl.barCorner +'" onClick="jS.cellSetActiveAll();" title="Select All">&nbsp;</div>' +
 						'</td>' + 
 						'<td class="' + jS.cl.barTop + '">' + //barTop
 							'<div id="' + jS.id.barTopParent + jS.i + '" class="' + jS.cl.barTopParent + '"></div>' +
@@ -1174,7 +1174,7 @@ var jS = jQuery.sheet = {
 		jS.cellEditAbandon();
 		var currentRow = jS.obj.sheet().find('tr' + atRowQ);
 		var newRow = currentRow.clone();
-		newRow.find('td').andSelf().height(currentRow.find('td:first').height());
+		newRow.find('td').andSelf().height(jS.attrH.height(currentRow.find('td:first'), true));
 		
 		jQuery(newRow).find('td')
 			.html('')
@@ -1197,7 +1197,7 @@ var jS = jQuery.sheet = {
 		newBar
 			.html(parseInt(currentBar.text()) + 1)
 			.removeClass(jS.cl.uiActive)
-			.height(jS.attrH.height(newRow, true));
+			.height(jS.attrH.height(newRow));
 		
 		jS.log('New row at: ' + (parseInt(currentBar.text()) + 1));
 		
@@ -2632,10 +2632,10 @@ var cE = jQuery.calculationEngine = {
 	},
 	regEx: {
 		n: 				/[\$,\s]/g,
-		cell: 			/\$?([a-zA-Z]+)\$?([0-9]+)/g,
-		range: 			/\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g,
-		tableCell:		/\$?(TABLE:+)\$?([0-9]+)\$?([a-zA-Z]+)\$?([0-9]+)/g,
-		tableCellRange: /\$?(TABLE:+)\$?([0-9]+)\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g,
+		cell: 			/\$?([a-zA-Z]+)\$?([0-9]+)/g, //A1
+		range: 			/\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g, //A1:B4
+		tableCell:		/\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g, //SHEET1:A1
+		tableCellRange: /\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g, //SHEET1:A1:B4
 		amp: 	/&/g,
 		gt: 	/</g,
 		lt: 	/>/g,
