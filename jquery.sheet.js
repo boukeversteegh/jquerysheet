@@ -521,7 +521,7 @@ var jS = jQuery.sheet = {
 			//Page Menu Control	
 			if (jS.s.urlMenuJs && jS.s.urlMenuCss && jS.s.urlMetaData && jS.s.urlMenu) {
 				jQuery.getScript(jS.s.urlMetaData, function() {
-					//jQuery.getScript(jS.s.urlMenuJs, function() {
+					jQuery.getScript(jS.s.urlMenuJs, function() {
 						jS.getCss(jS.s.urlMenuCss);
 						var menuObj = jQuery('<div />').load(jS.s.urlMenu, function(o) {
 							jQuery('<td style="width: 50px; text-align: center;" />')
@@ -544,7 +544,7 @@ var jS = jQuery.sheet = {
 								closeOnMouseOut:true,
 								closeAfter:1000});
 						});
-					//});
+					});
 				});
 			}
 			
