@@ -98,15 +98,37 @@ jQuery.fn.extend({
 		// add resizable jquery.ui if available
 		if (jQuery.ui) {
 			// resizable container div
-			jQuery(this).resizable({minWidth: jQuery(this).width() * 0.5, resize: function() {
-				jQuery(jS.id.ui).width(jQuery(this).width()).height(jQuery(this).height());
-				jQuery("#" + jS.id.ui + " ." + jS.id.barTopParent + ", #" + jS.id.ui + " ." + jS.cl.sheetPane + ", #" + jS.id.ui + " ." + jS.id.pane)
-					.width(jQuery(this).width() - jQuery("#" + jS.id.ui + " ." + jS.id.barCornerParent).width());
-				jQuery("#" + jS.id.ui + " .barLeft>div, #" + jS.id.ui + " ." + jS.cl.sheetPane + ", #" + jS.id.ui + " ." + jS.id.pane)
-					.height(jQuery(this).height() - jQuery("#" + jS.id.ui + " ." + jS.id.barCornerParent).height() - jQuery("#" + jS.id.controls).height());
-			}});
+			var o;
+			var barTop;
+			var barLeft;
+			var controlsHeight;
+			
+			jQuery(this).resizable({
+				minWidth: jS.s.width * 0.5,
+				resize: function() {
+					o = jS.obj.ui()
+					barTop = jS.obj.barTopParent()
+						.add(jS.obj.pane().parent().andSelf())
+					barLeft = jS.obj.barLeftParent()
+						.add(jS.obj.ui())
+						.add(jS.obj.pane())
+					controlsHeight = jS.obj.controls().height();
+					
+					jS.s.width = jQuery(this).width() - jS.s.colMargin + jS.attrH.boxModelCorrection();
+					jS.s.height = jQuery(this).height();
+					
+					o
+						.width(jS.s.width)
+						.height(jS.s.height - controlsHeight);
+					
+					barTop
+						.width(jS.s.width);
+					barLeft
+						.height(jS.s.height - controlsHeight - jS.s.colMargin + jS.s.boxModelCorrection);
+				}
+			});
 			// resizable formula area - a bit hard to grab the handle but is there!
-			jQuery("#" + jS.id.formula).resizable({minHeight: 20, maxHeight: 62, handles: "s"});
+			jS.obj.formula().resizable({minHeight: 20, maxHeight: 62, handles: "s"});
 		}
 		
 	}
@@ -198,20 +220,20 @@ var jS = jQuery.sheet = {
 		sheetPane:		'sheetPane'
 	},
 	ERROR: function() { return cE.ERROR; },
-	sheetUI: function(isAppend) {
+	sheetUI: function() {
 		return jQuery('<table cellpadding="0" cellspacing="0" border="0" id="' + jS.id.tableControl + jS.i + '" class="' + jS.cl.tableControl + ' ui-corner-bottom">' +
 			'<tbody>' +
 				'<tr>' + 
 					'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.cl.barCornerParent + '">' + //corner
-						'<div style="height: ' + jS.s.colMargin + '; width: ' + jS.s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="ui-icon ui-icon-refresh ' + jS.cl.barCorner +'" onClick="jS.cellEditAbandon();" onDblclick="jS.cellSetActiveAll();">&nbsp;</div>' +
+						'<div style="height: ' + jS.s.colMargin + '; width: ' + jS.s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="ui-icon ui-icon-refresh ' + jS.cl.barCorner +'" onClick="jS.cellSetActiveAll();">&nbsp;</div>' +
 					'</td>' + 
 					'<td class="' + jS.cl.barTop + '">' + //barTop
-						'<div style="overflow: hidden;" id="' + jS.id.barTopParent + jS.i + '" class="' + jS.cl.barTopParent + '"></div>' +
+						'<div id="' + jS.id.barTopParent + jS.i + '" class="' + jS.cl.barTopParent + '"></div>' +
 					'</td>' +
 				'</tr>' +
 				'<tr>' +
 					'<td class="' + jS.cl.barLeft + '">' + //barLeft
-						'<div style="overflow: hidden;width: ' + jS.s.colMargin + ';" id="' + jS.id.barLeftParent + jS.i + '" class="' + jS.cl.barLeftParent + '"></div>' +
+						'<div style="width: ' + jS.s.colMargin + ';" id="' + jS.id.barLeftParent + jS.i + '" class="' + jS.cl.barLeftParent + '"></div>' +
 					'</td>' +
 					'<td class="' + jS.cl.sheetPane + '">' + //pane
 						'<div id="' + jS.id.pane + jS.i + '" class="' + jS.cl.pane + '"></div>' +
@@ -1810,7 +1832,7 @@ var jS = jQuery.sheet = {
 			.width(w)
 			.parent().width(w);
 		
-		jS.obj.ui().width(w + jS.s.colMargin - jS.s.boxModelCorrection);
+		jS.obj.ui().width(w + jS.s.colMargin - jS.attrH.boxModelCorrection());
 				
 		jS.obj.barLeftParent()
 			.height(jS.obj.pane().height());

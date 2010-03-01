@@ -48,8 +48,7 @@
 }
 .jSheetUI
 {
-	width: inherit;
-	height: inherit;
+	width: inherit ! important;
 	border-color: inherit ! important;
 }
 #jSheetTabContainer
@@ -176,6 +175,7 @@
 	vertical-align: middle;
 	overflow: hidden ! important;
 	cursor: pointer;
+	overflow: hidden ! important;
 }
 
 .jSheetBarLeftParent
@@ -185,6 +185,7 @@
 	vertical-align: middle;
 	overflow: hidden ! important;
 	cursor: pointer;
+	overflow: hidden ! important;
 }
 
 .jSheetEditPane
