@@ -1625,7 +1625,7 @@ var jS = jQuery.sheet = {
 	newSheet: function() {
 		var size = prompt(jS.newSheetDialog);
 		if (size) {
-			jS.openSheet(jS.controlFactory(size));
+			jS.openSheet(jS.controlFactory.sheet(size));
 		}
 	},
 	importRow: function(rowArray) {
