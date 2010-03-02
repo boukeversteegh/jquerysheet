@@ -1,19 +1,34 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
 	<META HTTP-EQUIV="Expires" CONTENT="-1">
 	<title>jQuery.sheet</title>
-<!--
-	This data ois used for upload to weebly.com
-	http://www.weebly.com/uploads/3/1/3/8/313814/
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js"></script>
-	<script type="text/javascript" src="http://www.weebly.com/uploads/3/1/3/8/313814/jquery.sheet.min.js"></script>
---><!---->
-	<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
-	<script type="text/javascript" src="jquery-ui-1.8rc2.custom.min.js"></script>
-	<script type="text/javascript" src="jquery.sheet.js"></script>
-	<script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/"></script>
+	<!--Required-->
+		<link rel="stylesheet" type="text/css" href="jquery.sheet.css"></link>
+		<link rel="stylesheet" type="text/css" href="theme/jquery-ui-1.8rc2.custom.css"></link>
+		<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+		<script type="text/javascript" src="jquery.sheet.js"></script>
+	<!--/Required-->
+	
+	<!--Optional-->
+		<!--Menu
+		<link rel="stylesheet" type="text/css" href="plugins/menu.css"></link>
+		<script type="text/javascript" src="plugins/mbMenu.min.js"></script>
+		<script type="text/javascript" src="plugins/jquery.metadata.js"></script>
+		-->
+		<!--ScrollTo-->
+		<script type="text/javascript" src="plugins/jquery.scrollTo-min.js"></script>
+		
+		<!--jQuery UI-->
+		<script type="text/javascript" src="jquery-ui-1.8rc2.custom.min.js"></script>
+				
+		<!--Charts-->
+		<script type="text/javascript" src="plugins/jgcharts.pack.js"></script>
+		
+		<!--<script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/"></script>-->
+	<!--/Optional-->
+	
 	<script type="text/javascript">
 		$(function() {
 			$('#jQuerySheet').sheet({
@@ -29,7 +44,7 @@
 				//urlScrollTo: "jquery.scrollto-min.js",
 				//urlScrollsync: 'scrollsync.js',
 				//urlJGCharts: 'jgcharts.pack.js',
-			$('#switcher').themeswitcher();
+			//$('#switcher').themeswitcher();
 		});
 	</script>
 </head>

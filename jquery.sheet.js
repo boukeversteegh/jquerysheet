@@ -21,14 +21,7 @@ jQuery.fn.extend({
 			urlGet: 		"documentation.html",
 			urlSave: 		"save.html",
 			editable: 		true,
-			urlBaseCss: 	'jquery.sheet.css',
-			urlTheme: 		"theme/jquery-ui-1.8rc2.custom.css",
 			urlMenu: 		"menu.html",
-			urlMenuJs: 		"plugins/mbMenu.min.js", 			//set to bool false if you don't want to use
-			urlMenuCss: 	"plugins/menu.css", 				//set to bool false if you don't want to use
-			urlMetaData: 	"plugins/jquery.metadata.js", 		//set to bool false if you don't want to use
-			urlScrollTo: 	"plugins/jquery.scrollTo-min.js", 	//set to bool false if you don't want to use
-			urlJGCharts: 	'plugins/jgcharts.pack.js', 		//set to bool false if you don't want to use
 			loading: 		'Loading Spreadsheet...',
 			newColumnWidth: 120,
 			title: 			null,
@@ -39,7 +32,7 @@ jQuery.fn.extend({
 			parent: 		this, 	//don't change
 			colMargin: 		18, 	//If text size make cell bigger than this number the bars will be off on loadtime
 			fnBefore: 		function() {},
-			fnAfter: 			function() { jS.obj.formula().focus().select(); },
+			fnAfter: 			function() {},
 			fnSave: 		function() { jS.saveSheet(); },
 			fnOpen: 		function() { 
 				var t = prompt('Paste your table html here');
@@ -54,23 +47,21 @@ jQuery.fn.extend({
 		jQuery.fn.sheet.settings = jS.s = settings;
 		jS.s.fnBefore();
 		
-		var obj = null;
+		var obj;
 		if (jS.s.buildSheet) {//override urlGet, this has some effect on how the topbar is sized
-			obj = jQuery(this).find('table');
 			if (jS.s.buildSheet == true || jS.s.buildSheet == 'true') {
-				obj = jQuery(this).find('table');
+				obj = jQuery(jQuery(this).html());
 			} else {
 				obj = jS.controlFactory.sheet(jS.s.buildSheet);
 			}
 		}
 		
-		jS.getCss(jS.s.urlBaseCss);
-		
 		//We need to take the sheet out of the parent in order to get an accurate reading of it's height and width
-		jQuery(this).html(jS.s.loading);
-
-		jS.s.width = jQuery(jS.s.parent).width();
-		jS.s.height = jQuery(jS.s.parent).height();
+		//jQuery(this).html(jS.s.loading);
+		jQuery(this).html('');
+		
+		jS.s.width = jQuery(this).innerWidth() - jS.s.colMargin - jS.attrH.boxModelCorrection();
+		jS.s.height = jQuery(this).height();
 		
 		if (jS.s.log) {
 			jQuery(jS.s.parent).after('<textarea id="' + jS.id.log + '" />');
@@ -78,7 +69,7 @@ jQuery.fn.extend({
 			jS.log = function() {}; //save time in recursion
 		}
 		
-		if (!jS.s.urlScrollTo) {
+		if (!jQuery.scrollTo) {
 			jS.followMe = function() {};
 		}
 		
@@ -176,6 +167,7 @@ var jS = jQuery.sheet = {
 		uiControlTextBox:'ui-widget-content',
 		uiCell:			'themeRoller_activeCell',
 		uiCellHighlighted: 'ui-state-highlight',
+		tableControl:	'tableControl',
 		toggle:			'cellStyleToggle',
 		tab:			'jSheetTab',
 		barTop:			'barTop',
@@ -259,32 +251,27 @@ var jS = jQuery.sheet = {
 			
 			if (jS.s.editable) {
 				//Page Menu Control	
-				if (jS.s.urlMenuJs && jS.s.urlMenuCss && jS.s.urlMetaData && jS.s.urlMenu) {
-					jQuery.getScript(jS.s.urlMetaData, function() {
-						jQuery.getScript(jS.s.urlMenuJs, function() {
-							jS.getCss(jS.s.urlMenuCss);
-							var menuObj = jQuery('<div />').load(jS.s.urlMenu, function(o) {
-								jQuery('<td style="width: 50px; text-align: center;" />')
-									.html(o)
-									.prependTo(firstRow.find('tr'));
-								jS.obj.menu().buildMenu({
-									additionalData:"pippo=1",
-									menuWidth:100,
-									openOnRight:false,
-									menuSelector: ".menuContainer",
-									containment: jS.s.parent.id,
-									hasImages:false,
-									fadeInTime:0,
-									fadeOutTime:0,
-									adjustLeft:2,
-									minZindex:"auto",
-									adjustTop:10,
-									opacity:.95,
-									shadow:true,
-									closeOnMouseOut:true,
-									closeAfter:1000});
-							});
-						});
+				if (jQuery.mbMenu) {
+					var menuObj = jQuery('<div />').load(jS.s.urlMenu, function(o) {
+						jQuery('<td style="width: 50px; text-align: center;" />')
+							.html(o)
+							.prependTo(firstRow.find('tr'));
+						jS.obj.menu().buildMenu({
+							additionalData:"pippo=1",
+							menuWidth:100,
+							openOnRight:false,
+							menuSelector: ".menuContainer",
+							containment: jS.s.parent.id,
+							hasImages:false,
+							fadeInTime:0,
+							fadeOutTime:0,
+							adjustLeft:2,
+							minZindex:"auto",
+							adjustTop:10,
+							opacity:.95,
+							shadow:true,
+							closeOnMouseOut:true,
+							closeAfter:1000});
 					});
 				}
 				
@@ -303,17 +290,12 @@ var jS = jQuery.sheet = {
 					return jS.formulaKeyDown(e);
 				});
 			}
-
-			//Get the scrollTo Pluggin
-			if (jS.s.urlScrollTo) {
-				jQuery.getScript(jS.s.urlScrollTo);
-			}
 			
 			jS.obj.parent()
 				.html('')
 				.append(header) //add controls header
 				.append('<div id="' + jS.id.ui + '" class="' + jS.id.ui + '">') //add spreadsheet control
-				.after('<div id="' + jS.id.tabContainer + '"/>'); //add tab control
+				.after('<div id="' + jS.id.tabContainer + '"><span class="ui-widget-header ui-corner-bottom" title="Add a spreadsheet" onclick="jS.addSheet();">+</span></div'); //add tab control
 		},
 		sheet: function(size) {
 			if (!size) {
@@ -382,16 +364,8 @@ var jS = jQuery.sheet = {
 			
 			jS.barAdjustor();
 			
-			//We load the plugins
-			if (jS.s.urlJGCharts) { //When loading the charts, we need to make sure that the namespace exists before we fire fnAfter();
-				jQuery.getScript(jS.s.urlJGCharts, function() {		
-					jS.calc(obj);
-					jS.s.fnAfter();
-				});
-			} else {
-				jS.calc(obj);
-				jS.s.fnAfter();
-			}
+			//jS.calc(obj);
+			jS.s.fnAfter();			
 
 			jS.addTab();
 			if (fn) {
@@ -639,8 +613,10 @@ var jS = jQuery.sheet = {
 		}
 	},
 	addTab: function() {
-		return jQuery('<span class="ui-corner-bottom ui-state-default"><a class="' + jS.cl.tab + '" id="' + jS.id.tab + jS.i + '" OnDblClick="jS.sheetTab(); return false;" onclick="jS.setActiveSheet(jQuery(\'#' + jS.id.tableControl + jS.i + '\'), ' + jS.i + '); return false;">' + jS.sheetTab(true) + '</a></span>')
-			.appendTo(jS.obj.tabContainer());
+		jQuery('<span class="ui-corner-bottom ui-widget-header"><a class="' + jS.cl.tab + '" id="' + jS.id.tab + jS.i + '" OnDblClick="jS.sheetTab(); return false;" onclick="jS.setActiveSheet(jQuery(\'#' + jS.id.tableControl + jS.i + '\'), ' + jS.i + '); return false;">' + jS.sheetTab(true) + '</a></span>')
+			.insertBefore(
+				jS.obj.tabContainer().find('span:last')
+			);
 	},
 	sheetDecorate: function(o) {	
 		jS.formatSheet(o);
@@ -649,10 +625,11 @@ var jS = jQuery.sheet = {
 	},
 	formatSheet: function(o) {
 		if (o.find('tbody').length < 1) {
-			o.wrap('<tbody />');
+			o.wrapInner('<tbody />');
 		}
 		
-		if (o.find('colgroup').length < 1) {
+		if (o.find('colgroup').length < 1 || o.find('col').length < 1) {
+			o.remove('colgroup');
 			var colgroup = jQuery('<colgroup />');
 			o.find('tr:first').find('td').each(function() {
 				//var w = jQuery(this).width();
@@ -675,12 +652,8 @@ var jS = jQuery.sheet = {
 			colgroup.prependTo(o);
 		}
 	},
-	getCss: function(url, id) {
-		jQuery('head').append('<link rel="stylesheet" type="text/css" href="' + url + '"></link>');
-	},
 	themeRoller: {
-		start: function(isAppend) {
-			if (!isAppend) { jS.getCss(jS.s.urlTheme); }
+		start: function() {
 			//Style sheet			
 			jS.obj.parent().addClass(jS.cl.uiParent);
 			jS.obj.sheet().addClass(jS.cl.uiParent);
@@ -2121,38 +2094,42 @@ var jS = jQuery.sheet = {
 		jS.obj.log().prepend(jS.time.get() + ', ' + jS.time.diff() + '; ' + msg + '<br />\n');
 	},
 	getChart: function(type, data, legend, axisLabels, w, h, row) {
-		var api = new jGCharts.Api();
-		function refine(v) {
-			var refinedV = new Array();
-			jQuery(v).each(function(i) {
-				refinedV[i] = jS.manageHtmlToText(v[i] + '');
-			});
-			return refinedV;
+		if (jGCharts) {
+			var api = new jGCharts.Api();
+			function refine(v) {
+				var refinedV = new Array();
+				jQuery(v).each(function(i) {
+					refinedV[i] = jS.manageHtmlToText(v[i] + '');
+				});
+				return refinedV;
+			}
+			var o = {};
+			
+			if (type) {
+				o.type = type;
+			}
+			
+			if (data) {
+				data = data.filter(function(v) { return (v ? v : 0); }); //remove nulls
+				o.data = data;
+			}
+			
+			if (legend) {
+				o.legend = refine(legend);
+			}
+			
+			if (axisLabels) {
+				o.axis_labels = refine(axisLabels);
+			}
+			
+			if (w || h) {
+				o.size = w + 'x' + h;
+			}
+			
+			return jS.safeImg(api.make(o), row);
+		} else {
+			return jQuery('<div>Charts are not enabled</div>');
 		}
-		var o = {};
-		
-		if (type) {
-			o.type = type;
-		}
-		
-		if (data) {
-			data = data.filter(function(v) { return (v ? v : 0); }); //remove nulls
-			o.data = data;
-		}
-		
-		if (legend) {
-			o.legend = refine(legend);
-		}
-		
-		if (axisLabels) {
-			o.axis_labels = refine(axisLabels);
-		}
-		
-		if (w || h) {
-			o.size = w + 'x' + h;
-		}
-		
-		return jS.safeImg(api.make(o), row);
 	},
 	replaceWithSafeImg: function(o) {  //ensures all pictures will load and keep their respective bar the same size.
 		o.each(function() {			
