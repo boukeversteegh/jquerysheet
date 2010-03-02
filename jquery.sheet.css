@@ -30,12 +30,21 @@
 
 #jSheetMenu
 {
+	cursor: pointer;
 	background-color: transparent ! important;
+	padding: 0px ! important;
+	margin: 0px ! important;
+	border: none ! important;
 }
 
 #jSheetMenu *
 {
-	color: inherit;
+	color: inherit ! important;
+	background-color: inherit ! important;
+}
+.menu
+{
+	display: none;
 }
 .rootVoice, .rootVoice .selected
 {
@@ -106,12 +115,12 @@
 
 .jSheet th {
 	border-color: inherit ! important;
-	padding: 1px ! important;
+	padding: 0px ! important;
 	border-style: inset inset inset inset;
 	background-color: transparent;
 	-moz-border-radius: 0px 0px 0px 0px;
 	color:  inherit ! important;
-	border-width: 1px ! important;
+	border-width: 0px ! important;
 }
 .jSheet td {
 	border-width: 1px ! important;
