@@ -1,6 +1,6 @@
 /*
 jQuery.sheet() Spreadsheet with Calculations Plugin
-Version: 0.54
+Version: 1b
 http://code.google.com/p/jquerysheet/
 		
 Copyright (C) 2009 Robert Plummer
@@ -57,10 +57,10 @@ jQuery.fn.extend({
 		var obj = null;
 		if (jS.s.buildSheet) {//override urlGet, this has some effect on how the topbar is sized
 			obj = jQuery(this).find('table');
-			if (jS.s.buildSheet == true) {
+			if (jS.s.buildSheet == true || jS.s.buildSheet == 'true') {
 				obj = jQuery(this).find('table');
 			} else {
-				obj = jS.buildSheet(jS.s.buildSheet);
+				obj = jS.controlFactory.sheet(jS.s.buildSheet);
 			}
 		}
 		
@@ -93,44 +93,7 @@ jQuery.fn.extend({
 			}
 		}
 		
-		jS.openSheet(obj);
-		
-		// add resizable jquery.ui if available
-		if (jQuery.ui) {
-			// resizable container div
-			var o;
-			var barTop;
-			var barLeft;
-			var controlsHeight;
-			
-			jQuery(this).resizable({
-				minWidth: jS.s.width * 0.5,
-				resize: function() {
-					o = jS.obj.ui()
-					barTop = jS.obj.barTopParent()
-						.add(jS.obj.pane().parent().andSelf())
-					barLeft = jS.obj.barLeftParent()
-						.add(jS.obj.ui())
-						.add(jS.obj.pane())
-					controlsHeight = jS.obj.controls().height();
-					
-					jS.s.width = jQuery(this).width() - jS.s.colMargin + jS.attrH.boxModelCorrection();
-					jS.s.height = jQuery(this).height();
-					
-					o
-						.width(jS.s.width)
-						.height(jS.s.height - controlsHeight);
-					
-					barTop
-						.width(jS.s.width);
-					barLeft
-						.height(jS.s.height - controlsHeight - jS.s.colMargin + jS.s.boxModelCorrection);
-				}
-			});
-			// resizable formula area - a bit hard to grab the handle but is there!
-			jS.obj.formula().resizable({minHeight: 20, maxHeight: 62, handles: "s"});
-		}
-		
+		jS.openSheet(obj);		
 	}
 });
 
@@ -219,7 +182,6 @@ var jS = jQuery.sheet = {
 		barLeft:		'barLeft',
 		sheetPane:		'sheetPane'
 	},
-	ERROR: function() { return cE.ERROR; },
 	controlFactory: {
 		barLeft: function(reload, o) {//Works great!
 			jS.obj.barLeft().remove();
@@ -353,6 +315,91 @@ var jS = jQuery.sheet = {
 				.append('<div id="' + jS.id.ui + '" class="' + jS.id.ui + '">') //add spreadsheet control
 				.after('<div id="' + jS.id.tabContainer + '"/>'); //add tab control
 		},
+		sheet: function(size) {
+			if (!size) {
+				size = jS.s.buildSheet;
+			}
+			size = size.toLowerCase().split('x');
+
+			var columnsCount = parseInt(size[0]);
+			var rowsCount = parseInt(size[1]);
+			
+			//Create elements before loop to make it faster.
+			var newSheet = jQuery('<table border="1px" class="' + jS.cl.sheet + '" id="' + jS.id.sheet + jS.i + '"></table>');
+			var standardTd = '<td> </td>';
+			var tds = '';
+			
+			//Using -- is many times faster than ++
+			for (var i = columnsCount; i >= 1; i--) {
+				tds += standardTd;
+			}
+
+			var standardTr = '<tr height="' + jS.s.colMargin + '" style="height: ' + jS.s.colMarg + ';">' + tds + '</tr>';
+			var trs = '';
+			for (var i = rowsCount; i >= 1; i--) {
+				trs += standardTr;
+			}
+			
+			newSheet.html('<tbody>' + trs + '</tbody>');
+			
+			newSheet.width(columnsCount * jS.s.newColumnWidth);
+			//jS.attrH.syncSheetWidthFromTds(newSheet);
+			
+			return newSheet;
+		},
+		sheetUI: function(obj, i, fn, reloadBars) {
+			if (!i) {
+				jQuery('.tableControl').remove();
+				jS.sheetCount = 0;
+				jS.i = 0;
+			} else {
+				jS.sheetCount++;
+				jS.i = jS.sheetCount;
+				i = jS.i;
+			}
+			
+			var objContainer = jS.controlFactory.table(true).appendTo(jS.obj.ui());
+			jS.obj.pane().html(obj);
+					
+			jS.tuneTableForSheetUse(obj);
+						
+			jS.sheetDecorate(obj);
+			
+			jS.controlFactory.barTop(reloadBars, obj);
+			jS.controlFactory.barLeft(reloadBars, obj);
+		
+			jS.sheetTab(true);
+			
+			if (jS.s.editable) {
+				jS.obj.pane()
+					.mousedown(jS.cellOnMouseDown)
+					.click(jS.s.lockFormulas ? jS.cellOnClickLocked : jS.cellOnClickReg);
+			}
+			
+			jS.themeRoller.start(i);
+
+			jS.setTdIds(obj);
+			
+			jS.barAdjustor();
+			
+			//We load the plugins
+			if (jS.s.urlJGCharts) { //When loading the charts, we need to make sure that the namespace exists before we fire fnAfter();
+				jQuery.getScript(jS.s.urlJGCharts, function() {		
+					jS.calc(obj);
+					jS.s.fnAfter();
+				});
+			} else {
+				jS.calc(obj);
+				jS.s.fnAfter();
+			}
+
+			jS.addTab();
+			if (fn) {
+				fn();
+			}
+			jS.log('Sheet Initialized');
+			return objContainer;
+		},
 		table: function() {
 			return jQuery('<table cellpadding="0" cellspacing="0" border="0" id="' + jS.id.tableControl + jS.i + '" class="' + jS.cl.tableControl + ' ui-corner-bottom">' +
 				'<tbody>' +
@@ -376,7 +423,9 @@ var jS = jQuery.sheet = {
 			'</table>');
 		}
 	},
-	sizeSync: {},
+	sizeSync: {
+	
+	},
 	evt: {
 		cell: {}
 	},
@@ -446,17 +495,6 @@ var jS = jQuery.sheet = {
 			}
 
 			return obj;
-		},
-		hide: function(obj) {
-			obj
-				.fadeTo(0, 0.01, function() {
-					jQuery(this).css('z-index', '-1');
-				});
-		},
-		show: function(obj) {
-			obj
-				.css('z-index', '100')
-				.fadeTo(0, 1);
 		}
 	},
 	setTdIds: function(o) {
@@ -686,6 +724,44 @@ var jS = jQuery.sheet = {
 		clearBar: function() {
 			jS.obj.barTop().find('.' + jS.cl.uiActive).removeClass(jS.cl.uiActive);
 			jS.obj.barLeft().find('.' + jS.cl.uiActive).removeClass(jS.cl.uiActive);
+		},
+		resize: function() {
+			// add resizable jquery.ui if available
+			if (jQuery.ui) {
+				// resizable container div
+				var o;
+				var barTop;
+				var barLeft;
+				var controlsHeight;
+				var parent = jQuery(jS.s.parent);
+				
+				parent.resizable({
+					minWidth: jS.s.width * 0.5,
+					resize: function() {
+						o = jS.obj.ui()
+						barTop = jS.obj.barTopParent()
+							.add(jS.obj.pane().parent().andSelf())
+						barLeft = jS.obj.barLeftParent()
+							.add(jS.obj.ui())
+							.add(jS.obj.pane())
+						controlsHeight = jS.obj.controls().height();
+						
+						jS.s.width = parent.width() - jS.s.colMargin + jS.attrH.boxModelCorrection();
+						jS.s.height = parent.height();
+						
+						o
+							.width(jS.s.width)
+							.height(jS.s.height - controlsHeight);
+						
+						barTop
+							.width(jS.s.width);
+						barLeft
+							.height(jS.s.height - controlsHeight - jS.s.colMargin + jS.s.boxModelCorrection);
+					}
+				});
+				// resizable formula area - a bit hard to grab the handle but is there!
+				//jS.obj.formula().resizable({minHeight: 20, maxHeight: 62, handles: "s"});
+			}
 		}
 	},
 	manageHtmlToText: function(v) {
@@ -1131,7 +1207,7 @@ var jS = jQuery.sheet = {
 	addSheet: function(size) {
 		size = (size ? size : prompt(jS.newSheetDialog));
 		if (size) {
-			var newSheetControl = jS.initSheet(jS.buildSheet(size), jS.sheetCount + 1, function() { 
+			var newSheetControl = jS.controlFactory.sheetUI(jS.controlFactory.sheet(size), jS.sheetCount + 1, function() { 
 				jS.setActiveSheet(newSheetControl, jS.sheetCount + 1);
 			}, true);
 		}
@@ -1499,59 +1575,6 @@ var jS = jQuery.sheet = {
 			return jS.getBarTopLocatoin(jS.obj.barTop().find('div:last').text());
 		}
 	},
-	initSheet: function(obj, i, fn, reloadBars) {
-		if (!i) {
-			jQuery('.tableControl').remove();
-			jS.sheetCount = 0;
-			jS.i = 0;
-		} else {
-			jS.sheetCount++;
-			jS.i = jS.sheetCount;
-			i = jS.i;
-		}
-		
-		var objContainer = jS.controlFactory.table(true).appendTo(jS.obj.ui());
-		jS.obj.pane().html(obj);
-				
-		jS.tuneTableForSheetUse(obj);
-					
-		jS.sheetDecorate(obj);
-		
-		jS.controlFactory.barTop(reloadBars, obj);
-		jS.controlFactory.barLeft(reloadBars, obj);
-	
-		jS.sheetTab(true);
-		
-		if (jS.s.editable) {
-			jS.obj.pane()
-				.mousedown(jS.cellOnMouseDown)
-				.click(jS.s.lockFormulas ? jS.cellOnClickLocked : jS.cellOnClickReg);
-		}
-		
-		jS.themeRoller.start(i);
-
-		jS.setTdIds(obj);
-		
-		jS.barAdjustor();
-		
-		//We load the plugins
-		if (jS.s.urlJGCharts) { //When loading the charts, we need to make sure that the namespace exists before we fire fnAfter();
-			jQuery.getScript(jS.s.urlJGCharts, function() {		
-				jS.calc(obj);
-				jS.s.fnAfter();
-			});
-		} else {
-			jS.calc(obj);
-			jS.s.fnAfter();
-		}
-
-		jS.addTab();
-		if (fn) {
-			fn();
-		}
-		jS.log('Sheet Initialized');
-		return objContainer;
-	},
 	setActiveSheet: function(o, i) {
 		if (o) {
 			o.show().siblings().hide();
@@ -1575,6 +1598,7 @@ var jS = jQuery.sheet = {
 				if (i == (l - 1)) {
 					jS.i = 0;
 					jS.setActiveSheet();
+					jS.themeRoller.resize();
 				}
 			};
 			
@@ -1582,7 +1606,7 @@ var jS = jQuery.sheet = {
 				jQuery('<div />').load(jS.s.urlGet, function() {
 					var sheets = jQuery(this).find('table');
 					sheets.each(function(i) {
-						jS.initSheet(jQuery(this), i, function() { 
+						jS.controlFactory.sheetUI(jQuery(this), i, function() { 
 							setFirstActive(i, sheets.length);
 						}, true);
 					});
@@ -1590,7 +1614,7 @@ var jS = jQuery.sheet = {
 			} else {
 				var sheets = jQuery('<div />').html(obj).find('table');
 				sheets.each(function(i) {
-					jS.initSheet(jQuery(this), i,  function() { 
+					jS.controlFactory.sheetUI(jQuery(this), i,  function() { 
 						setFirstActive(i, sheets.length);
 					}, false);
 				});
@@ -1601,7 +1625,7 @@ var jS = jQuery.sheet = {
 	newSheet: function() {
 		var size = prompt(jS.newSheetDialog);
 		if (size) {
-			jS.openSheet(jS.buildSheet(size));
+			jS.openSheet(jS.controlFactory(size));
 		}
 	},
 	importRow: function(rowArray) {
@@ -1783,38 +1807,6 @@ var jS = jQuery.sheet = {
 			};
 			return x;
 		}
-	},
-	buildSheet: function(size) {
-		if (!size) {
-			size = jS.s.buildSheet;
-		}
-		size = size.toLowerCase().split('x');
-
-		var columnsCount = parseInt(size[0]);
-		var rowsCount = parseInt(size[1]);
-		
-		//Create elements before loop to make it faster.
-		var newSheet = jQuery('<table border="1px" class="' + jS.cl.sheet + '" id="' + jS.id.sheet + jS.i + '"></table>');
-		var standardTd = '<td> </td>';
-		var tds = '';
-		
-		//Using -- is many times faster than ++
-		for (var i = columnsCount; i >= 1; i--) {
-			tds += standardTd;
-		}
-
-		var standardTr = '<tr height="' + jS.s.colMargin + '" style="height: ' + jS.s.colMarg + ';">' + tds + '</tr>';
-		var trs = '';
-		for (var i = rowsCount; i >= 1; i--) {
-			trs += standardTr;
-		}
-		
-		newSheet.html('<tbody>' + trs + '</tbody>');
-		
-		newSheet.width(columnsCount * jS.s.newColumnWidth);
-		//jS.attrH.syncSheetWidthFromTds(newSheet);
-		
-		return newSheet;
 	},
 	sheetSyncSizeToDivs: function() {
 		var newSheetWidth = 0;
@@ -2797,15 +2789,10 @@ var cE = jQuery.calculationEngine = {
 								var dependencies = {};
 								var body = cE.parseFormula(formula.substring(1), dependencies);
 								formulaFunc = function() {
-													//with (cE.calcState.cellProvider) {
-														with (cE.fn) {
-															//with (cE.calcState.context) {
-																//jS.log(body);
-																return eval(body);
-															//}
-														}
-													//}
-												};
+									with (cE.fn) {
+										return eval(body);
+									}
+								};
 								
 								formulaFunc.formula = formula;
 								formulaFunc.dependencies = dependencies;
