@@ -171,9 +171,9 @@ var jS = jQuery.sheet = {
 		tableControl:	'tableControl',
 		toggle:			'cellStyleToggle',
 		tab:			'jSheetTab',
-		barTop:			'barTop',
-		barLeft:		'barLeft',
-		sheetPane:		'sheetPane'
+		barTopTd:		'barTop',
+		barLeftTd:		'barLeft',
+		sheetPaneTd:	'sheetPane'
 	},
 	controlFactory: {
 		addRowMulti: function(qty) {
@@ -549,15 +549,15 @@ var jS = jQuery.sheet = {
 						'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.cl.barCornerParent + '">' + //corner
 							'<div style="height: ' + jS.s.colMargin + '; width: ' + jS.s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="' + jS.cl.barCorner +'" onClick="jS.cellSetActiveAll();" title="Select All">&nbsp;</div>' +
 						'</td>' + 
-						'<td class="' + jS.cl.barTop + '">' + //barTop
+						'<td class="' + jS.cl.barTopTd + '">' + //barTop
 							'<div id="' + jS.id.barTopParent + jS.i + '" class="' + jS.cl.barTopParent + '"></div>' +
 						'</td>' +
 					'</tr>' +
 					'<tr>' +
-						'<td class="' + jS.cl.barLeft + '">' + //barLeft
+						'<td class="' + jS.cl.barLeftTd + '">' + //barLeft
 							'<div style="width: ' + jS.s.colMargin + ';" id="' + jS.id.barLeftParent + jS.i + '" class="' + jS.cl.barLeftParent + '"></div>' +
 						'</td>' +
-						'<td class="' + jS.cl.sheetPane + '">' + //pane
+						'<td class="' + jS.cl.sheetPaneTd + '">' + //pane
 							'<div id="' + jS.id.pane + jS.i + '" class="' + jS.cl.pane + '"></div>' +
 						'</td>' +
 					'</tr>' +
@@ -1248,7 +1248,7 @@ var jS = jQuery.sheet = {
 				jQuery(this)
 					.height(jS.s.colMargin)
 					.css('height', jS.s.colMargin + 'px')
-					.attr('height', jS.s.colMargin + 'px')
+					.attr('height', jS.s.colMargin + 'px');
 			});
 			colgroup.prependTo(o);
 		}
@@ -1312,12 +1312,12 @@ var jS = jQuery.sheet = {
 				parent.resizable({
 					minWidth: jS.s.width * 0.5,
 					resize: function() {
-						o = jS.obj.ui()
+						o = jS.obj.ui();
 						barTop = jS.obj.barTopParent()
-							.add(jS.obj.pane().parent().andSelf())
+							.add(jS.obj.pane().parent().andSelf());
 						barLeft = jS.obj.barLeftParent()
 							.add(jS.obj.ui())
-							.add(jS.obj.pane())
+							.add(jS.obj.pane());
 						controlsHeight = jS.obj.controls().height();
 						
 						jS.s.width = parent.width() - jS.s.colMargin + jS.attrH.boxModelCorrection();
