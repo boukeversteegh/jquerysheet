@@ -521,7 +521,7 @@ var jS = jQuery.sheet = {
 			jS.sheetTab(true);
 			
 			if (jS.s.editable) {
-				jS.obj.pane()
+				obj
 					.mousedown(jS.evt.cellOnMouseDown)
 					.click(jS.s.lockFormulas ? jS.evt.cellOnClickLocked : jS.evt.cellOnClickReg);
 			}
@@ -948,6 +948,7 @@ var jS = jQuery.sheet = {
 				o.barTop.scrollLeft(o.pane.scrollLeft() + o.boxModelCorrection);//2 lines of beautiful jQuery js
 				o.barLeft.scrollTop(o.pane.scrollTop() + o.boxModelCorrection);
 			});
+			jS.obj.pane().scroll();
 		},
 		barMouseDown: {
 			select: function(o, e, selectFn, resizeFn) {
@@ -1581,12 +1582,12 @@ var jS = jQuery.sheet = {
 		var sheetTab = '';
 		if (get) {
 			sheetTab = jS.obj.sheet().attr('title');
-			sheetTab = (sheetTab ? sheetTab : 'Spreadsheet ' + jS.i);
+			sheetTab = (sheetTab ? sheetTab : 'Spreadsheet ' + (jS.i + 1));
 		} else {
 			var newTitle = prompt("What would you like the sheet's title to be?", jS.sheetTab(true));
 			if (!newTitle) { //The user didn't set the new tab name
 				sheetTab = jS.obj.sheet().attr('title');
-				newTitle = (sheetTab ? sheetTab : 'Spreadsheet' + jS.i);
+				newTitle = (sheetTab ? sheetTab : 'Spreadsheet' + (jS.i + 1));
 			} else {
 				jS.setDirty(true);
 				jS.obj.sheet().attr('title', newTitle);
