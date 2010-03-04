@@ -1795,7 +1795,7 @@ var jS = jQuery.sheet = {
 		}
 	},
 	importRow: function(rowArray) {
-		jS.addRow();
+		jS.controlFactory.addRow();
 
 		var error = "";
 		jS.obj.sheet().find('tr:last td').each(function(i) {
@@ -1821,7 +1821,7 @@ var jS = jQuery.sheet = {
 		jS.calc(jS.obj.sheet());
 	},
 	importColumn: function(columnArray) {
-		jS.addColumn();
+		jS.controlFactory.addColumn();
 
 		var error = "";
 		jS.obj.sheet().find('tr').each(function(i) {
