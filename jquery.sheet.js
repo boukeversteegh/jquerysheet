@@ -1311,6 +1311,7 @@ var jS = jQuery.sheet = {
 				
 				parent.resizable({
 					minWidth: jS.s.width * 0.5,
+					minHeight: jS.s.height * 0.5,
 					resize: function() {
 						o = jS.obj.ui();
 						barTop = jS.obj.barTopParent()
