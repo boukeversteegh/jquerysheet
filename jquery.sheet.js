@@ -532,14 +532,16 @@ var jS = jQuery.sheet = {
 			
 			jS.evt.scrollBars();
 			
-			jS.calc(jS.i);
-			jS.s.fnAfter();			
-
 			jS.addTab();
+			
 			if (fn) {
 				fn();
 			}
+			
 			jS.log('Sheet Initialized');
+			
+			jS.s.fnAfter();
+			
 			return objContainer;
 		},
 		table: function() {
@@ -1758,11 +1760,14 @@ var jS = jQuery.sheet = {
 		if (!jS.isDirty ? true : confirm("Are you sure you want to open a different sheet?  All unsaved changes will be lost.")) {
 			jS.controlFactory.header();
 			
-			var setFirstActive = function(i, l) {
+			var fnAfter = function(i, l) {
 				if (i == (l - 1)) {
 					jS.i = 0;
 					jS.setActiveSheet();
 					jS.themeRoller.resize();
+					for (var i = 0; i <= jS.sheetCount; i++) {
+						jS.calc(i);
+					}
 				}
 			};
 			
@@ -1771,7 +1776,7 @@ var jS = jQuery.sheet = {
 					var sheets = jQuery(this).find('table');
 					sheets.each(function(i) {
 						jS.controlFactory.sheetUI(jQuery(this), i, function() { 
-							setFirstActive(i, sheets.length);
+							fnAfter(i, sheets.length);
 						}, true);
 					});
 				});
@@ -1779,7 +1784,7 @@ var jS = jQuery.sheet = {
 				var sheets = jQuery('<div />').html(obj).find('table');
 				sheets.each(function(i) {
 					jS.controlFactory.sheetUI(jQuery(this), i,  function() { 
-						setFirstActive(i, sheets.length);
+						fnAfter(i, sheets.length);
 					}, false);
 				});
 			}
@@ -2183,7 +2188,6 @@ jS.tableCellProvider.prototype = {
 			col = cE.columnLabelIndex(col);
 		}
 		var key = tableI + "," + row + "," + col;
-		jS.log(key);
 		var cell = this.cells[key];
 		if (!cell) {
 			//var tableBody = jS.obj.tableBody();
