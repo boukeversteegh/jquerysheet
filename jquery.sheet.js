@@ -1369,7 +1369,7 @@ var jS = jQuery.sheet = {
 		return v;
 	},
 	sheetDecorateRemove: function(makeClone) {
-		var obj = (makeClone ? jS.obj.sheet().clone()[0] : jS.obj.sheet()[0]);
+		var obj = (makeClone ? jS.obj.sheetAll().clone() : jS.obj.sheetAll());
 		
 		//remove class jSheetCellActive
 		jQuery(obj).find('.' + jS.cl.cell).removeClass(jS.cl.cell);
@@ -1599,17 +1599,25 @@ var jS = jQuery.sheet = {
 		}
 		return sheetTab;
 	},
+	print: function(o) {
+		var w = window.open();
+		w.document.write("<html><body><xmp>" + o + "\n</xmp></body></html>");
+		w.document.close();
+	},
 	viewSource: function(pretty) {
 		var sheetClone = jS.sheetDecorateRemove(true);
-
+		
+		var s = "";
 		if (pretty) {
-			var s = jS.HTMLtoPrettySource(sheetClone);
+			jQuery(sheetClone).each(function() {
+				s += jS.HTMLtoPrettySource(this);
+			});
 		} else {
-			var s = jQuery('<div />').html(sheetClone).html();
+			s += jQuery('<div />').html(sheetClone).html();
 		}
-		var w = window.open();
-		w.document.write("<html><body><xmp>" + s + "\n</xmp></body></html>");
-		w.document.close();
+		
+		jS.print(s);
+		
 		return false;
 	},
 	saveSheet: function() {
@@ -1851,20 +1859,21 @@ var jS = jQuery.sheet = {
 		jS.calc(jS.i);
 	},
 	importSheet: {
-		json: function() {
-			sheet = eval('('+data+')');
-			size_c = sheet["metadata"]["columns"]*1+5;
-			size_r = sheet["metadata"]["rows"]*1+1;
-			var div = jQuery("<div />").append("<table />");
-			var table = div.find("table:first").attr("id", "jSheet").addClass("jSheet");
+		json: function(data) {
+			jS.i = jS.sheetCount + 1;
+			sheet = eval('(' + data + ')');
+			size_c = sheet["metadata"]["columns"] * 1 + 5;
+			size_r = sheet["metadata"]["rows"] * 1 + 1;
+			var table = jQuery("<table id='" + jS.id.sheet + jS.i + "' class='" + jS.cl.sheet + "' />");
 			
+			var cur_row;
 			for(var x = 1; x <= size_r; x++)
 			{
-				cur_row = table.append('<tr height="18" />').find("tr:last");
+				cur_row = jQuery('<tr height="' + jS.s.colMargin + 'px" />').appendTo(table);
+				
 				for(var y = 1; y <= size_c; y++)
 				{
-					cur_column = jQuery('<td />').attr("id", 'cell_c'+y+'_r'+x);
-					cur_row.append(cur_column);
+					cur_row.append('<td id="' + 'table' + jS.i + '_' + 'cell_c' + y + '_r' + x + '" />');
 				}
 			}
 			
@@ -1873,7 +1882,7 @@ var jS = jQuery.sheet = {
 				for (column in sheet["data"][row])
 				{
 					cur_val = sheet["data"][row][column];
-					cur_column = table.find("td#cell_"+column+"_"+row).text(cur_val);
+					cur_column = table.find('table' + jS.i + '_' + 'cell_' + column + '_r' + row).text(cur_val);
 					
 					if (cur_val.substr(0,1) == '=')
 					{
@@ -1882,100 +1891,115 @@ var jS = jQuery.sheet = {
 				}
 			}
 			
-			return div.html();
+			return table;
 		}
 	},
 	exportSheet: {
 		xml: function () {
-			var sheetClone = jS.sheetDecorateRemove(true);
-			var s = jQuery('<div />').html(sheetClone).html();
-			
-			var x = '';
-			var count = 0;
-			var cur_column = cur_row = '';
-			var max_column = max_row = 0;
-			jQuery(s).find('tr').each(function(){
-				count = 0;
-				jQuery(this).find('td').each(function(){
-					count++;
-					
-					var id = jQuery(this).attr('id');
-					var txt = jQuery.trim(jQuery(this).text());
-					var pos = id.search(/cell_c/i);
-					var pos2 = id.search(/_r/i);
-					
-					if (txt != '' && pos != -1 && pos2 != -1) {
-						cur_column = id.substr(pos+6, pos2-(pos+6));
-						cur_row = id.substr(pos2+2);
+			var sheetClone = jS.sheetDecorateRemove(true);			
+			var result = "";
+			jQuery(sheetClone).each(function() {
+				var x = '';
+				var count = 0;
+				var cur_column = cur_row = '';
+				var max_column = max_row = 0;
+				jQuery(this).find('tr').each(function(i){
+					count = 0;
+					max_row = i;
+					jQuery(this).find('td').each(function(){
+						count++;
 						
-						if (max_column < cur_column) max_column = cur_column;
+						var id = jQuery(this).attr('id');
+						var txt = jQuery.trim(jQuery(this).text());
+						var pos = id.search(/cell_c/i);
+						var pos2 = id.search(/_r/i);
 						
-						if (max_row < cur_row) max_row = cur_row;
-						
-						if (count == 1) x += '<r'+cur_row+'>';
-						
-						formula = jQuery(this).attr('formula');
-						if (formula != undefined)
-						{
-							txt = formula;
+						if (txt != '' && pos != -1 && pos2 != -1) {
+							cur_column = id.substr(pos+6, pos2-(pos+6));
+							cur_row = id.substr(pos2+2);
+							
+							if (max_column < cur_column) max_column = cur_column;
+							
+							if (max_row < cur_row) max_row = cur_row;
+							
+							if (count == 1) x += '<r'+cur_row+'>';
+							
+							var formula = jQuery(this).attr('formula');
+							if (formula)
+							{
+								txt = formula;
+							}
+							
+							x += '<c'+cur_column+'><![CDATA['+txt+']]></c'+cur_column+'>';
 						}
-						
-						x += '<c'+cur_column+'><![CDATA['+txt+']]></c'+cur_column+'>';
-					}
+					});
+					
+					if (cur_row != '')
+						x += '</r'+cur_row+'>';
+					cur_column = cur_row = '';
 				});
 				
-				if (cur_row != '')
-					x += '</r'+cur_row+'>';
-				cur_column = cur_row = '';
+				result += '<document>' + 
+							'<metadata>' + 
+								'<columns>' + max_column + '</columns>' + 
+								'<rows>' + max_row + '</rows>' + 
+							'</metadata>' + 
+							'<data>' + x + '</data>' + 
+						'</document>';
 			});
 			
-			return '<document><metadata><columns>'+max_column+'</columns><rows>'+max_row+'</rows></metadata><data>'+x+'</data></document>';
+			return '<documents>' + result + '</documents>';
 		},
 		json: function() {
 			var sheetClone = jS.sheetDecorateRemove(true);
-			var s = jQuery('<div />').html(sheetClone).html();
-			var x = {metadata:{},data:{}};
-			var count = 0;
-			var cur_column = cur_row = '';
-			var max_column = max_row = 0;
-			jQuery(s).find('tr').each(function(){
-				count = 0;
-				jQuery(this).find('td').each(function(){
-					count++;
-					
-					var id = jQuery(this).attr('id');
-					var txt = jQuery.trim(jQuery(this).text());
-					var pos = id.search(/cell_c/i);
-					var pos2 = id.search(/_r/i);
-					
-					if (txt != '' && pos != -1 && pos2 != -1) {
-						cur_column = id.substr(pos+6, pos2-(pos+6));
-						cur_row = id.substr(pos2+2);
-						
-						if (max_column < cur_column) max_column = cur_column;
-						
-						if (max_row < cur_row) max_row = cur_row;
-						
-						if (count == 1) x['data']['r'+cur_row] = {};
-						
-						formula = jQuery(this).attr('formula');
-						if (formula != undefined)
-						{
-							txt = formula;
-						}
-						
-						x['data']['r'+cur_row]['c'+cur_column] = txt;
-					}
-				});
-				
-				cur_column = cur_row = '';
-			});
+			var docs = []; //documents
 			
-			x['metadata'] = {
-				"columns": max_column,
-				"rows": max_row
-			};
-			return x;
+			jQuery(sheetClone).each(function() {
+				var doc = {metadata:{},data:{}};
+				var count = 0;
+				var cur_column = cur_row = '';
+				var max_column = max_row = 0;
+				jQuery(this).find('tr').each(function(){
+					count = 0;
+					jQuery(this).find('td').each(function(){
+						count++;
+						
+						var id = jQuery(this).attr('id');
+						var txt = jQuery.trim(jQuery(this).text());
+						var pos = id.search(/cell_c/i);
+						var pos2 = id.search(/_r/i);
+						
+						if (txt != '' && pos != -1 && pos2 != -1) {
+							cur_column = id.substr(pos+6, pos2-(pos+6));
+							cur_row = id.substr(pos2+2);
+							
+							if (max_column < cur_column) max_column = cur_column;
+							
+							if (max_row < cur_row) max_row = cur_row;
+							
+							if (count == 1) doc['data']['r' + cur_row] = {};
+							
+							var formula = jQuery(this).attr('formula');
+							if (formula)
+							{
+								txt = formula;
+							}
+							try {
+								doc['data']['r'+cur_row]['c'+cur_column] = txt;
+							} catch (e) {}
+						}
+					});
+					
+					
+					cur_column = cur_row = '';
+				});
+				doc['metadata'] = {
+					"columns": max_column,
+					"rows": max_row
+				};
+				docs.push(doc); //append to documents
+			});
+			return docs;
 		}
 	},
 	sheetSyncSizeToDivs: function() {
