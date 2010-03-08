@@ -18,41 +18,47 @@ http://www.gnu.org/licenses/
 jQuery.fn.extend({
 	sheet: function(settings) {
 		settings = jQuery.extend({
-			urlGet: 		"documentation.html",
-			urlSave: 		"save.html",
-			editable: 		true,
-			urlMenu: 		"menu.html",
-			loading: 		'Loading Spreadsheet...',
-			newColumnWidth: 120,
-			title: 			null,
-			inlineMenu:		null,
-			buildSheet: 	false,	//'10x30', this can be slow
-			calcOff: 		false,
-			log: 			false,
-			lockFormulas: 	false,
-			parent: 		this, 	//don't change
-			colMargin: 		18, 	//If text size make cell bigger than this number the bars will be off on loadtime
-			fnBefore: 		function() {},
-			fnAfter: 			function() {},
-			fnSave: 		function() { jS.saveSheet(); },
-			fnOpen: 		function() { 
+			urlGet: 		"documentation.html", 			//local url, if you want to get a sheet from a url
+			urlSave: 		"save.html", 					//local url, for use only with the default save for sheet
+			editable: 		true, 							//bool, Makes the formula and top bar appear
+			urlMenu: 		"menu.html", 					//local url, for the menu to the right of title
+			loading: 		'Loading Spreadsheet...', 		//depriciated
+			newColumnWidth: 120, 							//int
+			title: 			null, 							//html
+			inlineMenu:		null, 							//html
+			buildSheet: 	false,							//bool, string, or object
+																//bool true - build sheet inside of parent
+																//bool false - use urlGet from local url
+																//string  - '{number_of_cols}x{number_of_rows} (5x100)
+																//object - table
+			calcOff: 		false, 							//bool, turns calculations off for use like a gridview
+			log: 			false, 							//bool, turns some debugging logs on
+			lockFormulas: 	false, 							//bool,
+			parent: 		this, 							//don't change
+			colMargin: 		18, 							//int, the height and the width of all bar items
+			fnBefore: 		function() {}, 					//fn, fires just before jQuery.sheet loads
+			fnAfter: 			function() {}, 				//fn. fires just after all sheets load
+			fnSave: 		function() { jS.saveSheet(); }, //fn, default save function, more of a proof of concept
+			fnOpen: 		function() { 					//fn, by default allows you to paste table html into a javascript prompt for you to see what it looks likes if you where to use sheet
 				var t = prompt('Paste your table html here');
 				if (t) {
 					jS.openSheet(t);
 				}
 			},
-			fnClose: 		function() {},
-			joinedResizing: false, //this joins the column/row with the resize bar
-			boxModelCorrection: 2 //this little guy can have a massive impact on viewing a sheet correctly or not
+			fnClose: 		function() {}, //fn, default clase function, more of a proof of concept
+			joinedResizing: false, //bool, this joins the column/row with the resize bar
+			boxModelCorrection: 2 //int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
 		}, settings);
 		jQuery.fn.sheet.settings = jS.s = settings;
 		jS.s.fnBefore();
 		
 		var obj;
 		if (jS.s.buildSheet) {//override urlGet, this has some effect on how the topbar is sized
-			if (jS.s.buildSheet == true || jS.s.buildSheet == 'true') {
+			if (typeof(jS.s.buildSheet) == 'object') {
+				obj = jS.s.buildSheet;
+			} else if (jS.s.buildSheet == true || jS.s.buildSheet == 'true') {
 				obj = jQuery(jQuery(this).html());
-			} else {
+			} else if (jS.s.buildSheet.match(/x/i)) {
 				obj = jS.controlFactory.sheet(jS.s.buildSheet);
 			}
 		}
@@ -401,11 +407,11 @@ var jS = jQuery.sheet = {
 			var firstRowTr = jQuery('<tr />');
 			
 			if (jS.s.title) {
-				firstRowTr.append(jQuery('<td style="width: auto;" />').html(jS.s.title));
+				firstRowTr.append(jQuery('<td style="width: auto;text-align: center;" />').html(jS.s.title));
 			}
 			
-			if (jS.s.inlineMenu) {
-				firstRowTr.append(jQuery('<td />').html(jS.s.inlineMenu));
+			if (jS.s.inlineMenu && jS.s.editable) {
+				firstRowTr.append(jQuery('<td style="text-align: center;" />').html(jS.s.inlineMenu));
 			}
 			
 			if (jS.s.editable) {
@@ -463,7 +469,7 @@ var jS = jQuery.sheet = {
 				.html('')
 				.append(header) //add controls header
 				.append('<div id="' + jS.id.ui + '" class="' + jS.id.ui + '">') //add spreadsheet control
-				.after('<div id="' + jS.id.tabContainer + '"><span class="ui-widget-header ui-corner-bottom" title="Add a spreadsheet" onclick="jS.addSheet();">+</span></div'); //add tab control
+				.after('<div id="' + jS.id.tabContainer + '">' + (jS.s.editable ? '<span class="ui-widget-header ui-corner-bottom" title="Add a spreadsheet" onclick="jS.addSheet();">+</span>' : '<span />') + '</div>'); //add tab control
 		},
 		sheet: function(size) {
 			if (!size) {
@@ -1765,7 +1771,7 @@ var jS = jQuery.sheet = {
 		jS.sheetSyncSize();
 		jS.replaceWithSafeImg(jS.obj.sheet().find('img'));
 	},
-	openSheet: function(obj) {
+	openSheet: function(o) {
 		if (!jS.isDirty ? true : confirm("Are you sure you want to open a different sheet?  All unsaved changes will be lost.")) {
 			jS.controlFactory.header();
 			
@@ -1780,7 +1786,7 @@ var jS = jQuery.sheet = {
 				}
 			};
 			
-			if (!obj) {
+			if (!o) {
 				jQuery('<div />').load(jS.s.urlGet, function() {
 					var sheets = jQuery(this).find('table');
 					sheets.each(function(i) {
@@ -1790,7 +1796,7 @@ var jS = jQuery.sheet = {
 					});
 				});
 			} else {
-				var sheets = jQuery('<div />').html(obj).find('table');
+				var sheets = jQuery('<div />').html(o).find('table');
 				sheets.each(function(i) {
 					jS.controlFactory.sheetUI(jQuery(this), i,  function() { 
 						fnAfter(i, sheets.length);
@@ -2094,19 +2100,21 @@ var jS = jQuery.sheet = {
 		return false;
 	},
 	cellSetActiveAll: function() {
-		var rowCount = 0;
-		var colCount = 0;
-		
-		jS.obj.barLeft().find('div').each(function(i) {
-			jS.cellSetActiveMultiRow(i);
-			rowCount++;
-		});
-		jS.obj.barTop().find('div').each(function(i) {
-			jS.themeRoller.barTop(i);
-			colCount++;
-		});
-		
-		jS.fxUpdate('A1:' + cE.columnLabelString(colCount) + rowCount, true);
+		if (jS.s.editable) {
+			var rowCount = 0;
+			var colCount = 0;
+			
+			jS.obj.barLeft().find('div').each(function(i) {
+				jS.cellSetActiveMultiRow(i);
+				rowCount++;
+			});
+			jS.obj.barTop().find('div').each(function(i) {
+				jS.themeRoller.barTop(i);
+				colCount++;
+			});
+			
+			jS.fxUpdate('A1:' + cE.columnLabelString(colCount) + rowCount, true);
+		}
 	},
 	cellSetActiveMultiColumn: function(i) {
 		jS.obj.sheet().find('tr').each(function() {
