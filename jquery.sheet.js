@@ -20,24 +20,24 @@ jQuery.fn.extend({
 		settings = jQuery.extend({
 			urlGet: 		"documentation.html", 			//local url, if you want to get a sheet from a url
 			urlSave: 		"save.html", 					//local url, for use only with the default save for sheet
-			editable: 		true, 							//bool, Makes the formula and top bar appear
+			editable: 		true, 							//bool, Makes the jSheetControls_formula & jSheetControls_fx appear
 			urlMenu: 		"menu.html", 					//local url, for the menu to the right of title
 			loading: 		'Loading Spreadsheet...', 		//depriciated
-			newColumnWidth: 120, 							//int
-			title: 			null, 							//html
-			inlineMenu:		null, 							//html
+			newColumnWidth: 120, 							//int, the width of new columns or columns that have no width assigned
+			title: 			null, 							//html, general title of the sheet group
+			inlineMenu:		null, 							//html, menu for editing sheet
 			buildSheet: 	false,							//bool, string, or object
 																//bool true - build sheet inside of parent
 																//bool false - use urlGet from local url
 																//string  - '{number_of_cols}x{number_of_rows} (5x100)
 																//object - table
-			calcOff: 		false, 							//bool, turns calculations off for use like a gridview
-			log: 			false, 							//bool, turns some debugging logs on
-			lockFormulas: 	false, 							//bool,
-			parent: 		this, 							//don't change
-			colMargin: 		18, 							//int, the height and the width of all bar items
+			calcOff: 		false, 							//bool, turns calculationEngine off (no spreadsheet, just grid)
+			log: 			false, 							//bool, turns some debugging logs on (jS.log('msg'))
+			lockFormulas: 	false, 							//bool, turns the ability to edit any formula off
+			parent: 		this, 							//object, sheet's parent, DON'T CHANGE
+			colMargin: 		18, 							//int, the height and the width of all bar items, and new rows
 			fnBefore: 		function() {}, 					//fn, fires just before jQuery.sheet loads
-			fnAfter: 			function() {}, 				//fn. fires just after all sheets load
+			fnAfter: 			function() {}, 				//fn, fires just after all sheets load
 			fnSave: 		function() { jS.saveSheet(); }, //fn, default save function, more of a proof of concept
 			fnOpen: 		function() { 					//fn, by default allows you to paste table html into a javascript prompt for you to see what it looks likes if you where to use sheet
 				var t = prompt('Paste your table html here');
@@ -205,7 +205,9 @@ var jS = jQuery.sheet = {
 			jS.setTdIds();
 		},
 		addRow: function(atRow, insertBefore) {
-			if (!atRow || jS.cellLast.row < 1) {
+			if (!atRow && jS.rowLast > -1) {
+				atRowQ = ':eq(' + jS.rowLast + ')';
+			} else if (!atRow || jS.cellLast.row < 1) {
 				//if atRow has no value, lets just add it to the end.
 				atRowQ = ':last';
 				atRow = false;
@@ -262,7 +264,9 @@ var jS = jQuery.sheet = {
 			jS.obj.pane().scroll();
 		},
 		addColumn: function(atColumn, insertBefore) {
-			if (!atColumn || jS.cellLast.col < 1) {
+			if (!atColumn && jS.colLast > -1) {
+				atColumn = ':eq(' + jS.colLast + ')';
+			} else if (!atColumn || jS.cellLast.col < 1) {
 				//if atColumn has no value, lets just add it to the end.
 				atColumn = ':last';
 			} else if (atColumn === true) {
@@ -805,9 +809,11 @@ var jS = jQuery.sheet = {
 					jS.calc(jS.i);
 				}
 			}
+			
 			jS.cellLast.td = jS.obj.sheet().find('td:first');
-			jS.cellLast.row = 0;
-			jS.cellLast.col = 0;
+			jS.cellLast.row = jS.cellLast.col = 0;
+			0;
+			jS.rowLast = jS.colLast = -1;
 			
 			jS.fxUpdate('', true);
 
@@ -997,6 +1003,9 @@ var jS = jQuery.sheet = {
 						}
 						
 						var i = jS.getBarLeftIndex(o);
+						
+						jS.rowLast = i; //keep track of last row for inserting new rows
+						
 						jS.evt.barMouseDown.last = (i > jS.evt.barMouseDown.last ? i : jS.evt.barMouseDown.last);
 						
 						jS.fxUpdate((jS.evt.barMouseDown.first + 1) + ':' + (jS.evt.barMouseDown.last + 1), true);
@@ -1023,6 +1032,9 @@ var jS = jQuery.sheet = {
 							jS.themeRoller.clearBar();
 						}
 						var i = jS.getBarTopIndex(o);
+						
+						jS.colLast = i; //keep track of last column for inserting new columns
+						
 						jS.evt.barMouseDown.last = (i > jS.evt.barMouseDown.last ? i : jS.evt.barMouseDown.last);
 						
 						jS.fxUpdate(cE.columnLabelString(jS.evt.barMouseDown.first + 1) + ':' + cE.columnLabelString(jS.evt.barMouseDown.last + 1), true);
@@ -1421,8 +1433,8 @@ var jS = jQuery.sheet = {
 	},
 	cellSetActive: function(td, loc) {
 		jS.cellLast.td = td; //save the current cell/td
-		jS.cellLast.row = loc[0];
-		jS.cellLast.col = loc[1];
+		jS.cellLast.row = jS.rowLast = loc[0];
+		jS.cellLast.col = jS.colLast = loc[1];
 		
 		jS.themeRoller.cell(td); //themeroll the cell and bars
 		jS.themeRoller.barLeft(jS.cellLast.row);
@@ -1432,6 +1444,8 @@ var jS = jQuery.sheet = {
 		jS.obj.barLeft().find('div').eq(jS.cellLast.row).addClass(jS.cl.barSelected);
 		jS.obj.barTop().find('div').eq(jS.cellLast.col).addClass(jS.cl.barSelected);
 	},
+	colLast: -1,
+	rowLast: -1,
 	cellLast: {
 		td: null,
 		row: null,
