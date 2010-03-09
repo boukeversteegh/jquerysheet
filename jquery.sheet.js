@@ -990,7 +990,7 @@ var jS = jQuery.sheet = {
 				o //let any user resize
 					.unbind('mousedown')
 					.mousedown(function(e) {
-						jS.evt.barMouseDown.first = jS.evt.barMouseDown.last = jS.getBarLeftIndex(e.target);
+						jS.evt.barMouseDown.first = jS.evt.barMouseDown.last = jS.rowLast = jS.getBarLeftIndex(e.target);
 						jS.evt.barMouseDown.select(o, e, selectRow, jS.rowResizer);
 						
 						return false;
@@ -1020,7 +1020,7 @@ var jS = jQuery.sheet = {
 				o //let any user resize
 					.unbind('mousedown')
 					.mousedown(function(e) {
-						jS.evt.barMouseDown.first = jS.evt.barMouseDown.last = jS.getBarTopIndex(e.target);
+						jS.evt.barMouseDown.first = jS.evt.barMouseDown.last = jS.colLast = jS.getBarTopIndex(e.target);
 						jS.evt.barMouseDown.select(o, e, selectColumn, jS.columnResizer);
 						
 						return false;
@@ -1565,39 +1565,38 @@ var jS = jQuery.sheet = {
 		}
 	},
 	deleteRow: function() {
-		if (jS.obj.cell()[0]) {
-			var v = confirm("Are you sure that you want to delete that row? Fomulas will not be updated.");
-			if (v) {
-				var loc = jS.cellLast.row - 1;
-				jS.obj.barLeft().find('div').eq(loc).remove();
-				jS.obj.sheet().find('tr').eq(loc).remove();
-				jS.obj.formula().val('');
-				jS.setTdIds();
-				jS.refreshLabelsRows();
-			}
-		}
-		jS.obj.pane().scroll();
+		var v = confirm("Are you sure that you want to delete that row? Fomulas will not be updated.");
+		if (v) {
+			jS.obj.barLeft().find('div').eq(jS.rowLast).remove();
+			jS.obj.sheet().find('tr').eq(jS.rowLast).remove();
+			
+			jS.evt.cellEditAbandon();
+			
+			jS.setTdIds();
+			jS.refreshLabelsRows();
+			jS.obj.pane().scroll();
+			
+			jS.rowLast = -1;
+		}		
 	},
 	deleteColumn: function() {
-		if (jS.obj.cell()[0]) {
-			var v = confirm("Are you sure that you want to delete that column? Fomulas will not be updated.");
-			if (v) {
-				var loc = jS.cellLast.col - 1;
-
-				jS.obj.barTop().find('div').eq(loc).remove();
-				jS.obj.sheet().find('colgroup col').eq(loc).remove();
-				jS.obj.sheet().find('tr').each(function(i) {
-						jQuery(this).find('td').eq(loc).remove();
-				});
-				
-				jS.obj.formula().val('');
-				
-				var w = jS.refreshLabelsColumns();
-				jS.setTdIds();
-				jS.obj.sheet().width(w);
-			}
-		}
-		jS.obj.pane().scroll();
+		var v = confirm("Are you sure that you want to delete that column? Fomulas will not be updated.");
+		if (v) {
+			jS.obj.barTop().find('div').eq(jS.colLast).remove();
+			jS.obj.sheet().find('colgroup col').eq(jS.colLast).remove();
+			jS.obj.sheet().find('tr').each(function(i) {
+					jQuery(this).find('td').eq(jS.colLast).remove();
+			});
+			
+			jS.evt.cellEditAbandon();
+			
+			var w = jS.refreshLabelsColumns();
+			jS.setTdIds();
+			jS.obj.sheet().width(w);
+			jS.obj.pane().scroll();
+			
+			jS.colLast = -1;
+		}		
 	},
 	sheetTab: function(get) {
 		var sheetTab = '';
