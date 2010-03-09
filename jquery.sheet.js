@@ -204,18 +204,20 @@ var jS = jQuery.sheet = {
 			}
 			jS.setTdIds();
 		},
-		addRow: function(atRow, insertBefore) {
-			if (!atRow && jS.rowLast > -1) {
-				atRowQ = ':eq(' + jS.rowLast + ')';
-			} else if (!atRow || jS.cellLast.row < 1) {
-				//if atRow has no value, lets just add it to the end.
-				atRowQ = ':last';
-				atRow = false;
-			} else if (atRow === true) {//if atRow is boolean, then lets add it just after the currently selected row.
-				atRowQ = ':eq(' + (jS.cellLast.row - 1) + ')';
-			} else {
-				//If atRow is a number, lets add it at that row
-				atRowQ = ':eq(' + (atRow - 1) + ')';
+		addRow: function(atRow, insertBefore, atRowQ) {
+			if (!atRowQ) {
+				if (!atRow && jS.rowLast > -1) {
+					atRowQ = ':eq(' + jS.rowLast + ')';
+				} else if (!atRow || jS.cellLast.row < 1) {
+					//if atRow has no value, lets just add it to the end.
+					atRowQ = ':last';
+					atRow = false;
+				} else if (atRow === true) {//if atRow is boolean, then lets add it just after the currently selected row.
+					atRowQ = ':eq(' + (jS.cellLast.row - 1) + ')';
+				} else {
+					//If atRow is a number, lets add it at that row
+					atRowQ = ':eq(' + (atRow - 1) + ')';
+				}
 			}
 			
 			jS.evt.cellEditAbandon();
@@ -254,7 +256,7 @@ var jS = jQuery.sheet = {
 				newBar.insertAfter(currentBar);
 			}
 			
-			if (atRow) {//If atRow equals anything it means that we inserted at a point, because of this we need to update the labels
+			if (atRow || atRowQ) {//If atRow equals anything it means that we inserted at a point, because of this we need to update the labels
 				jS.obj.barLeft().find('div').each(function(i) {
 					jQuery(this).text(i + 1);
 				});
@@ -263,18 +265,22 @@ var jS = jQuery.sheet = {
 			jS.setTdIds();
 			jS.obj.pane().scroll();
 		},
-		addColumn: function(atColumn, insertBefore) {
-			if (!atColumn && jS.colLast > -1) {
-				atColumn = ':eq(' + jS.colLast + ')';
-			} else if (!atColumn || jS.cellLast.col < 1) {
-				//if atColumn has no value, lets just add it to the end.
-				atColumn = ':last';
-			} else if (atColumn === true) {
-				//if atColumn is boolean, then lets add it just after the currently selected row.
-				atColumn = ':eq(' + (jS.cellLast.col - 1) + ')';
+		addColumn: function(atColumn, insertBefore, atColumnQ) {
+			if (!atColumnQ) {
+				if (!atColumn && jS.colLast > -1) {
+					atColumn = ':eq(' + jS.colLast + ')';
+				} else if (!atColumn || jS.cellLast.col < 1) {
+					//if atColumn has no value, lets just add it to the end.
+					atColumn = ':last';
+				} else if (atColumn === true) {
+					//if atColumn is boolean, then lets add it just after the currently selected row.
+					atColumn = ':eq(' + (jS.cellLast.col - 1) + ')';
+				} else {
+					//If atColumn is a number, lets add it at that row
+					atColumn = ':eq(' + (atColumn - 1) + ')';
+				}
 			} else {
-				//If atColumn is a number, lets add it at that row
-				atColumn = ':eq(' + (atColumn - 1) + ')';
+				atColumn = atColumnQ;
 			}
 
 			jS.evt.cellEditAbandon();
@@ -2359,7 +2365,7 @@ var cE = jQuery.calculationEngine = {
 			},
 			radio: {
 				obj: function(v) {v
-					var radio = jQuery('<div class="clickable" />');
+					var radio = jQuery('<span class="clickable" />');
 					var name = cE.cFN.input.radio.name();
 					for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
 						if (v[i]) {

@@ -59,20 +59,20 @@
 </div>
 
 <div id="menuEditColumn" class="menu">
-	<a onclick="jS.addColumn();" title="Adds an additional column to the right of the spreadsheet.">Add Column</a>
-	<a onclick="jS.addColumnMulti();" title="Adds an additional columns to the right of the spreadsheet.">Add Multi-Columns</a>
+	<a onclick="jS.controlFactory.addColumn(null, null, ':last');" title="Adds an additional column to the right of the spreadsheet.">Add Column</a>
+	<a onclick="jS.controlFactory.addColumnMulti();" title="Adds an additional columns to the right of the spreadsheet.">Add Multi-Columns</a>
 	<a onclick="jS.deleteColumn();" title="Deletes the current column thats highlighted.">Delete Column</a>
-	<a onclick="jS.addColumn(true, true);" title="Inserts an additional column after currently selected column.">Insert Column Before</a>
-	<a onclick="jS.addColumn(true);" title="Inserts an additional column after currently selected column.">Insert Column After</a>
+	<a onclick="jS.controlFactory.addColumn(null, true);" title="Inserts an additional column after currently selected column.">Insert Column Before</a>
+	<a onclick="jS.controlFactory.addColumn();" title="Inserts an additional column after currently selected column.">Insert Column After</a>
 	<!--<a onclick="jS.toggleHide.columnAll();" title="Unhides all the hidden columns.">Show All</a>
 	<a onclick="jS.toggleHide.column();" title="Hides or shows the currently selected column.">Toggle Hide Column</a>-->
 </div>
 <div id="menuEditRow" class="menu">
-	<a onclick="jS.addRow();" title="Adds an additional row to bottom of the spreadsheet.">Add Row</a>
-	<a onclick="jS.addRowMulti();" title="Adds an additional rows to bottom of the spreadsheet.">Add Multi-Rows</a>
+	<a onclick="jS.controlFactory.addRow(null, null, ':last');" title="Adds an additional row to bottom of the spreadsheet.">Add Row</a>
+	<a onclick="jS.controlFactory.addRowMulti();" title="Adds an additional rows to bottom of the spreadsheet.">Add Multi-Rows</a>
 	<a onclick="jS.deleteRow();" title="Delets the current row thats highlighted.">Delete Row</a>
-	<a onclick="jS.addRow(true, true);" title="Inserts an additional row after currently selected row.">Insert Row Before</a>
-	<a onclick="jS.addRow(true);" title="Inserts an additional row after currently selected row.">Insert Row After</a>
+	<a onclick="jS.controlFactory.addRow(null, true);" title="Inserts an additional row after currently selected row.">Insert Row Before</a>
+	<a onclick="jS.controlFactory.addRow();" title="Inserts an additional row after currently selected row.">Insert Row After</a>
 	<!--<a onclick="jS.toggleHide.rowAll();" title="Unhides all the hidden rows.">Show All</a>
 	<a onclick="jS.toggleHide.row();" title="Hides or shows the currently selected row.">Toggle Hide Row</a>-->
 </div>
