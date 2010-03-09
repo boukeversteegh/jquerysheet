@@ -249,6 +249,8 @@
 { font-style: italic; }
 .styleUnderline	
 { text-decoration: underline; }
+.styleLineThrough
+{ text-decoration: line-through;}
 .styleLeft		
 { text-align: left; }
 .styleRight		

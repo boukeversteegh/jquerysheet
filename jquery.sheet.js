@@ -1232,7 +1232,7 @@ var jS = jQuery.sheet = {
 		}
 	},
 	addTab: function() {
-		jQuery('<span class="ui-corner-bottom ui-widget-header"><a class="' + jS.cl.tab + '" id="' + jS.id.tab + jS.i + '" OnDblClick="jS.sheetTab(); return false;" onclick="jS.setActiveSheet(jQuery(\'#' + jS.id.tableControl + jS.i + '\'), ' + jS.i + '); return false;">' + jS.sheetTab(true) + '</a></span>')
+		jQuery('<span class="ui-corner-bottom ui-widget-header"><a class="' + jS.cl.tab + '" id="' + jS.id.tab + jS.i + '" OnDblClick="jS.sheetTab(); return false;" onclick="jS.setActiveSheet(jQuery(\'#' + jS.id.tableControl + jS.i + '\'), ' + jS.i + '); jS.calc(' + jS.i + '); return false;">' + jS.sheetTab(true) + '</a></span>')
 			.insertBefore(
 				jS.obj.tabContainer().find('span:last')
 			);
@@ -2340,11 +2340,11 @@ var cE = jQuery.calculationEngine = {
 	TEST: {},
 	ERROR: "#VALUE!",
 	cFN: {//cFN = compiler functions, usually mathmatical
-		SUM: 	function(x, y) { return x + y; },
-		MAX: 	function(x, y) { return x > y ? x: y; },
-		MIN: 	function(x, y) { return x < y ? x: y; },
-		COUNT: 	function(x, y) { return (y != null) ? x + 1: x; },
-		CLEAN: function(v) {
+		sum: 	function(x, y) { return x + y; },
+		max: 	function(x, y) { return x > y ? x: y; },
+		min: 	function(x, y) { return x < y ? x: y; },
+		count: 	function(x, y) { return (y != null) ? x + 1: x; },
+		clean: function(v) {
 			if (typeof(v) == 'string') {
 				v = v.replace(cE.regEx.amp, '&')
 						.replace(cE.regEx.nbsp, ' ')
@@ -2352,6 +2352,38 @@ var cE = jQuery.calculationEngine = {
 						.replace(/\r/g,'');
 			}
 			return v;
+		},
+		input: {
+			select: {
+				obj: function() { return jQuery('<select style="width: 100%;" onchange="cE.cFN.input.setValue(jQuery(this).val(), jQuery(this).parent());" class="clickable" />'); }
+			},
+			radio: {
+				obj: function(v) {v
+					var radio = jQuery('<div class="clickable" />');
+					var name = cE.cFN.input.radio.name();
+					for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
+						if (v[i]) {
+							radio.append('<input onchange="cE.cFN.input.setValue(jQuery(this).val(), jQuery(this).parent().parent());" type="radio" value="' + v[i] + '" name="' + name + '" />' + v[i] + '<br />');
+						}
+					}
+					return radio;
+				},
+				name: function() {
+					return 'table' + cE.thisCell.tableI + '_cell_c' + (cE.thisCell.col - 1) + '_r' + (cE.thisCell.row - 1) + 'radio';
+				}
+			},
+			checkbox: {
+				obj: function(v) {
+					return jQuery('<input onclick="cE.cFN.input.setValue(jQuery(this).is(\':checked\') + \'\', jQuery(this).parent());" type="checkbox" value="' + v + '" />' + v + '<br />');
+				}
+			},
+			setValue: function(v, p) {
+				p.attr('selectedvalue', v);
+				jS.calc(jS.i);
+			},
+			getValue: function() {
+				return jQuery(jS.getTd(cE.thisCell.tableI, cE.thisCell.row - 1, cE.thisCell.col - 1)).attr('selectedvalue');
+			}
 		}
 	},
 	fn: {//fn = standard functions used in cells
@@ -2360,7 +2392,6 @@ var cE = jQuery.calculationEngine = {
 		},
 		IMG: function(v) {
 			return jS.controlFactory.safeImg(v, cE.calcState.row, cE.calcState.col);
-;
 		},
 		AVERAGE:	function(values) { 
 			var arr = cE.foldPrepare(values, arguments);
@@ -2370,9 +2401,9 @@ var cE = jQuery.calculationEngine = {
 			return cE.fn.AVERAGE(values);
 		},
 		COUNT: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.COUNT, 0); },
-		SUM: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.SUM, 0, true); },
-		MAX: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.MAX, Number.MIN_VALUE, true); },
-		MIN: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.MIN, Number.MAX_VALUE, true); },
+		SUM: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.sum, 0, true); },
+		MAX: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.max, Number.MIN_VALUE, true); },
+		MIN: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.min, Number.MAX_VALUE, true); },
 		ABS	: 		function(v) { return Math.abs(cE.fn.N(v)); },
 		CEILING: 	function(v) { return Math.ceil(cE.fn.N(v)); },
 		FLOOR: 		function(v) { return Math.floor(cE.fn.N(v)); },
@@ -2380,16 +2411,16 @@ var cE = jQuery.calculationEngine = {
 		ROUND: 		function(v) { return Math.round(cE.fn.N(v)); },
 		RAND: 		function(v) { return Math.random(); },
 		RND: 		function(v) { return Math.random(); },
-		TRUE: 		function() { return true; },
-		FALSE: 		function() { return false; },
+		TRUE: 		function() { return 'TRUE'; },
+		FALSE: 		function() { return 'FALSE'; },
 		NOW: 		function() { return new Date ( ); },
 		TODAY: 		function() { return Date( Math.floor( new Date ( ) ) ); },
 		DAYSFROM: 	function(year, month, day) { 
 			return Math.floor( (new Date() - new Date (year, (month - 1), day)) / 86400000);
 		},
 		IF:			function(v, t, f){
-			t = cE.cFN.CLEAN(t);
-			f = cE.cFN.CLEAN(f);
+			t = cE.cFN.clean(t);
+			f = cE.cFN.clean(f);
 			
 			try { v = eval(v); } catch(e) {};
 			try { t = eval(t); } catch(e) {};
@@ -2453,6 +2484,7 @@ var cE = jQuery.calculationEngine = {
 			return v;
 		},
 		HYPERLINK: function(link, name) {
+			name = (name ? name : 'LINK');
 			return jQuery('<a href="' + link + '" target="_new" class="clickable">' + name + '</a>');
 		},
 		DOLLAR: 	function(v, decimals, symbol) { 
@@ -2487,70 +2519,64 @@ var cE = jQuery.calculationEngine = {
 		},
 		
 		//Note, form objects are experimental, they don't work always as expected
-		LIST:		function(v, noBlank) {
-			/*var cell = jQuery(jS.getTd(cE.calcState.row, cE.calcState.col - 1));	
-			var cellValues = cE.foldPrepare(v, arguments);
-			var cellSelectedValue = cell.find('select').val();
-			var selectObj = jQuery('<select style="width: 100%;" onchange="jS.calc(jS.obj.sheet());" class="clickable">' + (!noBlank ? '<option value="empty">Select a value</option>' : '') + '</select>');
-			var selected = '';
-			for (var i = 0; i < (cellValues.length <= 25 ? cellValues.length : 25); i++) {
-				var v = '';
-				if (selected != 'SELECTED' && cellValues[i] == cellSelectedValue) {
-					v = selected = 'SELECTED';
+		INPUT: {
+			SELECT:	function(v, noBlank) {
+				v = cE.foldPrepare(v, arguments);
+				
+				var selectObj = cE.cFN.input.select.obj();
+				
+				if (!noBlank) {
+					selectObj.append('<option value="">Select a value</option>');
 				}
-				if (cellValues[i]) {
-					selectObj.append('<option ' + v + ' value="' + cellValues[i] + '">' + cellValues[i] + '</option>');
+				
+				for (var i = 0; i < (v.length <= 50 ? v.length : 50); i++) {
+					if (v[i]) {
+						selectObj.append('<option value="' + v[i] + '">' + v[i] + '</option>');
+					}
+				}
+				
+				selectObj.val(cE.cFN.input.getValue())
+				
+				return selectObj;
+			},
+			SELECTVAL:	function(v) {
+				return jQuery(v).val();
+			},
+			RADIO: function(v) {
+				v = cE.foldPrepare(v, arguments);
+				var o = cE.cFN.input.radio.obj(v);
+				
+				o.find('input[value="' + cE.cFN.input.getValue() + '"]').attr('CHECKED', 'true');
+				
+				return o
+			},
+			RADIOVAL: function(v) {
+				v = cE.foldPrepare(v, arguments);
+				return jQuery(v).find('input:checked').val();
+			},
+			CHECKBOX: function(v) {
+				v = cE.foldPrepare(v, arguments)[0];
+				var o = cE.cFN.input.checkbox.obj(v);
+				var checked = cE.cFN.input.getValue();
+				if (checked == 'true' || checked == true) {
+					o.attr('CHECKED', 'TRUE');
+				} else {
+					o.removeAttr('CHECKED');
+				}
+				return o;
+			},
+			CHECKBOXVAL: function(v) {
+				v = cE.foldPrepare(v, arguments);
+				return jQuery(v).val();
+			},
+			ISCHECKED:		function(v) {
+				var checked = jQuery(v).is(":checked");
+				if (checked) {
+					return 'TRUE';
+				} else {
+					return 'FALSE';
 				}
 			}
-			
-			return selectObj;*/
-		},
-		INPUTVAL:	function(v) {
-			return jQuery(v).val();
-		},
-		ISCHECKED:		function(v) {
-			return v.match("checked");
-		},
-		RADIO: function() {	
-			/*var cellValues = cE.foldPrepare(v, arguments);
-			var cellSelectedValue = jQuery(cE.calcState.cell).find(':checked').val();
-			var radioContainer = jQuery('<div />');
-			var checked = '';
-			for (var i = 0; i < (cellValues.length <= 25 ? cellValues.length : 25); i++) {
-				var v = '';
-				if (checked != 'CHECKED' && cellValues[i] == cellSelectedValue) {
-					v = checked = 'CHECKED';
-				}
-				radioContainer.append('<input type="radio" ' + v + ' value="' + cellValues[i] + '" name="radioGroup' + jS.getTdId(cE.calcState.row, cE.calcState.col) + '" />Test');
-			}
-			
-			return jQuery(radioContainer);*/
-		},
-		CHECKBOX:		function(v) {
-			/*var cell = jQuery(jS.getTd(cE.calcState.row, cE.calcState.col - 1));
-			var cellValues = cE.foldPrepare(v, arguments);
-			var checkbox = cell.find('input');
-			jS.log('Cell html' + cell.html());
-			if (checkbox.attr('type') == "checkbox") {
-				return checkbox;
-			} else {
-				return jQuery('<input type="checkbox" ' + (checkbox.is(':checked') ? "CHECKED" : "") + ' value="' + v + '" class="clickable" />');
-			}
-			
-			var cell = jQuery(jS.getTd(cE.calcState.row, cE.calcState.col - 1));	
-			var cellValues = cE.foldPrepare(v, arguments);
-			var cellSelectedValue = cell.find('select').val();
-			var selectObj = jQuery('<select style="width: 100%;" onchange="jS.calc(jS.obj.sheet());" class="clickable">' + (!noBlank ? '<option value="empty">Select a value</option>' : '') + '</select>');
-			var selected = '';
-			for (var i = 0; i < (cellValues.length <= 25 ? cellValues.length : 25); i++) {
-				var v = '';
-				if (selected != 'SELECTED' && cellValues[i] == cellSelectedValue) {
-					v = selected = 'SELECTED';
-				}
-				selectObj.append('<option ' + v + ' value="' + cellValues[i] + '">' + cellValues[i] + '</option>');
-			}
-			
-			return selectObj;*/
 		},
 		CHART: {
 			BAR:	function(v, legend, axisLabels, w, h) {
@@ -2869,7 +2895,9 @@ var cE = jQuery.calculationEngine = {
 		fn.col = col;
 		return fn;
 	},
+	thisCell: null,
 	makeFormulaEval: function(cell, row, col, formulaFunc) {
+		cE.thisCell = cell;
 		var fn = function() {
 			try {
 				var v = formulaFunc();
