@@ -1333,7 +1333,7 @@ var jS = jQuery.sheet = {
 				var controlsHeight;
 				var parent = jQuery(jS.s.parent);
 				
-				parent.resizable({
+				parent.resizable( 'destroy' ).resizable({
 					minWidth: jS.s.width * 0.5,
 					minHeight: jS.s.height * 0.5,
 					resize: function() {
@@ -1790,6 +1790,10 @@ var jS = jQuery.sheet = {
 		jS.sheetSyncSize();
 		jS.replaceWithSafeImg(jS.obj.sheet().find('img'));
 	},
+	openSheetURL: function ( url ) {
+		jS.s.urlGet = url;
+		return jS.openSheet();
+	},
 	openSheet: function(o) {
 		if (!jS.isDirty ? true : confirm("Are you sure you want to open a different sheet?  All unsaved changes will be lost.")) {
 			jS.controlFactory.header();
@@ -1822,6 +1826,9 @@ var jS = jQuery.sheet = {
 					}, false);
 				});
 			}
+			return true;
+		} else {
+			return false;
 		}
 	},
 	newSheetDialog: "What size would you like to make your spreadsheet? Example: '5x10' creates a sheet that is 5 columns by 10 rows.",
