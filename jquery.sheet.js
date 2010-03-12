@@ -3,7 +3,7 @@ jQuery.sheet() Spreadsheet with Calculations Plugin
 Version: 1b
 http://code.google.com/p/jquerysheet/
 		
-Copyright (C) 2009 Robert Plummer
+Copyright (C) 2010 Robert Plummer
 Dual licensed under the LGPL and GPL licenses.
 http://www.gnu.org/licenses/
 */
@@ -952,7 +952,7 @@ var jS = jQuery.sheet = {
 						.focus()
 						.select();
 					
-					jQuery(e.target).parent().css('cursor', 'pointer');
+					target.parent().css('cursor', 'pointer');
 					
 					jS.log('stop resizing');
 				}
@@ -2030,6 +2030,9 @@ var jS = jQuery.sheet = {
 				docs.push(doc); //append to documents
 			});
 			return docs;
+		},
+		html: function() {
+			return jS.sheetDecorateRemove(true);
 		}
 	},
 	sheetSyncSizeToDivs: function() {

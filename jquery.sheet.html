@@ -38,26 +38,45 @@
 	<script type="text/javascript">
 		$(function() {
 			$('#jQuerySheet').sheet({
-				title: 'jQuery.sheet - The Web Based Spreadsheet',
+				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
 				inlineMenu: jQuery('#inlineMenu').html()
 			});
-			$('#switcher').themeswitcher();
+			$('#themeSwitcher').themeswitcher();
 		});
 	</script>
 </head>
 <body>
-	<div class="ui-widget-header" style="padding: 12px; text-align: center; height: 30px;"><span>jQuery.sheet is now jQuery UI - ThemeRoller Compatable!</span> <div style="float: left; margin-left: 40%; position: absolute;" id="switcher"></div></div>
 	<table style="width: 100%;">
 		<tr>
 			<td rowspan="2" style="width: 20%;">				
-				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec eget justo urna. Donec diam arcu, dictum ac commodo sit amet, varius vitae dolor. Proin bibendum felis tortor, ac sodales dolor. Donec adipiscing risus at mi laoreet adipiscing. Praesent nec ante vel mauris sollicitudin rutrum. Integer tortor diam, aliquam a imperdiet vitae, laoreet pulvinar felis. Mauris vitae est orci. Etiam condimentum lorem sit amet turpis venenatis tincidunt. Aliquam tempus dictum magna, ac ornare odio placerat in. Integer ac hendrerit metus. Vivamus nunc nisi, euismod ut pellentesque ac, luctus vitae turpis. Quisque in fermentum purus. Proin venenatis, nunc at venenatis convallis, nulla dolor iaculis orci, at fermentum lacus massa sed est.
-			</td>
-			<td id="donate">
 				<form method="post" action="https://www.paypal.com/cgi-bin/webscr" name="_xclick"><input type="hidden" name="cmd" value="_xclick"/><input type="hidden" name="business" value="axel180@aim.com"/><input type="hidden" name="item_name" value="jQuery.Sheet Development"/><input type="hidden" name="currency_code" value="USD"/><input type="hidden" name="amount" value="25.00"/><input type="image" border="0" s="" fast,="" free="" and="" secure!?="" name="submit" src="http://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" alt="Make payments with PayPal - it"/> <br/>Buy my a couple gallons of gas :)</form>
-			</td>
-			<td></td>
-			<td rowspan="2" style="width: 20%;">
-				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec eget justo urna. Donec diam arcu, dictum ac commodo sit amet, varius vitae dolor. Proin bibendum felis tortor, ac sodales dolor. Donec adipiscing risus at mi laoreet adipiscing. Praesent nec ante vel mauris sollicitudin rutrum. Integer tortor diam, aliquam a imperdiet vitae, laoreet pulvinar felis. Mauris vitae est orci. Etiam condimentum lorem sit amet turpis venenatis tincidunt. Aliquam tempus dictum magna, ac ornare odio placerat in. Integer ac hendrerit metus. Vivamus nunc nisi, euismod ut pellentesque ac, luctus vitae turpis. Quisque in fermentum purus. Proin venenatis, nunc at venenatis convallis, nulla dolor iaculis orci, at fermentum lacus massa sed est.
+				<br />
+				<b>Did you know?</b>
+				<ul>
+					<li>jQuery.sheet supports multi spreadsheets</li>
+					<li>Within a single sheet, you can reference cell values by using the syntax like "A1" or a group of cells like this "A1:B4"</li>
+					<li>Within multi sheets, you can reference cell values from other sheets by using the syntax like "SHEET2:A1" or a group of cells like this "SHEET2:A1:B4"</li>
+					<li>jQuery.sheet is licensed under Dual licensed under the LGPL and GPL licenses (http://www.gnu.org/licenses)</li>
+					<li>
+						jQuery.sheet uses <a href="http://jqueryui.com/themeroller/">jQuery UI Themeroller</a>, which lets you change your theme at anytime <br />
+						<span id="themeSwitcher"></span>
+					</li>
+					<li>jQuery.sheet has built in methods to export the sheet as
+						<ul>
+							<li>HTML: jQuery.sheet.export.html()</li>
+							<li>XML: jQuery.sheet.export.xml()</li>
+							<li>jSON: jQuery.sheet.export.json()</li>
+						</ul>
+					</li>
+					<li>When coding with jQuery.sheet, you can use it's shorthand "jS", example: jS.openSheet(tableObjects)</li>
+					<li>jQuery.sheet won't effect html around it</li>
+					<li>jQuery.sheet and it's spreadsheet cell location bars are resizable (dependant on jQuery UI)</li>
+				</ul>				
+				<b>What spreadsheet would you like to load?</b>
+				<ul>
+					<li><a href="#" onclick="$('<div />').load('documentation.html', function(o) { jS.openSheet(o);}); return false;">Documentation</a></li>
+					<li><a href="#" onclick="$('<div />').load('numberstesting.html', function(o) { jS.openSheet(o);}); return false;">Numbers Testing</a></li>
+				</ul>
 			</td>
 		</tr>
 		<tr>
@@ -736,11 +755,6 @@
 						</tr>
 					</table>
 				</div>
-			</td>
-		</tr>
-		<tr>
-			<td colspan="4">
-				Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec eget justo urna. Donec diam arcu, dictum ac commodo sit amet, varius vitae dolor. Proin bibendum felis tortor, ac sodales dolor. Donec adipiscing risus at mi laoreet adipiscing. Praesent nec ante vel mauris sollicitudin rutrum. Integer tortor diam, aliquam a imperdiet vitae, laoreet pulvinar felis. Mauris vitae est orci. Etiam condimentum lorem sit amet turpis venenatis tincidunt. Aliquam tempus dictum magna, ac ornare odio placerat in. Integer ac hendrerit metus. Vivamus nunc nisi, euismod ut pellentesque ac, luctus vitae turpis. Quisque in fermentum purus. Proin venenatis, nunc at venenatis convallis, nulla dolor iaculis orci, at fermentum lacus massa sed est.
 			</td>
 		</tr>
 	</table>
