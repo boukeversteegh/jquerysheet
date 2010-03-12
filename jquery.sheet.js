@@ -232,7 +232,7 @@ var jS = jQuery.sheet = {
 			jQuery(newRow).find('td')
 				.html('')
 				.attr('class', '')
-				.removeAttr('function')
+				.removeAttr('formula')
 				.keydown(function(e) {
 					return jS.evt.formulaKeyDown(e, true);
 				});
