@@ -9,7 +9,7 @@
 		<link rel="stylesheet" type="text/css" href="jquery.sheet.css"></link>
 		<link rel="stylesheet" type="text/css" href="theme/jquery-ui-1.8rc3.custom.css"></link>
 		<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
-		<script type="text/javascript" src="jquery.sheet.js"></script>
+		<script type="text/javascript" src="jquery.sheet.min.js"></script>
 	<!--/Required-->
 	
 	<!--Optional-->
@@ -37,10 +37,46 @@
 	
 	<script type="text/javascript">
 		$(function() {
+			
 			$('#jQuerySheet').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
 				inlineMenu: jQuery('#inlineMenu').html()
 			});
+			
+			/*
+			//examples of how to use jQuery.sheet
+			
+			//Inline sheet(s), non-editable (like a gridview)
+			$('#jQuerySheet').sheet({
+				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
+				inlineMenu: jQuery('#inlineMenu').html(),
+				buildSheet: true, //will turn object #jQuerySheet's child tables into sheets
+				editable: false,
+				calcOff: true
+			});
+			
+			//New single custom sized sheet
+			$('#jQuerySheet').sheet({
+				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
+				inlineMenu: jQuery('#inlineMenu').html(),
+				buildSheet: '5x100'
+			});
+			
+			//Custom object sheet(s)
+			$('#jQuerySheet').sheet({
+				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
+				inlineMenu: jQuery('#inlineMenu').html(),
+				buildSheet: $('#jQuerySheet').find('table')
+			});
+			
+			//Custom object sheet(s)
+			$('#jQuerySheet').sheet({
+				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
+				inlineMenu: jQuery('#inlineMenu').html(),
+				buildSheet: jS.controlFactory.sheet('5x100').add(jS.controlFactory.sheet('5x100'))
+			});
+			*/
+			
 			$('#themeSwitcher').themeswitcher();
 		});
 	</script>
@@ -49,8 +85,15 @@
 	<table style="width: 100%;">
 		<tr>
 			<td rowspan="2" style="width: 20%;">				
-				<form method="post" action="https://www.paypal.com/cgi-bin/webscr" name="_xclick"><input type="hidden" name="cmd" value="_xclick"/><input type="hidden" name="business" value="axel180@aim.com"/><input type="hidden" name="item_name" value="jQuery.Sheet Development"/><input type="hidden" name="currency_code" value="USD"/><input type="hidden" name="amount" value="25.00"/><input type="image" border="0" s="" fast,="" free="" and="" secure!?="" name="submit" src="http://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" alt="Make payments with PayPal - it"/> <br/>Buy my a couple gallons of gas :)</form>
+				<form method="post" action="https://www.paypal.com/cgi-bin/webscr" name="_xclick"><input type="hidden" name="cmd" value="_xclick"/><input type="hidden" name="business" value="axel180@aim.com"/><input type="hidden" name="item_name" value="jQuery.Sheet Development"/><input type="hidden" name="currency_code" value="USD"/><input type="hidden" name="amount" value="25.00"/><input type="image" border="0" name="submit" src="http://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" alt="Make payments with PayPal - it"/> <br/>Buy my a couple gallons of gas :)</form>
 				<br />
+				<span id="themeSwitcher"></span>
+				<br />
+				<b>What spreadsheet would you like to load?</b>
+				<ul>
+					<li><a href="#" onclick="$('<div />').load('documentation.html', function(o) { jS.openSheet(o);}); return false;">Documentation</a></li>
+					<li><a href="#" onclick="$('<div />').load('numberstesting.html', function(o) { jS.openSheet(o);}); return false;">Numbers Testing</a></li>
+				</ul>
 				<b>Did you know?</b>
 				<ul>
 					<li>jQuery.sheet supports multi spreadsheets</li>
@@ -58,8 +101,7 @@
 					<li>Within multi sheets, you can reference cell values from other sheets by using the syntax like "SHEET2:A1" or a group of cells like this "SHEET2:A1:B4"</li>
 					<li>jQuery.sheet is licensed under Dual licensed under the LGPL and GPL licenses (http://www.gnu.org/licenses)</li>
 					<li>
-						jQuery.sheet uses <a href="http://jqueryui.com/themeroller/">jQuery UI Themeroller</a>, which lets you change your theme at anytime <br />
-						<span id="themeSwitcher"></span>
+						jQuery.sheet uses <a href="http://jqueryui.com/themeroller/">jQuery UI Themeroller</a>, which lets you change your theme
 					</li>
 					<li>jQuery.sheet has built in methods to export the sheet as
 						<ul>
@@ -72,16 +114,11 @@
 					<li>jQuery.sheet won't effect html around it</li>
 					<li>jQuery.sheet and it's spreadsheet cell location bars are resizable (dependant on jQuery UI)</li>
 				</ul>				
-				<b>What spreadsheet would you like to load?</b>
-				<ul>
-					<li><a href="#" onclick="$('<div />').load('documentation.html', function(o) { jS.openSheet(o);}); return false;">Documentation</a></li>
-					<li><a href="#" onclick="$('<div />').load('numberstesting.html', function(o) { jS.openSheet(o);}); return false;">Numbers Testing</a></li>
-				</ul>
 			</td>
 		</tr>
 		<tr>
 			<td colspan="2">
-				<div id="jQuerySheet" style="height: 600px;">
+				<div id="jQuerySheet" style="height: 450px;">
 					<table title="Spreeadsheet 1">
 						<tr>
 							<td></td>

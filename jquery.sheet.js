@@ -17,6 +17,38 @@ http://www.gnu.org/licenses/
 		DOM elements are all 0 based (tr/td/table)
 		Spreadsheet elements are all 1 based (A1, A1:B4, TABLE2:A1, TABLE2:A1:B4)
 		Column/Row/Cell
+	sheet import and export methods structure (jS.importSheet.xml(obj), jS.importSheet.json(obj), jS.exportSheet.xml(), jS.exportSheet.json());
+		xml structure:
+			//xml
+			<documents>
+				<document> //repeats
+					<metadata>
+						<columns>{Column_Count}</columns>
+						<rows>{Row_Count}</rows>
+						<title></title>
+					</metadata>
+					<data>
+						<r{Row_Index}> //repeats
+							<c{Column_Index}></c{Column_Index}> //repeats
+						</r{Row_Index}>
+					</data>
+				</document>
+			</documents>
+		json structure:
+			var documents = [
+				document: { //repeats
+					metadata: {
+						columns: Column_Count,
+						rows: Row_Count,
+						title: ''
+					},
+					data: {
+						r{Row_Index}: { //repeats
+							c{Column_Index}: '' //repeats
+						}
+					}
+				}
+			];
 */
 
 jQuery.fn.extend({
@@ -94,6 +126,12 @@ jQuery.fn.extend({
 				cE.fn[kLower] = cE.fn[k];
 			}
 		}
+		
+		jQuery(window).resize(function() {
+			jS.s.width = jQuery(jS.s.parent).width() - jS.obj.barLeft().width() - (jS.attrH.boxModelCorrection() * 2);
+			jS.s.height = jQuery(jS.s.parent).height() - jS.attrH.boxModelCorrection();
+			jS.sheetSyncSize();
+		});
 		
 		jS.openSheet(obj);		
 	}
@@ -1889,12 +1927,40 @@ var jS = jQuery.sheet = {
 		jS.calc(jS.i);
 	},
 	importSheet: {
+		xml: function (data) { //Will not accept CDATA tags
+			var table = jQuery('<table />');
+			var tbody = jQuery('<tbody />').appendTo(table);
+			
+			jQuery(data).find('document').each(function() { //document
+				var metaData = jQuery(this).find('metadata');
+				var columnCount = metaData.find('columns').text();
+				var rowCount = metaData.find('rows').text();
+				var title = metaData.find('title').html();
+				jQuery(this).find('data').children().each(function(i) { //rows
+					var thisRow = jQuery('<tr />');
+					jQuery(this).children().each(function(j) { //columns
+						var o = jQuery(this).html();
+						if (o.charAt(0) == '=') {
+							thisRow.append('<td formula="' + o + '" />');
+						} else {
+							thisRow.append('<td>' + o + '</td>');
+						}
+					});
+					tbody.append(thisRow);
+				});
+			});
+			
+			return table;
+		},
 		json: function(data) {
 			jS.i = jS.sheetCount + 1;
 			sheet = eval('(' + data + ')');
 			size_c = sheet["metadata"]["columns"] * 1 + 5;
 			size_r = sheet["metadata"]["rows"] * 1 + 1;
-			var table = jQuery("<table id='" + jS.id.sheet + jS.i + "' class='" + jS.cl.sheet + "' />");
+			title = sheet["metadata"]["title"];
+			title = (title ? title : "");
+			
+			var table = jQuery("<table id='" + jS.id.sheet + jS.i + "' class='" + jS.cl.sheet + "' title='" + title + "' />");
 			
 			var cur_row;
 			for(var x = 1; x <= size_r; x++)
@@ -1914,7 +1980,7 @@ var jS = jQuery.sheet = {
 					cur_val = sheet["data"][row][column];
 					cur_column = table.find('table' + jS.i + '_' + 'cell_' + column + '_r' + row).text(cur_val);
 					
-					if (cur_val.substr(0,1) == '=')
+					if (cur_val.charAt(0) == '=')
 					{
 						cur_column.attr("formula", cur_val);
 					}
@@ -1930,6 +1996,8 @@ var jS = jQuery.sheet = {
 			var result = "";
 			jQuery(sheetClone).each(function() {
 				var x = '';
+				var title = jQuery(this).attr('title');
+				
 				var count = 0;
 				var cur_column = cur_row = '';
 				var max_column = max_row = 0;
@@ -1973,6 +2041,7 @@ var jS = jQuery.sheet = {
 							'<metadata>' + 
 								'<columns>' + max_column + '</columns>' + 
 								'<rows>' + max_row + '</rows>' + 
+								'<title>' + title + '</title>' + 
 							'</metadata>' + 
 							'<data>' + x + '</data>' + 
 						'</document>';
@@ -1985,7 +2054,13 @@ var jS = jQuery.sheet = {
 			var docs = []; //documents
 			
 			jQuery(sheetClone).each(function() {
-				var doc = {metadata:{},data:{}};
+				var doc = {
+					metadata:{},
+					data:{}
+				};
+				
+				doc.metadata.title = jQuery(this).attr('title');
+				
 				var count = 0;
 				var cur_column = cur_row = '';
 				var max_column = max_row = 0;
