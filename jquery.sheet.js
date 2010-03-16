@@ -1875,7 +1875,7 @@ var jS = jQuery.sheet = {
 		}
 	},
 	importRow: function(rowArray) {
-		jS.controlFactory.addRow();
+		jS.controlFactory.addRow(null, null, ':last');
 
 		var error = "";
 		jS.obj.sheet().find('tr:last td').each(function(i) {
@@ -2494,7 +2494,9 @@ var cE = jQuery.calculationEngine = {
 		CEILING: 	function(v) { return Math.ceil(cE.fn.N(v)); },
 		FLOOR: 		function(v) { return Math.floor(cE.fn.N(v)); },
 		INT: 		function(v) { return Math.floor(cE.fn.N(v)); },
-		ROUND: 		function(v) { return Math.round(cE.fn.N(v)); },
+		ROUND: 		function(v, decimals) {
+			return cE.fn.FIXED(v, (decimals ? decimals : 0), false);
+		},
 		RAND: 		function(v) { return Math.random(); },
 		RND: 		function(v) { return Math.random(); },
 		TRUE: 		function() { return 'TRUE'; },
