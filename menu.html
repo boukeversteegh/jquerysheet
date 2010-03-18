@@ -55,7 +55,8 @@
 	<a menu="menuEditRow">Row</a>
 	<a menu="menuEditSheet">Sheet</a>
 	<a onclick="jS.cellFind();">Find</a>
-	<a onclick="jS.getTdRange();">Get Cell Range</a>
+	<a onclick="jS.appendToFormula(jS.getTdRange());">Get Cell Range</a>
+	<a menu="menuEditGetCellRangeAndWrap">Get Cell Range And Wrap With Function</a>
 </div>
 
 <div id="menuEditColumn" class="menu">
@@ -80,6 +81,14 @@
 	<a onclick="jS.addSheet();" title="Add new spreadsheet.">Add Spreadsheet</a>
 	<a onclick="jS.calc(jS.obj.tableBody());" title="Recompiles the current sheet">Refresh Calculations</a>
 	<a onclick="jS.sheetTitle();" title="Change the title of the sheet.">Title</a>
+</div>
+
+<div id="menuEditGetCellRangeAndWrap" class="menu">
+	<a onclick="jS.appendToFormula('SUM(' + jS.getTdRange() + ')');" title="Wrap with SUM">SUM()</a>
+	<a onclick="jS.appendToFormula('CEILING(' + jS.getTdRange() + ')');" title="Wrap with CEILING">CEILING()</a>
+	<a onclick="jS.appendToFormula('COUNT(' + jS.getTdRange() + ')');" title="Wrap with COUNT">COUNT()</a>
+	<a onclick="jS.appendToFormula('MAX(' + jS.getTdRange() + ')');" title="Wrap with MAX">MAX()</a>
+	<a onclick="jS.appendToFormula('MIN(' + jS.getTdRange() + ')');" title="Wrap with MIN">MIN()</a>
 </div>
 
 <div id="menuStyle" class="menu">

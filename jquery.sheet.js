@@ -103,7 +103,7 @@ jQuery.fn.extend({
 		//jQuery(this).html(jS.s.loading);
 		jQuery(this).html('');
 		
-		jS.s.width = jQuery(this).innerWidth() - jS.s.colMargin - jS.attrH.boxModelCorrection();
+		jS.s.width = jQuery(this).width();
 		jS.s.height = jQuery(this).height();
 		
 		if (jS.s.log) {
@@ -128,8 +128,8 @@ jQuery.fn.extend({
 		}
 		
 		jQuery(window).resize(function() {
-			jS.s.width = jQuery(jS.s.parent).width() - jS.obj.barLeft().width() - (jS.attrH.boxModelCorrection() * 2);
-			jS.s.height = jQuery(jS.s.parent).height() - jS.attrH.boxModelCorrection();
+			jS.s.width = jQuery(jS.s.parent).width();
+			jS.s.height = jQuery(jS.s.parent).height();
 			jS.sheetSyncSize();
 		});
 		
@@ -1375,13 +1375,13 @@ var jS = jQuery.sheet = {
 				var controlsHeight;
 				var parent = jQuery(jS.s.parent);
 				
-				parent.resizable( 'destroy' ).resizable({
+				parent.resizable('destroy').resizable({
 					minWidth: jS.s.width * 0.5,
 					minHeight: jS.s.height * 0.5,
 					ghost: true,
 					stop: function() {						
-						jS.s.width = parent.width() - jS.obj.barLeft().width() - (jS.attrH.boxModelCorrection() * 2);
-						jS.s.height = parent.height() - jS.attrH.boxModelCorrection();
+						jS.s.width = parent.width();
+						jS.s.height = parent.height();
 						jS.sheetSyncSize();
 					}
 				});
@@ -2124,31 +2124,36 @@ var jS = jQuery.sheet = {
 		});
 		o.width(newSheetWidth);
 	},
-	sheetSyncSize: function(isAppend) {
+	sheetSyncSize: function() {
 		var h = jS.s.height;
 		if (!h) {
 			h = 400; //Height really needs to be set by the parent
 		} else if (h < 200) {
 			h = 200;
 		}
-		var w = jS.s.width;
+		
+		jS.obj.parent().height(h);
+		
+		var w = jS.s.width - jS.attrH.width(jS.obj.barLeftParent()) - (jS.attrH.boxModelCorrection());
+		
+		h = h - jS.attrH.height(jS.obj.controls()) - jS.attrH.height(jS.obj.barTopParent()) - (jS.attrH.boxModelCorrection() * 2);
 		
 		jS.obj.pane()
-			.height(
-				(h - jS.attrH.height(jS.obj.controls())) -
-				(jS.s.colMargin + 6)
-			)
+			.height(h)
 			.width(w)
-			.parent().width(w);
+			.parent()
+				.width(w);
 		
-		jS.obj.ui().width(w + jS.s.colMargin - jS.attrH.boxModelCorrection());
+		jS.obj.ui()
+			.width(w + jS.attrH.width(jS.obj.barLeftParent()));
 				
 		jS.obj.barLeftParent()
-			.height(jS.obj.pane().height());
+			.height(h);
 		
 		jS.obj.barTopParent()
-			.height(jS.s.colMargin)
-			.width(w).parent().width(w);
+			.width(w)
+			.parent()
+				.width(w);
 	},
 	cellFind: function(v) {
 		if(!v) {
@@ -2247,11 +2252,28 @@ var jS = jQuery.sheet = {
 		//Get labels for locationa and return them
 		
 		var cells = jS.obj.uiCell().not('.' + jS.cl.cell);
-		var firstCellLoc = jS.getTdLocation(cells.eq(0));
-		var firstLabel = cE.columnLabelString(firstCellLoc[1]) + firstCellLoc[0];
-		var lastCellLoc = jS.getTdLocation(cells.eq(cells.length - 1));
-		var lastLabel = cE.columnLabelString(lastCellLoc[1]) + lastCellLoc[0];
-		return firstLabel + ":" + lastLabel;
+		
+		if (cells.length) {
+			var loc = { //tr/td column and row index
+				first: jS.getTdLocation(cells.first()),
+				last: jS.getTdLocation(cells.last())
+			};
+			
+			//Adjust 0 based tr/td to cell/column/row index
+			loc.first[0]++;
+			loc.first[1]++;
+			loc.last[0]++;
+			loc.last[1]++;
+			
+			var label = {
+				first: cE.columnLabelString(loc.first[1]) + loc.first[0],
+				last: cE.columnLabelString(loc.last[1]) + loc.last[0]
+			};
+			
+			return label.first + ":" + label.last;
+		} else {
+			return '';
+		}
 	},
 	getTdId: function(tableI, row, col) {
 		return 'table' + tableI + '_cell_c' + col + '_r' + row;
@@ -2314,7 +2336,21 @@ var jS = jQuery.sheet = {
 	},
 	
 	isDirty:  false,
-	setDirty: function(dirty) { jS.isDirty = dirty; }
+	setDirty: function(dirty) { jS.isDirty = dirty; },
+	appendToFormula: function(v, o) {
+		var formula = jS.obj.formula();
+		if (formula.attr('disabled')) {
+			formula = jS.cellLast.td.find('textarea');
+		}
+		
+		var fV = formula.val();
+		
+		if (fV.charAt(0) != '=') {
+			fV = '=' + fV;
+		}
+		
+		formula.val(fV + v);
+	}
 };
 
 jS.tableCellProvider.prototype = {
@@ -2465,7 +2501,7 @@ var cE = jQuery.calculationEngine = {
 			},
 			setValue: function(v, p) {
 				p.attr('selectedvalue', v);
-				jS.calc(jS.i);
+				jS.calc(cE.calcState.i);
 			},
 			getValue: function() {
 				return jQuery(jS.getTd(cE.thisCell.tableI, cE.thisCell.row - 1, cE.thisCell.col - 1)).attr('selectedvalue');
@@ -2623,7 +2659,7 @@ var cE = jQuery.calculationEngine = {
 					}
 				}
 				
-				selectObj.val(cE.cFN.input.getValue())
+				selectObj.val(cE.cFN.input.getValue());
 				
 				return selectObj;
 			},
@@ -2636,7 +2672,7 @@ var cE = jQuery.calculationEngine = {
 				
 				o.find('input[value="' + cE.cFN.input.getValue() + '"]').attr('CHECKED', 'true');
 				
-				return o
+				return o;
 			},
 			RADIOVAL: function(v) {
 				v = cE.foldPrepare(v, arguments);
@@ -2705,7 +2741,8 @@ var cE = jQuery.calculationEngine = {
 			cellProvider:	cellProvider, 
 			context: 		(context != null ? context: {}),
 			row: 			1, 
-			col: 			1, 
+			col: 			1,
+			i:				cellProvider.tableI,
 			done:			false,
 			stack:			[],
 			calcMore: 		function(moreFuel) {
@@ -2787,7 +2824,7 @@ var cE = jQuery.calculationEngine = {
 		gt: 	'&gt;',
 		nbsp: 	'&nbps;'
 	},
-	parseFormula: function(formula, dependencies) { // Parse formula (without "=" prefix) like "123+SUM(A1:A6)/D5" into JavaScript expression string.
+	parseFormula: function(formula, dependencies, thisTableI) { // Parse formula (without "=" prefix) like "123+SUM(A1:A6)/D5" into JavaScript expression string.
 		var nrows = null;
 		var ncols = null;
 		if (cE.calcState.cellProvider != null) {
@@ -2858,9 +2895,9 @@ var cE = jQuery.calculationEngine = {
 			function(ignored, colStr, rowStr) {
 				colStr = colStr.toUpperCase();
 				if (dependencies != null) {
-					dependencies['SHEET' + jS.i + ':' + colStr + rowStr] = [parseInt(rowStr), cE.columnLabelIndex(colStr), jS.i];
+					dependencies['SHEET' + thisTableI + ':' + colStr + rowStr] = [parseInt(rowStr), cE.columnLabelIndex(colStr), thisTableI];
 				}
-				return "(cE.calcState.cellProvider.getCell((" + jS.i + "),(" + (rowStr) + "),\"" + (colStr) + "\").getValue())";
+				return "(cE.calcState.cellProvider.getCell((" + thisTableI + "),(" + (rowStr) + "),\"" + (colStr) + "\").getValue())";
 			}
 		);
 		return formula;
@@ -2893,13 +2930,13 @@ var cE = jQuery.calculationEngine = {
 				} else if (cE.calcState.cellProvider.formulaCells != null) {
 					if (cE.calcState.cellProvider.formulaCells.length > 0) {
 						var loc = cE.calcState.cellProvider.formulaCells.shift();
-						cE.visitCell(jS.i, loc[0], loc[1]);
+						cE.visitCell(cE.calcState.i, loc[0], loc[1]);
 					} else {
 						cE.calcState.done = true;
 						return null;
 					}
 				} else {
-					if (cE.visitCell(jS.i, cE.calcState.row, cE.calcState.col) == true) {
+					if (cE.visitCell(cE.calcState.i, cE.calcState.row, cE.calcState.col) == true) {
 						cE.calcState.done = true;
 						return null;
 					}
@@ -2937,7 +2974,7 @@ var cE = jQuery.calculationEngine = {
 							this.formulaFunc = null;
 							try {
 								var dependencies = {};
-								var body = cE.parseFormula(this.formula.substring(1), dependencies);
+								var body = cE.parseFormula(this.formula.substring(1), dependencies, tableI);
 								this.formulaFunc = function() {
 									with (cE.fn) {
 										return eval(body);
@@ -3021,7 +3058,7 @@ var cE = jQuery.calculationEngine = {
 				item.col != null &&
 				item.row == row  &&
 				item.col == col &&
-				tableI == jS.i
+				tableI == cE.calcState.i
 			) {
 				return true;
 			}

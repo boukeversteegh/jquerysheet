@@ -117,7 +117,7 @@
 			</td>
 		</tr>
 		<tr>
-			<td colspan="2">
+			<td colspan="2" style="vertical-align: top;">
 				<div id="jQuerySheet" style="height: 450px;">
 					<table title="Spreeadsheet 1">
 						<tr>
@@ -803,7 +803,7 @@
 			<a href="#" onclick="jS.controlFactory.addColumn(); return false;" title="Add Column" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Add Column" src="pics/icons/sheet_col_add.png"/></a>
 			<a href="#" onclick="jS.controlFactory.addColumnMulti(); return false;" title="Add Multi-Columns" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Add Multi-Columns" src="pics/icons/sheet_col_add_multi.png"/></a>
 			<a href="#" onclick="jS.deleteColumn(); return false;" title="Delete Column" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Delete Column" src="pics/icons/sheet_col_delete.png"/></a>
-			<a href="#" onclick='insertAt("jSheetControls_formula", jS.getTdRange());return false;' title="Get Cell Range" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Get Cell Range" src="pics/icons/sheet_get_range.png"/></a>
+			<a href="#" onclick='jS.appendToFormula("(" + jS.getTdRange() + ")"); return false;' title="Get Cell Range" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Get Cell Range" src="pics/icons/sheet_get_range.png"/></a>
 			<a href="#" onclick="jS.s.fnSave(); return false;" title="Save Sheet" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Save Sheet" src="pics/icons/disk.png"/></a>
 			<a href="#" onclick="jS.calc(jS.i); return false;" title="Refresh Calculations" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Refresh Calculations" src="pics/icons/arrow_refresh.png"/></a>
 			<a href="#" onclick="jS.cellFind(); return false;" title="Find" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Find" src="pics/icons/find.png"/></a>
