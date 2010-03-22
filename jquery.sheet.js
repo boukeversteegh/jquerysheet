@@ -2480,7 +2480,7 @@ var cE = jQuery.calculationEngine = {
 				obj: function() { return jQuery('<select style="width: 100%;" onchange="cE.cFN.input.setValue(jQuery(this).val(), jQuery(this).parent());" class="clickable" />'); }
 			},
 			radio: {
-				obj: function(v) {v
+				obj: function(v) {
 					var radio = jQuery('<span class="clickable" />');
 					var name = cE.cFN.input.radio.name();
 					for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
