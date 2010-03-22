@@ -58,7 +58,6 @@ jQuery.fn.extend({
 			urlSave: 		"save.html", 					//local url, for use only with the default save for sheet
 			editable: 		true, 							//bool, Makes the jSheetControls_formula & jSheetControls_fx appear
 			urlMenu: 		"menu.html", 					//local url, for the menu to the right of title
-			loading: 		'Loading Spreadsheet...', 		//depriciated
 			newColumnWidth: 120, 							//int, the width of new columns or columns that have no width assigned
 			title: 			null, 							//html, general title of the sheet group
 			inlineMenu:		null, 							//html, menu for editing sheet
