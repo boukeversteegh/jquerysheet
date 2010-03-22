@@ -1,6 +1,6 @@
 /*
 jQuery.sheet() Spreadsheet with Calculations Plugin
-Version: 1b
+Version: 1 Release Candidate 1
 http://code.google.com/p/jquerysheet/
 		
 Copyright (C) 2010 Robert Plummer
@@ -137,7 +137,7 @@ jQuery.fn.extend({
 });
 
 var jS = jQuery.sheet = {
-	version: '1b',
+	version: '1rc1',
 	i: 0,
 	sheetCount: 0,
 	s: {},//s = settings object, used for shorthand, populated from jQuery.sheet
