@@ -63,6 +63,8 @@
 #jSheetTabContainer
 {
 	vertical-align: bottom;
+	text-align: left ! important;
+	font-size: 0.8em ! important;
 }
 #jSheetTabContainer span
 {
