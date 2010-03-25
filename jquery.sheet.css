@@ -49,7 +49,7 @@
 .rootVoice, .rootVoice .selected
 {
 	padding: 2px ! important;
-	font-size: 12px ! important;
+	font-size: 1em ! important;
 }
 #titleHolder
 {
@@ -105,8 +105,7 @@
 	font-family: arial, serif;
 	overflow: hidden;
 	height: auto ! important;
-	border-spacing: 0px;
-	border-collapse: collapse;
+	border-spacing: 0px ! important;
 	border-width: 1px ! important;
 }
 .jSheet tbody
@@ -116,10 +115,10 @@
 	border-color: inherit ! important;
 }
 
-.jSheet th {
+.jSheet tr {
 	border-color: inherit ! important;
 	padding: 0px ! important;
-	border-style: inset inset inset inset;
+	border-style: solid ! important;
 	background-color: transparent;
 	-moz-border-radius: 0px 0px 0px 0px;
 	color:  inherit ! important;
@@ -128,8 +127,8 @@
 .jSheet td {
 	border-width: 1px ! important;
 	border-color: inherit ! important;
-	padding: 1px ! important;
-	border-style: inset ! important;
+	padding: 0px ! important;
+	border-style: solid ! important;
 	-moz-border-radius: 0px 0px 0px 0px;
 	overflow: hidden ! important;
     text-overflow: ellipsis ! important;
@@ -137,7 +136,7 @@
 	background-image: none ! important;
 	margin: 0px ! important;
 	padding: 0px ! important;
-	font-size: 12px ! important;
+	font-size: 1em ! important;
 	height: inherit ! important;
 	background-color: transparent;
 	color:  inherit;
@@ -147,7 +146,7 @@
 {
 	font-family: inherit;
 	border: inherit ! important;
-	font-size: 12px ! important;
+	font-size: 1em ! important;
 	color: inherit ! important;
 	background-color: inherit ! important;
 	margin: 0px ! important;
@@ -222,9 +221,10 @@
 .jSheetBarLeft div
 {
 	text-align: center;
-	font-size: 10px;
+	font-size: .8em;
 	height: inherit;
 	border-left: none ! important;
+	border-right: none ! important;
 	position: relative ! important;
 	vertical-align: middle ! important;
 	min-width: 14px ! important;
@@ -232,13 +232,14 @@
 .jSheetBarTop div
 {
 	text-align: center ! important;
-	font-size: 10px;
+	font-size: .8em;
 	float: left;
 	display:block;
 	height: inherit ! important;
 	padding-top: 2px;
 	overflow: hidden;
 	border-top: none ! important;
+	border-bottom: none ! important;
 }
 
 .safeImg

@@ -49,6 +49,9 @@ http://www.gnu.org/licenses/
 					}
 				}
 			];
+	DOCTYPE:
+		It is recommended to use STRICT doc types on the viewing page when using sheet to ensure that the heights/widths of bars and sheet rows show up correctly
+		Example of recommended doc type: <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 */
 
 jQuery.fn.extend({
@@ -206,6 +209,7 @@ var jS = jQuery.sheet = {
 		uiActive:		'ui-state-active',
 		uiBase:			'ui-widget-content',
 		uiParent: 		'ui-widget-content ui-corner-all',
+		uiSheet:		'ui-widget-content',
 		uiBar: 			'ui-widget-header',
 		uiPane: 		'ui-widget-content',
 		uiMenuUl: 		'ui-widget-header',
@@ -1322,7 +1326,7 @@ var jS = jQuery.sheet = {
 		start: function() {
 			//Style sheet			
 			jS.obj.parent().addClass(jS.cl.uiParent);
-			jS.obj.sheet().addClass(jS.cl.uiParent);
+			jS.obj.sheet().addClass(jS.cl.uiSheet);
 			//Style bars
 			jS.obj.barLeft().find('div').addClass(jS.cl.uiBar);
 			jS.obj.barTop().find('div').addClass(jS.cl.uiBar);
@@ -1810,6 +1814,7 @@ var jS = jQuery.sheet = {
 			return jS.getBarTopLocatoin(jS.obj.barTop().find('div:last').text());
 		}
 	},
+	isRowHeightSync: [],
 	setActiveSheet: function(o, i) {
 		if (o) {
 			o.show().siblings().hide();
@@ -1818,10 +1823,25 @@ var jS = jQuery.sheet = {
 			jS.obj.tab().parent().addClass('ui-state-highlight');
 			
 		} else {
+			i = 0;
 			jS.obj.tableControl().siblings().not('div').hide();
 			jS.obj.tabContainer().find('.ui-state-highlight').removeClass('ui-state-highlight');
 			jS.obj.tab().parent().addClass('ui-state-highlight');
 		}
+		
+		if (!jS.isRowHeightSync[i]) { //this makes it only run once, no need to have it run every time a user changes a sheet
+			jS.isRowHeightSync[i] = true;
+			jS.obj.sheet().find('tr').each(function(j) {
+				jS.attrH.setHeight(j, 'cell');
+				/*
+				fixes a wired bug with height in chrome and ie
+				It seems that at some point during the sheet's initializtion the height for each
+				row isn't yet clearly defined, this ensures that the heights for barLeft match 
+				that of each row in the currently active sheet when a user uses a non strict doc type.
+				*/
+			});
+		}
+		
 		jS.sheetSyncSize();
 		jS.replaceWithSafeImg(jS.obj.sheet().find('img'));
 	},
