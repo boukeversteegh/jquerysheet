@@ -64,13 +64,16 @@
 {
 	vertical-align: bottom;
 	text-align: left ! important;
-	font-size: 0.9em ! important;
 }
 #jSheetTabContainer span
 {
 	
 	padding: 2px 5px 0 5px ! important;
 	cursor: pointer;
+}
+#jSheetTabContainer *, .menuDiv *
+{
+	font-size: 1em ! important;
 }
 #sheetTitle
 {
