@@ -17,7 +17,7 @@
 <div id="menuView" class="menu">
 	<a onclick="jS.viewSource(true);" title="Shows the HTML that makes up the current spreadsheet.">Pretty Source</a>
 	<a onclick="jS.viewSource(false);" title="Shows the compact HTML that makes up the current spreadsheet.">Compact Source</a>
-	<a onclick="jS.print(jS.HTMLtoPrettySource(jQuery(jS.exportSheet.xml())[0]));">As XML</a>
+	<a onclick="jS.print(jS.HTMLtoPrettySource(jQuery(jS.exportSheet.xml(true))[0]));">As XML</a>
 	<a onclick="jS.print(jS.exportSheet.json());">As JSON</a>
 	<a menu="menuViewFunctionReference">Function Reference</a>
 </div>
@@ -79,6 +79,7 @@
 </div>
 <div id="menuEditSheet" class="menu">
 	<a onclick="jS.addSheet();" title="Add new spreadsheet.">Add Spreadsheet</a>
+	<a onclick="jS.deleteSheet();" title="Delete the current spreadsheet.">Delete Spreadsheet</a>
 	<a onclick="jS.calc(jS.obj.tableBody());" title="Recompiles the current sheet">Refresh Calculations</a>
 	<a onclick="jS.sheetTitle();" title="Change the title of the sheet.">Title</a>
 </div>
