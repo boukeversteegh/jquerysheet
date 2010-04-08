@@ -81,16 +81,21 @@ jQuery.fn.extend({
 				var t = prompt('Paste your table html here');
 				if (t) {
 					jS.openSheet(t);
-				}
+				},
 			},
 			fnClose: 		function() {}, //fn, default clase function, more of a proof of concept
 			joinedResizing: false, //bool, this joins the column/row with the resize bar
-			boxModelCorrection: 2 //int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
+			boxModelCorrection: 2, //int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
+			fnCalc: {} //object of funcionts example: { SUM: function (v1, v2) { v1 + v2; } } - should be used to extend the functions used in spreadsheets
 		}, settings);
 		jQuery.fn.sheet.settings = jS.s = settings;
 		jS.s.fnBefore();
 		
 		var obj;
+		
+		//Extend the calculations engine functions for use with spreadsheets
+		jQuery.extend(jS.s.fnCalc, cE.fn);
+		
 		if (jS.s.buildSheet) {//override urlGet, this has some effect on how the topbar is sized
 			if (typeof(jS.s.buildSheet) == 'object') {
 				obj = jS.s.buildSheet;
@@ -1399,7 +1404,6 @@ var jS = jQuery.sheet = {
 		clearCell: function() {
 			jS.obj.uiActive().removeClass(jS.cl.uiActive);
 			jS.obj.uiCell()
-				.removeAttr('style')
 				.removeClass(jS.cl.uiCellHighlighted)
 				.removeClass(jS.cl.uiCell);
 		},
