@@ -35,8 +35,20 @@ http://www.gnu.org/licenses/
 				</document>
 			</documents>
 		json structure:
-			var documents = [
-				document: { //repeats
+			[//documents
+				{ //document
+					metadata: {
+						columns: Column_Count,
+						rows: Row_Count,
+						title: ''
+					},
+					data: {
+						r{Row_Index}: { //repeats
+							c{Column_Index}: '' //repeats
+						}
+					}
+				},
+				{ //document
 					metadata: {
 						columns: Column_Count,
 						rows: Row_Count,
@@ -81,21 +93,16 @@ jQuery.fn.extend({
 				var t = prompt('Paste your table html here');
 				if (t) {
 					jS.openSheet(t);
-				},
+				}
 			},
 			fnClose: 		function() {}, //fn, default clase function, more of a proof of concept
 			joinedResizing: false, //bool, this joins the column/row with the resize bar
-			boxModelCorrection: 2, //int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
-			fnCalc: {} //object of funcionts example: { SUM: function (v1, v2) { v1 + v2; } } - should be used to extend the functions used in spreadsheets
+			boxModelCorrection: 2 //int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
 		}, settings);
 		jQuery.fn.sheet.settings = jS.s = settings;
 		jS.s.fnBefore();
 		
 		var obj;
-		
-		//Extend the calculations engine functions for use with spreadsheets
-		jQuery.extend(jS.s.fnCalc, cE.fn);
-		
 		if (jS.s.buildSheet) {//override urlGet, this has some effect on how the topbar is sized
 			if (typeof(jS.s.buildSheet) == 'object') {
 				obj = jS.s.buildSheet;
@@ -1358,15 +1365,11 @@ var jS = jQuery.sheet = {
 			o.remove('colgroup');
 			var colgroup = jQuery('<colgroup />');
 			o.find('tr:first').find('td').each(function() {
-				//var w = jQuery(this).width();
-				//jQuery(this)
-				//	.width(w)
-				//	.css('width', w)
-				//	.attr('width', w);
+				var w = jQuery(this).outerWidth() + (jS.attrH.boxModelCorrection() * 2);
 				jQuery('<col />')
-					.width(jS.s.newColumnWidth)
-					.css('width', jS.s.newColumnWidth + 'px')
-					.attr('width', jS.s.newColumnWidth + 'px')
+					.width(w)
+					.css('width', (w) + 'px')
+					.attr('width', (w) + 'px')
 					.appendTo(colgroup);
 			});
 			o.find('tr').each(function() {
@@ -1404,6 +1407,7 @@ var jS = jQuery.sheet = {
 		clearCell: function() {
 			jS.obj.uiActive().removeClass(jS.cl.uiActive);
 			jS.obj.uiCell()
+				.removeAttr('style')
 				.removeClass(jS.cl.uiCellHighlighted)
 				.removeClass(jS.cl.uiCell);
 		},
@@ -2036,42 +2040,44 @@ var jS = jQuery.sheet = {
 			
 			return table;
 		},
-		json: function(data) {
-			jS.i = jS.sheetCount + 1;
-			sheet = eval('(' + data + ')');
-			size_c = sheet["metadata"]["columns"] * 1 + 5;
-			size_r = sheet["metadata"]["rows"] * 1 + 1;
-			title = sheet["metadata"]["title"];
-			title = (title ? title : "");
+		json: function(data, makeEval) {
+			sheet = (makeEval == true ? eval('(' + data + ')') : data);
 			
-			var table = jQuery("<table id='" + jS.id.sheet + jS.i + "' class='" + jS.cl.sheet + "' title='" + title + "' />");
+			var tables = jQuery('<div />');
 			
-			var cur_row;
-			for(var x = 1; x <= size_r; x++)
-			{
-				cur_row = jQuery('<tr height="' + jS.s.colMargin + 'px" />').appendTo(table);
+			for (var i = 0; i < sheet.length; i++) {
+				jS.i = jS.sheetCount + 1;
+				size_c = parseInt(sheet[i].metadata.columns) - 1;
+				size_r = parseInt(sheet[i].metadata.rows) - 1;
+				title = sheet[i].metadata.title;
+				title = (title ? title : "Sreadsheet " + jS.i);
+			
+				var table = jQuery("<table id='" + jS.id.sheet + jS.i + "' class='" + jS.cl.sheet + "' title='" + title + "' />");
 				
-				for(var y = 1; y <= size_c; y++)
-				{
-					cur_row.append('<td id="' + 'table' + jS.i + '_' + 'cell_c' + y + '_r' + x + '" />');
-				}
-			}
-			
-			for (row in sheet["data"])
-			{
-				for (column in sheet["data"][row])
-				{
-					cur_val = sheet["data"][row][column];
-					cur_column = table.find('table' + jS.i + '_' + 'cell_' + column + '_r' + row).text(cur_val);
+				for (var x = 0; x <= size_r; x++) {				
+					var cur_row = jQuery('<tr />').appendTo(table);
 					
-					if (cur_val.charAt(0) == '=')
-					{
-						cur_column.attr("formula", cur_val);
+					for(var y = 0; y <= size_c; y++) {	
+						var cur_val = sheet[i].data["r" + (y + 1)]["c" + (x + 1)];
+					
+						var cur_td = jQuery('<td id="' + 'table' + jS.i + '_' + 'cell_c' + y + '_r' + x + '" />');
+						try {
+							if (cur_val.charAt(0) == '=')
+							{
+								cur_td.attr("formula", cur_val);
+							} else {
+								cur_td.html(cur_val);
+							}
+						} catch (e) {}
+					
+						cur_row.append(cur_td)
+
 					}
 				}
+				
+				tables.append(table);
 			}
-			
-			return table;
+			return tables.children();
 		}
 	},
 	exportSheet: {
@@ -2145,7 +2151,7 @@ var jS = jQuery.sheet = {
 			var docs = []; //documents
 			
 			jQuery(sheetClone).each(function() {
-				var doc = {
+				var doc = { //document
 					metadata:{},
 					data:{}
 				};
