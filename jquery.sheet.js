@@ -1,6 +1,6 @@
 /*
 jQuery.sheet() Spreadsheet with Calculations Plugin
-Version: 1.01
+Version: 1.0.2 SVN
 http://code.google.com/p/jquerysheet/
 		
 Copyright (C) 2010 Robert Plummer
@@ -35,20 +35,8 @@ http://www.gnu.org/licenses/
 				</document>
 			</documents>
 		json structure:
-			[//documents
-				{ //document
-					metadata: {
-						columns: Column_Count,
-						rows: Row_Count,
-						title: ''
-					},
-					data: {
-						r{Row_Index}: { //repeats
-							c{Column_Index}: '' //repeats
-						}
-					}
-				},
-				{ //document
+			var documents = [
+				document: { //repeats
 					metadata: {
 						columns: Column_Count,
 						rows: Row_Count,
@@ -1365,11 +1353,15 @@ var jS = jQuery.sheet = {
 			o.remove('colgroup');
 			var colgroup = jQuery('<colgroup />');
 			o.find('tr:first').find('td').each(function() {
-				var w = jQuery(this).outerWidth() + (jS.attrH.boxModelCorrection() * 2);
+				//var w = jQuery(this).width();
+				//jQuery(this)
+				//	.width(w)
+				//	.css('width', w)
+				//	.attr('width', w);
 				jQuery('<col />')
-					.width(w)
-					.css('width', (w) + 'px')
-					.attr('width', (w) + 'px')
+					.width(jS.s.newColumnWidth)
+					.css('width', jS.s.newColumnWidth + 'px')
+					.attr('width', jS.s.newColumnWidth + 'px')
 					.appendTo(colgroup);
 			});
 			o.find('tr').each(function() {
@@ -2040,44 +2032,42 @@ var jS = jQuery.sheet = {
 			
 			return table;
 		},
-		json: function(data, makeEval) {
-			sheet = (makeEval == true ? eval('(' + data + ')') : data);
+		json: function(data) {
+			jS.i = jS.sheetCount + 1;
+			sheet = eval('(' + data + ')');
+			size_c = sheet["metadata"]["columns"] * 1 + 5;
+			size_r = sheet["metadata"]["rows"] * 1 + 1;
+			title = sheet["metadata"]["title"];
+			title = (title ? title : "");
 			
-			var tables = jQuery('<div />');
+			var table = jQuery("<table id='" + jS.id.sheet + jS.i + "' class='" + jS.cl.sheet + "' title='" + title + "' />");
 			
-			for (var i = 0; i < sheet.length; i++) {
-				jS.i = jS.sheetCount + 1;
-				size_c = parseInt(sheet[i].metadata.columns) - 1;
-				size_r = parseInt(sheet[i].metadata.rows) - 1;
-				title = sheet[i].metadata.title;
-				title = (title ? title : "Sreadsheet " + jS.i);
-			
-				var table = jQuery("<table id='" + jS.id.sheet + jS.i + "' class='" + jS.cl.sheet + "' title='" + title + "' />");
+			var cur_row;
+			for(var x = 1; x <= size_r; x++)
+			{
+				cur_row = jQuery('<tr height="' + jS.s.colMargin + 'px" />').appendTo(table);
 				
-				for (var x = 0; x <= size_r; x++) {				
-					var cur_row = jQuery('<tr />').appendTo(table);
+				for(var y = 1; y <= size_c; y++)
+				{
+					cur_row.append('<td id="' + 'table' + jS.i + '_' + 'cell_c' + y + '_r' + x + '" />');
+				}
+			}
+			
+			for (row in sheet["data"])
+			{
+				for (column in sheet["data"][row])
+				{
+					cur_val = sheet["data"][row][column];
+					cur_column = table.find('table' + jS.i + '_' + 'cell_' + column + '_r' + row).text(cur_val);
 					
-					for(var y = 0; y <= size_c; y++) {	
-						var cur_val = sheet[i].data["r" + (y + 1)]["c" + (x + 1)];
-					
-						var cur_td = jQuery('<td id="' + 'table' + jS.i + '_' + 'cell_c' + y + '_r' + x + '" />');
-						try {
-							if (cur_val.charAt(0) == '=')
-							{
-								cur_td.attr("formula", cur_val);
-							} else {
-								cur_td.html(cur_val);
-							}
-						} catch (e) {}
-					
-						cur_row.append(cur_td)
-
+					if (cur_val.charAt(0) == '=')
+					{
+						cur_column.attr("formula", cur_val);
 					}
 				}
-				
-				tables.append(table);
 			}
-			return tables.children();
+			
+			return table;
 		}
 	},
 	exportSheet: {
@@ -2151,7 +2141,7 @@ var jS = jQuery.sheet = {
 			var docs = []; //documents
 			
 			jQuery(sheetClone).each(function() {
-				var doc = { //document
+				var doc = {
 					metadata:{},
 					data:{}
 				};
