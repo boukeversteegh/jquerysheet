@@ -2058,7 +2058,7 @@ var jS = jQuery.sheet = {
 					var cur_row = jQuery('<tr />').appendTo(table);
 					
 					for(var y = 0; y <= size_c; y++) {	
-						var cur_val = sheet[i].data["r" + (y + 1)]["c" + (x + 1)];
+						var cur_val = sheet[i].data["r" + (x + 1)]["c" + (y + 1)];
 					
 						var cur_td = jQuery('<td id="' + 'table' + jS.i + '_' + 'cell_c' + y + '_r' + x + '" />');
 						try {
