@@ -243,6 +243,7 @@
 	overflow: hidden;
 	border-top: none ! important;
 	border-bottom: none ! important;
+	min-width: 25px ! important;
 }
 
 .safeImg
