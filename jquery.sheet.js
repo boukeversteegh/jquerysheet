@@ -12,7 +12,7 @@ http://www.gnu.org/licenses/
 	Dimensions Info:
 		When dealing with size, it seems that outerHeight is generally the most stable cross browser
 		attribute to use for bar sizing.  We try to use this as much as possible.  But because col's
-		don't have boarders, we subtract or add jS.attrH.boxModelCorrection() for those browsers.
+		don't have boarders, we subtract or add jS.s.boxModelCorrection for those browsers.
 	tr/td column and row Index VS cell/column/row index
 		DOM elements are all 0 based (tr/td/table)
 		Spreadsheet elements are all 1 based (A1, A1:B4, TABLE2:A1, TABLE2:A1:B4)
@@ -95,14 +95,15 @@ jQuery.fn.extend({
 					jS.openSheet(t);
 				}
 			},
-			fnClose: 		function() {}, //fn, default clase function, more of a proof of concept
-			joinedResizing: false, //bool, this joins the column/row with the resize bar
-			boxModelCorrection: 2 //int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
+			fnClose: 		function() {}, 					//fn, default clase function, more of a proof of concept
+			joinedResizing: false, 							//bool, this joins the column/row with the resize bar
+			boxModelCorrection: 2, 							//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
+			showErrors:		true							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
 		}, settings);
 		jQuery.fn.sheet.settings = jS.s = settings;
 		jS.s.fnBefore();
 		
-		var obj;
+		var obj; var emptyFN = function() {};
 		if (jS.s.buildSheet) {//override urlGet, this has some effect on how the topbar is sized
 			if (typeof(jS.s.buildSheet) == 'object') {
 				obj = jS.s.buildSheet;
@@ -120,14 +121,24 @@ jQuery.fn.extend({
 		jS.s.width = jQuery(this).width();
 		jS.s.height = jQuery(this).height();
 		
+		
+		// Drop functions if they are not needed & save time in recursion
 		if (jS.s.log) {
 			jQuery(jS.s.parent).after('<textarea id="' + jS.id.log + '" />');
 		} else {
-			jS.log = function() {}; //save time in recursion
+			jS.log = emptyFN;
+		}
+		
+		if (!jS.s.showErrors) {
+			cE.makeError = emptyFN;
+		}
+		
+		if (!jQuery.support.boxModel) {
+			jS.s.boxModelCorrection = 0;
 		}
 		
 		if (!jQuery.scrollTo) {
-			jS.followMe = function() {};
+			jS.followMe = emptyFN;
 		}
 		
 		jS.log('Startup');
@@ -357,7 +368,7 @@ var jS = jQuery.sheet = {
 			var currentCol = jS.obj.sheet().find('col' + atColumn);
 			
 			//Lets create our new bar, cell, and col
-			var newBar = currentBar.clone().width(jS.s.newColumnWidth - jS.attrH.boxModelCorrection());
+			var newBar = currentBar.clone().width(jS.s.newColumnWidth - jS.s.boxModelCorrection);
 			var newCol = currentCol.clone().width(jS.s.newColumnWidth);
 			var newCell = jQuery('<td></td>');
 			
@@ -416,14 +427,14 @@ var jS = jQuery.sheet = {
 			var heightFn;
 			if (reload) { //This is our standard way of detecting height when a sheet loads from a url
 				heightFn = function(i, objSource, objBar) {
-					objBar.height(parseInt(objSource.outerHeight()) - jS.attrH.boxModelCorrection());
+					objBar.height(parseInt(objSource.outerHeight()) - jS.s.boxModelCorrection);
 				};
 			} else { //This way of detecting height is used becuase the object has some problems getting
 					//height because both tr and td have height set
 					//This corrects the problem
 					//This is only used when a sheet is already loaded in the pane
 				heightFn = function(i, objSource, objBar) {
-					objBar.height(parseInt(objSource.css('height').replace('px','')) - jS.attrH.boxModelCorrection());
+					objBar.height(parseInt(objSource.css('height').replace('px','')) - jS.s.boxModelCorrection);
 				};
 			}
 			
@@ -452,7 +463,7 @@ var jS = jQuery.sheet = {
 			} else {
 				parents = o.find('col');
 				widthFn = function(obj) {
-					return parseInt(jQuery(obj).css('width').replace('px','')) - jS.attrH.boxModelCorrection();
+					return parseInt(jQuery(obj).css('width').replace('px','')) - jS.s.boxModelCorrection;
 				};
 			}
 			
@@ -1150,16 +1161,16 @@ var jS = jQuery.sheet = {
 	//I created this object so I could see, quickly, which attribute was most stable.
 	//As it turns out, all browsers are different, thus this has evolved to a much uglier beast
 		width: function(obj, skipCorrection) {
-			return jQuery(obj).outerWidth() - jS.attrH.boxModelCorrection(skipCorrection);
+			return jQuery(obj).outerWidth() - (skipCorrection ? 0 : jS.s.boxModelCorrection);
 		},
 		widthReverse: function(obj, skipCorrection) {
-			return jQuery(obj).outerWidth() + jS.attrH.boxModelCorrection(skipCorrection);
+			return jQuery(obj).outerWidth() + (skipCorrection ? 0 : jS.s.boxModelCorrection);
 		},
 		height: function(obj, skipCorrection) {
-			return jQuery(obj).outerHeight() - jS.attrH.boxModelCorrection(skipCorrection);
+			return jQuery(obj).outerHeight() - (skipCorrection ? 0 : jS.s.boxModelCorrection);
 		},
 		heightReverse: function(obj, skipCorrection) {
-			return jQuery(obj).outerHeight() + jS.attrH.boxModelCorrection(skipCorrection);
+			return jQuery(obj).outerHeight() + (skipCorrection ? 0 : jS.s.boxModelCorrection);
 		},
 		syncSheetWidthFromTds: function(obj) {
 			var entireWidth = 0;
@@ -1168,13 +1179,6 @@ var jS = jQuery.sheet = {
 				entireWidth += jQuery(this).width();
 			});
 			obj.width(entireWidth);
-		},
-		boxModelCorrection: function(skipCorrection) {
-			var correction = 0;
-			if (jQuery.support.boxModel && !skipCorrection) {
-				correction = jS.s.boxModelCorrection;
-			}
-			return correction;
 		},
 		setHeight: function(i, from, skipCorrection, obj) {
 			var correction = 0;
@@ -1365,7 +1369,7 @@ var jS = jQuery.sheet = {
 			o.remove('colgroup');
 			var colgroup = jQuery('<colgroup />');
 			o.find('tr:first').find('td').each(function() {
-				var w = jQuery(this).outerWidth() + (jS.attrH.boxModelCorrection() * 2);
+				var w = jQuery(this).outerWidth() + (jS.s.boxModelCorrection * 2);
 				jQuery('<col />')
 					.width(w)
 					.css('width', (w) + 'px')
@@ -1614,13 +1618,13 @@ var jS = jQuery.sheet = {
 				jS.obj.formula().attr('disabled', 'true');
 				
 				var textArea = jQuery('<textarea id="tempText" class="clickable" />');
-				var h = jS.attrH.height(td);
+				var h = jS.attrH.height(td) - (jS.s.boxModelCorrection * 2);
 				
 				//There was an error in some browsers where they would mess this up.
-				td.parent().height(h + jS.attrH.boxModelCorrection());
+				//td.parent().height(h);
 				//create text area.  Agian, strings are faster than DOM.
 				textArea
-					.height(h < 75 ? 75 : h)
+					//.height(h < 75 ? 75 : h)
 					.val(v)
 					.click(function(){
 						return false;
@@ -2230,9 +2234,9 @@ var jS = jQuery.sheet = {
 		
 		jS.obj.parent().height(h);
 		
-		var w = jS.s.width - jS.attrH.width(jS.obj.barLeftParent()) - (jS.attrH.boxModelCorrection());
+		var w = jS.s.width - jS.attrH.width(jS.obj.barLeftParent()) - (jS.s.boxModelCorrection);
 		
-		h = h - jS.attrH.height(jS.obj.controls()) - jS.attrH.height(jS.obj.barTopParent()) - (jS.attrH.boxModelCorrection() * 2);
+		h = h - jS.attrH.height(jS.obj.controls()) - jS.attrH.height(jS.obj.barTopParent()) - (jS.s.boxModelCorrection * 2);
 		
 		jS.obj.pane()
 			.height(h)
@@ -3142,13 +3146,19 @@ var cE = jQuery.calculationEngine = {
 				cell.setValue(v);
 				
 			} catch (e) {
-				//This shouldn't need to be used, usually throws an error when a cell is empty
-				//cell.setValue(cE.ERROR + ': ' + e);
+				cE.makeError(v, e, cell);
 			}
 		};
 		fn.row = row;
 		fn.col = col;
 		return fn;
+	},
+	makeError: function(v, e, cell) {
+		try {
+			if (v) {
+				cell.setValue(cE.ERROR + ': ' + e);
+			}
+		} catch(e2) {}
 	},
 	checkCycles: function(row, col, tableI) {
 		for (var i = 0; i < cE.calcState.stack.length; i++) {
