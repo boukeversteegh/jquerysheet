@@ -40,8 +40,15 @@
 			
 			$('#jQuerySheet').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
-				inlineMenu: jQuery('#inlineMenu').html()
+				inlineMenu: jQuery('#inlineMenu').html(),
+				fnAfter: function() {
+					jS.obj.sheet().find('td:first')
+						.css('color', 'purple')
+						.css('background-color', 'yellow');
+				}
 			});
+			
+			
 			
 			/*
 			//examples of how to use jQuery.sheet

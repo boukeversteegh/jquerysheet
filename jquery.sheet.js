@@ -1151,11 +1151,6 @@ var jS = jQuery.sheet = {
 			.attr('id', jS.id.sheet + jS.i)
 			.attr('border', '1px');
 		obj.find('.' + jS.cl.uiCell).removeClass(jS.cl.uiCell);
-		obj.find('td')
-			.css('background-color', '')
-			.css('color', '')
-			.css('height', '')
-			.attr('height', '');
 	},
 	attrH: {//Attribute Helpers
 	//I created this object so I could see, quickly, which attribute was most stable.
@@ -1411,7 +1406,6 @@ var jS = jQuery.sheet = {
 		clearCell: function() {
 			jS.obj.uiActive().removeClass(jS.cl.uiActive);
 			jS.obj.uiCell()
-				.removeAttr('style')
 				.removeClass(jS.cl.uiCellHighlighted)
 				.removeClass(jS.cl.uiCell);
 		},
