@@ -1215,7 +1215,7 @@ var jS = jQuery.sheet = {
 			o.each(function(i) {
 				jQuery(this).attr('id', id + i);
 			});
-		}
+		};
 		
 		resetIds(jS.obj.sheetAll().each(function() {
 			jS.setTdIds(jQuery(this));
@@ -1944,7 +1944,7 @@ var jS = jQuery.sheet = {
 				});
 			} else {
 				var sheets = jQuery('<div />').html(o).find('table');
-				sheets.each(function(i) {
+				sheets.show().each(function(i) {
 					jS.controlFactory.sheetUI(jQuery(this), i,  function() { 
 						fnAfter(i, sheets.length);
 					}, false);
@@ -2070,7 +2070,7 @@ var jS = jQuery.sheet = {
 							}
 						} catch (e) {}
 					
-						cur_row.append(cur_td)
+						cur_row.append(cur_td);
 
 					}
 				}

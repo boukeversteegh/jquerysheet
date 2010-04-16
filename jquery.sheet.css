@@ -143,6 +143,7 @@
 	height: inherit ! important;
 	background-color: transparent;
 	color:  inherit;
+	min-width: 25px ! important;
 }
 
 .jSheet textarea
