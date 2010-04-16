@@ -1342,6 +1342,79 @@ var jS = jQuery.sheet = {
 			jS.obj.sheet().width(w);
 		}
 	},
+	merge: function() {
+		var cellsValue = "";
+		var cellValue = "";
+		var cells = jS.obj.uiCell();
+		var formula;
+		var cellFirstLoc = jS.getTdLocation(cells.first());
+		var cellLastLoc = jS.getTdLocation(cells.last());
+		var rowI = (cellLastLoc[0] - cellFirstLoc[0]) + 1;
+		var colI = (cellLastLoc[1] - cellFirstLoc[1]) + 1;
+		
+		if (cells.length > 1) {
+			cells.each(function(i) {
+				var cell = jQuery(this).hide();
+				formula = cell.attr('formula');
+				cellValue = cell.html();
+				
+				cellValue = (cellValue ? cellValue + ' ' : '');
+				
+				cellsValue = (formula ? "(" + formula.replace('=', '') + ")" : cellValue) + cellsValue;
+				
+				if (i) {
+					cell
+						.attr('formula', '')
+						.html('')
+						.hide();
+				}
+			});
+			
+			var cell = cells.first()
+				.show()
+				.attr('colspan', colI)
+				.html(cellsValue);
+			
+			if (rowI > 1) {
+				cell.attr('rowspan', rowI);
+			}
+			
+			jS.calc(jS.i);
+		}
+	},
+	unmerge: function() {
+		var cell = jS.obj.uiCell().first();
+		var loc = jS.getTdLocation(cell);
+		var formula = cell.attr('formula');
+		var v = cell.html();
+		v = (formula ? formula : v);
+		
+		var rowI = cell.attr('rowspan');
+		var colI = cell.attr('colspan');
+		
+		rowI = parseInt(rowI ? rowI : 1); //we have to have a minimum here;
+		colI = parseInt(colI ? colI : 1);
+		
+		var td = '<td />';
+		
+		var tds = '';
+		
+		if (colI) {
+			for (var i = 0; i < colI; i++) {
+				tds += td;
+			}
+		}
+		
+		for (var i = loc[0]; i < rowI; i++) {
+			for (var j = loc[1]; j < colI; j++) {
+				jQuery(jS.getTd(jS.i, i, j)).show();
+			}
+		}
+		
+		cell
+			.removeAttr('rowspan')
+			.removeAttr('colspan');
+	},
 	addTab: function() {
 		jQuery('<span class="ui-corner-bottom ui-widget-header">' + 
 				'<a class="' + jS.cl.tab + '" id="' + jS.id.tab + jS.i + '" i="' + jS.i + '">' + jS.sheetTab(true) + '</a>' + 
@@ -1400,7 +1473,7 @@ var jS = jQuery.sheet = {
 			if (td) {
 				jQuery(td)
 					.addClass(jS.cl.uiCellHighlighted)
-					.addClass(jS.cl.uiCell);;
+					.addClass(jS.cl.uiCell);
 			}
 		},
 		clearCell: function() {
