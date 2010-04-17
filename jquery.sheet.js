@@ -29,14 +29,14 @@ http://www.gnu.org/licenses/
 					</metadata>
 					<data>
 						<r{Row_Index}> //repeats
-							<c{Column_Index}></c{Column_Index}> //repeats
+							<c{Column_Index} style=""></c{Column_Index}> //repeats
 						</r{Row_Index}>
 					</data>
 				</document>
 			</documents>
 		json structure:
 			[//documents
-				{ //document
+				{ //document repeats
 					metadata: {
 						columns: Column_Count,
 						rows: Row_Count,
@@ -44,19 +44,10 @@ http://www.gnu.org/licenses/
 					},
 					data: {
 						r{Row_Index}: { //repeats
-							c{Column_Index}: '' //repeats
-						}
-					}
-				},
-				{ //document
-					metadata: {
-						columns: Column_Count,
-						rows: Row_Count,
-						title: ''
-					},
-					data: {
-						r{Row_Index}: { //repeats
-							c{Column_Index}: '' //repeats
+							c{Column_Index}: { //repeats
+								value: '',
+								style: ''
+							}
 						}
 					}
 				}
@@ -2099,8 +2090,9 @@ var jS = jQuery.sheet = {
 					var thisRow = jQuery('<tr />');
 					jQuery(this).children().each(function(j) { //columns
 						var o = jQuery(this).html();
+						var style = jQuery(this).attr('style');
 						if (o.charAt(0) == '=') {
-							thisRow.append('<td formula="' + o + '" />');
+							thisRow.append('<td formula="' + o + '"' + (style ? ' style=\"' + style + '\"' : '') + ' />');
 						} else {
 							thisRow.append('<td>' + o + '</td>');
 						}
@@ -2129,15 +2121,19 @@ var jS = jQuery.sheet = {
 					var cur_row = jQuery('<tr />').appendTo(table);
 					
 					for(var y = 0; y <= size_c; y++) {	
-						var cur_val = sheet[i].data["r" + (x + 1)]["c" + (y + 1)];
-					
-						var cur_td = jQuery('<td id="' + 'table' + jS.i + '_' + 'cell_c' + y + '_r' + x + '" />');
+						var cur_val = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].value;
+						var style = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].style;
+						
+						var cur_td = jQuery('<td id="' + 'table' + jS.i + '_' + 'cell_c' + y + '_r' + x + '" ' + (style ? ' style=\"' + style + '\"' : '' ) + ' />');
 						try {
-							if (cur_val.charAt(0) == '=')
-							{
-								cur_td.attr("formula", cur_val);
-							} else {
+							if(typeof(cur_val) == "number") {
 								cur_td.html(cur_val);
+							} else {
+								if (cur_val.charAt(0) == '=') {
+									cur_td.attr("formula", cur_val);
+								} else {
+									cur_td.html(cur_val);
+								}
 							}
 						} catch (e) {}
 					
@@ -2196,7 +2192,9 @@ var jS = jQuery.sheet = {
 								txt = formula;
 							}
 							
-							x += '<c' + cur_column + '>' + cdata[0] + txt + cdata[1] + '</c' + cur_column + '>';
+							var style = jQuery(this).attr('style');
+							
+							x += '<c' + cur_column + '' + (style ? ' style=\"' + style + '\"' : '') + '>' + cdata[0] + txt + cdata[1] + '</c' + cur_column + '>';
 						}
 					});
 					
@@ -2255,8 +2253,14 @@ var jS = jQuery.sheet = {
 							{
 								txt = formula;
 							}
+							
+							var style = jQuery(this).attr('style');
+							
 							try {
-								doc['data']['r'+cur_row]['c'+cur_column] = txt;
+								doc['data']['r'+cur_row]['c'+cur_column] = {
+									value: txt,
+									style: style
+								};
 							} catch (e) {}
 						}
 					});
@@ -2265,9 +2269,9 @@ var jS = jQuery.sheet = {
 					cur_column = cur_row = '';
 				});
 				doc['metadata'] = {
-					"columns": parseInt(max_column) + 1, //length is 1 based, index is 0 based
-					"rows": parseInt(max_row) + 1, //length is 1 based, index is 0 based
-					"title": jQuery(this).attr('title')
+					columns: parseInt(max_column) + 1, //length is 1 based, index is 0 based
+					rows: parseInt(max_row) + 1, //length is 1 based, index is 0 based
+					title: jQuery(this).attr('title')
 				};
 				docs.push(doc); //append to documents
 			});
