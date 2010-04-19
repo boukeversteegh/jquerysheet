@@ -1407,8 +1407,6 @@ var jS = jQuery.sheet = {
 				}
 			});
 			
-			
-			
 			var cell = cells.first()
 				.show()
 				.attr('colspan', colI)
@@ -1458,6 +1456,33 @@ var jS = jQuery.sheet = {
 			.removeAttr('colspan');
 		
 		jS.setDirty(true);
+		jS.calc(jS.i);
+	},
+	fillUpOrDown: function(goUp) { //default behavior is to go down var goUp changes it
+		var td = jS.cellLast.td;
+		var loc = [jS.cellLast.row, jS.cellLast.col];
+		jS.evt.cellEditDone();
+		var v = td.val();
+		var formula = td.attr('formula');
+		v = (formula ? formula : v); //formula overrides innerValue
+		formula = v;
+		
+		if (goUp) {
+			var firstLoc = jS.getTdLocation(jS.obj.sheet().find('td:first'));
+			for (var i = firstLoc[0]; i <= loc[0]; i++) {
+				jQuery(jS.getTd(jS.i, i, loc[1]))
+					.html(v)
+					.attr('formula', v);
+			}
+		} else {
+			var lastLoc = jS.getTdLocation(jS.obj.sheet().find('td:last'));
+			for (var i = loc[0]; i <= lastLoc[0]; i++) {
+				jQuery(jS.getTd(jS.i, i, loc[1]))
+					.html(v)
+					.attr('formula', v);
+			}
+		}
+		
 		jS.calc(jS.i);
 	},
 	addTab: function() {
