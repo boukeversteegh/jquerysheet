@@ -1386,8 +1386,8 @@ var jS = jQuery.sheet = {
 		var formula;
 		var cellFirstLoc = jS.getTdLocation(cells.first());
 		var cellLastLoc = jS.getTdLocation(cells.last());
-		var rowI = (cellLastLoc[0] - cellFirstLoc[0]) + 1;
-		//var colI = (cellLastLoc[1] - cellFirstLoc[1]) + 1;
+		//var rowI = (cellLastLoc[0] - cellFirstLoc[0]) + 1;
+		var colI = (cellLastLoc[1] - cellFirstLoc[1]) + 1;
 		
 		if (cells.length > 1) {
 			cells.each(function(i) {
@@ -1408,16 +1408,17 @@ var jS = jQuery.sheet = {
 			});
 			
 			
-			/* Could get it working with IE, so we dropped
+			
 			var cell = cells.first()
 				.show()
 				.attr('colspan', colI)
 				.html(cellsValue);
-			*/
 			
+			/* Doesn't work with IE
 			if (rowI > 1) {
 				cell.attr('rowspan', rowI);
 			}
+			*/
 			
 			jS.setDirty(true);
 			jS.calc(jS.i);
