@@ -246,6 +246,11 @@
 	min-width: 25px ! important;
 }
 
+#jSheetControls img
+{
+	border: none;
+}
+
 .safeImg
 {
 	display: inline;

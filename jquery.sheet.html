@@ -799,24 +799,28 @@
 	</table>
 	<span id="inlineMenu" style="display: none;">
 		<span>
-			<a href="#" onclick="jS.controlFactory.addRow(); return false;" title="Add Row" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Add Row" src="pics/icons/sheet_row_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addRowMulti(); return false;" title="Add Multi-Rows" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Add Multi-Rows" src="pics/icons/sheet_row_add_multi.png"/></a>
-			<a href="#" onclick="jS.deleteRow(); return false;" title="Delete Row" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Delete Row" src="pics/icons/sheet_row_delete.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addColumn(); return false;" title="Add Column" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Add Column" src="pics/icons/sheet_col_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addColumnMulti(); return false;" title="Add Multi-Columns" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Add Multi-Columns" src="pics/icons/sheet_col_add_multi.png"/></a>
-			<a href="#" onclick="jS.deleteColumn(); return false;" title="Delete Column" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Delete Column" src="pics/icons/sheet_col_delete.png"/></a>
-			<a href="#" onclick='jS.appendToFormula("(" + jS.getTdRange() + ")"); return false;' title="Get Cell Range" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Get Cell Range" src="pics/icons/sheet_get_range.png"/></a>
-			<a href="#" onclick="jS.s.fnSave(); return false;" title="Save Sheet" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Save Sheet" src="pics/icons/disk.png"/></a>
-			<a href="#" onclick="jS.calc(jS.i); return false;" title="Refresh Calculations" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Refresh Calculations" src="pics/icons/arrow_refresh.png"/></a>
-			<a href="#" onclick="jS.cellFind(); return false;" title="Find" class="toolbar qt-sheet"><img height="16" border="0" width="16" class="icon" alt="Find" src="pics/icons/find.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleBold');" title="Bold" class="toolbar qt-inline cellStyleToggle styleBold"><img height="16" border="0" width="16" class="icon" alt="Bold" src="pics/icons/text_bold.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleItalics');" title="Italic" class="toolbar qt-inline cellStyleToggle styleItalics"><img height="16" border="0" width="16" class="icon" alt="Italic" src="pics/icons/text_italic.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleLineThrough'); return false;" title="Strikethrough" class="toolbar qt-inline cellStyleToggle styleItalics"><img height="16" border="0" width="16" class="icon" alt="Strikethrough" src="pics/icons/text_strikethrough.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleCenter'); return false;" title="Align Center" class="toolbar qt-block styleLeft styleRight"><img height="16" border="0" width="16" class="icon" alt="Align Center" src="pics/icons/text_align_center.png"/></a>
-			<a href="#" onclick="displayPicker( this, 'color', 'jSheetControls_formula');return false;" title="Foreground color" class="toolbar qt-picker"><img height="16" border="0" width="16" class="icon" alt="Foreground color" src="pics/icons/palette.png"/></a>
-			<a href="#" onclick="displayPicker( this, 'bgcolor', 'jSheetControls_formula');return false;" title="Background Color" class="toolbar qt-picker"><img height="16" border="0" width="16" class="icon" alt="Background Color" src="pics/icons/palette_bg.png"/></a>
-			<a href="#" onclick="jS.obj.formula().val('=HYPERLINK(\'' + prompt('Enter Web Address', 'http://www.visop-dev.com/') + '\')').keydown();return false;" title="Wiki Link" class="toolbar qt-picker"><img height="16" border="0" width="16" class="icon" alt="Web Link" src="pics/icons/page_link.png"/></a>
-			<!--<a href="#" onclick="insertAt('jSheetControls_formula', '~np~text~'+'/np~');return false;" title="Non-parsed" class="toolbar qt-inline"><img height="16" border="0" width="16" class="icon" alt="Non-parsed" src="pics/icons/noparse.png"/></a>-->
+			<a href="#" onclick="jS.controlFactory.addRow(); return false;" title="Insert Row After Selected"><img alt="Insert Row After Selected" src="pics/icons/sheet_row_add.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addRow(null, true); return false;" title="Insert Row Before Selected"><img alt="Insert Row Before Selected" src="pics/icons/sheet_row_add.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addRow(null, null, ':last'); return false;" title="Add Row At End"><img alt="Add Row" src="pics/icons/sheet_row_add.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addRowMulti(); return false;" title="Add Multi-Rows"><img alt="Add Multi-Rows" src="pics/icons/sheet_row_add_multi.png"/></a>
+			<a href="#" onclick="jS.deleteRow(); return false;" title="Delete Row"><img alt="Delete Row" src="pics/icons/sheet_row_delete.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addColumn(); return false;" title="Insert Column After Selected"><img alt="Insert Column After Selected" src="pics/icons/sheet_col_add.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addColumn(null, true); return false;" title="Insert Column Before Selected"><img alt="Insert Column Before Selected" src="pics/icons/sheet_col_add.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addColumn(null, null, ':last'); return false;" title="Add Column At End"><img alt="Add Column At End" src="pics/icons/sheet_col_add.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addColumnMulti(); return false;" title="Insert Multi-Columns"><img alt="Add Multi-Columns" src="pics/icons/sheet_col_add_multi.png"/></a>
+			<a href="#" onclick="jS.deleteColumn(); return false;" title="Delete Column"><img alt="Delete Column" src="pics/icons/sheet_col_delete.png"/></a>
+			<a href="#" onclick='jS.appendToFormula("(" + jS.getTdRange() + ")"); return false;' title="Get Cell Range"><img alt="Get Cell Range" src="pics/icons/sheet_get_range.png"/></a>
+			<a href="#" onclick="jS.s.fnSave(); return false;" title="Save Sheet"><img alt="Save Sheet" src="pics/icons/disk.png"/></a>
+			<a href="#" onclick="jS.calc(jS.i); return false;" title="Refresh Calculations"><img alt="Refresh Calculations" src="pics/icons/arrow_refresh.png"/></a>
+			<a href="#" onclick="jS.cellFind(); return false;" title="Find"><img alt="Find" src="pics/icons/find.png"/></a>
+			<a href="#" onclick="jS.cellStyleToggle('styleBold');" title="Bold" class="cellStyleToggle styleBold"><img alt="Bold" src="pics/icons/text_bold.png"/></a>
+			<a href="#" onclick="jS.cellStyleToggle('styleItalics');" title="Italic" class="cellStyleToggle styleItalics"><img alt="Italic" src="pics/icons/text_italic.png"/></a>
+			<a href="#" onclick="jS.cellStyleToggle('styleLineThrough'); return false;" title="Strikethrough" class="cellStyleToggle styleItalics"><img alt="Strikethrough" src="pics/icons/text_strikethrough.png"/></a>
+			<a href="#" onclick="jS.cellStyleToggle('styleCenter'); return false;" title="Align Center" class="styleLeft styleRight"><img alt="Align Center" src="pics/icons/text_align_center.png"/></a>
+			<a href="#" onclick="displayPicker(this, 'color', 'jSheetControls_formula');return false;" title="Foreground color"><img alt="Foreground color" src="pics/icons/palette.png"/></a>
+			<a href="#" onclick="displayPicker(this, 'bgcolor', 'jSheetControls_formula');return false;" title="Background Color"><img alt="Background Color" src="pics/icons/palette_bg.png"/></a>
+			<a href="#" onclick="jS.obj.formula().val('=HYPERLINK(\'' + prompt('Enter Web Address', 'http://www.visop-dev.com/') + '\')').keydown();return false;" title="HyperLink"><img alt="Web Link" src="pics/icons/page_link.png"/></a>
+			<!--<a href="#" onclick="insertAt('jSheetControls_formula', '~np~text~'+'/np~');return false;" title="Non-parsed"><img alt="Non-parsed" src="pics/icons/noparse.png"/></a>-->
 		</span>
 	</span>
 </body>
