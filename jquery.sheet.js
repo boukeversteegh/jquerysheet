@@ -739,15 +739,60 @@ var jS = jQuery.sheet = {
 						break;
 				}
 			},
+			pasteOverCells: function(e) { //used for pasting from other spreadsheets
+				if (e.ctrlKey) {
+					var formula = jS.obj.formula(); //so we don't have to keep calling the function and wasting memory
+					var oldVal = formula.val();
+					formula.val('');  //we use formula to catch the pasted data
+					jQuery(document).one('keyup', function() {
+						var loc = jS.getTdLocation(jS.cellLast.td); //save the currrent cell
+						var val = formula.val(); //once ctrl+v is hit formula now has the data we need
+						var firstValue = '';
+						formula.val(''); 
+						
+						var row = val.split(/\n/g); //break at rows
+						for (var i = 0; i < row.length; i++) {
+							var col = row[i].split(/\t/g); //break at columns
+							for (var j = 0; j < col.length; j++) {
+								if (col[j]) {
+									var td = jQuery(jS.getTd(jS.i, i + loc[0], j + loc[1]))
+										.html(col[j])
+										.removeAttr('formula'); //we get rid of formula because we don't know if it was a formula, to check may take too long
+									
+									if ((col[j] + '').charAt(0) == '=') { //we need to know if it's a formula here
+										td.attr('formula', col[j]);
+									}
+									
+									if (i == 0 && j == 0) { //we have to finish the current edit
+										firstValue = col[j];
+									}
+								}
+							}
+						}
+						
+						
+						formula.val(firstValue);
+						jS.setDirty(true);
+						jS.evt.cellEditDone();
+					});
+				}
+				return true;
+			},
 			formulaKeyDown: function(e) {
 				switch (e.keyCode) {
-					case key.ESCAPE: 	jS.evt.cellEditAbandon();					break;
-					case key.TAB: 		return jS.evt.keyDownHandler.tab(e);		break;
-					case key.ENTER: 	return jS.evt.keyDownHandler.enter(e);	break;
+					case key.ESCAPE: 	jS.evt.cellEditAbandon();
+						break;
+					case key.TAB: 		return jS.evt.keyDownHandler.tab(e);
+						break;
+					case key.ENTER: 	return jS.evt.keyDownHandler.enter(e);
+						break;
 					case key.LEFT:
 					case key.UP:
 					case key.RIGHT:
-					case key.DOWN:		return jS.evt.cellClick(e.keyCode);		break;
+					case key.DOWN:		return jS.evt.cellClick(e.keyCode);
+						break;
+					case key.V:			return jS.evt.keyDownHandler.pasteOverCells(e);
+						break;
 					default: 			jS.cellLast.isEdit = true;
 				}
 			}
@@ -914,11 +959,12 @@ var jS = jQuery.sheet = {
 		cellOnMouseDown: function(e) {
 			if (e.altKey) {
 				jS.cellSetActiveMulti(e);
-				jQuery(document).mouseup(function() {
-					jQuery(this).unbind('mouseup');
+				jQuery(document).one('mouseup', function() {
 					var v = jS.obj.formula().val();
 					jS.obj.formula().val(v + jS.getTdRange());
 				});
+				
+				return false;
 			} else {
 				return jS.cellSetActiveMulti(e);
 			}			
@@ -1341,7 +1387,7 @@ var jS = jQuery.sheet = {
 		var cellFirstLoc = jS.getTdLocation(cells.first());
 		var cellLastLoc = jS.getTdLocation(cells.last());
 		var rowI = (cellLastLoc[0] - cellFirstLoc[0]) + 1;
-		var colI = (cellLastLoc[1] - cellFirstLoc[1]) + 1;
+		//var colI = (cellLastLoc[1] - cellFirstLoc[1]) + 1;
 		
 		if (cells.length > 1) {
 			cells.each(function(i) {
@@ -1361,15 +1407,19 @@ var jS = jQuery.sheet = {
 				}
 			});
 			
+			
+			/* Could get it working with IE, so we dropped
 			var cell = cells.first()
 				.show()
 				.attr('colspan', colI)
 				.html(cellsValue);
+			*/
 			
 			if (rowI > 1) {
 				cell.attr('rowspan', rowI);
 			}
 			
+			jS.setDirty(true);
 			jS.calc(jS.i);
 		}
 	},
@@ -1405,6 +1455,9 @@ var jS = jQuery.sheet = {
 		cell
 			.removeAttr('rowspan')
 			.removeAttr('colspan');
+		
+		jS.setDirty(true);
+		jS.calc(jS.i);
 	},
 	addTab: function() {
 		jQuery('<span class="ui-corner-bottom ui-widget-header">' + 
@@ -2633,7 +2686,8 @@ var key = {
 	SHIFT: 				16,
 	SPACE: 				32,
 	TAB: 				9,
-	UP: 				38
+	UP: 				38,
+	V:					86
 };
 
 var cE = jQuery.calculationEngine = {
