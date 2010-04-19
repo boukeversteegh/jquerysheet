@@ -2349,17 +2349,21 @@ var jS = jQuery.sheet = {
 			}
 		}
 	},
-	cellSetActiveMulti: function(e) {	
+	cellSetActiveMulti: function(e) {
 		var o = {
 			startRow: e.target.parentNode.rowIndex,
 			startColumn: e.target.cellIndex
 		};//These are the events used to selected multiple rows.
 		jS.obj.sheet()
 			.mousemove(function(e) {
+				jS.themeRoller.clearCell();
+				jS.themeRoller.clearBar();
+				
 				o.endRow = e.target.parentNode.rowIndex;
 				o.endColumn = e.target.cellIndex;
-				for (var i = o.startRow; i <= o.endRow; i++) {
-					for (var j = o.startColumn; j <= o.endColumn; j++) {
+				
+				for (var i = (o.startRow < o.endRow ? o.startRow : o.endRow) ; i <= (o.startRow > o.endRow ? o.startRow : o.endRow); i++) {
+					for (var j = (o.startColumn < o.endColumn ? o.startColumn : o.endColumn); j <= (o.startColumn > o.endColumn ? o.startColumn : o.endColumn); j++) {
 						var td = jS.getTd(jS.i, i, j);
 						jQuery(td)
 							.addClass(jS.cl.uiCell)
