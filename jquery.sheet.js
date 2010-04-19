@@ -1462,25 +1462,28 @@ var jS = jQuery.sheet = {
 		var td = jS.cellLast.td;
 		var loc = [jS.cellLast.row, jS.cellLast.col];
 		jS.evt.cellEditDone();
-		var v = td.val();
+		var v = td.html();
 		var formula = td.attr('formula');
 		v = (formula ? formula : v); //formula overrides innerValue
 		formula = v;
 		
+		function fill(i, j, col) {
+			for (var i = i; i <= j; i++) {
+				var td = jQuery(jS.getTd(jS.i, i, col))
+						.html(v ? v : '');
+				
+				if ((v + '').charAt(0) == '=') {
+					td.attr('formula', v);
+				}
+			}
+		}
+		
 		if (goUp) {
 			var firstLoc = jS.getTdLocation(jS.obj.sheet().find('td:first'));
-			for (var i = firstLoc[0]; i <= loc[0]; i++) {
-				jQuery(jS.getTd(jS.i, i, loc[1]))
-					.html(v)
-					.attr('formula', v);
-			}
+			fill(firstLoc[0], loc[0], loc[1]);
 		} else {
 			var lastLoc = jS.getTdLocation(jS.obj.sheet().find('td:last'));
-			for (var i = loc[0]; i <= lastLoc[0]; i++) {
-				jQuery(jS.getTd(jS.i, i, loc[1]))
-					.html(v)
-					.attr('formula', v);
-			}
+			fill(loc[0], lastLoc[0], loc[1]);
 		}
 		
 		jS.calc(jS.i);
