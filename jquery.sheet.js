@@ -1703,11 +1703,7 @@ var jS = jQuery.sheet = {
 	cellStyleToggle: function(setClass, removeClass) {
 		//Lets check to remove any style classes
 		if (removeClass) {
-			removeClass = removeClass.split(',');
-			
-			jQuery(removeClass).each(function() {
-				jS.obj.uiCell().removeClass(this);
-			});
+			jS.obj.uiCell().removeClass(removeClass);
 		}
 		//Now lets add some style
 		if (jS.obj.uiCell().hasClass(setClass)) {

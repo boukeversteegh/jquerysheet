@@ -799,27 +799,30 @@
 	</table>
 	<span id="inlineMenu" style="display: none;">
 		<span>
-			<a href="#" onclick="jS.controlFactory.addRow(); return false;" title="Insert Row After Selected"><img alt="Insert Row After Selected" src="pics/icons/sheet_row_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addRow(null, true); return false;" title="Insert Row Before Selected"><img alt="Insert Row Before Selected" src="pics/icons/sheet_row_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addRow(null, null, ':last'); return false;" title="Add Row At End"><img alt="Add Row" src="pics/icons/sheet_row_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addRowMulti(); return false;" title="Add Multi-Rows"><img alt="Add Multi-Rows" src="pics/icons/sheet_row_add_multi.png"/></a>
-			<a href="#" onclick="jS.deleteRow(); return false;" title="Delete Row"><img alt="Delete Row" src="pics/icons/sheet_row_delete.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addColumn(); return false;" title="Insert Column After Selected"><img alt="Insert Column After Selected" src="pics/icons/sheet_col_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addColumn(null, true); return false;" title="Insert Column Before Selected"><img alt="Insert Column Before Selected" src="pics/icons/sheet_col_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addColumn(null, null, ':last'); return false;" title="Add Column At End"><img alt="Add Column At End" src="pics/icons/sheet_col_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addColumnMulti(); return false;" title="Insert Multi-Columns"><img alt="Add Multi-Columns" src="pics/icons/sheet_col_add_multi.png"/></a>
-			<a href="#" onclick="jS.deleteColumn(); return false;" title="Delete Column"><img alt="Delete Column" src="pics/icons/sheet_col_delete.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addRow();" title="Insert Row After Selected"><img alt="Insert Row After Selected" src="pics/icons/sheet_row_add.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addRow(null, true);" title="Insert Row Before Selected"><img alt="Insert Row Before Selected" src="pics/icons/sheet_row_add.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addRow(null, null, ':last');" title="Add Row At End"><img alt="Add Row" src="pics/icons/sheet_row_add.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addRowMulti();" title="Add Multi-Rows"><img alt="Add Multi-Rows" src="pics/icons/sheet_row_add_multi.png"/></a>
+			<a href="#" onclick="jS.deleteRow();" title="Delete Row"><img alt="Delete Row" src="pics/icons/sheet_row_delete.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addColumn();" title="Insert Column After Selected"><img alt="Insert Column After Selected" src="pics/icons/sheet_col_add.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addColumn(null, true);" title="Insert Column Before Selected"><img alt="Insert Column Before Selected" src="pics/icons/sheet_col_add.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addColumn(null, null, ':last');" title="Add Column At End"><img alt="Add Column At End" src="pics/icons/sheet_col_add.png"/></a>
+			<a href="#" onclick="jS.controlFactory.addColumnMulti();" title="Insert Multi-Columns"><img alt="Add Multi-Columns" src="pics/icons/sheet_col_add_multi.png"/></a>
+			<a href="#" onclick="jS.deleteColumn();" title="Delete Column"><img alt="Delete Column" src="pics/icons/sheet_col_delete.png"/></a>
 			<a href="#" onclick='jS.appendToFormula("(" + jS.getTdRange() + ")"); return false;' title="Get Cell Range"><img alt="Get Cell Range" src="pics/icons/sheet_get_range.png"/></a>
-			<a href="#" onclick="jS.s.fnSave(); return false;" title="Save Sheet"><img alt="Save Sheet" src="pics/icons/disk.png"/></a>
-			<a href="#" onclick="jS.calc(jS.i); return false;" title="Refresh Calculations"><img alt="Refresh Calculations" src="pics/icons/arrow_refresh.png"/></a>
-			<a href="#" onclick="jS.cellFind(); return false;" title="Find"><img alt="Find" src="pics/icons/find.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleBold');" title="Bold" class="cellStyleToggle styleBold"><img alt="Bold" src="pics/icons/text_bold.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleItalics');" title="Italic" class="cellStyleToggle styleItalics"><img alt="Italic" src="pics/icons/text_italic.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleLineThrough'); return false;" title="Strikethrough" class="cellStyleToggle styleItalics"><img alt="Strikethrough" src="pics/icons/text_strikethrough.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleCenter'); return false;" title="Align Center" class="styleLeft styleRight"><img alt="Align Center" src="pics/icons/text_align_center.png"/></a>
-			<a href="#" onclick="displayPicker(this, 'color', 'jSheetControls_formula');return false;" title="Foreground color"><img alt="Foreground color" src="pics/icons/palette.png"/></a>
-			<a href="#" onclick="displayPicker(this, 'bgcolor', 'jSheetControls_formula');return false;" title="Background Color"><img alt="Background Color" src="pics/icons/palette_bg.png"/></a>
-			<a href="#" onclick="jS.obj.formula().val('=HYPERLINK(\'' + prompt('Enter Web Address', 'http://www.visop-dev.com/') + '\')').keydown();return false;" title="HyperLink"><img alt="Web Link" src="pics/icons/page_link.png"/></a>
+			<a href="#" onclick="jS.s.fnSave();" title="Save Sheet"><img alt="Save Sheet" src="pics/icons/disk.png"/></a>
+			<a href="#" onclick="jS.calc(jS.i);" title="Refresh Calculations"><img alt="Refresh Calculations" src="pics/icons/arrow_refresh.png"/></a>
+			<a href="#" onclick="jS.cellFind();" title="Find"><img alt="Find" src="pics/icons/find.png"/></a>
+			<a href="#" onclick="jS.cellStyleToggle('styleBold');" title="Bold"><img alt="Bold" src="pics/icons/text_bold.png"/></a>
+			<a href="#" onclick="jS.cellStyleToggle('styleItalics');" title="Italic"><img alt="Italic" src="pics/icons/text_italic.png"/></a>
+			<a href="#" onclick="jS.cellStyleToggle('styleUnderline', 'styleLineThrough');" title="Underline"><img alt="Underline" src="pics/icons/text_underline.png"/></a>
+			<a href="#" onclick="jS.cellStyleToggle('styleLineThrough', 'styleUnderline');" title="Strikethrough"><img alt="Strikethrough" src="pics/icons/text_strikethrough.png"/></a>
+			<a href="#" onclick="jS.cellStyleToggle('styleLeft', 'styleCenter styleRight');" title="Align Left"><img alt="Align Left" src="pics/icons/text_align_left.png"/></a>
+			<a href="#" onclick="jS.cellStyleToggle('styleCenter', 'styleLeft styleRight');" title="Align Center"><img alt="Align Center" src="pics/icons/text_align_center.png"/></a>
+			<a href="#" onclick="jS.cellStyleToggle('styleRight', 'styleLeft styleCenter');" title="Align Right"><img alt="Align Right" src="pics/icons/text_align_right.png"/></a>
+			<a href="#" onclick="displayPicker(this, 'color', 'jSheetControls_formula');" title="Foreground color"><img alt="Foreground color" src="pics/icons/palette.png"/></a>
+			<a href="#" onclick="displayPicker(this, 'bgcolor', 'jSheetControls_formula');" title="Background Color"><img alt="Background Color" src="pics/icons/palette_bg.png"/></a>
+			<a href="#" onclick="jS.obj.formula().val('=HYPERLINK(\'' + prompt('Enter Web Address', 'http://www.visop-dev.com/') + '\')').keydown();" title="HyperLink"><img alt="Web Link" src="pics/icons/page_link.png"/></a>
 			<!--<a href="#" onclick="insertAt('jSheetControls_formula', '~np~text~'+'/np~');return false;" title="Non-parsed"><img alt="Non-parsed" src="pics/icons/noparse.png"/></a>-->
 		</span>
 	</span>
