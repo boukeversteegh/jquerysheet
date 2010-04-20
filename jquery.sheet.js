@@ -1458,7 +1458,7 @@ var jS = jQuery.sheet = {
 		jS.setDirty(true);
 		jS.calc(jS.i);
 	},
-	fillUpOrDown: function(goUp) { //default behavior is to go down var goUp changes it
+	fillUpOrDown: function(goUp, skipOffsetForumals) { //default behavior is to go down var goUp changes it
 		var td = jS.cellLast.td;
 		var loc = [jS.cellLast.row, jS.cellLast.col];
 		jS.evt.cellEditDone();
@@ -1468,58 +1468,56 @@ var jS = jQuery.sheet = {
 		formula = v;
 		
 		function fill(i, j, col) {
-			for (var k = i; k <= j; k++) {
-				var td = jQuery(jS.getTd(jS.i, k, col));
-				
-				if ((v + '').charAt(0) == '=') {
-					td.attr('formula', jS.offsetFormula(v, (k - i) + 1, 0));
-				} else {
-					td
-						.removeAttr('formula')
-						.html(v);
-				}
+			var td = jQuery(jS.getTd(jS.i, i, col));
+			
+			if ((v + '').charAt(0) == '=') {
+				td.attr('formula', (skipOffsetForumals ? v : jS.offsetFormula(v, j + 1, 0))); //we subtract one here because cells are 1 based and indexes are 0 based
+			} else {
+				td
+					.removeAttr('formula')
+					.html(v);
 			}
 		}
 		
 		if (goUp) {
 			var firstLoc = jS.getTdLocation(jS.obj.sheet().find('td:first'));
-			fill(firstLoc[0], loc[0], loc[1]);
+			for (var i = (loc[0] - 1); i >= firstLoc[0]; i--) {
+				fill(i, i - (loc[0] + 1), loc[1]); //we subtract one here because we don't want to re-edit the current cell
+			}
 		} else {
 			var lastLoc = jS.getTdLocation(jS.obj.sheet().find('td:last'));
-			fill(loc[0] + 1, lastLoc[0], loc[1]);
+			for (var i = (loc[0] + 1); i <= lastLoc[0]; i++) {
+				fill(i, i - (loc[0] + 1), loc[1]); //we subtract one here because we don't want to re-edit the current cell
+			}
 		}
 		
 		jS.calc(jS.i);
 	},
-	offsetFormula: function(formula, rowOffset, colOffset) {
-		//Cell References Range - Other Tables
-		formula = formula.replace(cE.regEx.remoteCellRange, 
-			function(ignored, TableStr, tableI, startColStr, startRowStr, endColStr, endRowStr) {
-				return ignored;
-			}
-		);
-		
-		//Cell References Fixed - Other Tables
-		formula = formula.replace(cE.regEx.remoteCell, 
-			function(ignored, tableStr, tableI, colStr, rowStr) {
-				return ignored;
-			}
-		);
-		
-		//Cell References Range
-		formula = formula.replace(cE.regEx.range, 
-			function(ignored, startColStr, startRowStr, endColStr, endRowStr) {
-				return ignored;
-			}
-		);
-		
+	offsetFormula: function(formula, rowOffset, colOffset) {		
 		//Cell References Fixed
+		var charAt = [];
+		var col = '';
+		var row = '';
 		formula = formula.replace(cE.regEx.cell, 
-			function(ignored, colStr, rowStr) {
-				if (colStr.toUpperCase() == "SHEET") {
+			function(ignored, colStr, rowStr, pos) {
+				charAt[0] = formula.charAt(pos - 1);
+				charAt[1] = formula.charAt(colStr.length + rowStr.length + 1);
+				
+				charAt[0] = (charAt[0] ? charAt[0] : '');
+				charAt[1] = (charAt[1] ? charAt[1] : '');
+				
+				if (colStr.toUpperCase() == "SHEET" || 
+					charAt[0] == ':' || 
+					charAt[1] == ':'
+				) {
 					return ignored;
 				} else {
-					return cE.columnLabelString(cE.columnLabelIndex(colStr) + colOffset) + (parseInt(rowStr) + rowOffset);
+					row = parseInt(rowStr) + rowOffset;
+					col = cE.columnLabelIndex(colStr) + colOffset;
+					row = (row > 0 ? row : '1'); //table rows are never negative
+					col = (col > 0 ? col : '1'); //table cols are never negative
+					
+					return cE.columnLabelString(col) + row;
 				}
 			}
 		);
