@@ -1468,12 +1468,15 @@ var jS = jQuery.sheet = {
 		formula = v;
 		
 		function fill(i, j, col) {
-			for (var i = i; i <= j; i++) {
-				var td = jQuery(jS.getTd(jS.i, i, col))
-						.html(v ? v : '');
+			for (var k = i; k <= j; k++) {
+				var td = jQuery(jS.getTd(jS.i, k, col));
 				
 				if ((v + '').charAt(0) == '=') {
-					td.attr('formula', v);
+					td.attr('formula', jS.offsetFormula(v, (k - i) + 1, 0));
+				} else {
+					td
+						.removeAttr('formula')
+						.html(v);
 				}
 			}
 		}
@@ -1483,10 +1486,44 @@ var jS = jQuery.sheet = {
 			fill(firstLoc[0], loc[0], loc[1]);
 		} else {
 			var lastLoc = jS.getTdLocation(jS.obj.sheet().find('td:last'));
-			fill(loc[0], lastLoc[0], loc[1]);
+			fill(loc[0] + 1, lastLoc[0], loc[1]);
 		}
 		
 		jS.calc(jS.i);
+	},
+	offsetFormula: function(formula, rowOffset, colOffset) {
+		//Cell References Range - Other Tables
+		formula = formula.replace(cE.regEx.remoteCellRange, 
+			function(ignored, TableStr, tableI, startColStr, startRowStr, endColStr, endRowStr) {
+				return ignored;
+			}
+		);
+		
+		//Cell References Fixed - Other Tables
+		formula = formula.replace(cE.regEx.remoteCell, 
+			function(ignored, tableStr, tableI, colStr, rowStr) {
+				return ignored;
+			}
+		);
+		
+		//Cell References Range
+		formula = formula.replace(cE.regEx.range, 
+			function(ignored, startColStr, startRowStr, endColStr, endRowStr) {
+				return ignored;
+			}
+		);
+		
+		//Cell References Fixed
+		formula = formula.replace(cE.regEx.cell, 
+			function(ignored, colStr, rowStr) {
+				if (colStr.toUpperCase() == "SHEET") {
+					return ignored;
+				} else {
+					return cE.columnLabelString(cE.columnLabelIndex(colStr) + colOffset) + (parseInt(rowStr) + rowOffset);
+				}
+			}
+		);
+		return formula;
 	},
 	addTab: function() {
 		jQuery('<span class="ui-corner-bottom ui-widget-header">' + 
