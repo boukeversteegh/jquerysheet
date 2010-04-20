@@ -1110,7 +1110,7 @@ var jS = jQuery.sheet = {
 					o
 						.unbind('mouseover')
 						.mouseover(function(e) {
-							selectFn(e.target, true);
+							selectFn(e.target);
 						})
 						.mouseup(function() {
 							o
@@ -1145,11 +1145,11 @@ var jS = jQuery.sheet = {
 						
 						jS.rowLast = i; //keep track of last row for inserting new rows
 						
-						jS.evt.barMouseDown.last = (i > jS.evt.barMouseDown.last ? i : jS.evt.barMouseDown.last);
+						jS.evt.barMouseDown.last = i;
 						
-						jS.fxUpdate((jS.evt.barMouseDown.first + 1) + ':' + (jS.evt.barMouseDown.last + 1), true);
+						//jS.fxUpdate((jS.evt.barMouseDown.first + 1) + ':' + (jS.evt.barMouseDown.last + 1), true);
 						
-						jS.cellSetActiveMultiRow(jS.evt.barMouseDown.last);
+						jS.cellSetActiveMultiRow(jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
 					};
 				}
 			},
@@ -1174,11 +1174,11 @@ var jS = jQuery.sheet = {
 						
 						jS.colLast = i; //keep track of last column for inserting new columns
 						
-						jS.evt.barMouseDown.last = (i > jS.evt.barMouseDown.last ? i : jS.evt.barMouseDown.last);
+						jS.evt.barMouseDown.last = i;
 						
-						jS.fxUpdate(cE.columnLabelString(jS.evt.barMouseDown.first + 1) + ':' + cE.columnLabelString(jS.evt.barMouseDown.last + 1), true);
+						//jS.fxUpdate(cE.columnLabelString(jS.evt.barMouseDown.first + 1) + ':' + cE.columnLabelString(jS.evt.barMouseDown.last + 1), true);
 						
-						jS.cellSetActiveMultiColumn(jS.evt.barMouseDown.last);
+						jS.cellSetActiveMultiColumn(jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
 					};
 				}
 			}
@@ -2516,22 +2516,25 @@ var jS = jQuery.sheet = {
 			jS.fxUpdate('A1:' + cE.columnLabelString(colCount) + rowCount, true);
 		}
 	},
-	cellSetActiveMultiColumn: function(i) {
-		jS.obj.sheet().find('tr').each(function() {
-			var o = jQuery(this).find('td').eq(i);
-			o
+	cellSetActiveMultiColumn: function(colStart, colEnd) {
+		var loc = jS.getTdLocation(jS.obj.sheet().find('td:last'));
+		for (var i = (colStart < colEnd ? colStart : colEnd); i <= (colEnd > colStart ? colEnd : colStart); i++) {
+			for (var j = 0; j <= loc[0]; j++) {
+				jQuery(jS.getTd(jS.i, j, i))
+					.addClass(jS.cl.uiCell)
+					.addClass(jS.cl.uiCellHighlighted);
+			}
+			jS.themeRoller.barTop(i);
+		}
+	},
+	cellSetActiveMultiRow: function(rowStart, rowEnd) {
+		for (var i = (rowStart < rowEnd ? rowStart : rowEnd); i <= (rowEnd > rowStart ? rowEnd : rowStart); i++) {
+			jS.obj.sheet().find('tr').eq(i).find('td')
 				.addClass(jS.cl.uiCell)
 				.addClass(jS.cl.uiCellHighlighted);
-		});
-		
-		jS.themeRoller.barTop(i);
-	},
-	cellSetActiveMultiRow: function(i) {
-		jS.obj.sheet().find('tr').eq(i).find('td')
-			.addClass(jS.cl.uiCell)
-			.addClass(jS.cl.uiCellHighlighted);
-		
-		jS.themeRoller.barLeft(i);
+			
+			jS.themeRoller.barLeft(i);
+		}
 	},
 	sheetClearActive: function() {
 		jS.obj.formula().val('');
