@@ -755,12 +755,14 @@ var jS = jQuery.sheet = {
 							var col = row[i].split(/\t/g); //break at columns
 							for (var j = 0; j < col.length; j++) {
 								if (col[j]) {
-									var td = jQuery(jS.getTd(jS.i, i + loc[0], j + loc[1]))
-										.html(col[j])
-										.removeAttr('formula'); //we get rid of formula because we don't know if it was a formula, to check may take too long
-									
+									var td = jQuery(jS.getTd(jS.i, i + loc[0], j + loc[1]));
+										
 									if ((col[j] + '').charAt(0) == '=') { //we need to know if it's a formula here
 										td.attr('formula', col[j]);
+									} else {
+										td
+											.html(col[j])
+											.removeAttr('formula'); //we get rid of formula because we don't know if it was a formula, to check may take too long
 									}
 									
 									if (i == 0 && j == 0) { //we have to finish the current edit
@@ -773,7 +775,7 @@ var jS = jQuery.sheet = {
 						
 						formula.val(firstValue);
 						jS.setDirty(true);
-						jS.evt.cellEditDone();
+						jS.evt.cellEditDone(false, true);
 					});
 				}
 				return true;
@@ -803,7 +805,7 @@ var jS = jQuery.sheet = {
 			//It's just difficult to look at later on and it's probably faster overall
 			return (isTextArea ? jS.evt.keyDownHandler.textAreaKeyDown(e) : jS.evt.keyDownHandler.formulaKeyDown(e));
 		},
-		cellEditDone: function(bsheetClearActive) {
+		cellEditDone: function(bsheetClearActive, forceCalc) {
 			switch (jS.cellLast.isEdit) {
 				case true:
 					// Any changes to the input controls are stored back into the table, with a recalc.
@@ -897,11 +899,11 @@ var jS = jQuery.sheet = {
 							td.removeAttr('formula').html('');
 						}
 						
-						if (recalc) {
+						if (recalc || forceCalc) {
 							jS.calc(jS.i);
 						}
 						
-						if (bsheetClearActive != false) {
+						if (bsheetClearActive) {
 							// Treats null == true.
 							jS.sheetClearActive();
 						}
