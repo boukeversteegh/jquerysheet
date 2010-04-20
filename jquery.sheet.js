@@ -2505,7 +2505,7 @@ var jS = jQuery.sheet = {
 			var colCount = 0;
 			
 			jS.obj.barLeft().find('div').each(function(i) {
-				jS.cellSetActiveMultiRow(i);
+				jS.cellSetActiveMultiRow(i, i);
 				rowCount++;
 			});
 			jS.obj.barTop().find('div').each(function(i) {
