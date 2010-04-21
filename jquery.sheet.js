@@ -1585,7 +1585,6 @@ var jS = jQuery.sheet = {
 			}
 		},
 		clearCell: function() {
-			jS.obj.uiActive().removeClass(jS.cl.uiActive);
 			jS.obj.uiCell()
 				.removeClass(jS.cl.uiCellHighlighted)
 				.removeClass(jS.cl.uiCell);
@@ -1718,6 +1717,8 @@ var jS = jQuery.sheet = {
 		jS.cellLast.td = td; //save the current cell/td
 		jS.cellLast.row = jS.rowLast = loc[0];
 		jS.cellLast.col = jS.colLast = loc[1];
+		
+		jS.themeRoller.clearBar();
 		
 		jS.themeRoller.cell(td); //themeroll the cell and bars
 		jS.themeRoller.barLeft(jS.cellLast.row);
@@ -2493,7 +2494,7 @@ var jS = jQuery.sheet = {
 			//this helps with multi select so that when you are selecting cells you don't select the text within them
 			if (jQuery(e.target).attr('id') != jQuery(jS.cellLast.td).attr('id') && jQuery(e.target).hasClass('clickable') == false) {
 				jS.themeRoller.clearCell();
-				jS.themeRoller.clearBar();
+				//jS.themeRoller.clearBar();
 				return false;
 			}
 	},
