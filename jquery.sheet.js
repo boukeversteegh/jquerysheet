@@ -813,7 +813,7 @@ var jS = jQuery.sheet = {
 					var recalc = false;
 					
 					//Lets ensure that the cell being edited is actually active
-					if (td && td.hasClass(jS.cl.cell)) { 
+					if (td) { 
 						//This should return either a val from textbox or formula, but if fails it tries once more from formula.
 						var v = jS.cellTextArea(td, true);
 
@@ -994,7 +994,7 @@ var jS = jQuery.sheet = {
 			}
 		},
 		cellOnClickManage: function(td) {
-			if (!td.hasClass(jS.cl.cell)) { //initial click
+			if (td.attr('id') != jQuery(jS.cellLast.td).attr('id')) { //initial click
 				jS.cellEdit(td);
 				jS.log('click cell');
 			} else { //inline edit, 2nd click
@@ -1725,7 +1725,7 @@ var jS = jQuery.sheet = {
 		jS.themeRoller.barLeft(jS.cellLast.row);
 		jS.themeRoller.barTop(jS.cellLast.col);
 		
-		td.addClass(jS.cl.cell); //add classes
+		//td.addClass(jS.cl.cell); //add classes
 		jS.obj.barLeft().find('div').eq(jS.cellLast.row).addClass(jS.cl.barSelected);
 		jS.obj.barTop().find('div').eq(jS.cellLast.col).addClass(jS.cl.barSelected);
 	},
@@ -1963,7 +1963,7 @@ var jS = jQuery.sheet = {
 					}
 					if (key == "class") {
 						hasClass = true;
-						jQuery(val).removeClass(jS.cl.cell);
+						//jQuery(val).removeClass(jS.cl.cell);
 					}
 					
 					if (typeof(val) == "string") {
@@ -2538,7 +2538,7 @@ var jS = jQuery.sheet = {
 	},
 	sheetClearActive: function() {
 		jS.obj.formula().val('');
-		jS.obj.cell().removeClass(jS.cl.cell);
+		//jS.obj.cell().removeClass(jS.cl.cell);
 		jS.obj.barSelected().removeClass(jS.cl.barSelected);
 	},
 	getTdRange: function() {
@@ -2547,7 +2547,7 @@ var jS = jQuery.sheet = {
 		//Get locations
 		//Get labels for locationa and return them
 		
-		var cells = jS.obj.uiCell().not('.' + jS.cl.cell);
+		var cells = jS.obj.uiCell();//.not('.' + jS.cl.cell);
 		
 		if (cells.length) {
 			var loc = { //tr/td column and row index
