@@ -775,7 +775,7 @@ var jS = jQuery.sheet = {
 						
 						formula.val(firstValue);
 						jS.setDirty(true);
-						jS.evt.cellEditDone(false, true);
+						jS.evt.cellEditDone(true);
 					});
 				}
 				return true;
@@ -805,7 +805,7 @@ var jS = jQuery.sheet = {
 			//It's just difficult to look at later on and it's probably faster overall
 			return (isTextArea ? jS.evt.keyDownHandler.textAreaKeyDown(e) : jS.evt.keyDownHandler.formulaKeyDown(e));
 		},
-		cellEditDone: function(bsheetClearActive, forceCalc) {
+		cellEditDone: function(forceCalc) {
 			switch (jS.cellLast.isEdit) {
 				case true:
 					// Any changes to the input controls are stored back into the table, with a recalc.
@@ -815,98 +815,23 @@ var jS = jQuery.sheet = {
 					//Lets ensure that the cell being edited is actually active
 					if (td) { 
 						//This should return either a val from textbox or formula, but if fails it tries once more from formula.
-						var v = jS.cellTextArea(td, true);
+						var v = jS.cellTextArea(td, true) + '';
+						var formula = td.attr('formula') + '';
+						var prevVal = td.attr('prevVal') + '';
 
-						//inputFormula.value;
-						var noEditFormula = false;
-						var noEditNumber = false;
-						var noEditNull = false;
-						var editedFormulaToFormula = false;
-						var editedFormulaToReg = false;
-						var editedRegToFormula = false;
-						var editedRegToReg = false;
-						var editedToNull = false;
-						var editedNumberToNumber = false;
-						var editedNullToNumber = false;
-						
-						var tdFormula = td.attr('formula');
-						var tdPrevVal = td.attr('prevVal');
-
-						if (v) {
-							if (v.charAt(0) == '=') { //This is now a formula
-								if (v != tdFormula) { //Didn't have a formula before but now does
-									editedFormulaToFormula = true;
-									jS.log('edit, new formula, possibly had formula');
-								} else if (tdFormula) { //Updated using inline edit
-									noEditFormula = true;
-									jS.log('no edit, has formula');
-								} else {
-									jS.log('no edit, has formula, unknown action');
-								}
-							} else if (tdFormula) { //Updated out of formula
-								editedRegToFormula = true;
-								jS.log('edit, new value, had formula');
-							} else if (!isNaN(parseInt(v))) {
-								if ((v != tdPrevVal && v != jS.obj.formula().val()) || (td.text() != v)) {
-									editedNumberToNumber = true;
-									jS.log('edit, from number to number, possibly in function');
-								} else {
-									noEditNumber = true;
-									jS.log('no edit, is a number');
-								}
-							} else { //Didn't have a formula before of after edit
-								editedRegToReg = true;
-								jS.log('possible edit from textarea, has value');
-							}
-						} else { //No length value
-							if (td.html().length > 0 && tdFormula) {
-								editedFormulaToReg = true;
-								jS.log('edit, null value from formula');
-							} else if (td.html().length > 0 && tdFormula) {
-								editedToNull = true;
-								jS.log('edit, null value from formula');
-							
-							} else {
-								noEditNull = true;
-								jS.log('no edit, null value');
-							}
+						if (v.charAt(0) == '=') {
+							td.attr('formula', v);
+						} else {
+							td
+								.removeAttr('formula')
+								.html(v);
 						}
 						
-						td.removeAttr('prevVal');
-						var vHTML = jS.manageTextToHtml(v);
-						if (noEditFormula) {
-							td.html(tdPrevVal);
-						} else if (editedFormulaToFormula) {
-							recalc = true;
-							td.attr('formula', v.replace(/\n/g, ' ')).html('');
-						} else if (editedFormulaToReg) {
-							recalc = true;
-							td.removeAttr('formula').html(vHTML);
-						} else if (editedRegToFormula) {
-							recalc = true;
-							td.removeAttr('formula').html(vHTML);
-						} else if (editedRegToReg) {
-							td.html(vHTML);
-						} else if (noEditNumber) {
-							td.html(vHTML); 
-						} else if (noEditNull) {
-							td.html(vHTML);
-						} else if (editedNumberToNumber) {
-							recalc = true;
-							td.html(vHTML);
-						} else if (editedToNull) {
-							recalc = true;
-							td.removeAttr('formula').html('');
-						}
-						
-						if (recalc || forceCalc) {
+						if (v != prevVal || forceCalc) {
 							jS.calc(jS.i);
 						}
 						
-						if (bsheetClearActive) {
-							// Treats null == true.
-							jS.sheetClearActive();
-						}
+						jS.sheetClearActive();
 						
 						jS.attrH.setHeight(jS.cellLast.row, 'cell');
 						
