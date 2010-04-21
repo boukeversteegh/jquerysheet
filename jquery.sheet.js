@@ -1509,10 +1509,11 @@ var jS = jQuery.sheet = {
 					.addClass(jS.cl.uiCell);
 			}
 		},
-		clearCell: function() {
+		clearCell: function(keepActive) {
 			jS.obj.uiCell()
+				.not(keepActive ? jQuery(jS.cellLast.td) : '') //Added to keep the visual of the current cell that's active
 				.removeClass(jS.cl.uiCellHighlighted)
-				.removeClass(jS.cl.uiCell);
+				.removeClass(jS.cl.uiCell)
 		},
 		newBar: function(obj) {//This is for a tr
 			jQuery(obj).addClass(jS.cl.uiBar);
@@ -2395,7 +2396,7 @@ var jS = jQuery.sheet = {
 		};//These are the events used to selected multiple rows.
 		jS.obj.sheet()
 			.mousemove(function(e) {
-				//jS.themeRoller.clearCell();
+				jS.themeRoller.clearCell(true);
 				//jS.themeRoller.clearBar();
 				
 				o.endRow = e.target.parentNode.rowIndex;
@@ -2403,8 +2404,7 @@ var jS = jQuery.sheet = {
 				
 				for (var i = (o.startRow < o.endRow ? o.startRow : o.endRow) ; i <= (o.startRow > o.endRow ? o.startRow : o.endRow); i++) {
 					for (var j = (o.startColumn < o.endColumn ? o.startColumn : o.endColumn); j <= (o.startColumn > o.endColumn ? o.startColumn : o.endColumn); j++) {
-						var td = jS.getTd(jS.i, i, j);
-						jQuery(td)
+						jQuery(jS.getTd(jS.i, i, j))
 							.addClass(jS.cl.uiCell)
 							.addClass(jS.cl.uiCellHighlighted);
 					}
@@ -2418,7 +2418,7 @@ var jS = jQuery.sheet = {
 			
 			//this helps with multi select so that when you are selecting cells you don't select the text within them
 			if (jQuery(e.target).attr('id') != jQuery(jS.cellLast.td).attr('id') && jQuery(e.target).hasClass('clickable') == false) {
-				jS.themeRoller.clearCell();
+				jS.themeRoller.clearCell(true);
 				//jS.themeRoller.clearBar();
 				return false;
 			}
