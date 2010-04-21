@@ -926,23 +926,22 @@ var jS = jQuery.sheet = {
 				var v = jS.cellTextArea(jS.cellLast.td, true);
 				if (v) {
 					jS.cellLast.td.html(jS.manageTextToHtml(v));
-					jS.sheetClearActive();
-					if (v.charAt(0) == '=') {
-						jS.calc(jS.i);
-					}
-				} else { //Even if the cell is blank, that doesn't mean it's not active
-					jS.sheetClearActive();
-					jS.calc(jS.i);
 				}
+				jS.sheetClearActive();
+				jS.calc(jS.i);
 			}
 			
 			jS.cellLast.td = jS.obj.sheet().find('td:first');
 			jS.cellLast.row = jS.cellLast.col = 0;
-			0;
 			jS.rowLast = jS.colLast = -1;
 			
 			jS.fxUpdate('', true);
-
+			jS.obj.formula()
+				.blur()
+				.val(jS.manageHtmlToText(jS.cellLast.td.html()));
+			
+			jS.cellSetActive(jS.cellLast.td, [0, 0]);
+			
 			return false;
 		},
 		cellClick: function(keyCode) { //invoces a click on next/prev cell
@@ -1000,7 +999,6 @@ var jS = jQuery.sheet = {
 			} else { //inline edit, 2nd click
 				jS.cellLast.isEdit = jS.isSheetEdit = true;
 				jS.cellTextArea(td, false, true);
-				jS.themeRoller.cell(td);
 				jS.log('click, textarea over table activated');
 			}
 			jS.followMe(td);
@@ -2471,8 +2469,8 @@ var jS = jQuery.sheet = {
 		};//These are the events used to selected multiple rows.
 		jS.obj.sheet()
 			.mousemove(function(e) {
-				jS.themeRoller.clearCell();
-				jS.themeRoller.clearBar();
+				//jS.themeRoller.clearCell();
+				//jS.themeRoller.clearBar();
 				
 				o.endRow = e.target.parentNode.rowIndex;
 				o.endColumn = e.target.cellIndex;
@@ -2493,7 +2491,7 @@ var jS = jQuery.sheet = {
 			});
 			
 			//this helps with multi select so that when you are selecting cells you don't select the text within them
-			if (e.target != jS.cellLast.td && jQuery(e.target).hasClass('clickable') == false) {
+			if (jQuery(e.target).attr('id') != jQuery(jS.cellLast.td).attr('id') && jQuery(e.target).hasClass('clickable') == false) {
 				jS.themeRoller.clearCell();
 				jS.themeRoller.clearBar();
 				return false;
