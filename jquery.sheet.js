@@ -1311,12 +1311,11 @@ var jS = jQuery.sheet = {
 		var formula;
 		var cellFirstLoc = jS.getTdLocation(cells.first());
 		var cellLastLoc = jS.getTdLocation(cells.last());
-		//var rowI = (cellLastLoc[0] - cellFirstLoc[0]) + 1;
 		var colI = (cellLastLoc[1] - cellFirstLoc[1]) + 1;
 		
-		if (cells.length > 1) {
-			cells.each(function(i) {
-				var cell = jQuery(this).hide();
+		if (cells.length > 1 && cellFirstLoc[0]) {
+			for (var i = cellFirstLoc[1]; i <= cellLastLoc[1]; i++) {
+				var cell = jQuery(jS.getTd(jS.i, cellFirstLoc[0], i)).hide();
 				formula = cell.attr('formula');
 				cellValue = cell.html();
 				
@@ -1324,27 +1323,23 @@ var jS = jQuery.sheet = {
 				
 				cellsValue = (formula ? "(" + formula.replace('=', '') + ")" : cellValue) + cellsValue;
 				
-				if (i) {
+				if (i != cellFirstLoc[1]) {
 					cell
 						.attr('formula', '')
 						.html('')
 						.hide();
 				}
-			});
+			}
 			
 			var cell = cells.first()
 				.show()
 				.attr('colspan', colI)
 				.html(cellsValue);
 			
-			/* Doesn't work with IE
-			if (rowI > 1) {
-				cell.attr('rowspan', rowI);
-			}
-			*/
-			
 			jS.setDirty(true);
 			jS.calc(jS.i);
+		} else if (!cellFirstLoc[0]) {
+			alert('Merging is not allowed on the first row.');
 		}
 	},
 	unmerge: function() {
@@ -1357,7 +1352,7 @@ var jS = jQuery.sheet = {
 		var rowI = cell.attr('rowspan');
 		var colI = cell.attr('colspan');
 		
-		rowI = parseInt(rowI ? rowI : 1); //we have to have a minimum here;
+		//rowI = parseInt(rowI ? rowI : 1); //we have to have a minimum here;
 		colI = parseInt(colI ? colI : 1);
 		
 		var td = '<td />';
@@ -1370,15 +1365,11 @@ var jS = jQuery.sheet = {
 			}
 		}
 		
-		for (var i = loc[0]; i < rowI; i++) {
-			for (var j = loc[1]; j < colI; j++) {
-				jQuery(jS.getTd(jS.i, i, j)).show();
-			}
+		for (var i = loc[1]; i < colI; i++) {
+			jQuery(jS.getTd(jS.i, loc[0], i)).show();
 		}
 		
-		cell
-			.removeAttr('rowspan')
-			.removeAttr('colspan');
+		cell.removeAttr('colspan');
 		
 		jS.setDirty(true);
 		jS.calc(jS.i);
