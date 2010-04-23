@@ -45,18 +45,23 @@
 			
 			$('#jQuerySheet').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
-				inlineMenu: jQuery('#inlineMenu').html()
+				inlineMenu: jQuery('#inlineMenu').html(),
+				log: true
 			});
 			
 			$('.colorPickerCell')
 				.colorPicker()
 				.change(function() {
+					jS.cellUndoable.add(jS.obj.uiCell()); //before save
 					jS.obj.uiCell().css('background-color', $(this).val());
+					jS.cellUndoable.add(jS.obj.uiCell()); //after save
 				});
 			$('.colorPickerFont')
 				.colorPicker()
 				.change(function() {
+					jS.cellUndoable.add(jS.obj.uiCell()); //before save
 					jS.obj.uiCell().css('color', $(this).val());
+					jS.cellUndoable.add(jS.obj.uiCell()); //after save
 				});
 			
 			$('.colorPickers')

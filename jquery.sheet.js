@@ -861,6 +861,9 @@ var jS = jQuery.sheet = {
 						
 						jS.attrH.setHeight(jS.cellLast.row, 'cell');
 						
+						//Save the newest version of that cell
+						jS.cellUndoable.add(td);
+						
 						jS.obj.formula().focus().select();
 						jS.cellLast.isEdit = false;
 					}
@@ -2592,40 +2595,45 @@ var jS = jQuery.sheet = {
 		undoOrRedo: function(undo) {
 			if (!undo && this.i > 0) {
 				this.i--;
-			}
-			
-			var o = this.get();
-			var id = o.attr('undoable');
-			if (id) {
-				var oldO = jQuery('#' + id);
-				var cl = oldO.attr('class');
-				o
-					.attr('class', cl)
-					.attr('id', id);
-				oldO.replaceWith(o);
-			} else {
-				jS.log('Not available.');
-			}
-			
-			if (undo && this.i < this.stack.length) {
+			} else if (undo && this.i < this.stack.length) {
 				this.i++;
 			}
+			
+			this.get().clone().each(function() {
+				var o = jQuery(this);
+				var id = o.attr('undoable');
+				if (id) {
+					var td = jQuery('#' + id);
+					var cl = td.attr('class');
+					td.replaceWith(
+						jQuery('<div />').html(o
+							.removeAttr('undoable')
+							.attr('class', cl)
+							.attr('id', id)).html()
+					);
+				} else {
+					jS.log('Not available.');
+				}
+			});
 			jS.log(this.i);
 		},
 		get: function() { //gets the current cell
-			return jQuery(this.stack[this.i]).clone();
+			return jQuery(this.stack[this.i]);
 		},
-		add: function(td) {
-			var o = td.clone();
-			var cl = o.attr('id');
-			o.removeAttr('id'); //id can only exist in one location, on the sheet, so here we use the id as the attr 'undoable'
-			o.attr('undoable', cl);
+		add: function(tds) {
+			var oldTds = tds.clone().each(function() {
+				var o = jQuery(this);
+				var id = o.attr('id');
+				o.removeAttr('id'); //id can only exist in one location, on the sheet, so here we use the id as the attr 'undoable'
+				o.attr('undoable', id);
+			});
+			
 			if (this.stack.length > 0) {
-				this.stack.unshift(o);
+				this.stack.unshift(oldTds);
 			} else {
-				this.stack = [o];
+				this.stack = [oldTds];
 			}
-			this.i = 0;
+			this.i = -1;
 			if (this.stack.length > 50) { //undoable count, we want to be careful of too much memory consumption
 				this.stack.pop(); //drop the last value
 			}
