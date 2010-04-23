@@ -780,6 +780,20 @@ var jS = jQuery.sheet = {
 				}
 				return true;
 			},
+			redo: function(e) {
+				if (e.ctrlKey) { 
+					jS.cellUndoable.undoOrRedo();
+					return false;
+				}
+				return true;
+			},
+			undo: function(e) {
+				if (e.ctrlKey) {
+					jS.cellUndoable.undoOrRedo(true);
+					return false;
+				}
+				return true;
+			},
 			formulaKeyDown: function(e) {
 				switch (e.keyCode) {
 					case key.ESCAPE: 	jS.evt.cellEditAbandon();
@@ -794,6 +808,10 @@ var jS = jQuery.sheet = {
 					case key.DOWN:		return jS.evt.cellClick(e.keyCode);
 						break;
 					case key.V:			return jS.evt.keyDownHandler.pasteOverCells(e);
+						break;
+					case key.Y:			return jS.evt.keyDownHandler.redo(e);
+						break;
+					case key.Z:			return jS.evt.keyDownHandler.undo(e);
 						break;
 					default: 			jS.cellLast.isEdit = true;
 				}
@@ -814,6 +832,9 @@ var jS = jQuery.sheet = {
 					
 					//Lets ensure that the cell being edited is actually active
 					if (td) { 
+						//first, let's make it undoable
+						jS.cellUndoable.add(td);
+						
 						//This should return either a val from textbox or formula, but if fails it tries once more from formula.
 						var v = jS.cellTextArea(td, true) + '';
 						var formula = td.attr('formula') + '';
@@ -2561,6 +2582,45 @@ var jS = jQuery.sheet = {
 		}
 		
 		formula.val(fV + v);
+	},
+	cellUndoable: {
+		undoOrRedo: function(undo) {
+			if (!undo && this.i > 0) {
+				this.i--;
+			}
+			
+			var o = this.get();
+			var id = o.attr('id');
+			if (id) {
+				var oldO = jQuery('#' + id);
+				var cl = oldO.attr('class');
+				o.attr('class', cl);
+				oldO.replaceWith(o);
+			} else {
+				alert('Not available.');
+			}
+			
+			if (undo && this.i < this.stack.length) {
+				this.i++;
+			}
+			alert(this.i);
+		},
+		get: function() {
+			return jQuery(this.stack[this.i]).clone();
+		},
+		add: function(td) {
+			if (this.stack.length > 0) {
+				this.stack.unshift(td.clone());
+			} else {
+				this.stack = [td.clone()];
+			}
+			this.i = 0;
+			if (this.stack.length > 50) { //undoable count, we want to be careful of too much memory consumption
+				this.stack.pop(); //drop the last value
+			}
+		},
+		i: 0,
+		stack: []
 	}
 };
 
@@ -2667,7 +2727,9 @@ var key = {
 	SPACE: 				32,
 	TAB: 				9,
 	UP: 				38,
-	V:					86
+	V:					86,
+	Y:					89,
+	Z:					90
 };
 
 var cE = jQuery.calculationEngine = {
