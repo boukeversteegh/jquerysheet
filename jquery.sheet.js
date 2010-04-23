@@ -1684,15 +1684,22 @@ var jS = jQuery.sheet = {
 	},
 	cellStyleToggle: function(setClass, removeClass) {
 		//Lets check to remove any style classes
+		var uiCell = jS.obj.uiCell();
+		
+		jS.cellUndoable.add(uiCell);
+		
 		if (removeClass) {
-			jS.obj.uiCell().removeClass(removeClass);
+			uiCell.removeClass(removeClass);
 		}
 		//Now lets add some style
-		if (jS.obj.uiCell().hasClass(setClass)) {
-			jS.obj.uiCell().removeClass(setClass);
+		if (uiCell.hasClass(setClass)) {
+			uiCell.removeClass(setClass);
 		} else {
-			jS.obj.uiCell().addClass(setClass);
+			uiCell.addClass(setClass);
 		}
+		
+		jS.cellUndoable.add(uiCell);
+		
 		jS.obj.formula()
 			.focus()
 			.select();
@@ -2604,17 +2611,18 @@ var jS = jQuery.sheet = {
 				var id = o.attr('undoable');
 				if (id) {
 					var td = jQuery('#' + id);
-					var cl = td.attr('class');
+					
 					td.replaceWith(
-						jQuery('<div />').html(o
+						o
 							.removeAttr('undoable')
-							.attr('class', cl)
-							.attr('id', id)).html()
+							.attr('id', id)
 					);
 				} else {
 					jS.log('Not available.');
 				}
 			});
+			
+			jS.themeRoller.clearCell(true);
 			jS.log(this.i);
 		},
 		get: function() { //gets the current cell
@@ -2627,7 +2635,6 @@ var jS = jQuery.sheet = {
 				o.removeAttr('id'); //id can only exist in one location, on the sheet, so here we use the id as the attr 'undoable'
 				o.attr('undoable', id);
 			});
-			
 			if (this.stack.length > 0) {
 				this.stack.unshift(oldTds);
 			} else {
