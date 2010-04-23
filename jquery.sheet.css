@@ -256,6 +256,14 @@
 	display: inline;
 }
 
+.colorPickers *
+{
+	display: inline-block;
+	width: 16px ! important;
+	height: 16px ! important;
+	background-color: transparent ! important;
+}
+
 /* Cell styler classes */
 .styleBold
 { font-weight: bold; }

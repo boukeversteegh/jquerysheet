@@ -30,6 +30,11 @@
 			<script type="text/javascript" src="plugins/jgcharts.min.js"></script>
 		<!--/Charts-->
 		
+		<!--ColorPicker-->
+			<link rel="stylesheet" type="text/css" href="plugins/jquery.colorPicker.css"></link>
+			<script type="text/javascript" src="plugins/jquery.colorPicker.min.js"></script>
+		<!--/ColorPicker-->
+		
 		<!--Theme Switcher Tool-->
 			<script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/"></script>
 		<!--/Theme Switcher Tool-->
@@ -43,7 +48,21 @@
 				inlineMenu: jQuery('#inlineMenu').html()
 			});
 			
+			$('.colorPickerCell')
+				.colorPicker()
+				.change(function() {
+					jS.obj.uiCell().css('background-color', $(this).val());
+				});
+			$('.colorPickerFont')
+				.colorPicker()
+				.change(function() {
+					jS.obj.uiCell().css('color', $(this).val());
+				});
 			
+			$('.colorPickers')
+				.children().eq(1).css('background-image', "url('pics/icons/palette.png')");
+			$('.colorPickers')
+				.children().eq(3).css('background-image', "url('pics/icons/palette_bg.png')");
 			
 			/*
 			//examples of how to use jQuery.sheet
@@ -823,8 +842,10 @@
 			<a href="#" onclick="jS.cellStyleToggle('styleRight', 'styleLeft styleCenter');" title="Align Right"><img alt="Align Right" src="pics/icons/text_align_right.png"/></a>
 			<a href="#" onclick="jS.fillUpOrDown();" title="Fill Down"><img alt="Fill Down" src="pics/icons/arrow_down.png"/></a>
 			<a href="#" onclick="jS.fillUpOrDown(true);" title="Fill Up"><img alt="Fill Up" src="pics/icons/arrow_up.png"/></a>
-			<a href="#" onclick="displayPicker(this, 'color', 'jSheetControls_formula');" title="Foreground color"><img alt="Foreground color" src="pics/icons/palette.png"/></a>
-			<a href="#" onclick="displayPicker(this, 'bgcolor', 'jSheetControls_formula');" title="Background Color"><img alt="Background Color" src="pics/icons/palette_bg.png"/></a>
+			<span class="colorPickers">
+				<input title="Foreground color" class="colorPickerFont" style="background-image: url('pics/icons/palette.png') ! important; width: 16px; height: 16px;" />
+				<input title="Background Color" class="colorPickerCell" style="background-image: url('pics/icons/palette_bg.png') ! important; width: 16px; height: 16px;" />
+			</span>
 			<a href="#" onclick="jS.obj.formula().val('=HYPERLINK(\'' + prompt('Enter Web Address', 'http://www.visop-dev.com/') + '\')').keydown();" title="HyperLink"><img alt="Web Link" src="pics/icons/page_link.png"/></a>
 			<!--<a href="#" onclick="insertAt('jSheetControls_formula', '~np~text~'+'/np~');return false;" title="Non-parsed"><img alt="Non-parsed" src="pics/icons/noparse.png"/></a>-->
 		</span>
