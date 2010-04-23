@@ -813,6 +813,11 @@ var jS = jQuery.sheet = {
 						break;
 					case key.Z:			return jS.evt.keyDownHandler.undo(e);
 						break;
+					case key.CONTROL: //we need to filter these to keep cell state
+					case key.CAPS_LOCK:
+					case key.SHIFT:
+					case key.ALT:
+						break;
 					default: 			jS.cellLast.isEdit = true;
 				}
 			}
@@ -2590,29 +2595,35 @@ var jS = jQuery.sheet = {
 			}
 			
 			var o = this.get();
-			var id = o.attr('id');
+			var id = o.attr('undoable');
 			if (id) {
 				var oldO = jQuery('#' + id);
 				var cl = oldO.attr('class');
-				o.attr('class', cl);
+				o
+					.attr('class', cl)
+					.attr('id', id);
 				oldO.replaceWith(o);
 			} else {
-				alert('Not available.');
+				jS.log('Not available.');
 			}
 			
 			if (undo && this.i < this.stack.length) {
 				this.i++;
 			}
-			alert(this.i);
+			jS.log(this.i);
 		},
-		get: function() {
+		get: function() { //gets the current cell
 			return jQuery(this.stack[this.i]).clone();
 		},
 		add: function(td) {
+			var o = td.clone();
+			var cl = o.attr('id');
+			o.removeAttr('id'); //id can only exist in one location, on the sheet, so here we use the id as the attr 'undoable'
+			o.attr('undoable', cl);
 			if (this.stack.length > 0) {
-				this.stack.unshift(td.clone());
+				this.stack.unshift(o);
 			} else {
-				this.stack = [td.clone()];
+				this.stack = [o];
 			}
 			this.i = 0;
 			if (this.stack.length > 50) { //undoable count, we want to be careful of too much memory consumption
@@ -2705,6 +2716,7 @@ var key = {
 	CAPS_LOCK: 			20,
 	COMMA: 				188,
 	CONTROL: 			17,
+	ALT:				18,
 	DELETE: 			46,
 	DOWN: 				40,
 	END: 				35,
