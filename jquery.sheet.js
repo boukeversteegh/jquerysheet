@@ -781,14 +781,14 @@ var jS = jQuery.sheet = {
 				return true;
 			},
 			redo: function(e) {
-				if (e.ctrlKey) { 
+				if (e.ctrlKey && !jS.cellLast.isEdit) { 
 					jS.cellUndoable.undoOrRedo();
 					return false;
 				}
 				return true;
 			},
 			undo: function(e) {
-				if (e.ctrlKey) {
+				if (e.ctrlKey && !jS.cellLast.isEdit) {
 					jS.cellUndoable.undoOrRedo(true);
 					return false;
 				}
