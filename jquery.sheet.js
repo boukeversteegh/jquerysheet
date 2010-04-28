@@ -87,6 +87,7 @@ jQuery.fn.extend({
 				}
 			},
 			fnClose: 		function() {}, 					//fn, default clase function, more of a proof of concept
+			fnAfterCellEdit:	function() {},				//fn, fires just after someone edits a cell
 			joinedResizing: false, 							//bool, this joins the column/row with the resize bar
 			boxModelCorrection: 2, 							//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
 			showErrors:		true							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
@@ -866,6 +867,7 @@ var jS = jQuery.sheet = {
 						
 						jS.obj.formula().focus().select();
 						jS.cellLast.isEdit = false;
+						jS.s.fnAfterCellEdit(jS.cellLast);
 					}
 					break;
 				default:
