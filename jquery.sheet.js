@@ -189,7 +189,8 @@ var jS = jQuery.sheet = {
 		uiDefault:			function() { return jQuery('.' + jS.cl.uiDefault); },
 		uiActive:			function() { return jQuery('.' + jS.cl.uiActive); },
 		uiBase:				function() { return jQuery('.' + jS.cl.uiBase); },
-		uiCell:				function() { return jQuery('.' + jS.cl.uiCell); },
+		uiCellActive:		function() { return jS.obj.sheet().find('.' + jS.cl.uiCellActive); },
+		uiCellHighlighted:	function() { return jS.obj.sheet().find('.' + jS.cl.uiCellHighlighted); },
 		toggle:				function() { return jQuery('.' + jS.cl.toggle); },
 		tableBody: 			function() { return document.getElementById(jS.id.sheet + jS.i); },
 		tableControl:		function() { return jQuery('#' + jS.id.tableControl + jS.i); },
@@ -241,7 +242,7 @@ var jS = jQuery.sheet = {
 		uiMenuHighlighted: 'ui-state-highlight',
 		uiControl: 		'ui-widget-header ui-corner-top',
 		uiControlTextBox:'ui-widget-content',
-		uiCell:			'themeRoller_activeCell',
+		uiCellActive:	'ui-state-active',
 		uiCellHighlighted: 'ui-state-highlight',
 		tableControl:	'tableControl',
 		toggle:			'cellStyleToggle',
@@ -876,7 +877,7 @@ var jS = jQuery.sheet = {
 			}
 		},
 		cellEditAbandon: function(skipCalc) {
-			jS.themeRoller.clearCell();
+			jS.themeRoller.cell.clearActive();
 			jS.themeRoller.clearBar();
 			if (!skipCalc) {
 				var v = jS.cellTextArea(jS.cellLast.td, true);
@@ -1091,7 +1092,7 @@ var jS = jQuery.sheet = {
 				if (jS.s.editable) { //only let editable select
 					selectRow = function(o, keepCurrent) {
 						if (!keepCurrent) { 
-							jS.themeRoller.clearCell();
+							jS.themeRoller.cell.clearHighlighted();
 							jS.themeRoller.clearBar();
 						}
 						
@@ -1121,7 +1122,7 @@ var jS = jQuery.sheet = {
 				if (jS.s.editable) { //only let editable select
 					selectColumn = function(o, keepCurrent) {
 						if (!keepCurrent) { 
-							jS.themeRoller.clearCell();
+							jS.themeRoller.cell.clearHighlighted();
 							jS.themeRoller.clearBar();
 						}
 						var i = jS.getBarTopIndex(o);
@@ -1338,7 +1339,7 @@ var jS = jQuery.sheet = {
 	merge: function() {
 		var cellsValue = "";
 		var cellValue = "";
-		var cells = jS.obj.uiCell();
+		var cells = jS.obj.uiCellHighlighted();
 		var formula;
 		var cellFirstLoc = jS.getTdLocation(cells.first());
 		var cellLastLoc = jS.getTdLocation(cells.last());
@@ -1374,7 +1375,7 @@ var jS = jQuery.sheet = {
 		}
 	},
 	unmerge: function() {
-		var cell = jS.obj.uiCell().first();
+		var cell = jS.obj.uiCellHighlighted().first();
 		var loc = jS.getTdLocation(cell);
 		var formula = cell.attr('formula');
 		var v = cell.html();
@@ -1523,19 +1524,24 @@ var jS = jQuery.sheet = {
 			jS.obj.label().addClass(jS.cl.uiControl);
 			jS.obj.formula().addClass(jS.cl.uiControlTextBox);
 		},
-		cell: function(td) {
-			jS.themeRoller.clearCell();
-			if (td) {
+		cell: {
+			setActive: function() {
+				this.clearActive();
+				jQuery(jS.cellLast.td)
+					.addClass(jS.cl.uiCellActive + ' ' + jS.cl.uiCellHighlighted);
+			},
+			setHighlighted: function(td) {
 				jQuery(td)
-					.addClass(jS.cl.uiCellHighlighted)
-					.addClass(jS.cl.uiCell);
+					.addClass(jS.cl.uiCellHighlighted);
+			},
+			clearActive: function() {
+				jS.obj.uiCellActive()
+					.removeClass(jS.cl.uiCellActive + ' ' + jS.cl.uiCellHighlighted);
+			},
+			clearHighlighted: function() {
+				jS.obj.uiCellHighlighted()
+					.removeClass(jS.cl.uiCellHighlighted);
 			}
-		},
-		clearCell: function(keepActive) {
-			jS.obj.uiCell()
-				.not(keepActive ? jQuery(jS.cellLast.td) : '') //Added to keep the visual of the current cell that's active
-				.removeClass(jS.cl.uiCellHighlighted)
-				.removeClass(jS.cl.uiCell)
 		},
 		newBar: function(obj) {//This is for a tr
 			jQuery(obj).addClass(jS.cl.uiBar);
@@ -1668,7 +1674,7 @@ var jS = jQuery.sheet = {
 		
 		jS.themeRoller.clearBar();
 		
-		jS.themeRoller.cell(td); //themeroll the cell and bars
+		jS.themeRoller.cell.setActive(); //themeroll the cell and bars
 		jS.themeRoller.barLeft(jS.cellLast.row);
 		jS.themeRoller.barTop(jS.cellLast.col);
 		
@@ -1686,7 +1692,7 @@ var jS = jQuery.sheet = {
 	},
 	cellStyleToggle: function(setClass, removeClass) {
 		//Lets check to remove any style classes
-		var uiCell = jS.obj.uiCell();
+		var uiCell = jS.obj.uiCellHighlighted();
 		
 		jS.cellUndoable.add(uiCell);
 		
@@ -2425,7 +2431,7 @@ var jS = jQuery.sheet = {
 		};//These are the events used to selected multiple rows.
 		jS.obj.sheet()
 			.mousemove(function(e) {
-				jS.themeRoller.clearCell(true);
+				jS.themeRoller.cell.clearHighlighted();
 				//jS.themeRoller.clearBar();
 				
 				o.endRow = e.target.parentNode.rowIndex;
@@ -2433,9 +2439,7 @@ var jS = jQuery.sheet = {
 				
 				for (var i = (o.startRow < o.endRow ? o.startRow : o.endRow) ; i <= (o.startRow > o.endRow ? o.startRow : o.endRow); i++) {
 					for (var j = (o.startColumn < o.endColumn ? o.startColumn : o.endColumn); j <= (o.startColumn > o.endColumn ? o.startColumn : o.endColumn); j++) {
-						jQuery(jS.getTd(jS.i, i, j))
-							.addClass(jS.cl.uiCell)
-							.addClass(jS.cl.uiCellHighlighted);
+						jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, i, j));
 					}
 				}
 			})
@@ -2447,7 +2451,7 @@ var jS = jQuery.sheet = {
 			
 			//this helps with multi select so that when you are selecting cells you don't select the text within them
 			if (jQuery(e.target).attr('id') != jQuery(jS.cellLast.td).attr('id') && jQuery(e.target).hasClass('clickable') == false) {
-				jS.themeRoller.clearCell(true);
+				jS.themeRoller.cell.clearHighlighted();
 				//jS.themeRoller.clearBar();
 				return false;
 			}
@@ -2473,19 +2477,14 @@ var jS = jQuery.sheet = {
 		var loc = jS.getTdLocation(jS.obj.sheet().find('td:last'));
 		for (var i = (colStart < colEnd ? colStart : colEnd); i <= (colEnd > colStart ? colEnd : colStart); i++) {
 			for (var j = 0; j <= loc[0]; j++) {
-				jQuery(jS.getTd(jS.i, j, i))
-					.addClass(jS.cl.uiCell)
-					.addClass(jS.cl.uiCellHighlighted);
+				jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, j, i));
 			}
 			jS.themeRoller.barTop(i);
 		}
 	},
 	cellSetActiveMultiRow: function(rowStart, rowEnd) {
 		for (var i = (rowStart < rowEnd ? rowStart : rowEnd); i <= (rowEnd > rowStart ? rowEnd : rowStart); i++) {
-			jS.obj.sheet().find('tr').eq(i).find('td')
-				.addClass(jS.cl.uiCell)
-				.addClass(jS.cl.uiCellHighlighted);
-			
+			jS.themeRoller.cell.setHighlighted(jS.obj.sheet().find('tr').eq(i).find('td'));
 			jS.themeRoller.barLeft(i);
 		}
 	},
@@ -2500,7 +2499,7 @@ var jS = jQuery.sheet = {
 		//Get locations
 		//Get labels for locationa and return them
 		
-		var cells = jS.obj.uiCell();//.not('.' + jS.cl.cell);
+		var cells = jS.obj.uiCellHighlighted();//.not('.' + jS.cl.cell);
 		
 		if (cells.length) {
 			var loc = { //tr/td column and row index
@@ -2624,7 +2623,7 @@ var jS = jQuery.sheet = {
 				}
 			});
 			
-			jS.themeRoller.clearCell(true);
+			jS.themeRoller.cell.clearHighlighted();
 			jS.log(this.i);
 		},
 		get: function() { //gets the current cell
