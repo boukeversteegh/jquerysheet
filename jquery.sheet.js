@@ -1625,8 +1625,11 @@ var jS = jQuery.sheet = {
 				parent.resizable('destroy').resizable({
 					minWidth: jS.s.width * 0.5,
 					minHeight: jS.s.height * 0.5,
-					ghost: true,
-					stop: function() {						
+					start: function() {
+						jS.obj.ui().hide();
+					},
+					stop: function() {
+						jS.obj.ui().show();
 						jS.s.width = parent.width();
 						jS.s.height = parent.height();
 						jS.sheetSyncSize();
