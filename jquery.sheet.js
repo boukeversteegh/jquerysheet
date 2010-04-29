@@ -1482,7 +1482,7 @@ var jS = jQuery.sheet = {
 		formula = formula.replace(cE.regEx.cell, 
 			function(ignored, colStr, rowStr, pos) {
 				charAt[0] = formula.charAt(pos - 1);
-				charAt[1] = formula.charAt(colStr.length + rowStr.length + 1);
+				charAt[1] = formula.charAt(ignored.length + pos);
 				
 				charAt[0] = (charAt[0] ? charAt[0] : '');
 				charAt[1] = (charAt[1] ? charAt[1] : '');
