@@ -46,31 +46,33 @@
 	
 	<script type="text/javascript">
 		$(function() {
-			
 			$('#jQuerySheet').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
-				inlineMenu: jQuery('#inlineMenu').html()
+				inlineMenu: jQuery('#inlineMenu').html(),
+				fnAfter: function() {
+					//The following is just so you get an idea of how to style cells
+					$('.colorPickerCell')
+						.colorPicker()
+						.change(function() {
+							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it undoable
+							jS.obj.cellHighlighted().css('background-color', $(this).val());
+							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it redoable
+						});
+					
+					$('.colorPickerFont')
+						.colorPicker()
+						.change(function() {
+							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it undoable
+							jS.obj.cellHighlighted().css('color', $(this).val());
+							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it redoable
+						});
+					
+					$('.colorPickers')
+						.children().eq(1).css('background-image', "url('pics/icons/palette.png')");
+					$('.colorPickers')
+						.children().eq(3).css('background-image', "url('pics/icons/palette_bg.png')");
+				}
 			});
-			
-			$('.colorPickerCell')
-				.colorPicker()
-				.change(function() {
-					jS.cellUndoable.add(jS.obj.uiCell()); //before save
-					jS.obj.uiCell().css('background-color', $(this).val());
-					jS.cellUndoable.add(jS.obj.uiCell()); //after save
-				});
-			$('.colorPickerFont')
-				.colorPicker()
-				.change(function() {
-					jS.cellUndoable.add(jS.obj.uiCell()); //before save
-					jS.obj.uiCell().css('color', $(this).val());
-					jS.cellUndoable.add(jS.obj.uiCell()); //after save
-				});
-			
-			$('.colorPickers')
-				.children().eq(1).css('background-image', "url('pics/icons/palette.png')");
-			$('.colorPickers')
-				.children().eq(3).css('background-image', "url('pics/icons/palette_bg.png')");
 			
 			/*
 			//examples of how to use jQuery.sheet

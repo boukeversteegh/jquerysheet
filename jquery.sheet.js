@@ -635,8 +635,6 @@ var jS = jQuery.sheet = {
 			
 			jS.log('Sheet Initialized');
 			
-			jS.s.fnAfter();
-			
 			return objContainer;
 		},
 		table: function() {
@@ -718,8 +716,8 @@ var jS = jQuery.sheet = {
 			var w = td.width();
 			var h = td.height();
 			var textarea = jQuery('<textarea id="' + jS.id.inPlaceEdit + '" />')
-				.css('left', offset.left - jS.s.boxModelCorrection)
-				.css('top', offset.top - jS.s.boxModelCorrection)
+				.css('left', offset.left)
+				.css('top', offset.top)
 				.width(w)
 				.height(h)
 				.keydown(jS.evt.inPlaceEditOnKeyDown)
@@ -735,6 +733,7 @@ var jS = jQuery.sheet = {
 				.focus()
 				.select();
 			
+			//Make the textarrea resizeable automatically
 			if (jQuery.fn.elastic) {
 				textarea.elastic();
 			}
@@ -847,7 +846,7 @@ var jS = jQuery.sheet = {
 					case key.Up:
 					case key.Down:
 					case key.Left:
-					case key.Write:
+					case key.Right:
 						break;
 					default: 			jS.cellLast.isEdit = true;
 				}
@@ -1565,15 +1564,15 @@ var jS = jQuery.sheet = {
 			setActive: function() {
 				this.clearActive();
 				jQuery(jS.cellLast.td)
-					.addClass(jS.cl.uiCellActive + ' ' + jS.cl.cellActive + ' ' + jS.cl.uiCellHighlighted);
+					.addClass(jS.cl.uiCellActive + ' ' + jS.cl.cellActive + ' ' + jS.cl.uiCellActive + ' ' + jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
 			},
 			setHighlighted: function(td) {
 				jQuery(td)
-					.addClass(jS.cl.uiCellHighlighted + ' ' + jS.cl.cellHighlighted)
+					.addClass(jS.cl.uiCellHighlighted + ' ' + jS.cl.cellHighlighted);
 			},
 			clearActive: function() {
 				jS.obj.cellActive()
-					.removeClass(jS.cl.uiCellActive + ' ' + jS.cl.cellActive + ' ' + jS.cl.uiCellHighlighted);
+					.removeClass(jS.cl.uiCellActive + ' ' + jS.cl.cellActive + ' ' + jS.cl.uiCellActive + ' ' + jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
 			},
 			clearHighlighted: function() {
 				jS.obj.cellHighlighted()
@@ -2042,6 +2041,8 @@ var jS = jQuery.sheet = {
 					for (var i = 0; i <= jS.sheetCount; i++) {
 						jS.calc(i);
 					}
+					
+					jS.s.fnAfter();
 				}
 			};
 			
