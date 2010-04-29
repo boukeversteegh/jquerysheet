@@ -256,6 +256,11 @@
 	display: inline;
 }
 
+#jSheetInPlaceEdit
+{
+	position: absolute;
+}
+
 .colorPickers *
 {
 	display: inline-block;

@@ -177,7 +177,7 @@ var jS = jQuery.sheet = {
 		barCornerParent:	function() { return jQuery('#' + jS.id.barCornerParent + jS.i); },
 		barCornerParentAll: function() { return jQuery('.' + jS.cl.barCornerParent); },
 		barSelected:		function() { return jQuery('.' + jS.cl.barSelected); },
-		cell: 				function() { return jQuery('.' + jS.cl.cell); },
+		cell: 				function() { return jQuery('.' + jS.cl.cellActive); },
 		controls:			function() { return jQuery('#' + jS.id.controls); },
 		formula: 			function() { return jQuery('#' + jS.id.formula); },
 		label: 				function() { return jQuery('#' + jS.id.label); },
@@ -189,67 +189,70 @@ var jS = jQuery.sheet = {
 		uiDefault:			function() { return jQuery('.' + jS.cl.uiDefault); },
 		uiActive:			function() { return jQuery('.' + jS.cl.uiActive); },
 		uiBase:				function() { return jQuery('.' + jS.cl.uiBase); },
-		uiCellActive:		function() { return jS.obj.sheet().find('.' + jS.cl.uiCellActive); },
-		uiCellHighlighted:	function() { return jS.obj.sheet().find('.' + jS.cl.uiCellHighlighted); },
+		cellActive:			function() { return jQuery('.' + jS.cl.cellActive); },
+		cellHighlighted:	function() { return jQuery('.' + jS.cl.cellHighlighted); },
 		toggle:				function() { return jQuery('.' + jS.cl.toggle); },
 		tableBody: 			function() { return document.getElementById(jS.id.sheet + jS.i); },
 		tableControl:		function() { return jQuery('#' + jS.id.tableControl + jS.i); },
 		tableControlAll:	function() { return jQuery('.' + jS.cl.tableControl); },
 		tab:				function() { return jQuery('#' + jS.id.tab + jS.i); },
 		tabAll:				function() { return jQuery('.' + jS.cl.tab); },
-		tabContainer:		function() { return jQuery('#' + jS.id.tabContainer); }
+		tabContainer:		function() { return jQuery('#' + jS.id.tabContainer); },
+		inPlaceEdit:		function() { return jQuery('#' + jS.id.inPlaceEdit); }
 	},
 	id: {//id = id's references
-		sheet: 			'jSheet',//This con probably be just about any value as long as it's not a duplicated id
-		ui:				'jSheetUI',
-		barTop: 		'jSheetBarTop',
-		barTopParent: 	'jSheetBarTopParent',
-		barLeft: 		'jSheetBarLeft',
-		barLeftParent: 	'jSheetBarLeftParent',
-		barCorner:		'jSheetBarCorner',
-		barCornerParent:'jSheetBarCornerParent',
-		controls:		'jSheetControls',
-		formula: 		'jSheetControls_formula',
-		label: 			'jSheetControls_loc',
-		fx:				'jSheetControls_fx',
-		pane: 			'jSheetEditPane',
-		log: 			'jSheetLog',
-		menu:			'jSheetMenu',
-		tableControl:	'tableControl',
-		tab:			'jSheetTab',
-		tabContainer:	'jSheetTabContainer'
+		sheet: 				'jSheet',//This con probably be just about any value as long as it's not a duplicated id
+		ui:					'jSheetUI',
+		barTop: 			'jSheetBarTop',
+		barTopParent: 		'jSheetBarTopParent',
+		barLeft: 			'jSheetBarLeft',
+		barLeftParent: 		'jSheetBarLeftParent',
+		barCorner:			'jSheetBarCorner',
+		barCornerParent:	'jSheetBarCornerParent',
+		controls:			'jSheetControls',
+		formula: 			'jSheetControls_formula',
+		label: 				'jSheetControls_loc',
+		fx:					'jSheetControls_fx',
+		pane: 				'jSheetEditPane',
+		log: 				'jSheetLog',
+		menu:				'jSheetMenu',
+		tableControl:		'tableControl',
+		tab:				'jSheetTab',
+		tabContainer:		'jSheetTabContainer',
+		inPlaceEdit:		'jSheetInPlaceEdit'
 	},
 	cl: {//cl = class references
-		sheet: 			'jSheet',
-		barTop: 		'jSheetBarTop',
-		barTopParent: 	'jSheetBarTopParent',
-		barLeft: 		'jSheetBarLeft',
-		barLeftParent: 	'jSheetBarLeftParent',
-		barCorner:		'jSheetBarCorner',
-		barCornerParent:'jSheetBarCornerParent',
-		pane: 			'jSheetEditPane',
-		cell: 			'jSheetCellActive',
-		barSelected: 	'jSheetBarItemSelected',
-		uiDefault:		'ui-state-default',
-		uiActive:		'ui-state-active',
-		uiBase:			'ui-widget-content',
-		uiParent: 		'ui-widget-content ui-corner-all',
-		uiSheet:		'ui-widget-content',
-		uiBar: 			'ui-widget-header',
-		uiPane: 		'ui-widget-content',
-		uiMenuUl: 		'ui-widget-header',
-		uiMenuLi: 		'ui-widget-header',
-		uiMenuHighlighted: 'ui-state-highlight',
-		uiControl: 		'ui-widget-header ui-corner-top',
-		uiControlTextBox:'ui-widget-content',
-		uiCellActive:	'ui-state-active',
-		uiCellHighlighted: 'ui-state-highlight',
-		tableControl:	'tableControl',
-		toggle:			'cellStyleToggle',
-		tab:			'jSheetTab',
-		barTopTd:		'barTop',
-		barLeftTd:		'barLeft',
-		sheetPaneTd:	'sheetPane'
+		sheet: 				'jSheet',
+		barTop: 			'jSheetBarTop',
+		barTopParent: 		'jSheetBarTopParent',
+		barLeft: 			'jSheetBarLeft',
+		barLeftParent: 		'jSheetBarLeftParent',
+		barCorner:			'jSheetBarCorner',
+		barCornerParent:	'jSheetBarCornerParent',
+		pane: 				'jSheetEditPane',
+		barSelected: 		'jSheetBarItemSelected',
+		uiDefault:			'ui-state-default',
+		uiActive:			'ui-state-active',
+		uiBase:				'ui-widget-content',
+		uiParent: 			'ui-widget-content ui-corner-all',
+		uiSheet:			'ui-widget-content',
+		uiBar: 				'ui-widget-header',
+		uiPane: 			'ui-widget-content',
+		uiMenuUl: 			'ui-widget-header',
+		uiMenuLi: 			'ui-widget-header',
+		uiMenuHighlighted: 	'ui-state-highlight',
+		uiControl: 			'ui-widget-header ui-corner-top',
+		uiControlTextBox:	'ui-widget-content',
+		uiCellActive:		'ui-state-active',
+		uiCellHighlighted: 	'ui-state-highlight',
+		cellActive:			'jSheetCellActive',
+		cellHighlighted: 	'jSheetCellHighighted',
+		tableControl:		'tableControl',
+		toggle:				'cellStyleToggle',
+		tab:				'jSheetTab',
+		barTopTd:			'barTop',
+		barLeftTd:			'barLeft',
+		sheetPaneTd:		'sheetPane'
 	},
 	controlFactory: {
 		addRowMulti: function(qty) {
@@ -298,10 +301,7 @@ var jS = jQuery.sheet = {
 			jQuery(newRow).find('td')
 				.html('')
 				.attr('class', '')
-				.removeAttr('formula')
-				.keydown(function(e) {
-					return jS.evt.formulaKeyDown(e, true);
-				});
+				.removeAttr('formula');
 			if (insertBefore) {
 				newRow.insertBefore(currentRow);
 			} else {
@@ -536,11 +536,15 @@ var jS = jQuery.sheet = {
 								'<textarea id="' + jS.id.formula + '"></textarea>' +
 							'</td>' +
 						'</tr>' +
-					'</table>').appendTo(header);
-					
-				secondRow.keydown(function(e) {
-					return jS.evt.formulaKeyDown(e);
-				});
+					'</table>')
+					.keydown(jS.evt.keyDownHandler.formulaKeyDown)
+					.keyup(function() {
+						jS.obj.inPlaceEdit().val(jS.obj.formula().val());
+					})
+					.change(function() {
+						jS.obj.inPlaceEdit().val(jS.obj.formula().val());
+					})
+					.appendTo(header);
 			}
 			
 			firstRowTr.appendTo(firstRow);
@@ -705,6 +709,35 @@ var jS = jQuery.sheet = {
 					});
 				})
 				.attr('src', src);
+		},
+		inPlaceEdit: function(td) {
+			jS.obj.inPlaceEdit().remove();
+			var formula = jS.obj.formula();
+			var offset = td.offset();
+			var style = td.attr('style');
+			var w = td.width();
+			var h = td.height();
+			var textarea = jQuery('<textarea id="' + jS.id.inPlaceEdit + '" />')
+				.css('left', offset.left - jS.s.boxModelCorrection)
+				.css('top', offset.top - jS.s.boxModelCorrection)
+				.width(w)
+				.height(h)
+				.keydown(jS.evt.inPlaceEditOnKeyDown)
+				.keyup(function() {
+					formula.val(jQuery(this).val());
+				})
+				.change(function() {
+					formula.val(jQuery(this).val());
+				})
+				.addClass('ui-widget-content')
+				.appendTo('body')
+				.val(formula.val())
+				.focus()
+				.select();
+			
+			if (jQuery.fn.elastic) {
+				textarea.elastic();
+			}
 		}
 	},
 	sizeSync: {
@@ -712,7 +745,7 @@ var jS = jQuery.sheet = {
 	},
 	evt: {
 		keyDownHandler: {
-			enterOnTextArea: function(e) {
+			enterOnInPlaceEdit: function(e) {
 				if (!e.shiftKey) {
 					return jS.evt.cellClick(key.DOWN);
 				} else {
@@ -731,14 +764,6 @@ var jS = jQuery.sheet = {
 					return jS.evt.cellClick(key.LEFT);
 				} else {
 					return jS.evt.cellClick(key.RIGHT);
-				}
-			},
-			textAreaKeyDown: function(e) {
-				switch (e.keyCode) {
-					case key.ENTER: 	return jS.evt.keyDownHandler.enterOnTextArea(e);
-						break;
-					case key.TAB: 		return jS.evt.keyDownHandler.tab(e);
-						break;
 				}
 			},
 			pasteOverCells: function(e) { //used for pasting from other spreadsheets
@@ -819,33 +844,51 @@ var jS = jQuery.sheet = {
 					case key.CAPS_LOCK:
 					case key.SHIFT:
 					case key.ALT:
+					case key.Up:
+					case key.Down:
+					case key.Left:
+					case key.Write:
 						break;
 					default: 			jS.cellLast.isEdit = true;
 				}
 			}
 		},
-		formulaKeyDown: function(e, isTextArea) {
-			//Switch is much faster than if statements
-			//I found that it's much easier to go from the origin key (up, down, left, right, tab, enter) and then detect if the ctrl key or shift keys are down.
-			//It's just difficult to look at later on and it's probably faster overall
-			return (isTextArea ? jS.evt.keyDownHandler.textAreaKeyDown(e) : jS.evt.keyDownHandler.formulaKeyDown(e));
+		inPlaceEditOnKeyDown: function(e) {
+			switch (e.keyCode) {
+				case key.ENTER: 	return jS.evt.keyDownHandler.enterOnInPlaceEdit(e);
+					break;
+				case key.TAB: 		return jS.evt.keyDownHandler.tab(e);
+					break;
+				case key.ESCAPE:	jS.evt.cellEditAbandon(); return false;
+					break;
+			}
+		},
+		formulaChange: function(e) {
+			jS.obj.inPlaceEdit().val(jS.obj.formula().val());
+		},
+		formulaKeyDown: function(e) {
+			return jS.evt.keyDownHandler.formulaKeyDown(e);
+		},
+		inPlaceEditChange: function(e) {
+			jS.obj.formula().val(jS.obj.inPlaceEdit().val());
 		},
 		cellEditDone: function(forceCalc) {
 			switch (jS.cellLast.isEdit) {
 				case true:
 					// Any changes to the input controls are stored back into the table, with a recalc.
+					jS.obj.inPlaceEdit().remove();
 					var td = jS.cellLast.td;
 					var recalc = false;
 					
 					//Lets ensure that the cell being edited is actually active
 					if (td) { 
-						//first, let's make it undoable
+						//first, let's make it undoable before we edit it
 						jS.cellUndoable.add(td);
 						
 						//This should return either a val from textbox or formula, but if fails it tries once more from formula.
-						var v = jS.cellTextArea(td, true) + '';
-						var formula = td.attr('formula') + '';
-						var prevVal = td.attr('prevVal') + '';
+						var formula = jS.obj.formula();
+						var v = jS.manageTextToHtml(formula.val());
+						var prevVal = td.html();
 
 						if (v.charAt(0) == '=') {
 							td.attr('formula', v);
@@ -866,7 +909,7 @@ var jS = jQuery.sheet = {
 						//Save the newest version of that cell
 						jS.cellUndoable.add(td);
 						
-						jS.obj.formula().focus().select();
+						formula.focus().select();
 						jS.cellLast.isEdit = false;
 						jS.s.fnAfterCellEdit(jS.cellLast);
 					}
@@ -877,13 +920,10 @@ var jS = jQuery.sheet = {
 			}
 		},
 		cellEditAbandon: function(skipCalc) {
+			jS.obj.inPlaceEdit().remove();
 			jS.themeRoller.cell.clearActive();
 			jS.themeRoller.clearBar();
 			if (!skipCalc) {
-				var v = jS.cellTextArea(jS.cellLast.td, true);
-				if (v) {
-					jS.cellLast.td.html(jS.manageTextToHtml(v));
-				}
 				jS.sheetClearActive();
 				jS.calc(jS.i);
 			}
@@ -910,6 +950,7 @@ var jS = jQuery.sheet = {
 				case key.LEFT: 		h--; break;
 				case key.RIGHT: 	h++; break;
 			}
+			
 			jQuery(jS.getTd(jS.i, jS.cellLast.row + v, jS.cellLast.col + h)).click();
 			
 			return false;
@@ -955,8 +996,8 @@ var jS = jQuery.sheet = {
 				jS.log('click cell');
 			} else { //inline edit, 2nd click
 				jS.cellLast.isEdit = jS.isSheetEdit = true;
-				jS.cellTextArea(td, false, true);
-				jS.log('click, textarea over table activated');
+				jS.controlFactory.inPlaceEdit(td);
+				jS.log('click, in place edit activated');
 			}
 			jS.followMe(td);
 		},
@@ -1025,7 +1066,7 @@ var jS = jQuery.sheet = {
 					o.resizeFn(newSize);
 					return false;
 				},
-				stop: function(e) {	
+				stop: function(e) {
 					o.setDesinationSize(o.getSize(target));
 					
 					jQuery(document)
@@ -1102,8 +1143,6 @@ var jS = jQuery.sheet = {
 						
 						jS.evt.barMouseDown.last = i;
 						
-						//jS.fxUpdate((jS.evt.barMouseDown.first + 1) + ':' + (jS.evt.barMouseDown.last + 1), true);
-						
 						jS.cellSetActiveMultiRow(jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
 					};
 				}
@@ -1131,8 +1170,6 @@ var jS = jQuery.sheet = {
 						
 						jS.evt.barMouseDown.last = i;
 						
-						//jS.fxUpdate(cE.columnLabelString(jS.evt.barMouseDown.first + 1) + ':' + cE.columnLabelString(jS.evt.barMouseDown.last + 1), true);
-						
 						jS.cellSetActiveMultiColumn(jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
 					};
 				}
@@ -1144,7 +1181,7 @@ var jS = jQuery.sheet = {
 			.addClass(jS.cl.sheet)
 			.attr('id', jS.id.sheet + jS.i)
 			.attr('border', '1px');
-		obj.find('.' + jS.cl.uiCell).removeClass(jS.cl.uiCell);
+		obj.find('.' + jS.cl.cellActive).removeClass(jS.cl.cellActive);
 	},
 	attrH: {//Attribute Helpers
 	//I created this object so I could see, quickly, which attribute was most stable.
@@ -1339,7 +1376,7 @@ var jS = jQuery.sheet = {
 	merge: function() {
 		var cellsValue = "";
 		var cellValue = "";
-		var cells = jS.obj.uiCellHighlighted();
+		var cells = jS.obj.cellHighlighted();
 		var formula;
 		var cellFirstLoc = jS.getTdLocation(cells.first());
 		var cellLastLoc = jS.getTdLocation(cells.last());
@@ -1375,7 +1412,7 @@ var jS = jQuery.sheet = {
 		}
 	},
 	unmerge: function() {
-		var cell = jS.obj.uiCellHighlighted().first();
+		var cell = jS.obj.cellHighlighted().first();
 		var loc = jS.getTdLocation(cell);
 		var formula = cell.attr('formula');
 		var v = cell.html();
@@ -1528,19 +1565,19 @@ var jS = jQuery.sheet = {
 			setActive: function() {
 				this.clearActive();
 				jQuery(jS.cellLast.td)
-					.addClass(jS.cl.uiCellActive + ' ' + jS.cl.uiCellHighlighted);
+					.addClass(jS.cl.uiCellActive + ' ' + jS.cl.cellActive + ' ' + jS.cl.uiCellHighlighted);
 			},
 			setHighlighted: function(td) {
 				jQuery(td)
-					.addClass(jS.cl.uiCellHighlighted);
+					.addClass(jS.cl.uiCellHighlighted + ' ' + jS.cl.cellHighlighted)
 			},
 			clearActive: function() {
-				jS.obj.uiCellActive()
-					.removeClass(jS.cl.uiCellActive + ' ' + jS.cl.uiCellHighlighted);
+				jS.obj.cellActive()
+					.removeClass(jS.cl.uiCellActive + ' ' + jS.cl.cellActive + ' ' + jS.cl.uiCellHighlighted);
 			},
 			clearHighlighted: function() {
-				jS.obj.uiCellHighlighted()
-					.removeClass(jS.cl.uiCellHighlighted);
+				jS.obj.cellHighlighted()
+					.removeClass(jS.cl.uiCellHighlighted + ' ' + jS.cl.cellHighlighted);
 			}
 		},
 		newBar: function(obj) {//This is for a tr
@@ -1625,13 +1662,13 @@ var jS = jQuery.sheet = {
 	sheetDecorateRemove: function(makeClone) {
 		var obj = (makeClone ? jS.obj.sheetAll().clone() : jS.obj.sheetAll());
 		
-		//remove class jSheetCellActive
-		jQuery(obj).find('.' + jS.cl.cell).removeClass(jS.cl.cell);
-		//remove class ui-state-highlight
-		jQuery(obj).find('.' + jS.cl.uiCellHighlighted).removeClass(jS.cl.uiCellHighlighted);
-		//remove class themeRoller_activeCell
-		
-		jQuery(obj).find('.' + jS.cl.uiCell).removeClass(jS.cl.uiCell);
+		//Get rid of highlighted cells and active cells
+		jQuery(obj).find('.' + jS.cl.cellActive)
+			.removeClass(jS.cl.cellActive + ' ' + jS.cl.uiCellActive);
+			
+		jQuery(obj).find('.' + jS.cl.cellHighlighted)
+			.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
+			
 		//IE Bug, match width with css width
 		jQuery(obj).find('col').each(function(i) {
 			var v = jQuery(this).css('width');
@@ -1678,7 +1715,6 @@ var jS = jQuery.sheet = {
 		jS.themeRoller.barLeft(jS.cellLast.row);
 		jS.themeRoller.barTop(jS.cellLast.col);
 		
-		//td.addClass(jS.cl.cell); //add classes
 		jS.obj.barLeft().find('div').eq(jS.cellLast.row).addClass(jS.cl.barSelected);
 		jS.obj.barTop().find('div').eq(jS.cellLast.col).addClass(jS.cl.barSelected);
 	},
@@ -1692,7 +1728,7 @@ var jS = jQuery.sheet = {
 	},
 	cellStyleToggle: function(setClass, removeClass) {
 		//Lets check to remove any style classes
-		var uiCell = jS.obj.uiCellHighlighted();
+		var uiCell = jS.obj.cellHighlighted();
 		
 		jS.cellUndoable.add(uiCell);
 		
@@ -1721,66 +1757,6 @@ var jS = jQuery.sheet = {
 			jS.isSheetEdit = false;
 		}
 		jS.log('Calculation Ended');
-	},
-	cellTextArea: function(td, returnVal, makeEdit, setVal) {
-		//Remove Textarea and transfer value.
-		var v;
-		if (td) {
-			if (!makeEdit) {
-				var textArea = td.find('textarea');
-				var textAreaVal = textArea.val();
-				if (textAreaVal || jS.obj.formula().attr('disabled')) {
-					jS.log('Textarea value used');
-					v = textAreaVal;
-					textArea.remove();
-					//td
-					//	.css('text-align', '')
-					//	.css('vertical-align', '');
-				} else {
-					jS.log('Formula value used');
-					v = jS.obj.formula().val();
-				}
-				jS.obj.formula().removeAttr('disabled');
-			} else {
-				if (setVal) {
-					v = setVal;
-				} else {
-					v = jS.obj.formula().val();
-				}
-				
-				jS.obj.formula().attr('disabled', 'true');
-				
-				var textArea = jQuery('<textarea id="tempText" class="clickable" />');
-				var h = jS.attrH.height(td) - (jS.s.boxModelCorrection * 2);
-				
-				//There was an error in some browsers where they would mess this up.
-				//td.parent().height(h);
-				//create text area.  Agian, strings are faster than DOM.
-				textArea
-					//.height(h < 75 ? 75 : h)
-					.val(v)
-					.click(function(){
-						return false;
-					})
-					.keydown(function(e) {
-						return jS.evt.formulaKeyDown(e, true);
-					});
-				
-				//Se we can look at the past value after edit.
-				if (td.attr('formula')) {
-					td.attr('prevVal', td.text()).removeAttr('formula');
-				}
-				//add it to cell
-				td.html(textArea);
-				//focus textarea
-				textArea
-					.focus()
-					.select();
-			}
-			if (returnVal) {
-				return v;
-			}
-		}
 	},
 	refreshLabelsColumns: function(){
 		var w = 0;
@@ -1923,7 +1899,6 @@ var jS = jQuery.sheet = {
 					}
 					if (key == "class") {
 						hasClass = true;
-						//jQuery(val).removeClass(jS.cl.cell);
 					}
 					
 					if (typeof(val) == "string") {
@@ -2490,7 +2465,6 @@ var jS = jQuery.sheet = {
 	},
 	sheetClearActive: function() {
 		jS.obj.formula().val('');
-		//jS.obj.cell().removeClass(jS.cl.cell);
 		jS.obj.barSelected().removeClass(jS.cl.barSelected);
 	},
 	getTdRange: function() {
@@ -2499,7 +2473,7 @@ var jS = jQuery.sheet = {
 		//Get locations
 		//Get labels for locationa and return them
 		
-		var cells = jS.obj.uiCellHighlighted();//.not('.' + jS.cl.cell);
+		var cells = jS.obj.cellHighlighted();
 		
 		if (cells.length) {
 			var loc = { //tr/td column and row index
@@ -2623,8 +2597,9 @@ var jS = jQuery.sheet = {
 				}
 			});
 			
+			jS.themeRoller.cell.clearActive();
 			jS.themeRoller.cell.clearHighlighted();
-			jS.log(this.i);
+			jS.themeRoller.cell.setActive(jS.cellLast.td);
 		},
 		get: function() { //gets the current cell
 			return jQuery(this.stack[this.i]);
@@ -2642,7 +2617,7 @@ var jS = jQuery.sheet = {
 				this.stack = [oldTds];
 			}
 			this.i = -1;
-			if (this.stack.length > 50) { //undoable count, we want to be careful of too much memory consumption
+			if (this.stack.length > 20) { //undoable count, we want to be careful of too much memory consumption
 				this.stack.pop(); //drop the last value
 			}
 		},
