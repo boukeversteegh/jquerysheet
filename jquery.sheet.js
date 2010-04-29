@@ -2585,9 +2585,7 @@ var jS = jQuery.sheet = {
 				var o = jQuery(this);
 				var id = o.attr('undoable');
 				if (id) {
-					var td = jQuery('#' + id);
-					
-					td.replaceWith(
+					jQuery('#' + id).replaceWith(
 						o
 							.removeAttr('undoable')
 							.attr('id', id)
