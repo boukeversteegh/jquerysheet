@@ -537,7 +537,7 @@ var jS = jQuery.sheet = {
 							'</td>' +
 						'</tr>' +
 					'</table>')
-					.keydown(jS.evt.keyDownHandler.formulaKeyDown)
+					.keydown(jS.evt.keyDownHandler.formulaOnKeyDown)
 					.keyup(function() {
 						jS.obj.inPlaceEdit().val(jS.obj.formula().val());
 					})
@@ -820,7 +820,7 @@ var jS = jQuery.sheet = {
 				}
 				return true;
 			},
-			formulaKeyDown: function(e) {
+			formulaOnKeyDown: function(e) {
 				switch (e.keyCode) {
 					case key.ESCAPE: 	jS.evt.cellEditAbandon();
 						break;
@@ -864,9 +864,6 @@ var jS = jQuery.sheet = {
 		},
 		formulaChange: function(e) {
 			jS.obj.inPlaceEdit().val(jS.obj.formula().val());
-		},
-		formulaKeyDown: function(e) {
-			return jS.evt.keyDownHandler.formulaKeyDown(e);
 		},
 		inPlaceEditChange: function(e) {
 			jS.obj.formula().val(jS.obj.inPlaceEdit().val());
