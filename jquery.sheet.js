@@ -1,6 +1,6 @@
 /*
 jQuery.sheet() Spreadsheet with Calculations Plugin
-Version: 1.0.2 SVN
+Version: 1.1.0 SVN
 http://code.google.com/p/jquerysheet/
 		
 Copyright (C) 2010 Robert Plummer
@@ -155,7 +155,7 @@ jQuery.fn.extend({
 });
 
 var jS = jQuery.sheet = {
-	version: '1.01',
+	version: '1.1.0',
 	i: 0,
 	sheetCount: 0,
 	s: {},//s = settings object, used for shorthand, populated from jQuery.sheet
@@ -254,7 +254,9 @@ var jS = jQuery.sheet = {
 		barLeftTd:			'barLeft',
 		sheetPaneTd:		'sheetPane',
 		uiTab:				'ui-widget-header',
-		uiTabActive:		'ui-state-highlight'
+		uiTabActive:		'ui-state-highlight',
+		uiInPlaceEdit:		'ui-state-active',
+		uiMenu:				'ui-state-highlight'
 	},
 	controlFactory: {
 		addRowMulti: function(qty) {
@@ -519,14 +521,12 @@ var jS = jQuery.sheet = {
 								closeAfter:		1000
 							})
 							.hover(function() {
-								jQuery(this).addClass('ui-state-highlight');
+								//not going to add to jS.cl because this isn't our control
+								jQuery(this).addClass(jS.cl.uiMenu);
 							}, function() {
-								jQuery(this).removeClass('ui-state-highlight');
+								jQuery(this).removeClass(jS.cl.uiMenu);
 							});
-					})
-					.hover(function() {
-						jQuery(this).addClass('ui-state-highlight');
-					}, function() {});
+					});
 				}
 				
 				//Edit box menu
@@ -552,7 +552,7 @@ var jS = jQuery.sheet = {
 			firstRowTr.appendTo(firstRow);
 			
 			var tabParent = jQuery('<div id="' + jS.id.tabContainer + '">' + 
-							(jS.s.editable ? '<span class="ui-widget-header ui-corner-bottom" title="Add a spreadsheet" i="-1">+</span>' : '<span />') + 
+							(jS.s.editable ? '<span class="' + jS.cl.uiTab + ' ui-corner-bottom" title="Add a spreadsheet" i="-1">+</span>' : '<span />') + 
 						'</div>')
 					.mousedown(jS.evt.tabOnMouseDown);
 
@@ -640,7 +640,7 @@ var jS = jQuery.sheet = {
 			return objContainer;
 		},
 		table: function() {
-			return jQuery('<table cellpadding="0" cellspacing="0" border="0" id="' + jS.id.tableControl + jS.i + '" class="' + jS.cl.tableControl + ' ui-corner-bottom">' +
+			return jQuery('<table cellpadding="0" cellspacing="0" border="0" id="' + jS.id.tableControl + jS.i + '" class="' + jS.cl.tableControl + '">' +
 				'<tbody>' +
 					'<tr>' + 
 						'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.cl.barCornerParent + '">' + //corner
@@ -717,7 +717,7 @@ var jS = jQuery.sheet = {
 			var style = td.attr('style');
 			var w = td.width();
 			var h = td.height();
-			var textarea = jQuery('<textarea id="' + jS.id.inPlaceEdit + '" />')
+			var textarea = jQuery('<textarea id="' + jS.id.inPlaceEdit + '" class="' + jS.cl.uiInPlaceEdit + '" />')
 				.css('left', offset.left)
 				.css('top', offset.top)
 				.width(w)
@@ -729,7 +729,6 @@ var jS = jQuery.sheet = {
 				.change(function() {
 					formula.val(jQuery(this).val());
 				})
-				.addClass('ui-widget-content')
 				.appendTo('body')
 				.val(formula.val())
 				.focus()
@@ -1514,7 +1513,7 @@ var jS = jQuery.sheet = {
 		return formula;
 	},
 	addTab: function() {
-		jQuery('<span class="ui-corner-bottom ui-widget-header">' + 
+		jQuery('<span class="' + jS.cl.uiTab + ' ui-corner-bottom">' + 
 				'<a class="' + jS.cl.tab + '" id="' + jS.id.tab + jS.i + '" i="' + jS.i + '">' + jS.sheetTab(true) + '</a>' + 
 			'</span>')
 				.insertBefore(
