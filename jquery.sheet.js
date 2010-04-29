@@ -843,10 +843,17 @@ var jS = jQuery.sheet = {
 					case key.CAPS_LOCK:
 					case key.SHIFT:
 					case key.ALT:
-					case key.Up:
-					case key.Down:
-					case key.Left:
-					case key.Right:
+					case key.UP:
+					case key.DOWN:
+					case key.LEFT:
+					case key.RIGHT:
+						break;
+					case key.HOME:		jS.cellLast.td.parent()
+											.find('td:first').click();
+						break;
+					case key.END:
+										jS.cellLast.td.parent()
+											.find('td:last').click();
 						break;
 					default: 			jS.cellLast.isEdit = true;
 				}
