@@ -960,7 +960,7 @@ var jS = jQuery.sheet = {
 			return false;
 		},
 		cellOnMouseDown: function(e) {
-			if (e.altKey) {
+			if (e.shiftKey) {
 				jS.cellSetActiveMulti(e);
 				jQuery(document).one('mouseup', function() {
 					var v = jS.obj.formula().val();
