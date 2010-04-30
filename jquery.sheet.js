@@ -359,10 +359,12 @@ var jS = jQuery.sheet = {
 
 			jS.evt.cellEditAbandon();
 			
+			var sheet = jS.obj.sheet();
+			
 			//there are 3 obj that need managed here div, col, and each tr's td
 			//Lets get the current div & col, then later we go through each row
 			var currentBar = jS.obj.barTop().find('div' + atColumn);
-			var currentCol = jS.obj.sheet().find('col' + atColumn);
+			var currentCol = sheet.find('col' + atColumn);
 			
 			//Lets create our new bar, cell, and col
 			var newBar = currentBar.clone().width(jS.s.newColumnWidth - jS.s.boxModelCorrection);
@@ -400,7 +402,7 @@ var jS = jQuery.sheet = {
 				};
 			}
 			
-			jS.obj.sheet().find('tr').each(function(i) {
+			sheet.find('tr').each(function(i) {
 				addNewCellFn(this);
 				j++;
 			});
@@ -415,8 +417,12 @@ var jS = jQuery.sheet = {
 			
 			jS.attrH.syncSheetWidthFromTds();
 			
-			jS.setTdIds();
+			jS.setTdIds(sheet);
 			jS.obj.pane().scroll();
+			
+			//offset formulas
+			var loc = jS.getTdLocation(sheet.find('tr:first').find('td' + atColumn));
+			jS.offsetFormulaRange(loc[0], loc[0], 0, 1);
 		},
 		barLeft: function(reload, o) {//Works great!
 			jS.obj.barLeft().remove();
@@ -1482,17 +1488,17 @@ var jS = jQuery.sheet = {
 		
 		jS.calc(jS.i);
 	},
-	offsetFormulaRange: function(row, col, offsetRow, offsetCol) {//col = int; offset = int
+	offsetFormulaRange: function(row, col, rowOffset, colOffset) {//col = int; offset = int
 		var shiftedRange = {
 			first: [(row ? row : 0), (col ? col : 0)],
 			last: jS.getTdLocation(jS.obj.sheet().find('td:last'))
 		};
 		
 		function isInFormula(loc) {
-			if (loc[0] > shiftedRange.first[0] &&
-				loc[0] < shiftedRange.last[0] &&
-				loc[1] > shiftedRange.first[1] &&
-				loc[1] < shiftedRange.last[1]
+			if (loc[0] >= shiftedRange.first[0] &&
+				loc[1] >= shiftedRange.first[1] &&
+				loc[0] <= shiftedRange.last[0] &&
+				loc[1] <= shiftedRange.last[1]
 			) {
 				return true;
 			} else {
@@ -1503,17 +1509,17 @@ var jS = jQuery.sheet = {
 		function isInFormulaRange(startLoc, endLoc) {
 			if (
 				(
-					startLoc[0] > shiftedRange.first[0] &&
-					endLoc[0] < shiftedRange.first[0]
+					startLoc[0] >= shiftedRange.first[0] &&
+					startLoc[1] >= shiftedRange.first[1]
 				) && (
-					startLoc[0] < shiftedRange.last[0] &&
-					endLoc[0] > shiftedRange.last[0]
+					startLoc[0] <= shiftedRange.last[0] &&
+					startLoc[1] <= shiftedRange.last[1]
 				) && (
-					startLoc[1] > shiftedRange.first[1] &&
-					endLoc[1] < shiftedRange.first[1]
+					endLoc[0] >= shiftedRange.first[0] &&
+					endLoc[1] >= shiftedRange.first[1]
 				) && (
-					startLoc[1] < shiftedRange.last[1] &&
-					endLoc[1] > shiftedRange.last[1]
+					endLoc[0] <= shiftedRange.last[0] &&
+					endLoc[1] <= shiftedRange.last[1]
 				)
 			) {
 				return true;
@@ -1523,11 +1529,16 @@ var jS = jQuery.sheet = {
 		}
 		
 		function reparseFormula(loc) {
-			return [loc[0] + rowOffset, loc[1] + colOffset];
+			return ( //A1
+				cE.columnLabelString(loc[0] + colOffset) + (loc[1] + rowOffset)
+			);
 		}
 		
 		function reparseFormulaRange(startLoc, endLoc) {
-			return [startLoc[0] + rowOffset, startLoc[1] + colOffset, endLoc[0] + rowOffset, endLoc[1] + colOffset];
+			return ( //A1:B4
+				(cE.columnLabelString(startLoc[0] + colOffset) + (startLoc[1] + rowOffset)) + ':' + 
+				(cE.columnLabelString(endLoc[0] + colOffset) + (endLoc[1] + rowOffset))
+			);
 		}
 		
 		jS.cylceCells(function (td) {
@@ -1537,11 +1548,11 @@ var jS = jQuery.sheet = {
 				formula = formula.replace(cE.regEx.cell, 
 					function(ignored, colStr, rowStr, pos) {
 						var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
-						if (chartAt[1] != ':' && !colStr.match('SHEET')) { //verify it's not a range
+						if (charAt[1] != ':' && !colStr.match('SHEET')) { //verify it's not a range
 							var colI = cE.columnLabelIndex(colStr);
 							var rowI = parseInt(rowStr);
-							if (isInFormula([colI, rowI])) {
-								return reparseFormula([colI, rowI]);
+							if (isInFormula([rowI, colI])) {
+								return reparseFormula([rowI, colI]);
 							} else {
 								return ignored;
 							}
@@ -1557,8 +1568,8 @@ var jS = jQuery.sheet = {
 							var startRowI = parseInt(startRowStr);
 							var endColI = cE.columnLabelIndex(endColStr);
 							var endRowI = parseInt(endRowStr);
-							if (isInFormulaRange([startColI, startRowI], [endColI, endRowI])) {
-								return reparseFormulaRange([startColI, startRowI], [endColI, endRowI]);
+							if (isInFormulaRange([startRowI, startColI], [endRowI, endColI])) {
+								return reparseFormulaRange([startRowI, startColI], [endRowI, endColI]);
 							} else {
 								return ignored;
 							}
@@ -1566,6 +1577,8 @@ var jS = jQuery.sheet = {
 							return ignored;
 						}
 				});
+				
+				td.attr('formula', formula);
 			}
 
 		}, [0, 0], shiftedRange.last);
