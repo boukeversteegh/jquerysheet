@@ -298,7 +298,10 @@ var jS = jQuery.sheet = {
 			}
 			
 			jS.evt.cellEditAbandon();
-			var currentRow = jS.obj.sheet().find('tr' + atRowQ);
+			
+			var sheet = jS.obj.sheet();
+			
+			var currentRow = sheet.find('tr' + atRowQ);
 			var newRow = currentRow.clone();
 			newRow.find('td').andSelf().height(jS.attrH.height(currentRow.find('td:first'), true));
 			
@@ -336,8 +339,12 @@ var jS = jQuery.sheet = {
 				});
 			}
 
-			jS.setTdIds();
+			jS.setTdIds(sheet);
 			jS.obj.pane().scroll();
+			
+			//offset formulas
+			var loc = jS.getTdLocation(sheet.find('tr:first').find('td' + atRowQ));
+			jS.offsetFormulaRange(loc[0], loc[0], 1, 0);
 		},
 		addColumn: function(atColumn, insertBefore, atColumnQ) {
 			if (!atColumnQ) {
@@ -1509,17 +1516,17 @@ var jS = jQuery.sheet = {
 		function isInFormulaRange(startLoc, endLoc) {
 			if (
 				(
-					(startLoc[0] - 1) >= shiftedRange.first[0] &&
-					(startLoc[1] - 1) >= shiftedRange.first[1]
+					(startLoc[0] - 1) > shiftedRange.first[0] &&
+					(startLoc[1] - 1) > shiftedRange.first[1]
 				) && (
-					(startLoc[0] - 1) <= shiftedRange.last[0] &&
-					(startLoc[1] - 1) <= shiftedRange.last[1]
+					(startLoc[0] - 1) < shiftedRange.last[0] &&
+					(startLoc[1] - 1) < shiftedRange.last[1]
 				) && (
-					(endLoc[0] - 1) >= shiftedRange.first[0] &&
-					(endLoc[1] - 1) >= shiftedRange.first[1]
+					(endLoc[0] - 1) > shiftedRange.first[0] &&
+					(endLoc[1] - 1) > shiftedRange.first[1]
 				) && (
-					(endLoc[0] - 1) <= shiftedRange.last[0] &&
-					(endLoc[1] - 1) <= shiftedRange.last[1]
+					(endLoc[0] - 1) < shiftedRange.last[0] &&
+					(endLoc[1] - 1) < shiftedRange.last[1]
 				)
 			) {
 				return true;
@@ -1592,6 +1599,8 @@ var jS = jQuery.sheet = {
 			}
 
 		}, [0, 0], shiftedRange.last);
+		
+		jS.calc(jS.i);
 	},
 	cylceCells: function(fn, firstLoc, lastLoc) {
 		for (var i = firstLoc[0]; i < lastLoc[0]; i++) {
