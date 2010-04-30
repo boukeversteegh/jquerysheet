@@ -95,14 +95,14 @@ jQuery.fn.extend({
 		jQuery.fn.sheet.settings = jS.s = settings;
 		jS.s.fnBefore();
 		
-		var obj; var emptyFN = function() {};
+		var o; var emptyFN = function() {};
 		if (jS.s.buildSheet) {//override urlGet, this has some effect on how the topbar is sized
 			if (typeof(jS.s.buildSheet) == 'object') {
-				obj = jS.s.buildSheet;
+				o = jS.s.buildSheet;
 			} else if (jS.s.buildSheet == true || jS.s.buildSheet == 'true') {
-				obj = jQuery(jQuery(this).html());
+				o = jQuery(jQuery(this).html());
 			} else if (jS.s.buildSheet.match(/x/i)) {
-				obj = jS.controlFactory.sheet(jS.s.buildSheet);
+				o = jS.controlFactory.sheet(jS.s.buildSheet);
 			}
 		}
 		
@@ -150,7 +150,7 @@ jQuery.fn.extend({
 			jS.sheetSyncSize();
 		});
 		
-		jS.openSheet(obj);		
+		jS.openSheet(o);		
 	}
 });
 
@@ -396,12 +396,12 @@ var jS = jQuery.sheet = {
 			var j = 0;
 			var addNewCellFn;
 			if (insertBefore) {
-				addNewCellFn = function(obj) {
-					jQuery(obj).find('td' + atColumn).before(newCell);
+				addNewCellFn = function(o) {
+					jQuery(o).find('td' + atColumn).before(newCell);
 				};
 			} else {
-				addNewCellFn = function(obj) {
-					jQuery(obj).find('td' + atColumn).after(newCell);
+				addNewCellFn = function(o) {
+					jQuery(o).find('td' + atColumn).after(newCell);
 				};
 			}
 			
@@ -599,7 +599,7 @@ var jS = jQuery.sheet = {
 			
 			return newSheet;
 		},
-		sheetUI: function(obj, i, fn, reloadBars) {
+		sheetUI: function(o, i, fn, reloadBars) {
 			if (!i) {
 				jQuery('.tableControl').remove();
 				jS.sheetCount = 0;
@@ -611,26 +611,26 @@ var jS = jQuery.sheet = {
 			}
 			
 			var objContainer = jS.controlFactory.table(true).appendTo(jS.obj.ui());
-			jS.obj.pane().html(obj);
+			jS.obj.pane().html(o);
 					
-			jS.tuneTableForSheetUse(obj);
+			jS.tuneTableForSheetUse(o);
 						
-			jS.sheetDecorate(obj);
+			jS.sheetDecorate(o);
 			
-			jS.controlFactory.barTop(reloadBars, obj);
-			jS.controlFactory.barLeft(reloadBars, obj);
+			jS.controlFactory.barTop(reloadBars, o);
+			jS.controlFactory.barLeft(reloadBars, o);
 		
 			jS.sheetTab(true);
 			
 			if (jS.s.editable) {
-				obj
+				o
 					.mousedown(jS.evt.cellOnMouseDown)
 					.click(jS.s.lockFormulas ? jS.evt.cellOnClickLocked : jS.evt.cellOnClickReg);
 			}
 			
 			jS.themeRoller.start(i);
 
-			jS.setTdIds(obj);
+			jS.setTdIds(o);
 			
 			jS.evt.scrollBars();
 			
@@ -1185,59 +1185,59 @@ var jS = jQuery.sheet = {
 			}
 		}
 	},
-	tuneTableForSheetUse: function(obj) {
-		obj
+	tuneTableForSheetUse: function(o) {
+		o
 			.addClass(jS.cl.sheet)
 			.attr('id', jS.id.sheet + jS.i)
 			.attr('border', '1px');
-		obj.find('.' + jS.cl.cellActive).removeClass(jS.cl.cellActive);
+		o.find('.' + jS.cl.cellActive).removeClass(jS.cl.cellActive);
 	},
 	attrH: {//Attribute Helpers
 	//I created this object so I could see, quickly, which attribute was most stable.
 	//As it turns out, all browsers are different, thus this has evolved to a much uglier beast
-		width: function(obj, skipCorrection) {
-			return jQuery(obj).outerWidth() - (skipCorrection ? 0 : jS.s.boxModelCorrection);
+		width: function(o, skipCorrection) {
+			return jQuery(o).outerWidth() - (skipCorrection ? 0 : jS.s.boxModelCorrection);
 		},
-		widthReverse: function(obj, skipCorrection) {
-			return jQuery(obj).outerWidth() + (skipCorrection ? 0 : jS.s.boxModelCorrection);
+		widthReverse: function(o, skipCorrection) {
+			return jQuery(o).outerWidth() + (skipCorrection ? 0 : jS.s.boxModelCorrection);
 		},
-		height: function(obj, skipCorrection) {
-			return jQuery(obj).outerHeight() - (skipCorrection ? 0 : jS.s.boxModelCorrection);
+		height: function(o, skipCorrection) {
+			return jQuery(o).outerHeight() - (skipCorrection ? 0 : jS.s.boxModelCorrection);
 		},
-		heightReverse: function(obj, skipCorrection) {
-			return jQuery(obj).outerHeight() + (skipCorrection ? 0 : jS.s.boxModelCorrection);
+		heightReverse: function(o, skipCorrection) {
+			return jQuery(o).outerHeight() + (skipCorrection ? 0 : jS.s.boxModelCorrection);
 		},
-		syncSheetWidthFromTds: function(o) {//o = jQuery sheet object
+		syncSheetWidthFromTds: function(o) {
 			var w = 0;
 			(o ? o : jS.obj.sheet()).find('col').each(function() {
 				w += jQuery(this).width();
 			}).width(w);
 			return w;
 		},
-		setHeight: function(i, from, skipCorrection, obj) {
+		setHeight: function(i, from, skipCorrection, o) {
 			var correction = 0;
 			var h = 0;
 			var fn;
 			
 			switch(from) {
 				case 'cell':
-					obj = (obj ? obj : jS.obj.barLeft().find('div').eq(i));
+					o = (o ? o : jS.obj.barLeft().find('div').eq(i));
 					h = jS.attrH.height(jQuery(jS.getTd(jS.i, i, 0)).parent().andSelf(), skipCorrection);
 					break;
 				case 'bar':
-					obj = (obj ? obj : jQuery(jS.getTd(jS.i, i, 0)).parent().andSelf());
+					o = (o ? o : jQuery(jS.getTd(jS.i, i, 0)).parent().andSelf());
 					h = jS.attrH.heightReverse(jS.obj.barLeft().find('div').eq(i), skipCorrection);
 					break;
 			}
 			
 			if (h) {
-				jQuery(obj)
+				jQuery(o)
 					.height(h)
 					.css('height', h)
 					.attr('height', h);
 			}
 
-			return obj;
+			return o;
 		}
 	},
 	setTdIds: function(o) {
@@ -1797,23 +1797,23 @@ var jS = jQuery.sheet = {
 		return v;
 	},
 	sheetDecorateRemove: function(makeClone) {
-		var obj = (makeClone ? jS.obj.sheetAll().clone() : jS.obj.sheetAll());
+		var o = (makeClone ? jS.obj.sheetAll().clone() : jS.obj.sheetAll());
 		
 		//Get rid of highlighted cells and active cells
-		jQuery(obj).find('.' + jS.cl.cellActive)
+		jQuery(o).find('.' + jS.cl.cellActive)
 			.removeClass(jS.cl.cellActive + ' ' + jS.cl.uiCellActive);
 			
-		jQuery(obj).find('.' + jS.cl.cellHighlighted)
+		jQuery(o).find('.' + jS.cl.cellHighlighted)
 			.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
 			
 		//IE Bug, match width with css width
-		jQuery(obj).find('col').each(function(i) {
+		jQuery(o).find('col').each(function(i) {
 			var v = jQuery(this).css('width');
 			v = ((v + '').match('px') ? v : v + 'px');
-			jQuery(obj).find('col').eq(i).attr('width', v);
+			jQuery(o).find('col').eq(i).attr('width', v);
 		});
 		
-		return obj;
+		return o;
 	},
 	fxUpdate: function(v, setDirect) {
 		if (!setDirect) {
@@ -2519,19 +2519,19 @@ var jS = jQuery.sheet = {
 			v = prompt("What are you looking for in this spreadsheet?");
 		}
 		if (v) {//We just do a simple uppercase/lowercase search.
-			var obj = jS.obj.sheet().find('td:contains("' + v + '")');
+			var o = jS.obj.sheet().find('td:contains("' + v + '")');
 			
-			if (obj.length < 1) {
-				obj = jS.obj.sheet().find('td:contains("' + v.toLowerCase() + '")');
+			if (o.length < 1) {
+				o = jS.obj.sheet().find('td:contains("' + v.toLowerCase() + '")');
 			}
 			
-			if (obj.length < 1) {
-				obj = jS.obj.sheet().find('td:contains("' + v.toUpperCase() + '")');
+			if (o.length < 1) {
+				o = jS.obj.sheet().find('td:contains("' + v.toUpperCase() + '")');
 			}
 			
-			obj = obj.eq(0);
-			if (obj.length > 0) {
-				obj.click();
+			o = o.eq(0);
+			if (o.length > 0) {
+				o.click();
 			} else {
 				alert('No results found.');
 			}
