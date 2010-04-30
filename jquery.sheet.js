@@ -344,7 +344,7 @@ var jS = jQuery.sheet = {
 			
 			//offset formulas
 			var loc = jS.getTdLocation(sheet.find('tr:first').find('td' + atRowQ));
-			jS.offsetFormulaRange(loc[0], loc[0], 1, 0);
+			jS.offsetFormulaRange(loc[0], loc[0], 1, 0, insertBefore);
 		},
 		addColumn: function(atColumn, insertBefore, atColumnQ) {
 			if (!atColumnQ) {
@@ -425,7 +425,7 @@ var jS = jQuery.sheet = {
 			
 			//offset formulas
 			var loc = jS.getTdLocation(sheet.find('tr:first').find('td' + atColumn));
-			jS.offsetFormulaRange(loc[0], loc[0], 0, 1);
+			jS.offsetFormulaRange(loc[0], loc[0], 0, 1, insertBefore);
 		},
 		barLeft: function(reload, o) {//Works great!
 			jS.obj.barLeft().remove();
@@ -1209,9 +1209,11 @@ var jS = jQuery.sheet = {
 		},
 		syncSheetWidthFromTds: function(o) {
 			var w = 0;
-			(o ? o : jS.obj.sheet()).find('col').each(function() {
+			o = (o ? o : jS.obj.sheet());
+			o.find('col').each(function() {
 				w += jQuery(this).width();
-			}).width(w);
+			})
+			o.width(w);
 			return w;
 		},
 		setHeight: function(i, from, skipCorrection, o) {
@@ -1486,11 +1488,21 @@ var jS = jQuery.sheet = {
 		
 		jS.calc(jS.i);
 	},
-	offsetFormulaRange: function(row, col, rowOffset, colOffset) {//col = int; offset = int
+	offsetFormulaRange: function(row, col, rowOffset, colOffset, isBefore) {//col = int; offset = int
 		var shiftedRange = {
 			first: [(row ? row : 0), (col ? col : 0)],
 			last: jS.sheetSize()
 		};
+		
+		if (!isBefore && rowOffset) { //this shift is from a row
+			shiftedRange.first[0]++;
+			shiftedRange.last[0]++;
+		}
+		
+		if (!isBefore && colOffset) { //this shift is from a col
+			shiftedRange.first[1]++;
+			shiftedRange.last[1]++;
+		}
 		
 		function isInFormula(loc) {
 			if ((loc[0] - 1) >= shiftedRange.first[0] &&
