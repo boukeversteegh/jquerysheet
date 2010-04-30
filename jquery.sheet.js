@@ -1487,7 +1487,7 @@ var jS = jQuery.sheet = {
 				fill(i, i - (loc[0] + 1), loc[1]); //we subtract one here because we don't want to re-edit the current cell
 			}
 		} else {
-			var lastLoc = jS.getTdLocation(jS.obj.sheet().find('td:last'));
+			var lastLoc = jS.sheetSize();
 			for (var i = (loc[0] + 1); i <= lastLoc[0]; i++) {
 				fill(i, i - (loc[0] + 1), loc[1]); //we subtract one here because we don't want to re-edit the current cell
 			}
@@ -1498,7 +1498,7 @@ var jS = jQuery.sheet = {
 	offsetFormulaRange: function(row, col, rowOffset, colOffset) {//col = int; offset = int
 		var shiftedRange = {
 			first: [(row ? row : 0), (col ? col : 0)],
-			last: jS.getTdLocation(jS.obj.sheet().find('td:last'))
+			last: jS.sheetSize()
 		};
 		
 		function isInFormula(loc) {
@@ -2594,7 +2594,7 @@ var jS = jQuery.sheet = {
 		}
 	},
 	cellSetActiveMultiColumn: function(colStart, colEnd) {
-		var loc = jS.getTdLocation(jS.obj.sheet().find('td:last'));
+		var loc = jS.sheetSize();
 		for (var i = (colStart < colEnd ? colStart : colEnd); i <= (colEnd > colStart ? colEnd : colStart); i++) {
 			for (var j = 0; j <= loc[0]; j++) {
 				jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, j, i));
@@ -2766,6 +2766,9 @@ var jS = jQuery.sheet = {
 		},
 		i: 0,
 		stack: []
+	},
+	sheetSize: function() {
+		return jS.getTdLocation(jS.obj.sheet().find('td:last'));
 	}
 };
 
