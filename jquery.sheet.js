@@ -1207,14 +1207,11 @@ var jS = jQuery.sheet = {
 		heightReverse: function(obj, skipCorrection) {
 			return jQuery(obj).outerHeight() + (skipCorrection ? 0 : jS.s.boxModelCorrection);
 		},
-		syncSheetWidthFromTds: function(o) {
+		syncSheetWidthFromTds: function(o) {//o = jQuery sheet object
 			var w = 0;
-			o = (o ? o : jS.obj.sheet());
-			var col = o.find('col');
-			o.find('col').each(function() {
+			(o ? o : jS.obj.sheet()).find('col').each(function() {
 				w += jQuery(this).width();
-			});
-			o.width(w);
+			}).width(w);
 			return w;
 		},
 		setHeight: function(i, from, skipCorrection, obj) {
