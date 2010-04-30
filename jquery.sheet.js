@@ -344,7 +344,7 @@ var jS = jQuery.sheet = {
 			
 			//offset formulas
 			var loc = jS.getTdLocation(sheet.find('tr:first').find('td' + atRowQ));
-			jS.offsetFormulaRange(loc[0], loc[0], 1, 0, insertBefore);
+			jS.offsetFormulaRange(loc[0], loc[1], 1, 0, insertBefore);
 		},
 		addColumn: function(atColumn, insertBefore, atColumnQ) {
 			if (!atColumnQ) {
@@ -425,7 +425,7 @@ var jS = jQuery.sheet = {
 			
 			//offset formulas
 			var loc = jS.getTdLocation(sheet.find('tr:first').find('td' + atColumn));
-			jS.offsetFormulaRange(loc[0], loc[0], 0, 1, insertBefore);
+			jS.offsetFormulaRange(loc[0], loc[1], 0, 1, insertBefore);
 		},
 		barLeft: function(reload, o) {//Works great!
 			jS.obj.barLeft().remove();
