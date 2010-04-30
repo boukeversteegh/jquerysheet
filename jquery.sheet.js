@@ -1495,10 +1495,10 @@ var jS = jQuery.sheet = {
 		};
 		
 		function isInFormula(loc) {
-			if (loc[0] >= shiftedRange.first[0] &&
-				loc[1] >= shiftedRange.first[1] &&
-				loc[0] <= shiftedRange.last[0] &&
-				loc[1] <= shiftedRange.last[1]
+			if ((loc[0] - 1) >= shiftedRange.first[0] &&
+				(loc[1] - 1) >= shiftedRange.first[1] &&
+				(loc[0] - 1) <= shiftedRange.last[0] &&
+				(loc[1] - 1) <= shiftedRange.last[1]
 			) {
 				return true;
 			} else {
@@ -1509,17 +1509,17 @@ var jS = jQuery.sheet = {
 		function isInFormulaRange(startLoc, endLoc) {
 			if (
 				(
-					startLoc[0] >= shiftedRange.first[0] &&
-					startLoc[1] >= shiftedRange.first[1]
+					(startLoc[0] - 1) >= shiftedRange.first[0] &&
+					(startLoc[1] - 1) >= shiftedRange.first[1]
 				) && (
-					startLoc[0] <= shiftedRange.last[0] &&
-					startLoc[1] <= shiftedRange.last[1]
+					(startLoc[0] - 1) <= shiftedRange.last[0] &&
+					(startLoc[1] - 1) <= shiftedRange.last[1]
 				) && (
-					endLoc[0] >= shiftedRange.first[0] &&
-					endLoc[1] >= shiftedRange.first[1]
+					(endLoc[0] - 1) >= shiftedRange.first[0] &&
+					(endLoc[1] - 1) >= shiftedRange.first[1]
 				) && (
-					endLoc[0] <= shiftedRange.last[0] &&
-					endLoc[1] <= shiftedRange.last[1]
+					(endLoc[0] - 1) <= shiftedRange.last[0] &&
+					(endLoc[1] - 1) <= shiftedRange.last[1]
 				)
 			) {
 				return true;
@@ -1530,14 +1530,14 @@ var jS = jQuery.sheet = {
 		
 		function reparseFormula(loc) {
 			return ( //A1
-				cE.columnLabelString(loc[0] + colOffset) + (loc[1] + rowOffset)
+				cE.columnLabelString(loc[1] + colOffset) + (loc[0] + rowOffset)
 			);
 		}
 		
 		function reparseFormulaRange(startLoc, endLoc) {
 			return ( //A1:B4
-				(cE.columnLabelString(startLoc[0] + colOffset) + (startLoc[1] + rowOffset)) + ':' + 
-				(cE.columnLabelString(endLoc[0] + colOffset) + (endLoc[1] + rowOffset))
+				(cE.columnLabelString(startLoc[1] + colOffset) + (startLoc[0] + rowOffset)) + ':' + 
+				(cE.columnLabelString(endLoc[1] + colOffset) + (endLoc[0] + rowOffset))
 			);
 		}
 		
@@ -1548,9 +1548,14 @@ var jS = jQuery.sheet = {
 				formula = formula.replace(cE.regEx.cell, 
 					function(ignored, colStr, rowStr, pos) {
 						var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
-						if (charAt[1] != ':' && !colStr.match('SHEET')) { //verify it's not a range
+						if (!colStr.match('SHEET') &&
+							charAt[0] != ':' &&
+							charAt[1] != ':'
+						) { //verify it's not a range or an exact location
+							
 							var colI = cE.columnLabelIndex(colStr);
 							var rowI = parseInt(rowStr);
+							
 							if (isInFormula([rowI, colI])) {
 								return reparseFormula([rowI, colI]);
 							} else {
@@ -1563,11 +1568,16 @@ var jS = jQuery.sheet = {
 				formula = formula.replace(cE.regEx.range, 
 					function(ignored, startColStr, startRowStr, endColStr, endRowStr, pos) {
 						var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
-						if (!startColStr.match('SHEET')) {
-							var startColI = cE.columnLabelIndex(startColStr);
+						if (!startColStr.match('SHEET') &&
+							charAt[0] != ':'
+						) {
+							
 							var startRowI = parseInt(startRowStr);
-							var endColI = cE.columnLabelIndex(endColStr);
+							var startColI = cE.columnLabelIndex(startColStr);
+							
 							var endRowI = parseInt(endRowStr);
+							var endColI = cE.columnLabelIndex(endColStr);
+							
 							if (isInFormulaRange([startRowI, startColI], [endRowI, endColI])) {
 								return reparseFormulaRange([startRowI, startColI], [endRowI, endColI]);
 							} else {
@@ -1603,10 +1613,10 @@ var jS = jQuery.sheet = {
 				charAt[0] = (charAt[0] ? charAt[0] : '');
 				charAt[1] = (charAt[1] ? charAt[1] : '');
 				
-				if (colStr.toUpperCase() == "SHEET" || 
+				if (!colStr.match('SHEET') || 
 					charAt[0] == ':' || 
 					charAt[1] == ':'
-				) {
+				) { //verify it's not a range or an exact location
 					return ignored;
 				} else {
 					row = parseInt(rowStr) + rowOffset;
