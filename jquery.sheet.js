@@ -1482,28 +1482,93 @@ var jS = jQuery.sheet = {
 		
 		jS.calc(jS.i);
 	},
-	offsetFormulaFromCol: function(col, offset) {//col = int; offset = int
-		function getDependencies(o) {
-			
-		} 
+	offsetFormulaRange: function(row, col, offsetRow, offsetCol) {//col = int; offset = int
+		var shiftedRange = {
+			first: [(row ? row : 0), (col ? col : 0)],
+			last: jS.getTdLocation(jS.obj.sheet().find('td:last'))
+		};
+		
+		function isInFormula(loc) {
+			if (loc[0] > shiftedRange.first[0] &&
+				loc[0] < shiftedRange.last[0] &&
+				loc[1] > shiftedRange.first[1] &&
+				loc[1] < shiftedRange.last[1]
+			) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
+		function isInFormulaRange(startLoc, endLoc) {
+			if (
+				(
+					startLoc[0] > shiftedRange.first[0] &&
+					endLoc[0] < shiftedRange.first[0]
+				) && (
+					startLoc[0] < shiftedRange.last[0] &&
+					endLoc[0] > shiftedRange.last[0]
+				) && (
+					startLoc[1] > shiftedRange.first[1] &&
+					endLoc[1] < shiftedRange.first[1]
+				) && (
+					startLoc[1] < shiftedRange.last[1] &&
+					endLoc[1] > shiftedRange.last[1]
+				)
+			) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
+		function reparseFormula(loc) {
+			return [loc[0] + rowOffset, loc[1] + colOffset];
+		}
+		
+		function reparseFormulaRange(startLoc, endLoc) {
+			return [startLoc[0] + rowOffset, startLoc[1] + colOffset, endLoc[0] + rowOffset, endLoc[1] + colOffset];
+		}
 		
 		jS.cylceCells(function (td) {
 			var formula = td.attr('formula');
-			var dependencies = {};
 			
 			if (formula) {
-				
+				formula = formula.replace(cE.regEx.cell, 
+					function(ignored, colStr, rowStr, pos) {
+						var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
+						if (chartAt[1] != ':' && !colStr.match('SHEET')) { //verify it's not a range
+							var colI = cE.columnLabelIndex(colStr);
+							var rowI = parseInt(rowStr);
+							if (isInFormula([colI, rowI])) {
+								return reparseFormula([colI, rowI]);
+							} else {
+								return ignored;
+							}
+						} else {
+							return ignored;
+						}
+				});
+				formula = formula.replace(cE.regEx.range, 
+					function(ignored, startColStr, startRowStr, endColStr, endRowStr, pos) {
+						var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
+						if (!startColStr.match('SHEET')) {
+							var startColI = cE.columnLabelIndex(startColStr);
+							var startRowI = parseInt(startRowStr);
+							var endColI = cE.columnLabelIndex(endColStr);
+							var endRowI = parseInt(endRowStr);
+							if (isInFormulaRange([startColI, startRowI], [endColI, endRowI])) {
+								return reparseFormulaRange([startColI, startRowI], [endColI, endRowI]);
+							} else {
+								return ignored;
+							}
+						} else {
+							return ignored;
+						}
+				});
 			}
-			
-		}, [0, 0], jS.getTdLocation(jS.obj.sheet().find('td:last')));
-	},
-	offsetFormulaFromRow: function(row, offset) {
-		jS.cylceCells(function (td) {
-			var formula = td.attr('formula');
-			if (formula) {
-				
-			}
-		}, [0, 0], jS.getTdLocation(jS.obj.sheet().find('td:last')));
+
+		}, [0, 0], shiftedRange.last);
 	},
 	cylceCells: function(fn, firstLoc, lastLoc) {
 		for (var i = firstLoc[0]; i < lastLoc[0]; i++) {
