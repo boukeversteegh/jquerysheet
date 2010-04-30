@@ -1941,7 +1941,7 @@ var jS = jQuery.sheet = {
 		jS.setActiveSheet(jS.obj.tableControl(), jS.i);
 	},
 	deleteRow: function() {
-		var v = confirm("Are you sure that you want to delete that row? Fomulas will not be updated.");
+		var v = confirm("Are you sure that you want to delete that row?");
 		if (v) {
 			jS.obj.barLeft().find('div').eq(jS.rowLast).remove();
 			jS.obj.sheet().find('tr').eq(jS.rowLast).remove();
@@ -1953,10 +1953,12 @@ var jS = jQuery.sheet = {
 			jS.obj.pane().scroll();
 			
 			jS.rowLast = -1;
+			
+			jS.offsetFormulaRange(jS.rowLast, 0, -1, 0);
 		}		
 	},
 	deleteColumn: function() {
-		var v = confirm("Are you sure that you want to delete that column? Fomulas will not be updated.");
+		var v = confirm("Are you sure that you want to delete that column?");
 		if (v) {
 			jS.obj.barTop().find('div').eq(jS.colLast).remove();
 			jS.obj.sheet().find('colgroup col').eq(jS.colLast).remove();
@@ -1972,6 +1974,8 @@ var jS = jQuery.sheet = {
 			jS.obj.pane().scroll();
 			
 			jS.colLast = -1;
+			
+			jS.offsetFormulaRange(0, jS.colLast, 0, -1);
 		}		
 	},
 	sheetTab: function(get) {
