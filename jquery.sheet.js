@@ -1469,7 +1469,7 @@ var jS = jQuery.sheet = {
 		}
 		
 		if (goUp) {
-			var firstLoc = jS.getTdLocation(jS.obj.sheet().find('td:first'));
+			var firstLoc = [0, 0];
 			for (var i = (loc[0] - 1); i >= firstLoc[0]; i--) {
 				fill(i, i - (loc[0] + 1), loc[1]); //we subtract one here because we don't want to re-edit the current cell
 			}
@@ -1482,7 +1482,37 @@ var jS = jQuery.sheet = {
 		
 		jS.calc(jS.i);
 	},
-	offsetFormula: function(formula, rowOffset, colOffset) {		
+	offsetFormulaFromCol: function(col, offset) {//col = int; offset = int
+		function getDependencies(o) {
+			
+		} 
+		
+		jS.cylceCells(function (td) {
+			var formula = td.attr('formula');
+			var dependencies = {};
+			
+			if (formula) {
+				
+			}
+			
+		}, [0, 0], jS.getTdLocation(jS.obj.sheet().find('td:last')));
+	},
+	offsetFormulaFromRow: function(row, offset) {
+		jS.cylceCells(function (td) {
+			var formula = td.attr('formula');
+			if (formula) {
+				
+			}
+		}, [0, 0], jS.getTdLocation(jS.obj.sheet().find('td:last')));
+	},
+	cylceCells: function(fn, firstLoc, lastLoc) {
+		for (var i = firstLoc[0]; i < lastLoc[0]; i++) {
+			for (var j = firstLoc[1]; j < lastLoc[1]; j++) {
+				fn(jQuery(jS.getTd(jS.i, i, j)));
+			}
+		}
+	},
+	offsetFormula: function(formula, rowOffset, colOffset, includeRanges) {		
 		//Cell References Fixed
 		var charAt = [];
 		var col = '';
