@@ -374,9 +374,9 @@ var jS = jQuery.sheet = {
 			var currentCol = sheet.find('col' + atColumn);
 			
 			//Lets create our new bar, cell, and col
-			var newBar = currentBar.clone().width(jS.s.newColumnWidth - jS.s.boxModelCorrection);
-			var newCol = currentCol.clone().width(jS.s.newColumnWidth);
-			var newCell = jQuery('<td></td>');
+			var newBar = jQuery('<div class="' + jS.cl.uiBar + '" />').width(jS.s.newColumnWidth - jS.s.boxModelCorrection);
+			var newCol = jQuery('<col />').width(jS.s.newColumnWidth);
+			var newCell = '<td />';
 			
 			//This is just to get the new label
 			var currentIndex = cE.columnLabelIndex(currentBar.text());
@@ -397,15 +397,11 @@ var jS = jQuery.sheet = {
 			var addNewCellFn;
 			if (insertBefore) {
 				addNewCellFn = function(obj) {
-					jQuery(obj).find('td' + atColumn).before(
-						newCell.clone()
-					);
+					jQuery(obj).find('td' + atColumn).before(newCell);
 				};
 			} else {
 				addNewCellFn = function(obj) {
-					jQuery(obj).find('td' + atColumn).after(
-						newCell.clone()
-					);
+					jQuery(obj).find('td' + atColumn).after(newCell);
 				};
 			}
 			
@@ -488,9 +484,6 @@ var jS = jQuery.sheet = {
 					.height(jS.s.colMargin);
 				barTop.append(child);
 			});
-			
-			// Prepend one colgroup/col element that covers the new row headers.
-			//jS.attrH.syncSheetWidthFromTds();
 			
 			jS.obj.barTopParent().append(barTop);
 		},
@@ -603,7 +596,6 @@ var jS = jQuery.sheet = {
 			newSheet.html('<tbody>' + trs + '</tbody>');
 			
 			newSheet.width(columnsCount * jS.s.newColumnWidth);
-			//jS.attrH.syncSheetWidthFromTds(newSheet);
 			
 			return newSheet;
 		},
@@ -1215,13 +1207,15 @@ var jS = jQuery.sheet = {
 		heightReverse: function(obj, skipCorrection) {
 			return jQuery(obj).outerHeight() + (skipCorrection ? 0 : jS.s.boxModelCorrection);
 		},
-		syncSheetWidthFromTds: function(obj) {
-			var entireWidth = 0;
-			obj = (obj ? obj : jS.obj.sheet());
-			obj.find('tr:first').find('td').each(function() {
-				entireWidth += jQuery(this).width();
+		syncSheetWidthFromTds: function(o) {
+			var w = 0;
+			o = (o ? o : jS.obj.sheet());
+			var col = o.find('col');
+			o.find('col').each(function() {
+				w += jQuery(this).width();
 			});
-			obj.width(entireWidth);
+			o.width(w);
+			return w;
 		},
 		setHeight: function(i, from, skipCorrection, obj) {
 			var correction = 0;
