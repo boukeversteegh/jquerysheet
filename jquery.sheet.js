@@ -176,7 +176,6 @@ var jS = jQuery.sheet = {
 		barCornerAll:		function() { return jQuery('.' + jS.cl.barCorner); },
 		barCornerParent:	function() { return jQuery('#' + jS.id.barCornerParent + jS.i); },
 		barCornerParentAll: function() { return jQuery('.' + jS.cl.barCornerParent); },
-		barSelected:		function() { return jQuery('.' + jS.cl.barSelected); },
 		cell: 				function() { return jQuery('.' + jS.cl.cellActive); },
 		controls:			function() { return jQuery('#' + jS.id.controls); },
 		formula: 			function() { return jQuery('#' + jS.id.formula); },
@@ -230,7 +229,6 @@ var jS = jQuery.sheet = {
 		barCorner:			'jSheetBarCorner',
 		barCornerParent:	'jSheetBarCornerParent',
 		pane: 				'jSheetEditPane',
-		barSelected: 		'jSheetBarItemSelected',
 		uiDefault:			'ui-state-default',
 		uiActive:			'ui-state-active',
 		uiBase:				'ui-widget-content',
@@ -911,8 +909,6 @@ var jS = jQuery.sheet = {
 							jS.calc(jS.i);
 						}
 						
-						jS.sheetClearActive();
-						
 						jS.attrH.setHeight(jS.cellLast.row, 'cell');
 						
 						//Save the newest version of that cell
@@ -921,11 +917,11 @@ var jS = jQuery.sheet = {
 						formula.focus().select();
 						jS.cellLast.isEdit = false;
 						jS.s.fnAfterCellEdit(jS.cellLast);
+						jS.setDirty(true);
 					}
 					break;
 				default:
 					jS.attrH.setHeight(jS.cellLast.row, 'cell', false);
-					jS.sheetClearActive();
 			}
 		},
 		cellEditAbandon: function(skipCalc) {
@@ -933,21 +929,15 @@ var jS = jQuery.sheet = {
 			jS.themeRoller.cell.clearActive();
 			jS.themeRoller.bar.clearActive();
 			if (!skipCalc) {
-				jS.sheetClearActive();
 				jS.calc(jS.i);
 			}
 			
-			jS.cellLast.td = jS.obj.sheet().find('td:first');
-			jS.cellLast.row = jS.cellLast.col = 0;
+			jS.cellLast.td = jS.cellLast.row = jS.cellLast.col = null;
 			jS.rowLast = jS.colLast = -1;
 			
 			jS.fxUpdate('', true);
 			jS.obj.formula()
-				.blur()
-				.val(jS.manageHtmlToText(jS.cellLast.td.html()));
-			
-			jS.cellSetActive(jS.cellLast.td, [0, 0]);
-			
+				.val('');
 			return false;
 		},
 		cellClick: function(keyCode) { //invoces a click on next/prev cell
@@ -1699,19 +1689,19 @@ var jS = jQuery.sheet = {
 			setActive: function() {
 				this.clearActive();
 				jQuery(jS.cellLast.td)
-					.addClass(jS.cl.uiCellActive + ' ' + jS.cl.cellActive + ' ' + jS.cl.uiCellActive + ' ' + jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
+					.addClass(jS.cl.cellActive + ' ' + jS.cl.uiCellActive + ' ' + jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
 			},
 			setHighlighted: function(td) {
 				jQuery(td)
-					.addClass(jS.cl.uiCellHighlighted + ' ' + jS.cl.cellHighlighted);
+					.addClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
 			},
 			clearActive: function() {
 				jS.obj.cellActive()
-					.removeClass(jS.cl.uiCellActive + ' ' + jS.cl.cellActive + ' ' + jS.cl.uiCellActive + ' ' + jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
+					.removeClass(jS.cl.cellActive + ' ' + jS.cl.uiCellActive + ' ' + jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
 			},
 			clearHighlighted: function() {
 				jS.obj.cellHighlighted()
-					.removeClass(jS.cl.uiCellHighlighted + ' ' + jS.cl.cellHighlighted);
+					.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
 			}
 		},
 		bar: {
@@ -1863,9 +1853,6 @@ var jS = jQuery.sheet = {
 		jS.themeRoller.cell.setActive(); //themeroll the cell and bars
 		jS.themeRoller.bar.setActive('left', jS.cellLast.row);
 		jS.themeRoller.bar.setActive('top', jS.cellLast.col);
-		
-		jS.obj.barLeft().find('div').eq(jS.cellLast.row).addClass(jS.cl.barSelected);
-		jS.obj.barTop().find('div').eq(jS.cellLast.col).addClass(jS.cl.barSelected);
 	},
 	colLast: -1,
 	rowLast: -1,
@@ -2130,15 +2117,34 @@ var jS = jQuery.sheet = {
 		return result;
 	},
 	followMe: function(td) {
-		jS.obj.pane().stop().scrollTo(td, {
-			margin: true,
-			axis: 'xy',
-			duration: 100,
-			offset: {
-				top: - jS.s.height / 3,
-				left: - jS.s.width / 5
-			}
-		});
+		var pane = jS.obj.pane();
+		var panePos = pane.position();
+		var paneWidth = pane.width();
+		var paneHeight = pane.height();
+		
+		var tdPos = td.position();
+		var tdWidth = td.width();
+		var tdHeight = td.height();
+		
+		if ((tdPos.left + tdWidth) > (panePos.left + paneWidth) ||
+			tdPos.left < panePos.left
+		) {
+			pane.stop().scrollTo(td, {
+				axis: 'x',
+				duration: 100,
+				over: -1
+			});
+		}
+		
+		if ((tdPos.top + tdHeight) > (panePos.top + paneHeight) ||
+			tdPos.top < panePos.top
+		) {
+			pane.stop().scrollTo(td, {
+				axis: 'y',
+				duration: 100,
+				over: -1
+			});
+		}
 	},
 	count: {
 		rows: function() {
