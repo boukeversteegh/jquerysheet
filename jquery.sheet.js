@@ -522,7 +522,9 @@ var jS = jQuery.sheet = {
 								opacity:		.95,
 								shadow:			false,
 								closeOnMouseOut:true,
-								closeAfter:		1000
+								closeAfter:		1000,
+								hoverIntent:	0, //if you use jquery.hoverIntent.js set this to time in milliseconds; 0= false;
+								submenuHoverIntent: 0
 							})
 							.hover(function() {
 								//not going to add to jS.cl because this isn't our control
@@ -2222,6 +2224,9 @@ var jS = jQuery.sheet = {
 					}, false);
 				});
 			}
+			
+			jS.setDirty(false);
+			
 			return true;
 		} else {
 			return false;
