@@ -3,8 +3,10 @@ body{
 	font-size:13px;
 	color:black;
 }
-body{background:url(../../../images/bgnds/screenBgnd.gif)}
 
+.mbmenu{
+  display:none;
+}
 .rootVoices{
 	background-color:#f3f3f3;
 	padding:5px;
@@ -96,6 +98,7 @@ body{background:url(../../../images/bgnds/screenBgnd.gif)}
 }
 .menuContainer .selected td a{
 	color:#000;
+  display:block;
 }
 .menuContainer .disabled td, .menuContainer .disabled td a {
 	color: #cccccc;
