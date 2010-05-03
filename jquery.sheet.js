@@ -624,8 +624,15 @@ var jS = jQuery.sheet = {
 			
 			if (jS.s.editable) {
 				o
-					.mousedown(jS.evt.cellOnMouseDown)
-					.click(jS.s.lockFormulas ? jS.evt.cellOnClickLocked : jS.evt.cellOnClickReg);
+					.mousedown(jS.evt.cellOnMouseDown);
+				if (jS.s.lockFormulas) {
+					o
+						.click(jS.evt.cellOnClickLocked);
+				} else {
+					o
+						.click(jS.evt.cellOnClickReg)
+						.dblclick(jS.evt.cellOnDblClick);
+				}
 			}
 			
 			jS.themeRoller.start(i);
@@ -752,23 +759,24 @@ var jS = jQuery.sheet = {
 		keyDownHandler: {
 			enterOnInPlaceEdit: function(e) {
 				if (!e.shiftKey) {
-					return jS.evt.cellClick(key.DOWN);
+					return jS.evt.cellSetFocus(key.DOWN);
 				} else {
 					return true;
 				}
 			},
 			enter: function(e) {
 				if (!jS.cellLast.isEdit && !e.ctrlKey) {
-					return jS.evt.cellClick();
+					jS.cellLast.td.dblclick();
+					return false;
 				} else {
-					return jS.evt.cellClick(key.DOWN);
+					return jS.evt.cellSetFocus(key.DOWN);
 				}
 			},
 			tab: function(e) {
 				if (e.shiftKey) {
-					return jS.evt.cellClick(key.LEFT);
+					return jS.evt.cellSetFocus(key.LEFT);
 				} else {
-					return jS.evt.cellClick(key.RIGHT);
+					return jS.evt.cellSetFocus(key.RIGHT);
 				}
 			},
 			pasteOverCells: function(e) { //used for pasting from other spreadsheets
@@ -837,7 +845,7 @@ var jS = jQuery.sheet = {
 					case key.LEFT:
 					case key.UP:
 					case key.RIGHT:
-					case key.DOWN:		return jS.evt.cellClick(e.keyCode);
+					case key.DOWN:		return jS.evt.cellSetFocus(e.keyCode);
 						break;
 					case key.V:			return jS.evt.keyDownHandler.pasteOverCells(e);
 						break;
@@ -934,7 +942,8 @@ var jS = jQuery.sheet = {
 				jS.calc(jS.i);
 			}
 			
-			jS.cellLast.td = jS.cellLast.row = jS.cellLast.col = null;
+			jS.cellLast.td = jQuery('<td />');
+			jS.cellLast.row = jS.cellLast.col = 0;
 			jS.rowLast = jS.colLast = -1;
 			
 			jS.fxUpdate('', true);
@@ -942,17 +951,18 @@ var jS = jQuery.sheet = {
 				.val('');
 			return false;
 		},
-		cellClick: function(keyCode) { //invoces a click on next/prev cell
-			var h = 0;
-			var v = 0;
+		cellSetFocus: function(keyCode) { //invoces a click on next/prev cell
+			var c = jS.cellLast.col;
+			var r = jS.cellLast.row;
+			
 			switch (keyCode) {
-				case key.UP: 		v--; break;
-				case key.DOWN: 		v++; break;
-				case key.LEFT: 		h--; break;
-				case key.RIGHT: 	h++; break;
+				case key.UP: 		r--; break;
+				case key.DOWN: 		r++; break;
+				case key.LEFT: 		c--; break;
+				case key.RIGHT: 	c++; break;
 			}
 			
-			jQuery(jS.getTd(jS.i, jS.cellLast.row + v, jS.cellLast.col + h)).click();
+			jQuery(jS.getTd(jS.i, r, c)).click();
 			
 			return false;
 		},
@@ -972,7 +982,7 @@ var jS = jQuery.sheet = {
 		cellOnClickLocked: function(e) {
 			if (!isNaN(e.target.cellIndex)) {
 				if (!jQuery(e.target).attr('formula')) {
-					jS.evt.cellOnClickManage(jQuery(e.target));
+					jS.cellEdit(jQuery(e.target));
 				}
 			} else {
 				jS.evt.cellEditAbandon();
@@ -980,27 +990,19 @@ var jS = jQuery.sheet = {
 			}
 		},
 		cellOnClickReg: function(e) {
-			if (!isNaN(e.target.cellIndex)) {		
-				jS.evt.cellOnClickManage(jQuery(e.target));
+			if (!isNaN(e.target.cellIndex)) {
+				jS.cellEdit(jQuery(e.target));
 			} else { //this won't be a cell
 				var clickable = jQuery(e.target).hasClass('clickable');
 				if (!clickable) {
 					jS.obj.formula().focus().select();
-				} else { //this is an inline control
-					//jS.cellEditAbandon(true);
 				}
 			}
 		},
-		cellOnClickManage: function(td) {
-			if (td.attr('id') != jQuery(jS.cellLast.td).attr('id')) { //initial click
-				jS.cellEdit(td);
-				jS.log('click cell');
-			} else { //inline edit, 2nd click
-				jS.cellLast.isEdit = jS.isSheetEdit = true;
-				jS.controlFactory.inPlaceEdit(td);
-				jS.log('click, in place edit activated');
-			}
-			jS.followMe(td);
+		cellOnDblClick: function(e) {
+			jS.cellLast.isEdit = jS.isSheetEdit = true;
+			jS.controlFactory.inPlaceEdit(jS.cellLast.td);
+			jS.log('click, in place edit activated');
 		},
 		tabOnMouseDown: function(e) {
 			var i = jQuery(e.target).attr('i');
@@ -1690,7 +1692,8 @@ var jS = jQuery.sheet = {
 		cell: {
 			setActive: function() {
 				this.clearActive();
-				jQuery(jS.cellLast.td)
+				this.clearHighlighted();
+				jS.cellLast.td
 					.addClass(jS.cl.cellActive + ' ' + jS.cl.uiCellActive + ' ' + jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
 			},
 			setHighlighted: function(td) {
@@ -1829,6 +1832,7 @@ var jS = jQuery.sheet = {
 	cellEdit: function(td) {
 		//This finished up the edit of the last cell
 		jS.evt.cellEditDone();
+		jS.followMe(td);
 		var loc = jS.getTdLocation(td);
 		
 		//Show where we are to the user
@@ -1856,12 +1860,12 @@ var jS = jQuery.sheet = {
 		jS.themeRoller.bar.setActive('left', jS.cellLast.row);
 		jS.themeRoller.bar.setActive('top', jS.cellLast.col);
 	},
-	colLast: -1,
-	rowLast: -1,
+	colLast: 0,
+	rowLast: 0,
 	cellLast: {
-		td: null,
-		row: null,
-		col: null,
+		td: jQuery('<td />'), //this is a dud td, so that we don't get errors
+		row: -1,
+		col: -1,
 		isEdit: false
 	},
 	cellStyleToggle: function(setClass, removeClass) {
@@ -2128,23 +2132,31 @@ var jS = jQuery.sheet = {
 		var tdWidth = td.width();
 		var tdHeight = td.height();
 		
-		if ((tdPos.left + tdWidth) > (panePos.left + paneWidth) ||
-			tdPos.left < panePos.left
-		) {
+		var margin = 20;
+		
+		if ((tdPos.left + tdWidth + margin) > (panePos.left + paneWidth)) { //right
 			pane.stop().scrollTo(td, {
 				axis: 'x',
-				duration: 100,
-				over: -1
+				duration: 50,
+				offset: - ((paneWidth - tdWidth) - margin)
+			});
+		} else if (tdPos.left < panePos.left) { //left
+			pane.stop().scrollTo(td, {
+				axis: 'x',
+				duration: 50
 			});
 		}
 		
-		if ((tdPos.top + tdHeight) > (panePos.top + paneHeight) ||
-			tdPos.top < panePos.top
-		) {
+		if ((tdPos.top + tdHeight + margin) > (panePos.top + paneHeight)) { //bottom
 			pane.stop().scrollTo(td, {
 				axis: 'y',
-				duration: 100,
-				over: -1
+				duration: 50,
+				offset: - ((paneHeight - tdHeight) - margin)
+			});
+		} else if (tdPos.top < panePos.top) { //top
+			pane.stop().scrollTo(td, {
+				axis: 'y',
+				duration: 50
 			});
 		}
 	},
@@ -2589,7 +2601,7 @@ var jS = jQuery.sheet = {
 			});
 			
 			//this helps with multi select so that when you are selecting cells you don't select the text within them
-			if (jQuery(e.target).attr('id') != jQuery(jS.cellLast.td).attr('id') && jQuery(e.target).hasClass('clickable') == false) {
+			if (jQuery(e.target).attr('id') != jS.cellLast.td.attr('id') && jQuery(e.target).hasClass('clickable') == false) {
 				jS.themeRoller.cell.clearHighlighted();
 				return false;
 			}
@@ -2724,9 +2736,6 @@ var jS = jQuery.sheet = {
 	setDirty: function(dirty) { jS.isDirty = dirty; },
 	appendToFormula: function(v, o) {
 		var formula = jS.obj.formula();
-		if (formula.attr('disabled')) {
-			formula = jS.cellLast.td.find('textarea');
-		}
 		
 		var fV = formula.val();
 		
@@ -2758,8 +2767,6 @@ var jS = jQuery.sheet = {
 				}
 			});
 			
-			jS.themeRoller.cell.clearActive();
-			jS.themeRoller.cell.clearHighlighted();
 			jS.themeRoller.cell.setActive(jS.cellLast.td);
 		},
 		get: function() { //gets the current cell
