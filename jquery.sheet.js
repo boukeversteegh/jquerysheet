@@ -908,7 +908,9 @@ var jS = jQuery.sheet = {
 						var prevVal = td.html();
 
 						if (v.charAt(0) == '=') {
-							td.attr('formula', v);
+							td
+								.attr('formula', v)
+								.html('');
 						} else {
 							td
 								.removeAttr('formula')
@@ -3476,8 +3478,10 @@ var cE = jQuery.calculationEngine = {
 	makeFormulaEval: function(cell, row, col, formulaFunc) {
 		cE.thisCell = cell;
 		var fn = function() {
+			var v = "";
+			
 			try {
-				var v = formulaFunc();
+				v = formulaFunc();
 
 				switch(typeof(v)) {
 					case "string":
@@ -3491,19 +3495,22 @@ var cE = jQuery.calculationEngine = {
 				cell.setValue(v);
 				
 			} catch (e) {
-				cE.makeError(v, e, cell);
+				cE.makeError(cell, e);
 			}
 		};
 		fn.row = row;
 		fn.col = col;
 		return fn;
 	},
-	makeError: function(v, e, cell) {
-		try {
-			if (v) {
-				cell.setValue(cE.ERROR + ': ' + e);
-			}
-		} catch(e2) {}
+	makeError: function(cell, e) {
+		var msg = cE.ERROR + ': ' + msg;
+		e.message.replace(/\d+\.?\d*, \d+\.?\d*/, function(v, i) {
+			try {
+				v = v.split(', ');
+				msg = ('Cell:' + cE.columnLabelString(parseInt(v[0]) + 1) + (parseInt(v[1])) + ' not found');
+			} catch (e) {}
+		});
+		cell.setValue(msg);
 	},
 	checkCycles: function(row, col, tableI) {
 		for (var i = 0; i < cE.calcState.stack.length; i++) {
