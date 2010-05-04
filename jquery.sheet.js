@@ -1450,17 +1450,22 @@ var jS = jQuery.sheet = {
 		jS.calc(jS.i);
 	},
 	fillUpOrDown: function(goUp, skipOffsetForumals) { //default behavior is to go down var goUp changes it
-		var cells = jS.obj.cellHighlighted().not(jS.obj.cellActive());
+		var cells = jS.obj.cellHighlighted();
+		var cellActive = jS.obj.cellActive();
+		var cellActiveClone = cellActive.clone();
+		var startFromActiveCell = cellActive.hasClass(jS.cl.uiCellHighlighted);
 		var locFirst = jS.getTdLocation(cells.first());
 		var locLast = jS.getTdLocation(cells.last());
 		
 		var v = jS.obj.formula().val();
 		var fn;
 		
+		var formulaOffset = (startFromActiveCell ? 0 : 1);
+		
 		if ((v + '').charAt(0) == '=') {
-			fn = function(o, j) {
+			fn = function(o, i) {
 				o
-					.attr('formula', (skipOffsetForumals ? v : jS.offsetFormula(v, j + 1, 0)))
+					.attr('formula', (skipOffsetForumals ? v : jS.offsetFormula(v, i + formulaOffset, 0)))
 					.html(''); //we subtract one here because cells are 1 based and indexes are 0 based
 			}
 		} else {
@@ -1478,20 +1483,22 @@ var jS = jQuery.sheet = {
 		
 		var k = 0;
 		if (goUp) {
-			for (var i = (locLast[0]); i >= locFirst[0]; i--) {
-				for (var j = (locLast[1]); j >= locFirst[1]; j--) {
-					fill(i, j, k); //we subtract one here because we don't want to re-edit the current cell
+			for (var i = locLast[0]; i >= locFirst[0]; i--) {
+				for (var j = locLast[1]; j >= locFirst[1]; j--) {
+					fill(i, j, k);
 					k++;
 				}
 			}
 		} else {
-			for (var i = (locFirst[0]); i <= locLast[0]; i++) {
-				for (var j = (locFirst[1]); j <= locLast[1]; j++) {
-					fill(i, j, k); //we subtract one here because we don't want to re-edit the current cell
+			for (var i = locFirst[0]; i <= locLast[0]; i++) {
+				for (var j = locFirst[1]; j <= locLast[1]; j++) {
+					fill(i, j, k);
 					k++;
 				}
 			}
 		}
+		
+		cellActive.replaceWith(cellActiveClone); //this is to make sure the original doesn't increment;
 		
 		jS.calc(jS.i);
 	},
