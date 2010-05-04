@@ -1450,9 +1450,10 @@ var jS = jQuery.sheet = {
 		jS.calc(jS.i);
 	},
 	fillUpOrDown: function(goUp, skipOffsetForumals) { //default behavior is to go down var goUp changes it
-		var td = jS.cellLast.td;
-		var loc = [jS.cellLast.row, jS.cellLast.col];
-		jS.evt.cellEditDone();
+		var cells = jS.obj.cellHighlighted();
+		var locFirst = jS.getTdLocation(cells.first());
+		var locLast = jS.getTdLocation(cells.last());
+		
 		var v = jS.obj.formula().val();
 		var fn;
 		
@@ -1470,20 +1471,25 @@ var jS = jQuery.sheet = {
 			}
 		}
 		
-		function fill(i, j, col) {
-			var td = jQuery(jS.getTd(jS.i, i, col));
-			fn(td, j);
+		function fill(r, c, i) {
+			var td = jQuery(jS.getTd(jS.i, r, c));
+			fn(td, i);
 		}
 		
+		var k = 0;
 		if (goUp) {
-			var firstLoc = [0, 0];
-			for (var i = (loc[0] - 1); i >= firstLoc[0]; i--) {
-				fill(i, i - (loc[0] + 1), loc[1]); //we subtract one here because we don't want to re-edit the current cell
+			for (var i = (locLast[0]); i >= locFirst[0]; i--) {
+				for (var j = (locLast[1]); j >= locFirst[1]; j--) {
+					fill(i, j, k); //we subtract one here because we don't want to re-edit the current cell
+					k++;
+				}
 			}
 		} else {
-			var lastLoc = jS.sheetSize();
-			for (var i = (loc[0] + 1); i <= lastLoc[0]; i++) {
-				fill(i, i - (loc[0] + 1), loc[1]); //we subtract one here because we don't want to re-edit the current cell
+			for (var i = (locFirst[0]); i <= locLast[0]; i++) {
+				for (var j = (locFirst[1]); j <= locLast[1]; j++) {
+					fill(i, j, k); //we subtract one here because we don't want to re-edit the current cell
+					k++;
+				}
 			}
 		}
 		
