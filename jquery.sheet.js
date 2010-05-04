@@ -1450,7 +1450,7 @@ var jS = jQuery.sheet = {
 		jS.calc(jS.i);
 	},
 	fillUpOrDown: function(goUp, skipOffsetForumals) { //default behavior is to go down var goUp changes it
-		var cells = jS.obj.cellHighlighted();
+		var cells = jS.obj.cellHighlighted().not(jS.obj.cellActive());
 		var locFirst = jS.getTdLocation(cells.first());
 		var locLast = jS.getTdLocation(cells.last());
 		
