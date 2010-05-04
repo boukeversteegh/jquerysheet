@@ -1519,10 +1519,10 @@ var jS = jQuery.sheet = {
 		}
 		
 		function isInFormula(loc) {
-			if ((loc[0] - 1) >= shiftedRange.first[0] &&
-				(loc[1] - 1) >= shiftedRange.first[1] &&
-				(loc[0] - 1) <= shiftedRange.last[0] &&
-				(loc[1] - 1) <= shiftedRange.last[1]
+			if ((loc[0]) >= shiftedRange.first[0] &&
+				(loc[1]) >= shiftedRange.first[1] &&
+				(loc[0]) <= shiftedRange.last[0] &&
+				(loc[1]) <= shiftedRange.last[1]
 			) {
 				return true;
 			} else {
