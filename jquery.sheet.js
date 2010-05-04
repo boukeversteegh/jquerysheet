@@ -4,7 +4,7 @@ Version: 1.1.0 SVN
 http://code.google.com/p/jquerysheet/
 		
 Copyright (C) 2010 Robert Plummer
-Dual licensed under the LGPL and GPL licenses.
+Dual licensed under the LGPL v2 and GPL v2 licenses.
 http://www.gnu.org/licenses/
 */
 
@@ -1453,21 +1453,26 @@ var jS = jQuery.sheet = {
 		var td = jS.cellLast.td;
 		var loc = [jS.cellLast.row, jS.cellLast.col];
 		jS.evt.cellEditDone();
-		var v = td.html();
-		var formula = td.attr('formula');
-		v = (formula ? formula : v); //formula overrides innerValue
-		formula = v;
+		var v = jS.obj.formula().val();
+		var fn;
 		
-		function fill(i, j, col) {
-			var td = jQuery(jS.getTd(jS.i, i, col));
-			
-			if ((v + '').charAt(0) == '=') {
-				td.attr('formula', (skipOffsetForumals ? v : jS.offsetFormula(v, j + 1, 0))); //we subtract one here because cells are 1 based and indexes are 0 based
-			} else {
-				td
+		if ((v + '').charAt(0) == '=') {
+			fn = function(o, j) {
+				o
+					.attr('formula', (skipOffsetForumals ? v : jS.offsetFormula(v, j + 1, 0)))
+					.html(''); //we subtract one here because cells are 1 based and indexes are 0 based
+			}
+		} else {
+			fn = function (o) {
+				o
 					.removeAttr('formula')
 					.html(v);
 			}
+		}
+		
+		function fill(i, j, col) {
+			var td = jQuery(jS.getTd(jS.i, i, col));
+			fn(td, j);
 		}
 		
 		if (goUp) {
@@ -1621,7 +1626,7 @@ var jS = jQuery.sheet = {
 				charAt[0] = (charAt[0] ? charAt[0] : '');
 				charAt[1] = (charAt[1] ? charAt[1] : '');
 				
-				if (!colStr.match('SHEET') || 
+				if (colStr.match('SHEET') || 
 					charAt[0] == ':' || 
 					charAt[1] == ':'
 				) { //verify it's not a range or an exact location
