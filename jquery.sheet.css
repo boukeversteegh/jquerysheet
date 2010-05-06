@@ -1,17 +1,17 @@
 /* Controls styling */
-#jSheetControls_loc, #jSheetControls_fx
+.jSheetControls_loc, .jSheetControls_fx
 {
 	border: none;
 	background: none ! important;
 }
 
-#jSheetControls_formula
+.jSheetControls_formula
 {
 	width: 99%;
     height: 17px;
 }
 
-#jSheetLog
+.jSheetLog
 {
 	height: 100px;
 	width: 100%;
@@ -19,7 +19,7 @@
 	position: relative;
 }
 
-#jSheetControls, #jSheetControls table
+.jSheetControls, .jSheetControls table
 {
 	padding: 0px ! important;
 	border: none ! important;
@@ -27,7 +27,7 @@
 	margin: 0px; 
 }
 
-#jSheetMenu
+.jSheetMenu
 {
 	cursor: pointer;
 	background-color: transparent ! important;
@@ -36,7 +36,7 @@
 	border: none ! important;
 }
 
-#jSheetMenu *
+.jSheetMenu *
 {
 	color: inherit ! important;
 	background-color: inherit ! important;
@@ -165,7 +165,7 @@
 {
 	border: none ! important;
 }
- .jSheetUI, .jSheetUI tr, .jSheetUI td, .jSheetUI tbody, .jSheetUI #jSheetControls textarea
+ .jSheetUI, .jSheetUI tr, .jSheetUI td, .jSheetUI tbody, .jSheetUI .jSheetControls textarea
 {
 	border-width: 1px ! important;
 }
@@ -245,7 +245,7 @@
 	min-width: 25px ! important;
 }
 
-#jSheetControls img
+.jSheetControls img
 {
 	border: none;
 }
@@ -255,7 +255,7 @@
 	display: inline;
 }
 
-#jSheetInPlaceEdit
+.jSheetInPlaceEdit
 {
 	position: absolute;
 }

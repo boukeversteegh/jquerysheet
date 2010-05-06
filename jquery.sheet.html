@@ -45,10 +45,42 @@
 	<!--/Optional-->
 	
 	<script type="text/javascript">
+		var jS0;
+		var jS1;
+		
 		$(function() {
-			$('#jQuerySheet').sheet({
+			jS0 = $('#jQuerySheet0').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
 				inlineMenu: jQuery('#inlineMenu').html(),
+				fnAfter: function() {
+					//The following is just so you get an idea of how to style cells
+					$('.colorPickerCell')
+						.colorPicker()
+						.change(function() {
+							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it undoable
+							jS.obj.cellHighlighted().css('background-color', $(this).val());
+							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it redoable
+						});
+					
+					$('.colorPickerFont')
+						.colorPicker()
+						.change(function() {
+							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it undoable
+							jS.obj.cellHighlighted().css('color', $(this).val());
+							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it redoable
+						});
+					
+					$('.colorPickers')
+						.children().eq(1).css('background-image', "url('pics/icons/palette.png')");
+					$('.colorPickers')
+						.children().eq(3).css('background-image', "url('pics/icons/palette_bg.png')");
+				}
+			});
+			
+			jS0 = $('#jQuerySheet1').sheet({
+				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
+				inlineMenu: jQuery('#inlineMenu').html(),
+				urlGet: "numberstesting.html",
 				fnAfter: function() {
 					//The following is just so you get an idea of how to style cells
 					$('.colorPickerCell')
@@ -149,7 +181,7 @@
 		</tr>
 		<tr>
 			<td colspan="2" style="vertical-align: top;">
-				<div id="jQuerySheet" style="height: 450px;">
+				<div id="jQuerySheet0" style="height: 450px;">
 					<table title="Spreeadsheet 1">
 						<tr>
 							<td></td>
@@ -823,6 +855,7 @@
 						</tr>
 					</table>
 				</div>
+				<div id="jQuerySheet1" style="height: 450px;"></div>
 			</td>
 		</tr>
 	</table>
