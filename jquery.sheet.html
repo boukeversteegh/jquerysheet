@@ -45,17 +45,26 @@
 	<!--/Optional-->
 	
 	<script type="text/javascript">
-		var jS0;
-		var jS1;
-		var jS2;
+		var jS0; var jS1; var jS2;
 		
 		$(function() {
 			jS0 = $('#jQuerySheet0').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
-				inlineMenu: jQuery('#inlineMenu').html()
+				inlineMenu: myInlineMenu
 			});
 			
+			jS1 = $('#jQuerySheet1').sheet({
+				title: 'Spreadsheet created from div w/ table inside - Editable',
+				inlineMenu: myInlineMenu,
+				buildSheet: $.sheet.makeTable.fromSize("5x25", 18, 180)
+							.add($.sheet.makeTable.fromSize("5x25", 18, 180))
+							.add($.sheet.makeTable.fromSize("5x25", 18, 180))
+			});
 			
+			jS2 = $('#jQuerySheet2').sheet({
+				title: 'Spreadsheet created html table in div',
+				buildSheet: true
+			});
 			/*
 			//examples of how to use jQuery.sheet
 			
@@ -92,6 +101,75 @@
 			
 			$('#themeSwitcher').themeswitcher();
 		});
+		
+		function myInlineMenu(jS) {
+			var o = $('<div />');
+			o.append(
+				$('<a href="#" title="Insert Row After Selected"><img alt="Insert Row After Selected" src="pics/icons/sheet_row_add.png"/></a>')
+					.click(function() { jS.controlFactory.addRow(); })
+				.add($('<a href="#" title="Insert Row Before Selected"><img alt="Insert Row Before Selected" src="pics/icons/sheet_row_add.png"/></a>')
+					.click(function() { jS.controlFactory.addRow(null, true); }))
+				.add($('<a href="#" title="Add Row At End"><img alt="Add Row" src="pics/icons/sheet_row_add.png"/></a>')
+					.click(function() { jS.controlFactory.addRow(null, null, ':last'); }))
+				.add($('<a href="#" title="Add Multi-Rows"><img alt="Add Multi-Rows" src="pics/icons/sheet_row_add_multi.png"/></a>')
+					.click(function() { jS.controlFactory.addRowMulti(); }))
+				.add($('<a href="#" title="Delete Row"><img alt="Delete Row" src="pics/icons/sheet_row_delete.png"/></a>')
+					.click(function() { jS.deleteRow(); }))
+				.add($('<a href="#" title="Insert Column After Selected"><img alt="Insert Column After Selected" src="pics/icons/sheet_col_add.png"/></a>')
+					.click(function() { jS.controlFactory.addColumn(); }))
+				.add($('<a href="#" title="Insert Column Before Selected"><img alt="Insert Column Before Selected" src="pics/icons/sheet_col_add.png"/></a>')
+					.click(function() { jS.controlFactory.addColumn(null, true); }))
+				.add($('<a href="#" title="Add Column At End"><img alt="Add Column At End" src="pics/icons/sheet_col_add.png"/></a>')
+					.click(function() { jS.controlFactory.addColumn(null, null, ':last'); }))
+				.add($('<a href="#" title="Insert Multi-Columns"><img alt="Add Multi-Columns" src="pics/icons/sheet_col_add_multi.png"/></a>')
+					.click(function() { jS.controlFactory.addColumnMulti(); }))
+				.add($('<a href="#" title="Delete Column"><img alt="Delete Column" src="pics/icons/sheet_col_delete.png"/></a>')
+					.click(function() { jS.deleteColumn(); }))
+				.add(
+					$('<a href="#" title="Get Cell Range"><img alt="Get Cell Range" src="pics/icons/sheet_get_range.png"/></a>').click(function() {
+						jS.appendToFormula("(" + jS.getTdRange() + ")");
+						return false;
+					})
+				)
+				.add($('<a href="#" title="Save Sheets"><img alt="Save Sheet" src="pics/icons/disk.png"/></a>')
+					.click(function() { jS.s.fnSave(); }))
+				.add($('<a href="#" title="Delete Current Sheet"><img alt="Delete Current Sheet" src="pics/icons/table_delete.png"/></a>')
+					.click(function() {jS.deleteSheet();}))
+				.add($('<a href="#" title="Refresh Calculations"><img alt="Refresh Calculations" src="pics/icons/arrow_refresh.png"/></a>')
+					.click(function() { jS.calc(jS.i); }))
+				.add($('<a href="#" title="Find"><img alt="Find" src="pics/icons/find.png"/></a>')
+					.click(function() { jS.cellFind(); }))
+				.add($('<a href="#" title="Bold"><img alt="Bold" src="pics/icons/text_bold.png"/></a>')
+					.click(function() { jS.cellStyleToggle('styleBold'); }))
+				.add($('<a href="#" title="Italic"><img alt="Italic" src="pics/icons/text_italic.png"/></a>')
+					.click(function() { jS.cellStyleToggle('styleItalics'); }))
+				.add($('<a href="#" title="Underline"><img alt="Underline" src="pics/icons/text_underline.png"/></a>')
+					.click(function() { jS.cellStyleToggle('styleUnderline', 'styleLineThrough'); }))
+				.add($('<a href="#" title="Strikethrough"><img alt="Strikethrough" src="pics/icons/text_strikethrough.png"/></a>')
+					.click(function() { jS.cellStyleToggle('styleLineThrough', 'styleUnderline'); }))
+				.add($('<a href="#" title="Align Left"><img alt="Align Left" src="pics/icons/text_align_left.png"/></a>')
+					.click(function() { jS.cellStyleToggle('styleLeft', 'styleCenter styleRight'); }))
+				.add($('<a href="#" title="Align Center"><img alt="Align Center" src="pics/icons/text_align_center.png"/></a>')
+					.click(function() { jS.cellStyleToggle('styleCenter', 'styleLeft styleRight'); }))
+				.add($('<a href="#" title="Align Right"><img alt="Align Right" src="pics/icons/text_align_right.png"/></a>')
+					.click(function() { jS.cellStyleToggle('styleRight', 'styleLeft styleCenter'); }))
+				.add($('<a href="#" title="Fill Down"><img alt="Fill Down" src="pics/icons/arrow_down.png"/></a>')
+					.click(function() { jS.fillUpOrDown(); }))
+				.add($('<a href="#" title="Fill Up"><img alt="Fill Up" src="pics/icons/arrow_up.png"/></a>')
+					.click(function() { jS.fillUpOrDown(true); }))
+				.add($('<span class="colorPickers">' +
+					'<input title="Foreground color" class="colorPickerFont" style="background-image: url(\'pics/icons/palette.png\') ! important; width: 16px; height: 16px;" />' +
+					'<input title="Background Color" class="colorPickerCell" style="background-image: url(\'pics/icons/palette_bg.png\') ! important; width: 16px; height: 16px;" />' +
+				'</span>'))
+				.add($('<a href="#" title="HyperLink"><img alt="Web Link" src="pics/icons/page_link.png"/></a>')
+					.click(function() { jS.obj.formula().val('=HYPERLINK("' + prompt('Enter Web Address', 'http://www.visop-dev.com/') + '")'); })
+					.keydown()
+				)
+			);
+
+			
+			return o;
+		}
 	</script>
 </head>
 <body>
@@ -807,39 +885,5 @@
 			</td>
 		</tr>
 	</table>
-	<span id="inlineMenu" style="display: none;">
-		<span>
-			<a href="#" class="addRowAfter"  title="Insert Row After Selected"><img alt="Insert Row After Selected" src="pics/icons/sheet_row_add.png"/></a>
-			<a href="#" class="addRowBefore" title="Insert Row Before Selected"><img alt="Insert Row Before Selected" src="pics/icons/sheet_row_add.png"/></a>
-			<a href="#" class="addRowEnd" title="Add Row At End"><img alt="Add Row" src="pics/icons/sheet_row_add.png"/></a>
-			<a href="#" class="addRowMulti" title="Add Multi-Rows"><img alt="Add Multi-Rows" src="pics/icons/sheet_row_add_multi.png"/></a>
-			<a href="#" class="deleteRow" title="Delete Row"><img alt="Delete Row" src="pics/icons/sheet_row_delete.png"/></a>
-			<a href="#" class="addColAfter" title="Insert Column After Selected"><img alt="Insert Column After Selected" src="pics/icons/sheet_col_add.png"/></a>
-			<a href="#" class="addColBefore" title="Insert Column Before Selected"><img alt="Insert Column Before Selected" src="pics/icons/sheet_col_add.png"/></a>
-			<a href="#" class="addColEnd" title="Add Column At End"><img alt="Add Column At End" src="pics/icons/sheet_col_add.png"/></a>
-			<a href="#" class="addColMulti" title="Insert Multi-Columns"><img alt="Add Multi-Columns" src="pics/icons/sheet_col_add_multi.png"/></a>
-			<a href="#" class="deleteCol" title="Delete Column"><img alt="Delete Column" src="pics/icons/sheet_col_delete.png"/></a>
-			<a href="#" class="getCellRange" title="Get Cell Range"><img alt="Get Cell Range" src="pics/icons/sheet_get_range.png"/></a>
-			<a href="#" class="saveSheets" title="Save Sheets"><img alt="Save Sheet" src="pics/icons/disk.png"/></a>
-			<a href="#" class="deleteSheet" title="Delete Current Sheet"><img alt="Delete Current Sheet" src="pics/icons/table_delete.png"/></a>
-			<a href="#" class="refreshCalc" title="Refresh Calculations"><img alt="Refresh Calculations" src="pics/icons/arrow_refresh.png"/></a>
-			<a href="#" class="cellFind" title="Find"><img alt="Find" src="pics/icons/find.png"/></a>
-			<a href="#" class="styleBold" title="Bold"><img alt="Bold" src="pics/icons/text_bold.png"/></a>
-			<a href="#" class="styleItalic" title="Italic"><img alt="Italic" src="pics/icons/text_italic.png"/></a>
-			<a href="#" class="styleUnderline" title="Underline"><img alt="Underline" src="pics/icons/text_underline.png"/></a>
-			<a href="#" class="styleStrikethrough" title="Strikethrough"><img alt="Strikethrough" src="pics/icons/text_strikethrough.png"/></a>
-			<a href="#" class="styleLeft" title="Align Left"><img alt="Align Left" src="pics/icons/text_align_left.png"/></a>
-			<a href="#" class="styleCenter" title="Align Center"><img alt="Align Center" src="pics/icons/text_align_center.png"/></a>
-			<a href="#" class="styleRight" title="Align Right"><img alt="Align Right" src="pics/icons/text_align_right.png"/></a>
-			<a href="#" class="fillDown" title="Fill Down"><img alt="Fill Down" src="pics/icons/arrow_down.png"/></a>
-			<a href="#" class="fillUp" title="Fill Up"><img alt="Fill Up" src="pics/icons/arrow_up.png"/></a>
-			<span class="colorPickers">
-				<input title="Foreground color" class="colorPickerFont" style="background-image: url('pics/icons/palette.png') ! important; width: 16px; height: 16px;" />
-				<input title="Background Color" class="colorPickerCell" style="background-image: url('pics/icons/palette_bg.png') ! important; width: 16px; height: 16px;" />
-			</span>
-			<a href="#" class="addLink" title="HyperLink"><img alt="Web Link" src="pics/icons/page_link.png"/></a>
-			<!--<a href="#" onclick="insertAt('jSheetControls_formula', '~np~text~'+'/np~');return false;" title="Non-parsed"><img alt="Non-parsed" src="pics/icons/noparse.png"/></a>-->
-		</span>
-	</span>
 </body>
 </html>

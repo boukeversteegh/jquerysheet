@@ -449,13 +449,23 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 				var firstRowTr = jQuery('<tr />');
 				
 				if (s.title) {
-					firstRowTr.append(jQuery('<td style="width: auto;text-align: center;" />').html(s.title));
+					var title;
+					if (jQuery.isFunction(s.title)) {
+						title = jS.title(jS);
+					} else {
+						title = s.title;
+					}
+					firstRowTr.append(jQuery('<td style="width: auto;text-align: center;" />').html(title));
 				}
 				
 				if (s.inlineMenu && s.editable) {
-					var inlineMenu = jQuery('<td style="text-align: center;" />').html(s.inlineMenu);
-					jS.makeMenuFunctions(inlineMenu);
-					firstRowTr.append(inlineMenu);
+					var inlineMenu;
+					if (jQuery.isFunction(s.inlineMenu)) {
+						inlineMenu = s.inlineMenu(jS);
+					} else {
+						inlineMenu = s.inlineMenu;
+					}
+					firstRowTr.append(jQuery('<td style="text-align: center;" />').html(inlineMenu));
 				}
 				
 				if (s.editable) {
@@ -1136,33 +1146,6 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 					}
 				}
 			}
-		},
-		makeMenuFunctions: function(o) {
-			o.find(".addRowAfter").click(function() { jS.controlFactory.addRow(); });
-			o.find(".addRowBefore").click(function() { jS.controlFactory.addRow(null, true); });
-			o.find(".addRowEnd").click(function() { jS.controlFactory.addRow(null, null, ':last'); });
-			o.find(".addRowMulti").click(function() { jS.controlFactory.addRowMulti(); });
-			o.find(".deleteRow").click(function() { jS.deleteRow(); });
-			o.find(".addColAfter").click(function() { jS.controlFactory.addColumn(); });
-			o.find(".addColBefore").click(function() { jS.controlFactory.addColumn(null, true); });
-			o.find(".addColEnd").click(function() { jS.controlFactory.addColumn(null, null, ':last'); });
-			o.find(".addColMulti").click(function() { jS.controlFactory.addColumnMulti(); });
-			o.find(".deleteCol").click(function() { jS.deleteColumn(); });
-			o.find(".getCellRange").click(function() { jS.appendToFormula("(" + jS.getTdRange() + ")"); });
-			o.find(".saveSheets").click(function() { s.fnSave(); });
-			o.find(".deleteSheet").click(function() { jS.deleteSheet(); });
-			o.find(".refreshCalc").click(function() { jS.calc(jS.i); });
-			o.find(".cellFind").click(function() { jS.cellFind(); });
-			o.find(".styleBold").click(function() { jS.cellStyleToggle('styleBold'); });
-			o.find(".styleItalic").click(function() { jS.cellStyleToggle('styleItalics'); });
-			o.find(".styleUnderline").click(function() { jS.cellStyleToggle('styleUnderline', 'styleLineThrough'); });
-			o.find(".styleStrikethrough").click(function() { jS.cellStyleToggle('styleLineThrough', 'styleUnderline'); });
-			o.find(".styleLeft").click(function() { jS.cellStyleToggle('styleLeft', 'styleCenter styleRight'); });
-			o.find(".styleCenter").click(function() { jS.cellStyleToggle('styleCenter', 'styleLeft styleRight'); });
-			o.find(".styleRight").click(function() { jS.cellStyleToggle('styleRight', 'styleLeft styleCenter'); });
-			o.find(".fillDown").click(function() { jS.fillUpOrDown(); });
-			o.find(".fillUp").click(function() { jS.fillUpOrDown(true); });
-			o.find(".addLink").click(function() { jS.obj.formula().val('=HYPERLINK(\'' + prompt('Enter Web Address', 'http://www.visop-dev.com/') + '\')').keydown(); });
 		},
 		tuneTableForSheetUse: function(o) {
 			o
