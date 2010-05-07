@@ -52,64 +52,10 @@
 		$(function() {
 			jS0 = $('#jQuerySheet0').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
-				inlineMenu: jQuery('#inlineMenu').html(),
-				fnAfter: function() {
-					//The following is just so you get an idea of how to style cells
-					$('.colorPickerCell')
-						.colorPicker()
-						.change(function() {
-							jS0.cellUndoable.add(jS0.obj.cellHighlighted()); //save state, make it undoable
-							jS0.obj.cellHighlighted().css('background-color', $(this).val());
-							jS0.cellUndoable.add(jS0.obj.cellHighlighted()); //save state, make it redoable
-						});
-					
-					$('.colorPickerFont')
-						.colorPicker()
-						.change(function() {
-							jS0.cellUndoable.add(jS0.obj.cellHighlighted()); //save state, make it undoable
-							jS0.obj.cellHighlighted().css('color', $(this).val());
-							jS0.cellUndoable.add(jS0.obj.cellHighlighted()); //save state, make it redoable
-						});
-					
-					$('.colorPickers')
-						.children().eq(1).css('background-image', "url('pics/icons/palette.png')");
-					$('.colorPickers')
-						.children().eq(3).css('background-image', "url('pics/icons/palette_bg.png')");
-				}
+				inlineMenu: jQuery('#inlineMenu').html()
 			});
 			
-			jS1 = $('#jQuerySheet1').sheet({
-				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
-				inlineMenu: jQuery('#inlineMenu').html(),
-				urlGet: "numberstesting.html",
-				fnAfter: function() {
-					//The following is just so you get an idea of how to style cells
-					$('.colorPickerCell')
-						.colorPicker()
-						.change(function() {
-							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it undoable
-							jS.obj.cellHighlighted().css('background-color', $(this).val());
-							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it redoable
-						});
-					
-					$('.colorPickerFont')
-						.colorPicker()
-						.change(function() {
-							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it undoable
-							jS.obj.cellHighlighted().css('color', $(this).val());
-							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it redoable
-						});
-					
-					$('.colorPickers')
-						.children().eq(1).css('background-image', "url('pics/icons/palette.png')");
-					$('.colorPickers')
-						.children().eq(3).css('background-image', "url('pics/icons/palette_bg.png')");
-				}
-			});
 			
-			jS0 = $('#jQuerySheet2').sheet({
-				buildSheet: true
-			});
 			/*
 			//examples of how to use jQuery.sheet
 			
@@ -863,35 +809,35 @@
 	</table>
 	<span id="inlineMenu" style="display: none;">
 		<span>
-			<a href="#" onclick="jS.controlFactory.addRow();" title="Insert Row After Selected"><img alt="Insert Row After Selected" src="pics/icons/sheet_row_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addRow(null, true);" title="Insert Row Before Selected"><img alt="Insert Row Before Selected" src="pics/icons/sheet_row_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addRow(null, null, ':last');" title="Add Row At End"><img alt="Add Row" src="pics/icons/sheet_row_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addRowMulti();" title="Add Multi-Rows"><img alt="Add Multi-Rows" src="pics/icons/sheet_row_add_multi.png"/></a>
-			<a href="#" onclick="jS.deleteRow();" title="Delete Row"><img alt="Delete Row" src="pics/icons/sheet_row_delete.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addColumn();" title="Insert Column After Selected"><img alt="Insert Column After Selected" src="pics/icons/sheet_col_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addColumn(null, true);" title="Insert Column Before Selected"><img alt="Insert Column Before Selected" src="pics/icons/sheet_col_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addColumn(null, null, ':last');" title="Add Column At End"><img alt="Add Column At End" src="pics/icons/sheet_col_add.png"/></a>
-			<a href="#" onclick="jS.controlFactory.addColumnMulti();" title="Insert Multi-Columns"><img alt="Add Multi-Columns" src="pics/icons/sheet_col_add_multi.png"/></a>
-			<a href="#" onclick="jS.deleteColumn();" title="Delete Column"><img alt="Delete Column" src="pics/icons/sheet_col_delete.png"/></a>
-			<a href="#" onclick='jS.appendToFormula("(" + jS.getTdRange() + ")"); return false;' title="Get Cell Range"><img alt="Get Cell Range" src="pics/icons/sheet_get_range.png"/></a>
-			<a href="#" onclick="jS.s.fnSave();" title="Save Sheets"><img alt="Save Sheet" src="pics/icons/disk.png"/></a>
-			<a href="#" onclick="jS.deleteSheet();" title="Delete Current Sheet"><img alt="Delete Current Sheet" src="pics/icons/table_delete.png"/></a>
-			<a href="#" onclick="jS.calc(jS.i);" title="Refresh Calculations"><img alt="Refresh Calculations" src="pics/icons/arrow_refresh.png"/></a>
-			<a href="#" onclick="jS.cellFind();" title="Find"><img alt="Find" src="pics/icons/find.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleBold');" title="Bold"><img alt="Bold" src="pics/icons/text_bold.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleItalics');" title="Italic"><img alt="Italic" src="pics/icons/text_italic.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleUnderline', 'styleLineThrough');" title="Underline"><img alt="Underline" src="pics/icons/text_underline.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleLineThrough', 'styleUnderline');" title="Strikethrough"><img alt="Strikethrough" src="pics/icons/text_strikethrough.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleLeft', 'styleCenter styleRight');" title="Align Left"><img alt="Align Left" src="pics/icons/text_align_left.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleCenter', 'styleLeft styleRight');" title="Align Center"><img alt="Align Center" src="pics/icons/text_align_center.png"/></a>
-			<a href="#" onclick="jS.cellStyleToggle('styleRight', 'styleLeft styleCenter');" title="Align Right"><img alt="Align Right" src="pics/icons/text_align_right.png"/></a>
-			<a href="#" onclick="jS.fillUpOrDown();" title="Fill Down"><img alt="Fill Down" src="pics/icons/arrow_down.png"/></a>
-			<a href="#" onclick="jS.fillUpOrDown(true);" title="Fill Up"><img alt="Fill Up" src="pics/icons/arrow_up.png"/></a>
+			<a href="#" class="addRowAfter"  title="Insert Row After Selected"><img alt="Insert Row After Selected" src="pics/icons/sheet_row_add.png"/></a>
+			<a href="#" class="addRowBefore" title="Insert Row Before Selected"><img alt="Insert Row Before Selected" src="pics/icons/sheet_row_add.png"/></a>
+			<a href="#" class="addRowEnd" title="Add Row At End"><img alt="Add Row" src="pics/icons/sheet_row_add.png"/></a>
+			<a href="#" class="addRowMulti" title="Add Multi-Rows"><img alt="Add Multi-Rows" src="pics/icons/sheet_row_add_multi.png"/></a>
+			<a href="#" class="deleteRow" title="Delete Row"><img alt="Delete Row" src="pics/icons/sheet_row_delete.png"/></a>
+			<a href="#" class="addColAfter" title="Insert Column After Selected"><img alt="Insert Column After Selected" src="pics/icons/sheet_col_add.png"/></a>
+			<a href="#" class="addColBefore" title="Insert Column Before Selected"><img alt="Insert Column Before Selected" src="pics/icons/sheet_col_add.png"/></a>
+			<a href="#" class="addColEnd" title="Add Column At End"><img alt="Add Column At End" src="pics/icons/sheet_col_add.png"/></a>
+			<a href="#" class="addColMulti" title="Insert Multi-Columns"><img alt="Add Multi-Columns" src="pics/icons/sheet_col_add_multi.png"/></a>
+			<a href="#" class="deleteCol" title="Delete Column"><img alt="Delete Column" src="pics/icons/sheet_col_delete.png"/></a>
+			<a href="#" class="getCellRange" title="Get Cell Range"><img alt="Get Cell Range" src="pics/icons/sheet_get_range.png"/></a>
+			<a href="#" class="saveSheets" title="Save Sheets"><img alt="Save Sheet" src="pics/icons/disk.png"/></a>
+			<a href="#" class="deleteSheet" title="Delete Current Sheet"><img alt="Delete Current Sheet" src="pics/icons/table_delete.png"/></a>
+			<a href="#" class="refreshCalc" title="Refresh Calculations"><img alt="Refresh Calculations" src="pics/icons/arrow_refresh.png"/></a>
+			<a href="#" class="cellFind" title="Find"><img alt="Find" src="pics/icons/find.png"/></a>
+			<a href="#" class="styleBold" title="Bold"><img alt="Bold" src="pics/icons/text_bold.png"/></a>
+			<a href="#" class="styleItalic" title="Italic"><img alt="Italic" src="pics/icons/text_italic.png"/></a>
+			<a href="#" class="styleUnderline" title="Underline"><img alt="Underline" src="pics/icons/text_underline.png"/></a>
+			<a href="#" class="styleStrikethrough" title="Strikethrough"><img alt="Strikethrough" src="pics/icons/text_strikethrough.png"/></a>
+			<a href="#" class="styleLeft" title="Align Left"><img alt="Align Left" src="pics/icons/text_align_left.png"/></a>
+			<a href="#" class="styleCenter" title="Align Center"><img alt="Align Center" src="pics/icons/text_align_center.png"/></a>
+			<a href="#" class="styleRight" title="Align Right"><img alt="Align Right" src="pics/icons/text_align_right.png"/></a>
+			<a href="#" class="fillDown" title="Fill Down"><img alt="Fill Down" src="pics/icons/arrow_down.png"/></a>
+			<a href="#" class="fillUp" title="Fill Up"><img alt="Fill Up" src="pics/icons/arrow_up.png"/></a>
 			<span class="colorPickers">
 				<input title="Foreground color" class="colorPickerFont" style="background-image: url('pics/icons/palette.png') ! important; width: 16px; height: 16px;" />
 				<input title="Background Color" class="colorPickerCell" style="background-image: url('pics/icons/palette_bg.png') ! important; width: 16px; height: 16px;" />
 			</span>
-			<a href="#" onclick="jS.obj.formula().val('=HYPERLINK(\'' + prompt('Enter Web Address', 'http://www.visop-dev.com/') + '\')').keydown();" title="HyperLink"><img alt="Web Link" src="pics/icons/page_link.png"/></a>
+			<a href="#" class="addLink" title="HyperLink"><img alt="Web Link" src="pics/icons/page_link.png"/></a>
 			<!--<a href="#" onclick="insertAt('jSheetControls_formula', '~np~text~'+'/np~');return false;" title="Non-parsed"><img alt="Non-parsed" src="pics/icons/noparse.png"/></a>-->
 		</span>
 	</span>

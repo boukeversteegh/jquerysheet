@@ -95,7 +95,9 @@ jQuery.fn.extend({
 		}, settings);
 		
 		jQuerySheetInstanceI++;
-		return createSheetInstance(settings, jQuerySheetInstanceI);
+		var o = jQuery(this);
+		o.sheetInstance = createSheetInstance(settings, jQuerySheetInstanceI);
+		return o;
 	}
 });
 
@@ -451,7 +453,9 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 				}
 				
 				if (s.inlineMenu && s.editable) {
-					firstRowTr.append(jQuery('<td style="text-align: center;" />').html(s.inlineMenu));
+					var inlineMenu = jQuery('<td style="text-align: center;" />').html(s.inlineMenu);
+					jS.makeMenuFunctions(inlineMenu);
+					firstRowTr.append(inlineMenu);
 				}
 				
 				if (s.editable) {
@@ -1132,6 +1136,33 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 					}
 				}
 			}
+		},
+		makeMenuFunctions: function(o) {
+			o.find(".addRowAfter").click(function() { jS.controlFactory.addRow(); });
+			o.find(".addRowBefore").click(function() { jS.controlFactory.addRow(null, true); });
+			o.find(".addRowEnd").click(function() { jS.controlFactory.addRow(null, null, ':last'); });
+			o.find(".addRowMulti").click(function() { jS.controlFactory.addRowMulti(); });
+			o.find(".deleteRow").click(function() { jS.deleteRow(); });
+			o.find(".addColAfter").click(function() { jS.controlFactory.addColumn(); });
+			o.find(".addColBefore").click(function() { jS.controlFactory.addColumn(null, true); });
+			o.find(".addColEnd").click(function() { jS.controlFactory.addColumn(null, null, ':last'); });
+			o.find(".addColMulti").click(function() { jS.controlFactory.addColumnMulti(); });
+			o.find(".deleteCol").click(function() { jS.deleteColumn(); });
+			o.find(".getCellRange").click(function() { jS.appendToFormula("(" + jS.getTdRange() + ")"); });
+			o.find(".saveSheets").click(function() { s.fnSave(); });
+			o.find(".deleteSheet").click(function() { jS.deleteSheet(); });
+			o.find(".refreshCalc").click(function() { jS.calc(jS.i); });
+			o.find(".cellFind").click(function() { jS.cellFind(); });
+			o.find(".styleBold").click(function() { jS.cellStyleToggle('styleBold'); });
+			o.find(".styleItalic").click(function() { jS.cellStyleToggle('styleItalics'); });
+			o.find(".styleUnderline").click(function() { jS.cellStyleToggle('styleUnderline', 'styleLineThrough'); });
+			o.find(".styleStrikethrough").click(function() { jS.cellStyleToggle('styleLineThrough', 'styleUnderline'); });
+			o.find(".styleLeft").click(function() { jS.cellStyleToggle('styleLeft', 'styleCenter styleRight'); });
+			o.find(".styleCenter").click(function() { jS.cellStyleToggle('styleCenter', 'styleLeft styleRight'); });
+			o.find(".styleRight").click(function() { jS.cellStyleToggle('styleRight', 'styleLeft styleCenter'); });
+			o.find(".fillDown").click(function() { jS.fillUpOrDown(); });
+			o.find(".fillUp").click(function() { jS.fillUpOrDown(true); });
+			o.find(".addLink").click(function() { jS.obj.formula().val('=HYPERLINK(\'' + prompt('Enter Web Address', 'http://www.visop-dev.com/') + '\')').keydown(); });
 		},
 		tuneTableForSheetUse: function(o) {
 			o
@@ -1948,7 +1979,7 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 			if (get) {
 				sheetTab = jS.obj.sheet().attr('title');
 				sheetTab = (sheetTab ? sheetTab : 'Spreadsheet ' + (jS.i + 1));
-			} else {
+			} else if (s.editable) { //ensure that the sheet is editable, then let them change the sheet's name
 				var newTitle = prompt("What would you like the sheet's title to be?", jS.sheetTab(true));
 				if (!newTitle) { //The user didn't set the new tab name
 					sheetTab = jS.obj.sheet().attr('title');
@@ -3545,6 +3576,112 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 	
 	return jS;
 }
+
+jQuery.sheet = {
+	makeTable : {
+		xml: function (data) { //Will not accept CDATA tags
+			var table = jQuery('<table />');
+			var tbody = jQuery('<tbody />').appendTo(table);
+			
+			jQuery(data).find('document').each(function() { //document
+				var metaData = jQuery(this).find('metadata');
+				var columnCount = metaData.find('columns').text();
+				var rowCount = metaData.find('rows').text();
+				var title = metaData.find('title').html();
+				jQuery(this).find('data').children().each(function(i) { //rows
+					var thisRow = jQuery('<tr />');
+					jQuery(this).children().each(function(j) { //columns
+						var o = jQuery(this).html();
+						var style = jQuery(this).attr('style');
+						if (o.charAt(0) == '=') {
+							thisRow.append('<td formula="' + o + '"' + (style ? ' style=\"' + style + '\"' : '') + ' />');
+						} else {
+							thisRow.append('<td>' + o + '</td>');
+						}
+					});
+					tbody.append(thisRow);
+				});
+			});
+			
+			return table;
+		},
+		json: function(data, makeEval) {
+			sheet = (makeEval == true ? eval('(' + data + ')') : data);
+			
+			var tables = jQuery('<div />');
+			
+			for (var i = 0; i < sheet.length; i++) {
+				size_c = parseInt(sheet[i].metadata.columns) - 1;
+				size_r = parseInt(sheet[i].metadata.rows) - 1;
+				title = sheet[i].metadata.title;
+				title = (title ? title : "Sreadsheet " + i);
+			
+				var table = jQuery("<table title='" + title + "' />");
+				
+				for (var x = 0; x <= size_r; x++) {				
+					var cur_row = jQuery('<tr />').appendTo(table);
+					
+					for(var y = 0; y <= size_c; y++) {	
+						var cur_val = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].value;
+						var style = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].style;
+						
+						var cur_td = jQuery('<td' + (style ? ' style=\"' + style + '\"' : '' ) + ' />');
+						try {
+							if(typeof(cur_val) == "number") {
+								cur_td.html(cur_val);
+							} else {
+								if (cur_val.charAt(0) == '=') {
+									cur_td.attr("formula", cur_val);
+								} else {
+									cur_td.html(cur_val);
+								}
+							}
+						} catch (e) {}
+					
+						cur_row.append(cur_td);
+
+					}
+				}
+				
+				tables.append(table);
+			}
+			return tables.children();
+		},
+		fromSize: function(size, h, w) {
+			if (!size) {
+				size = "5x10";
+			}
+			size = size.toLowerCase().split('x');
+
+			var columnsCount = parseInt(size[0]);
+			var rowsCount = parseInt(size[1]);
+			
+			//Create elements before loop to make it faster.
+			var newSheet = jQuery('<table />');
+			var standardTd = '<td></td>';
+			var tds = '';
+			
+			//Using -- is many times faster than ++
+			for (var i = columnsCount; i >= 1; i--) {
+				tds += standardTd;
+			}
+
+			var standardTr = '<tr' + (h ? 'height="' + h + 'px" style="height: ' + h + 'px;"' : '') + '>' + tds + '</tr>';
+			var trs = '';
+			for (var i = rowsCount; i >= 1; i--) {
+				trs += standardTr;
+			}
+			
+			newSheet.html('<tbody>' + trs + '</tbody>');
+			
+			if (w) {
+				newSheet.width(columnsCount * w);
+			}
+			
+			return newSheet;
+		}
+	}
+};
 
 var key = {
 	BACKSPACE: 			8,
