@@ -47,6 +47,7 @@
 	<script type="text/javascript">
 		var jS0;
 		var jS1;
+		var jS2;
 		
 		$(function() {
 			jS0 = $('#jQuerySheet0').sheet({
@@ -57,17 +58,17 @@
 					$('.colorPickerCell')
 						.colorPicker()
 						.change(function() {
-							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it undoable
-							jS.obj.cellHighlighted().css('background-color', $(this).val());
-							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it redoable
+							jS0.cellUndoable.add(jS0.obj.cellHighlighted()); //save state, make it undoable
+							jS0.obj.cellHighlighted().css('background-color', $(this).val());
+							jS0.cellUndoable.add(jS0.obj.cellHighlighted()); //save state, make it redoable
 						});
 					
 					$('.colorPickerFont')
 						.colorPicker()
 						.change(function() {
-							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it undoable
-							jS.obj.cellHighlighted().css('color', $(this).val());
-							jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it redoable
+							jS0.cellUndoable.add(jS0.obj.cellHighlighted()); //save state, make it undoable
+							jS0.obj.cellHighlighted().css('color', $(this).val());
+							jS0.cellUndoable.add(jS0.obj.cellHighlighted()); //save state, make it redoable
 						});
 					
 					$('.colorPickers')
@@ -77,7 +78,7 @@
 				}
 			});
 			
-			jS0 = $('#jQuerySheet1').sheet({
+			jS1 = $('#jQuerySheet1').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
 				inlineMenu: jQuery('#inlineMenu').html(),
 				urlGet: "numberstesting.html",
@@ -106,6 +107,9 @@
 				}
 			});
 			
+			jS0 = $('#jQuerySheet2').sheet({
+				buildSheet: true
+			});
 			/*
 			//examples of how to use jQuery.sheet
 			
@@ -147,16 +151,11 @@
 <body>
 	<table style="width: 100%;">
 		<tr>
-			<td rowspan="2" style="width: 20%;">				
+			<td rowspan="2" style="width: 20%; vertical-align: top;">				
 				<form method="post" action="https://www.paypal.com/cgi-bin/webscr" name="_xclick"><input type="hidden" name="cmd" value="_xclick"/><input type="hidden" name="business" value="axel180@aim.com"/><input type="hidden" name="item_name" value="jQuery.Sheet Development"/><input type="hidden" name="currency_code" value="USD"/><input type="hidden" name="amount" value="25.00"/><input type="image" border="0" name="submit" src="http://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" alt="Make payments with PayPal - it"/> <br/>Buy my a couple gallons of gas :)</form>
 				<br />
 				<span id="themeSwitcher"></span>
 				<br />
-				<b>What spreadsheet would you like to load?</b>
-				<ul>
-					<li><a href="#" onclick="$('<div />').load('documentation.html', function(o) { jS.openSheet(o);}); return false;">Documentation</a></li>
-					<li><a href="#" onclick="$('<div />').load('numberstesting.html', function(o) { jS.openSheet(o);}); return false;">Numbers Testing</a></li>
-				</ul>
 				<b>Did you know?</b>
 				<ul>
 					<li>jQuery.sheet supports multi spreadsheets</li>
@@ -181,7 +180,11 @@
 		</tr>
 		<tr>
 			<td colspan="2" style="vertical-align: top;">
-				<div id="jQuerySheet0" style="height: 450px;">
+				<div id="jQuerySheet0" style="height: 450px;"></div>
+				<br /><br />
+				<div id="jQuerySheet1" style="height: 450px;"></div>
+				<br /><br />
+				<div id="jQuerySheet2" style="height: 450px;">
 					<table title="Spreeadsheet 1">
 						<tr>
 							<td></td>
@@ -855,7 +858,6 @@
 						</tr>
 					</table>
 				</div>
-				<div id="jQuerySheet1" style="height: 450px;"></div>
 			</td>
 		</tr>
 	</table>

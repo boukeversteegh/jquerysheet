@@ -1,7 +1,7 @@
 /* Controls styling */
 .jSheetControls_loc, .jSheetControls_fx
 {
-	border: none;
+	border-width: 0px ! important;
 	background: none ! important;
 }
 
@@ -59,30 +59,20 @@
 	width: inherit ! important;
 	border-color: inherit ! important;
 }
-#jSheetTabContainer
+.jSheetTabContainer
 {
 	vertical-align: bottom;
 	text-align: left ! important;
 }
-#jSheetTabContainer span
+.jSheetTabContainer span
 {
 	
 	padding: 2px 5px 0 5px ! important;
 	cursor: pointer;
 }
-#jSheetTabContainer *, .menuDiv *
+.jSheetTabContainer *, .menuDiv *
 {
 	font-size: 1em ! important;
-}
-#sheetTitle
-{
-	border: none ! important;
-}
-
-#sheetTitle a
-{
-	font-weight: bold;
-	cursor: pointer;
 }
 
 .tableControl

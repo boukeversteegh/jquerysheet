@@ -93,8 +93,9 @@ jQuery.fn.extend({
 			boxModelCorrection: 2, 							//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
 			showErrors:		true							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
 		}, settings);
+		
 		jQuerySheetInstanceI++;
-		createSheetInstance(settings, jQuerySheetInstanceI);
+		return createSheetInstance(settings, jQuerySheetInstanceI);
 	}
 });
 
@@ -186,6 +187,7 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 			log: 				'jSheetLog',
 			pane: 				'jSheetEditPane',
 			tab:				'jSheetTab',
+			tabContainer:		'jSheetTabContainer',
 			tableControl:		'tableControl',
 			toggle:				'cellStyleToggle',
 			ui:					'jSheetUI',
@@ -507,7 +509,7 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 				
 				firstRowTr.appendTo(firstRow);
 				
-				var tabParent = jQuery('<div id="' + jS.id.tabContainer + '">' + 
+				var tabParent = jQuery('<div id="' + jS.id.tabContainer + '" class="' + jS.cl.tabContainer + '">' + 
 								(s.editable ? '<span class="' + jS.cl.uiTab + ' ui-corner-bottom" title="Add a spreadsheet" i="-1">+</span>' : '<span />') + 
 							'</div>')
 						.mousedown(jS.evt.tabOnMouseDown);
