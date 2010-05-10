@@ -57,7 +57,6 @@ http://www.gnu.org/licenses/
 		Example of recommended doc type: <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 */
 var jQuerySheetInstanceI = 0;
-
 jQuery.fn.extend({
 	sheet: function(settings) {
 		settings = jQuery.extend({
@@ -94,9 +93,15 @@ jQuery.fn.extend({
 			showErrors:		true							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
 		}, settings);
 		
-		jQuerySheetInstanceI++;
+		
 		var o = jQuery(this);
-		o.sheetInstance = createSheetInstance(settings, jQuerySheetInstanceI);
+		if (jQuery.sheet.instance) {
+			jQuery.sheet.instance.push(createSheetInstance(settings, jQuerySheetInstanceI));
+		} else {
+			jQuery.sheet.instance = [createSheetInstance(settings, jQuerySheetInstanceI)];
+		}
+		
+		jQuerySheetInstanceI++;
 		return o;
 	}
 });
@@ -127,7 +132,6 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 			cellHighlighted:	function() { return jQuery('td.' + jS.cl.cellHighlighted); },
 			controls:			function() { return jQuery('#' + jS.id.controls); },
 			formula: 			function() { return jQuery('#' + jS.id.formula); },
-			fx:					function() { return jQuery('#' + jS.id.fx); },
 			inPlaceEdit:		function() { return jQuery('#' + jS.id.inPlaceEdit); },
 			label: 				function() { return jQuery('#' + jS.id.label); },
 			log: 				function() { return jQuery('#' + jS.id.log); },
@@ -155,7 +159,6 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 			barLeftParent: 		'jSheetBarLeftParent_' + I + '_',
 			controls:			'jSheetControls_' + I,
 			formula: 			'jSheetControls_formula_' + I,
-			fx:					'jSheetControls_fx_' + I,
 			inPlaceEdit:		'jSheetInPlaceEdit_' + I,
 			label: 				'jSheetControls_loc_' + I,
 			log: 				'jSheetLog_' + I,
@@ -180,7 +183,6 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 			cellHighlighted: 	'jSheetCellHighighted',
 			controls:			'jSheetControls',
 			formula: 			'jSheetControls_formula',
-			fx:					'jSheetControls_fx',
 			inPlaceEdit:		'jSheetInPlaceEdit',
 			menu:				'jSheetMenu',
 			sheet: 				'jSheet',
@@ -471,9 +473,9 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 				if (s.editable) {
 					//Page Menu Control	
 					if (jQuery.mbMenu) {
-						jQuery('<div />').load(s.urlMenu, function(o) {
+						jQuery('<div />').load(s.urlMenu, function() {
 							jQuery('<td style="width: 50px; text-align: center;" id="' + jS.id.menu + '" class="rootVoices ui-corner-tl ' + jS.cl.menu + '" />')
-								.html(o)
+								.html(jQuery(this).html().replace(/{sheetInstance}/g, "$.sheet.instance[0]"))
 								.prependTo(firstRowTr)
 								.buildMenu({
 									menuWidth:		100,
@@ -505,7 +507,6 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 					var secondRow = jQuery('<table cellpadding="0" cellspacing="0" border="0">' +
 							'<tr>' +
 								'<td style="width: 35px; text-align: right;" id="' + jS.id.label + '" class="' + jS.cl.label + '"></td>' +
-								'<td style="width: 10px;" id="' + jS.id.fx + '" class="' + jS.cl.fx + '">fx</td>' + 
 								'<td>' +
 									'<textarea id="' + jS.id.formula + '" class="' + jS.cl.formula + '"></textarea>' +
 								'</td>' +
@@ -622,7 +623,7 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 					'<tbody>' +
 						'<tr>' + 
 							'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.cl.barCornerParent + '">' + //corner
-								'<div style="height: ' + s.colMargin + '; width: ' + s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="' + jS.cl.barCorner +'" onClick="jS.cellSetActiveAll();" title="Select All">&nbsp;</div>' +
+								'<div style="height: ' + s.colMargin + '; width: ' + s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="' + jS.cl.barCorner +'" onClick="jQuery.sheet.instance[' + I + '].cellSetActiveAll();" title="Select All">&nbsp;</div>' +
 							'</td>' + 
 							'<td class="' + jS.cl.barTopTd + '">' + //barTop
 								'<div id="' + jS.id.barTopParent + jS.i + '" class="' + jS.cl.barTopParent + '"></div>' +
@@ -914,7 +915,7 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 				jS.cellLast.row = jS.cellLast.col = 0;
 				jS.rowLast = jS.colLast = -1;
 				
-				jS.fxUpdate('', true);
+				jS.labelUpdate('', true);
 				jS.obj.formula()
 					.val('');
 				return false;
@@ -1671,7 +1672,6 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 				jS.obj.barCornerParent().addClass(jS.cl.uiBar);
 				
 				jS.obj.controls().addClass(jS.cl.uiControl);
-				jS.obj.fx().addClass(jS.cl.uiControl);
 				jS.obj.label().addClass(jS.cl.uiControl);
 				jS.obj.formula().addClass(jS.cl.uiControlTextBox);
 			},
@@ -1808,7 +1808,7 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 			
 			return o;
 		},
-		fxUpdate: function(v, setDirect) {
+		labelUpdate: function(v, setDirect) {
 			if (!setDirect) {
 				jS.obj.label().html(cE.columnLabelString(v[1] + 1) + (v[0] + 1));
 			} else {
@@ -1822,7 +1822,7 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 			var loc = jS.getTdLocation(td);
 			
 			//Show where we are to the user
-			jS.fxUpdate(loc);
+			jS.labelUpdate(loc);
 			
 			var v = td.attr('formula');
 			if (!v) {
@@ -2606,7 +2606,7 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 					colCount++;
 				});
 				
-				jS.fxUpdate('A1:' + cE.columnLabelString(colCount) + rowCount, true);
+				jS.labelUpdate('A1:' + cE.columnLabelString(colCount) + rowCount, true);
 			}
 		},
 		cellSetActiveMultiColumn: function(colStart, colEnd) {

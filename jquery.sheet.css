@@ -45,11 +45,6 @@
 {
 	display: none;
 }
-.rootVoice, .rootVoice .selected
-{
-	padding: 2px ! important;
-	font-size: 1em ! important;
-}
 #titleHolder
 {
 	padding-left: 10px;
