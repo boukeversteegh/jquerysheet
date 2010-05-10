@@ -820,7 +820,7 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 							break;
 						case key.Z:			return jS.evt.keyDownHandler.undo(e);
 							break;
-						case key.CONTROL: //we need to filter these to keep cell state
+						//case key.CONTROL: //we need to filter these to keep cell state
 						case key.CAPS_LOCK:
 						case key.SHIFT:
 						case key.ALT:
@@ -862,7 +862,6 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 						// Any changes to the input controls are stored back into the table, with a recalc.
 						jS.obj.inPlaceEdit().remove();
 						var td = jS.cellLast.td;
-						var recalc = false;
 						
 						//Lets ensure that the cell being edited is actually active
 						if (td) { 

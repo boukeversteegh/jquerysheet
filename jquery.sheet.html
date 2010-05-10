@@ -47,13 +47,15 @@
 	<script type="text/javascript">
 		function inlineMenu() {
 			return $('#inlineMenu').html()
-				.replace(/{sheetInstance}/g, "$.sheet.instance[" + jQuerySheetInstanceI + "]");
+				.replace(/{sheetInstance}/g, "$.sheet.instance[" + (jQuery.sheet.instance ? jQuery.sheet.instance.length : 0) + "]");
 		}
 		
 		$(function() {
 			$('#jQuerySheet0').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
-				inlineMenu: inlineMenu()
+				editable: true,
+				inlineMenu: inlineMenu(),
+				log: true
 			});
 			
 			$('#jQuerySheet1').sheet({
@@ -75,7 +77,6 @@
 			//Inline sheet(s), non-editable (like a gridview)
 			$('#jQuerySheet').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
-				inlineMenu: jQuery('#inlineMenu').html(),
 				buildSheet: true, //will turn object #jQuerySheet's child tables into sheets
 				editable: false,
 				calcOff: true
@@ -84,21 +85,21 @@
 			//New single custom sized sheet
 			$('#jQuerySheet').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
-				inlineMenu: jQuery('#inlineMenu').html(),
+				inlineMenu: inlineMenu(),
 				buildSheet: '5x100'
 			});
 			
 			//Custom object sheet(s)
 			$('#jQuerySheet').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
-				inlineMenu: jQuery('#inlineMenu').html(),
+				inlineMenu: inlineMenu(),
 				buildSheet: $('#jQuerySheet').find('table')
 			});
 			
 			//Custom object sheet(s)
 			$('#jQuerySheet').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
-				inlineMenu: jQuery('#inlineMenu').html(),
+				inlineMenu: inlineMenu(),
 				buildSheet: jS.controlFactory.sheet('5x100').add(jS.controlFactory.sheet('5x100'))
 			});
 			*/
