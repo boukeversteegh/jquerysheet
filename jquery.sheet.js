@@ -2040,10 +2040,6 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 					}
 				}
 
-				if (node.tagName == "TABLE" && !hasClass) {
-					// IE hack, where class doesn't appear in attributes.
-					result += ' class="jSheet"';
-				}
 				if (node.tagName == "COL") {
 					// IE hack, which doesn't like <COL..></COL>.
 					result += '/>';
@@ -2678,12 +2674,12 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 			return parseInt(i) - 1;
 		},
 		tableCellProvider: function(tableI) {
-			this.tableBodyId = 'jSheet' + tableI;
+			this.tableBodyId = jS.id.sheet + tableI;
 			this.tableI = tableI;
 			this.cells = {};
 		},
 		tableCell: function(tableI, row, col) {
-			this.tableBodyId = 'jSheet' + tableI;
+			this.tableBodyId = jS.id.sheet + tableI;
 			this.tableI = tableI;
 			this.row = row;
 			this.col = col;
@@ -2891,7 +2887,7 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 						return radio;
 					},
 					name: function() {
-						return 'table' + cE.thisCell.tableI + '_cell_c' + (cE.thisCell.col - 1) + '_r' + (cE.thisCell.row - 1) + 'radio';
+						return I + '_table' + cE.thisCell.tableI + '_cell_c' + (cE.thisCell.col - 1) + '_r' + (cE.thisCell.row - 1) + 'radio';
 					}
 				},
 				checkbox: {
