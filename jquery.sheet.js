@@ -779,6 +779,8 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 							var val = formula.val(); //once ctrl+v is hit formula now has the data we need
 							var firstValue = '';
 							formula.val(''); 
+							var tdsBefore = jQuery('<div />');
+							var tdsAfter = jQuery('<div />');
 							
 							var row = val.split(/\n/g); //break at rows
 							for (var i = 0; i < row.length; i++) {
@@ -786,7 +788,10 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 								for (var j = 0; j < col.length; j++) {
 									if (col[j]) {
 										var td = jQuery(jS.getTd(jS.i, i + loc[0], j + loc[1]));
-											
+										
+										tdsBefore.append(td.clone());
+										
+										
 										if ((col[j] + '').charAt(0) == '=') { //we need to know if it's a formula here
 											td.attr('formula', col[j]);
 										} else {
@@ -795,6 +800,8 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 												.removeAttr('formula'); //we get rid of formula because we don't know if it was a formula, to check may take too long
 										}
 										
+										tdsAfter.append(td.clone());
+										
 										if (i == 0 && j == 0) { //we have to finish the current edit
 											firstValue = col[j];
 										}
@@ -802,6 +809,8 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 								}
 							}
 							
+							jS.cellUndoable.add(tdsBefore.children());
+							jS.cellUndoable.add(tdsAfter.children());
 							
 							formula.val(firstValue);
 							jS.setDirty(true);
@@ -843,7 +852,7 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 							break;
 						case key.Z:			return jS.evt.keyDownHandler.undo(e);
 							break;
-						//case key.CONTROL: //we need to filter these to keep cell state
+						case key.CONTROL: //we need to filter these to keep cell state
 						case key.CAPS_LOCK:
 						case key.SHIFT:
 						case key.ALT:
