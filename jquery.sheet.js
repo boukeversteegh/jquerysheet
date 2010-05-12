@@ -74,10 +74,10 @@ jQuery.fn.extend({
 			calcOff: 		false, 							//bool, turns calculationEngine off (no spreadsheet, just grid)
 			log: 			false, 							//bool, turns some debugging logs on (jS.log('msg'))
 			lockFormulas: 	false, 							//bool, turns the ability to edit any formula off
-			parent: 		jQuery(this), 							//object, sheet's parent, DON'T CHANGE
+			parent: 		jQuery(this), 					//object, sheet's parent, DON'T CHANGE
 			colMargin: 		18, 							//int, the height and the width of all bar items, and new rows
 			fnBefore: 		function() {}, 					//fn, fires just before jQuery.sheet loads
-			fnAfter: 			function() {}, 				//fn, fires just after all sheets load
+			fnAfter: 		function() {},	 				//fn, fires just after all sheets load
 			fnSave: 		function() { jS.saveSheet(); }, //fn, default save function, more of a proof of concept
 			fnOpen: 		function() { 					//fn, by default allows you to paste table html into a javascript prompt for you to see what it looks likes if you where to use sheet
 				var t = prompt('Paste your table html here');
@@ -86,16 +86,17 @@ jQuery.fn.extend({
 				}
 			},
 			fnClose: 		function() {}, 					//fn, default clase function, more of a proof of concept
-			fnAfterCellEdit:	function() {},				//fn, fires just after someone edits a cell
+			fnAfterCellEdit:function() {},					//fn, fires just after someone edits a cell
 			joinedResizing: false, 							//bool, this joins the column/row with the resize bar
 			boxModelCorrection: 2, 							//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
-			showErrors:		true							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
+			showErrors:		true,							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
+			calculations:{}							//object, used to extend the standard functions that come with sheet
 		}, settings);
 		
 		
 		var o = jQuery(this);
 		if (jQuery.sheet.instance) {
-			jQuery.sheet.instance.push(createSheetInstance(settings, jQuery.sheet.instance.length + 1));
+			jQuery.sheet.instance.push(createSheetInstance(settings, jQuery.sheet.instance.length));
 		} else {
 			jQuery.sheet.instance = [createSheetInstance(settings, 0)];
 		}
@@ -3539,6 +3540,8 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 		s.height = s.parent.height();
 		jS.sheetSyncSize();
 	});
+	
+	jQuery.extend(cE.fn, s.calculations);
 	
 	jS.openSheet(o);
 	
