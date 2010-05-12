@@ -56,7 +56,6 @@ http://www.gnu.org/licenses/
 		It is recommended to use STRICT doc types on the viewing page when using sheet to ensure that the heights/widths of bars and sheet rows show up correctly
 		Example of recommended doc type: <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 */
-var jQuerySheetInstanceI = 0;
 jQuery.fn.extend({
 	sheet: function(settings) {
 		settings = jQuery.extend({
@@ -96,12 +95,10 @@ jQuery.fn.extend({
 		
 		var o = jQuery(this);
 		if (jQuery.sheet.instance) {
-			jQuery.sheet.instance.push(createSheetInstance(settings, jQuerySheetInstanceI));
+			jQuery.sheet.instance.push(createSheetInstance(settings, jQuery.sheet.instance.length + 1));
 		} else {
-			jQuery.sheet.instance = [createSheetInstance(settings, jQuerySheetInstanceI)];
+			jQuery.sheet.instance = [createSheetInstance(settings, 0)];
 		}
-		
-		jQuerySheetInstanceI++;
 		return o;
 	}
 });
@@ -716,6 +713,31 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 				//Make the textarrea resizeable automatically
 				if (jQuery.fn.elastic) {
 					textarea.elastic();
+				}
+			},
+			input: {
+				select: function() {
+					return jQuery('<select style="width: 100%;" onchange="jQuery.sheet.instance[' + I + '].controlFactory.input.setValue(jQuery(this).val(), jQuery(this).parent());" class="clickable" />');
+				},
+				radio: function(v, cell) {
+					var radio = jQuery('<span class="clickable" />');
+					var name = I + '_table' + cell.tableI + '_cell_c' + (cell.col - 1) + '_r' + (cell.row - 1) + 'radio';
+					for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
+						if (v[i]) {
+							radio.append('<input onchange="jQuery.sheet.instance[' + I + '].controlFactory.input.setValue(jQuery(this).val(), jQuery(this).parent().parent());" type="radio" value="' + v[i] + '" name="' + name + '" />' + v[i] + '<br />');
+						}
+					}
+					return radio;
+				},
+				checkbox: function(v) {
+					return jQuery('<input onclick="jQuery.sheet.instance[' + I + '].controlFactory.input.setValue(jQuery(this).is(\':checked\') + \'\', jQuery(this).parent());" type="checkbox" value="' + v + '" />' + v + '<br />');
+				},
+				setValue: function(v, p) {
+					p.attr('selectedvalue', v);
+					jS.calc(cE.calcState.i);
+				},
+				getValue: function(cell) {
+					return jQuery(jS.getTd(cell.tableI, cell.row - 1, cell.col - 1)).attr('selectedvalue');
 				}
 			}
 		},
@@ -2870,38 +2892,6 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 							.replace(/\r/g,'');
 				}
 				return v;
-			},
-			input: {
-				select: {
-					obj: function() { return jQuery('<select style="width: 100%;" onchange="cE.cFN.input.setValue(jQuery(this).val(), jQuery(this).parent());" class="clickable" />'); }
-				},
-				radio: {
-					obj: function(v) {
-						var radio = jQuery('<span class="clickable" />');
-						var name = cE.cFN.input.radio.name();
-						for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
-							if (v[i]) {
-								radio.append('<input onchange="cE.cFN.input.setValue(jQuery(this).val(), jQuery(this).parent().parent());" type="radio" value="' + v[i] + '" name="' + name + '" />' + v[i] + '<br />');
-							}
-						}
-						return radio;
-					},
-					name: function() {
-						return I + '_table' + cE.thisCell.tableI + '_cell_c' + (cE.thisCell.col - 1) + '_r' + (cE.thisCell.row - 1) + 'radio';
-					}
-				},
-				checkbox: {
-					obj: function(v) {
-						return jQuery('<input onclick="cE.cFN.input.setValue(jQuery(this).is(\':checked\') + \'\', jQuery(this).parent());" type="checkbox" value="' + v + '" />' + v + '<br />');
-					}
-				},
-				setValue: function(v, p) {
-					p.attr('selectedvalue', v);
-					jS.calc(cE.calcState.i);
-				},
-				getValue: function() {
-					return jQuery(jS.getTd(cE.thisCell.tableI, cE.thisCell.row - 1, cE.thisCell.col - 1)).attr('selectedvalue');
-				}
 			}
 		},
 		fn: {//fn = standard functions used in cells
@@ -3043,7 +3033,7 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 				SELECT:	function(v, noBlank) {
 					v = cE.foldPrepare(v, arguments);
 					
-					var selectObj = cE.cFN.input.select.obj();
+					var selectObj = jS.controlFactory.input.select();
 					
 					if (!noBlank) {
 						selectObj.append('<option value="">Select a value</option>');
@@ -3055,7 +3045,7 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 						}
 					}
 					
-					selectObj.val(cE.cFN.input.getValue());
+					selectObj.val(jS.controlFactory.input.getValue(cE.thisCell));
 					
 					return selectObj;
 				},
@@ -3064,9 +3054,9 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 				},
 				RADIO: function(v) {
 					v = cE.foldPrepare(v, arguments);
-					var o = cE.cFN.input.radio.obj(v);
+					var o = jS.controlFactory.input.radio(v, cE.thisCell);
 					
-					o.find('input[value="' + cE.cFN.input.getValue() + '"]').attr('CHECKED', 'true');
+					o.find('input[value="' + jS.controlFactory.input.getValue(cE.thisCell) + '"]').attr('CHECKED', 'true');
 					
 					return o;
 				},
@@ -3076,8 +3066,8 @@ function createSheetInstance(s, I) { //s = jQuery.sheet settings, I = jQuery.she
 				},
 				CHECKBOX: function(v) {
 					v = cE.foldPrepare(v, arguments)[0];
-					var o = cE.cFN.input.checkbox.obj(v);
-					var checked = cE.cFN.input.getValue();
+					var o = jS.controlFactory.input.checkbox(v, cE.thisCell);
+					var checked = jS.controlFactory.input.getValue(cE.thisCell);
 					if (checked == 'true' || checked == true) {
 						o.attr('CHECKED', 'TRUE');
 					} else {
