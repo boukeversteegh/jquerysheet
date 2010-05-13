@@ -580,7 +580,6 @@ jQuery.sheet = {
 				},
 				sheetUI: function(o, i, fn, reloadBars) {
 					if (!i) {
-						//jQuery('.tableControl').remove();
 						jS.sheetCount = 0;
 						jS.i = 0;
 					} else {
@@ -602,14 +601,20 @@ jQuery.sheet = {
 					jS.sheetTab(true);
 					
 					if (s.editable) {
-						pane
-							.mousedown(jS.evt.cellOnMouseDown);
 						if (s.lockFormulas) {
 							pane
-								.click(jS.evt.cellOnClickLocked);
+								.mousedown(function(e) {
+									jS.evt.cellOnClickLocked(e);
+									return jS.evt.cellOnMouseDown(e);
+								});
 						} else {
 							pane
-								.click(jS.evt.cellOnClickReg)
+								.mousedown(function(e) {
+									jS.evt.cellOnClickReg(e);
+									jS.evt.cellOnMouseDown(e);
+									return false;
+								});
+							pane
 								.dblclick(jS.evt.cellOnDblClick);
 						}
 					}
@@ -876,11 +881,11 @@ jQuery.sheet = {
 							case key.RIGHT:
 								break;
 							case key.HOME:		jS.cellLast.td.parent()
-													.find('td:first').click();
+													.find('td:first').mousedown();
 								break;
 							case key.END:
 												jS.cellLast.td.parent()
-													.find('td:last').click();
+													.find('td:last').mousedown();
 								break;
 							default: 			jS.cellLast.isEdit = true;
 						}
@@ -976,7 +981,7 @@ jQuery.sheet = {
 						case key.RIGHT: 	c++; break;
 					}
 					
-					jQuery(jS.getTd(jS.i, r, c)).click();
+					jQuery(jS.getTd(jS.i, r, c)).mousedown();
 					
 					return false;
 				},
@@ -2602,7 +2607,7 @@ jQuery.sheet = {
 					
 					o = o.eq(0);
 					if (o.length > 0) {
-						o.click();
+						o.mousedown();
 					} else {
 						alert('No results found.');
 					}
@@ -2611,18 +2616,22 @@ jQuery.sheet = {
 			cellSetActiveMulti: function(e) {
 				var o = {
 					startRow: e.target.parentNode.rowIndex,
-					startColumn: e.target.cellIndex
+					startColumn: e.target.cellIndex,
+					lastRow: -1,
+					lastColumn: -1
 				};//These are the events used to selected multiple rows.
 				jS.obj.sheet()
 					.mousemove(function(e) {
-						jS.themeRoller.cell.clearHighlighted();
-						
 						o.endRow = e.target.parentNode.rowIndex;
 						o.endColumn = e.target.cellIndex;
 						
-						for (var i = (o.startRow < o.endRow ? o.startRow : o.endRow) ; i <= (o.startRow > o.endRow ? o.startRow : o.endRow); i++) {
-							for (var j = (o.startColumn < o.endColumn ? o.startColumn : o.endColumn); j <= (o.startColumn > o.endColumn ? o.startColumn : o.endColumn); j++) {
-								jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, i, j));
+						if (o.lastRow != o.endRow || o.lastColumn != o.endColumn) {
+							jS.themeRoller.cell.clearHighlighted();
+							
+							for (var i = (o.startRow < o.endRow ? o.startRow : o.endRow) ; i <= (o.startRow > o.endRow ? o.startRow : o.endRow); i++) {
+								for (var j = (o.startColumn < o.endColumn ? o.startColumn : o.endColumn); j <= (o.startColumn > o.endColumn ? o.startColumn : o.endColumn); j++) {
+									jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, i, j));
+								}
 							}
 						}
 					})
