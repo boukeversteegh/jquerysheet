@@ -299,7 +299,7 @@ jQuery.sheet = {
 					jS.obj.pane().scroll();
 					
 					//offset formulas
-					var loc = jS.getTdLocation(sheet.find('tr:first').find('td' + atRowQ));
+					var loc = jS.getTdLocation(sheet.find('tr' + atRowQ));
 					jS.offsetFormulaRange(loc[0], loc[1], 1, 0, insertBefore);
 					
 					jS.cellUndoable.add(sheet.add(bar));
@@ -881,11 +881,11 @@ jQuery.sheet = {
 							case key.RIGHT:
 								break;
 							case key.HOME:		jS.cellLast.td.parent()
-													.find('td:first').mousedown();
+													.find('td:first').mousedown().mouseup()
 								break;
 							case key.END:
 												jS.cellLast.td.parent()
-													.find('td:last').mousedown();
+													.find('td:last').mousedown().mouseup();
 								break;
 							default: 			jS.cellLast.isEdit = true;
 						}
@@ -981,7 +981,7 @@ jQuery.sheet = {
 						case key.RIGHT: 	c++; break;
 					}
 					
-					jQuery(jS.getTd(jS.i, r, c)).mousedown();
+					jQuery(jS.getTd(jS.i, r, c)).mousedown().mouseup();
 					
 					return false;
 				},
@@ -2607,7 +2607,7 @@ jQuery.sheet = {
 					
 					o = o.eq(0);
 					if (o.length > 0) {
-						o.mousedown();
+						o.mousedown().mouseup();
 					} else {
 						alert('No results found.');
 					}
@@ -2620,13 +2620,16 @@ jQuery.sheet = {
 					lastRow: -1,
 					lastColumn: -1
 				};//These are the events used to selected multiple rows.
-				jS.obj.sheet()
+				jS.obj.pane()
 					.mousemove(function(e) {
 						o.endRow = e.target.parentNode.rowIndex;
 						o.endColumn = e.target.cellIndex;
 						
-						if (o.lastRow != o.endRow || o.lastColumn != o.endColumn) {
+						if (o.lastRow != o.endRow || o.lastColumn != o.endColumn) { //this prevents this method from firing too much
 							jS.themeRoller.cell.clearHighlighted();
+							
+							o.lastRow = o.endRow;
+							o.lastColumn = o.endColumn;
 							
 							for (var i = (o.startRow < o.endRow ? o.startRow : o.endRow) ; i <= (o.startRow > o.endRow ? o.startRow : o.endRow); i++) {
 								for (var j = (o.startColumn < o.endColumn ? o.startColumn : o.endColumn); j <= (o.startColumn > o.endColumn ? o.startColumn : o.endColumn); j++) {
@@ -2636,7 +2639,7 @@ jQuery.sheet = {
 						}
 					})
 					.mouseup(function() {
-						jS.obj.sheet()
+						jS.obj.pane()
 							.unbind('mousemove')
 							.unbind('mouseup');
 					});
