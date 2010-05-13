@@ -8,17 +8,17 @@
 </div>
 
 <div id="menuFile" class="menu">
-	<a onclick="{sheetInstance}.newSheet(); return false;" title="Creates a new spreadsheet.">New</a>
-	<a onclick="{sheetInstance}.s.fnOpen(); return false;" title="Open a new spreadsheet.">Open</a>
-	<a onclick="{sheetInstance}.s.fnSave(); return false;" title="Save the current spreadsheet.">Save</a>
-	<a onclick="{sheetInstance}.s.fnClose(); return false;" title="Close the current spreadsheet without saving.">Close</a>
+	<a onclick="sheetInstance.newSheet(); return false;" title="Creates a new spreadsheet.">New</a>
+	<a onclick="sheetInstance.s.fnOpen(); return false;" title="Open a new spreadsheet.">Open</a>
+	<a onclick="sheetInstance.s.fnSave(); return false;" title="Save the current spreadsheet.">Save</a>
+	<a onclick="sheetInstance.s.fnClose(); return false;" title="Close the current spreadsheet without saving.">Close</a>
 </div>
 
 <div id="menuView" class="menu">
-	<a onclick="{sheetInstance}.viewSource(true); return false;" title="Shows the HTML that makes up the current spreadsheet.">Pretty Source</a>
-	<a onclick="{sheetInstance}.viewSource(false); return false;" title="Shows the compact HTML that makes up the current spreadsheet.">Compact Source</a>
-	<a onclick="{sheetInstance}.print({sheetInstance}.HTMLtoPrettySource(jQuery({sheetInstance}.exportSheet.xml(true))[0])); return false;">As XML</a>
-	<a onclick="{sheetInstance}.print({sheetInstance}.exportSheet.json()); return false;">As JSON</a>
+	<a onclick="sheetInstance.viewSource(true); return false;" title="Shows the HTML that makes up the current spreadsheet.">Pretty Source</a>
+	<a onclick="sheetInstance.viewSource(false); return false;" title="Shows the compact HTML that makes up the current spreadsheet.">Compact Source</a>
+	<a onclick="sheetInstance.print(sheetInstance.HTMLtoPrettySource(jQuery(sheetInstance.exportSheet.xml(true))[0])); return false;">As XML</a>
+	<a onclick="sheetInstance.print(sheetInstance.exportSheet.json()); return false;">As JSON</a>
 	<a menu="menuViewFunctionReference">Function Reference</a>
 </div>
 
@@ -51,65 +51,65 @@
 </div>
 
 <div id="menuEdit" class="menu">
-	<a onclick="{sheetInstance}.merge(); return false;">Merge</a>
-	<a onclick="{sheetInstance}.unmerge(); return false;">Un-Merge</a>
+	<a onclick="sheetInstance.merge(); return false;">Merge</a>
+	<a onclick="sheetInstance.unmerge(); return false;">Un-Merge</a>
 	<a menu="menuEditColumn">Column</a>
 	<a menu="menuEditRow">Row</a>
 	<a menu="menuEditSheet">Sheet</a>
-	<a onclick="{sheetInstance}.cellFind(); return false;">Find</a>
-	<a onclick="{sheetInstance}.appendToFormula({sheetInstance}.getTdRange()); return false;">Get Cell Range</a>
+	<a onclick="sheetInstance.cellFind(); return false;">Find</a>
+	<a onclick="sheetInstance.appendToFormula(sheetInstance.getTdRange()); return false;">Get Cell Range</a>
 	<a menu="menuEditGetCellRangeAndWrap">Get Cell Range And Wrap With Function</a>
-	<a onclick="{sheetInstance}.cellUndoable.undoOrRedo(true); return false;">Undo</a>
-	<a onclick="{sheetInstance}.cellUndoable.undoOrRedo(); return false;">Redo</a>
+	<a onclick="sheetInstance.cellUndoable.undoOrRedo(true); return false;">Undo</a>
+	<a onclick="sheetInstance.cellUndoable.undoOrRedo(); return false;">Redo</a>
 </div>
 
 <div id="menuEditColumn" class="menu">
-	<a onclick="{sheetInstance}.controlFactory.addColumn(null, null, ':last'); return false;" title="Adds an additional column to the right of the spreadsheet.">Add Column</a>
-	<a onclick="{sheetInstance}.controlFactory.addColumnMulti(); return false;" title="Adds an additional columns to the right of the spreadsheet.">Add Multi-Columns</a>
-	<a onclick="{sheetInstance}.deleteColumn(); return false;" title="Deletes the current column thats highlighted.">Delete Column</a>
-	<a onclick="{sheetInstance}.controlFactory.addColumn(null, true); return false;" title="Inserts an additional column after currently selected column.">Insert Column Before</a>
-	<a onclick="{sheetInstance}.controlFactory.addColumn(); return false;" title="Inserts an additional column after currently selected column.">Insert Column After</a>
-	<a onclick="{sheetInstance}.fillUpOrDown(); return false;" title="Fill down current cell value.">Fill Down</a>
-	<a onclick="{sheetInstance}.fillUpOrDown(true); return false;" title="Fill up current cell value.">Fill Up</a>
-	<!--<a onclick="{sheetInstance}.toggleHide.columnAll();" title="Unhides all the hidden columns.">Show All</a>
-	<a onclick="{sheetInstance}.toggleHide.column();" title="Hides or shows the currently selected column.">Toggle Hide Column</a>-->
+	<a onclick="sheetInstance.controlFactory.addColumn(null, null, ':last'); return false;" title="Adds an additional column to the right of the spreadsheet.">Add Column</a>
+	<a onclick="sheetInstance.controlFactory.addColumnMulti(); return false;" title="Adds an additional columns to the right of the spreadsheet.">Add Multi-Columns</a>
+	<a onclick="sheetInstance.deleteColumn(); return false;" title="Deletes the current column thats highlighted.">Delete Column</a>
+	<a onclick="sheetInstance.controlFactory.addColumn(null, true); return false;" title="Inserts an additional column after currently selected column.">Insert Column Before</a>
+	<a onclick="sheetInstance.controlFactory.addColumn(); return false;" title="Inserts an additional column after currently selected column.">Insert Column After</a>
+	<a onclick="sheetInstance.fillUpOrDown(); return false;" title="Fill down current cell value.">Fill Down</a>
+	<a onclick="sheetInstance.fillUpOrDown(true); return false;" title="Fill up current cell value.">Fill Up</a>
+	<!--<a onclick="sheetInstance.toggleHide.columnAll();" title="Unhides all the hidden columns.">Show All</a>
+	<a onclick="sheetInstance.toggleHide.column();" title="Hides or shows the currently selected column.">Toggle Hide Column</a>-->
 </div>
 <div id="menuEditRow" class="menu">
-	<a onclick="{sheetInstance}.controlFactory.addRow(null, null, ':last'); return false;" title="Adds an additional row to bottom of the spreadsheet.">Add Row</a>
-	<a onclick="{sheetInstance}.controlFactory.addRowMulti(); return false;" title="Adds an additional rows to bottom of the spreadsheet.">Add Multi-Rows</a>
-	<a onclick="{sheetInstance}.deleteRow(); return false;" title="Delets the current row thats highlighted.">Delete Row</a>
-	<a onclick="{sheetInstance}.controlFactory.addRow(null, true); return false;" title="Inserts an additional row after currently selected row.">Insert Row Before</a>
-	<a onclick="{sheetInstance}.controlFactory.addRow(); return false;" title="Inserts an additional row after currently selected row.">Insert Row After</a>
-	<!--<a onclick="{sheetInstance}.toggleHide.rowAll();" title="Unhides all the hidden rows.">Show All</a>
-	<a onclick="{sheetInstance}.toggleHide.row();" title="Hides or shows the currently selected row.">Toggle Hide Row</a>-->
+	<a onclick="sheetInstance.controlFactory.addRow(null, null, ':last'); return false;" title="Adds an additional row to bottom of the spreadsheet.">Add Row</a>
+	<a onclick="sheetInstance.controlFactory.addRowMulti(); return false;" title="Adds an additional rows to bottom of the spreadsheet.">Add Multi-Rows</a>
+	<a onclick="sheetInstance.deleteRow(); return false;" title="Delets the current row thats highlighted.">Delete Row</a>
+	<a onclick="sheetInstance.controlFactory.addRow(null, true); return false;" title="Inserts an additional row after currently selected row.">Insert Row Before</a>
+	<a onclick="sheetInstance.controlFactory.addRow(); return false;" title="Inserts an additional row after currently selected row.">Insert Row After</a>
+	<!--<a onclick="sheetInstance.toggleHide.rowAll();" title="Unhides all the hidden rows.">Show All</a>
+	<a onclick="sheetInstance.toggleHide.row();" title="Hides or shows the currently selected row.">Toggle Hide Row</a>-->
 </div>
 <div id="menuEditSheet" class="menu">
-	<a onclick="{sheetInstance}.addSheet(); return false;" title="Add new spreadsheet.">Add Spreadsheet</a>
-	<a onclick="{sheetInstance}.deleteSheet(); return false;" title="Delete the current spreadsheet.">Delete Spreadsheet</a>
-	<a onclick="{sheetInstance}.calc({sheetInstance}.obj.tableBody()); return false;" title="Recompiles the current sheet">Refresh Calculations</a>
-	<a onclick="{sheetInstance}.sheetTitle(); return false;" title="Change the title of the sheet.">Title</a>
+	<a onclick="sheetInstance.addSheet(); return false;" title="Add new spreadsheet.">Add Spreadsheet</a>
+	<a onclick="sheetInstance.deleteSheet(); return false;" title="Delete the current spreadsheet.">Delete Spreadsheet</a>
+	<a onclick="sheetInstance.calc(sheetInstance.obj.tableBody()); return false;" title="Recompiles the current sheet">Refresh Calculations</a>
+	<a onclick="sheetInstance.sheetTitle(); return false;" title="Change the title of the sheet.">Title</a>
 </div>
 
 <div id="menuEditGetCellRangeAndWrap" class="menu">
-	<a onclick="{sheetInstance}.appendToFormula('SUM(' + {sheetInstance}.getTdRange() + ')'); return false;" title="Wrap with SUM">SUM()</a>
-	<a onclick="{sheetInstance}.appendToFormula('CEILING(' + {sheetInstance}.getTdRange() + ')'); return false;" title="Wrap with CEILING">CEILING()</a>
-	<a onclick="{sheetInstance}.appendToFormula('COUNT(' + {sheetInstance}.getTdRange() + ')'); return false;" title="Wrap with COUNT">COUNT()</a>
-	<a onclick="{sheetInstance}.appendToFormula('MAX(' + {sheetInstance}.getTdRange() + ')'); return false;" title="Wrap with MAX">MAX()</a>
-	<a onclick="{sheetInstance}.appendToFormula('MIN(' + {sheetInstance}.getTdRange() + ')'); return false;" title="Wrap with MIN">MIN()</a>
+	<a onclick="sheetInstance.appendToFormula('SUM(' + sheetInstance.getTdRange() + ')'); return false;" title="Wrap with SUM">SUM()</a>
+	<a onclick="sheetInstance.appendToFormula('CEILING(' + sheetInstance.getTdRange() + ')'); return false;" title="Wrap with CEILING">CEILING()</a>
+	<a onclick="sheetInstance.appendToFormula('COUNT(' + sheetInstance.getTdRange() + ')'); return false;" title="Wrap with COUNT">COUNT()</a>
+	<a onclick="sheetInstance.appendToFormula('MAX(' + sheetInstance.getTdRange() + ')'); return false;" title="Wrap with MAX">MAX()</a>
+	<a onclick="sheetInstance.appendToFormula('MIN(' + sheetInstance.getTdRange() + ')'); return false;" title="Wrap with MIN">MIN()</a>
 </div>
 
 <div id="menuStyle" class="menu">
-	<a class="cellStyleToggle" onclick="{sheetInstance}.cellStyleToggle('styleBold'); return false;">Bold</a>
-	<a class="cellStyleToggle" onclick="{sheetInstance}.cellStyleToggle('styleItalics'); return false;">Italics</a>
-	<a class="cellStyleToggle" onclick="{sheetInstance}.cellStyleToggle('styleUnderline, 'styleLineThrough'); return false;">Underline</a>
-	<a class="cellStyleToggle" onclick="{sheetInstance}.cellStyleToggle('styleLineThrough', 'styleUnderline'); return false;">Strikethrough</a>
-	<a class="cellStyleToggle" onclick="{sheetInstance}.cellStyleToggle('styleLeft', 'styleCenter styleRight'); return false;">Left</a>
-	<a class="cellStyleToggle" onclick="{sheetInstance}.cellStyleToggle('styleCenter', 'styleLeft styleRight'); return false;">Center</a>
-	<a class="cellStyleToggle" onclick="{sheetInstance}.cellStyleToggle('styleRight', 'styleLeft styleCenter'); return false;">Right</a>
-	<a class="cellStyleToggle" onclick="{sheetInstance}.cellStyleToggle('styleUpper', 'styleCapital styleLower'); return false;">Uppercase</a>
-	<a class="cellStyleToggle" onclick="{sheetInstance}.cellStyleToggle('styleCapital', 'styleUpper styleLower'); return false;">Capitalize</a>
-	<a class="cellStyleToggle" onclick="{sheetInstance}.cellStyleToggle('styleLower', 'styleCapital styleUpper'); return false;">Lowercase</a>
-	<a class="cellStyleToggle" onclick="{sheetInstance}.cellStyleToggle('styleTop', 'styleMiddle styleBottom'); return false;">Top</a>
-	<a class="cellStyleToggle" onclick="{sheetInstance}.cellStyleToggle('styleMiddle', 'styleTop styleBottom'); return false;">Middle</a>
-	<a class="cellStyleToggle" onclick="{sheetInstance}.cellStyleToggle('styleBottom', 'styleTop styleMiddle'); return false;">Bottom</a>
+	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleBold'); return false;">Bold</a>
+	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleItalics'); return false;">Italics</a>
+	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleUnderline', 'styleLineThrough'); return false;">Underline</a>
+	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleLineThrough', 'styleUnderline'); return false;">Strikethrough</a>
+	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleLeft', 'styleCenter styleRight'); return false;">Left</a>
+	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleCenter', 'styleLeft styleRight'); return false;">Center</a>
+	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleRight', 'styleLeft styleCenter'); return false;">Right</a>
+	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleUpper', 'styleCapital styleLower'); return false;">Uppercase</a>
+	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleCapital', 'styleUpper styleLower'); return false;">Capitalize</a>
+	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleLower', 'styleCapital styleUpper'); return false;">Lowercase</a>
+	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleTop', 'styleMiddle styleBottom'); return false;">Top</a>
+	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleMiddle', 'styleTop styleBottom'); return false;">Middle</a>
+	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleBottom', 'styleTop styleMiddle'); return false;">Bottom</a>
 </div>

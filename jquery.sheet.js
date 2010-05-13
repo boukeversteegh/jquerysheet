@@ -474,7 +474,7 @@ jQuery.sheet = {
 						if (jQuery.mbMenu) {
 							jQuery('<div />').load(s.urlMenu, function() {
 								jQuery('<td style="width: 50px; text-align: center;" id="' + jS.id.menu + '" class="rootVoices ui-corner-tl ' + jS.cl.menu + '" />')
-									.html(jQuery(this).html().replace(/{sheetInstance}/g, "$.sheet.instance[0]"))
+									.html(jQuery(this).html().replace(/sheetInstance/g, "$.sheet.instance[0]"))
 									.prependTo(firstRowTr)
 									.buildMenu({
 										menuWidth:		100,
@@ -579,7 +579,7 @@ jQuery.sheet = {
 					var objContainer = jS.controlFactory.table().appendTo(jS.obj.ui());
 					jS.obj.pane().html(o);
 							
-					jS.tuneTableForSheetUse(o);
+					o = jS.tuneTableForSheetUse(o);
 								
 					jS.sheetDecorate(o);
 					
@@ -1184,8 +1184,13 @@ jQuery.sheet = {
 				o
 					.addClass(jS.cl.sheet)
 					.attr('id', jS.id.sheet + jS.i)
-					.attr('border', '1px');
+					.attr('border', '1px')
+					.attr('cellpadding', '0')
+					.attr('cellspacing', '0');
+					
 				o.find('td.' + jS.cl.cellActive).removeClass(jS.cl.cellActive);
+				
+				return o;
 			},
 			attrH: {//Attribute Helpers
 			//I created this object so I could see, quickly, which attribute was most stable.
@@ -2852,7 +2857,7 @@ jQuery.sheet = {
 			setValue: function(v, e) {
 				this.error = e;
 				this.value = v;
-				jQuery(this.getTd()).html(v ? v: ""); //I know this is slower than innerHTML = '', but sometimes stability just rules!
+				jQuery(this.getTd()).html(v ? v: ''); //I know this is slower than innerHTML = '', but sometimes stability just rules!
 			},
 			getValue: function() {
 				var v = this.value;
@@ -3645,7 +3650,7 @@ jQuery.sheet = {
 				tds += standardTd;
 			}
 
-			var standardTr = '<tr' + (h ? 'height="' + h + 'px" style="height: ' + h + 'px;"' : '') + '>' + tds + '</tr>';
+			var standardTr = '<tr' + (h ? ' height="' + h + 'px" style="height: ' + h + 'px;"' : '') + '>' + tds + '</tr>';
 			var trs = '';
 			for (var i = rowsCount; i >= 1; i--) {
 				trs += standardTr;

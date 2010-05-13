@@ -82,13 +82,12 @@
 /* Sheet styling */
 .jSheet
 {
+	position: relative ! important;
 	margin-top: -1px ! important;
 	margin-left: -1px ! important;
     table-layout: fixed;
     empty-cells: show;
 	background-image: none ! important;
-	margin-bottom: 20px ! important;
-	margin-right: 20px ! important;
 	font-family: arial, serif;
 	overflow: hidden;
 	height: auto ! important;
@@ -129,31 +128,11 @@
 	min-width: 25px ! important;
 }
 
-.jSheet textarea
-{
-	font-family: inherit;
-	border: inherit ! important;
-	font-size: 1em ! important;
-	color: inherit ! important;
-	background-color: inherit ! important;
-	margin: -2px ! important;
-	padding: 0px ! important;
-	width: 100%;
-	left: inherit;
-	height: inherit ! important;
-	position: relative;
-	font-weight: inherit;
-	text-align: inherit;
-}
-
 .jSheet colgroup col
 {
 	border: none ! important;
 }
- .jSheetUI, .jSheetUI tr, .jSheetUI td, .jSheetUI tbody, .jSheetUI .jSheetControls textarea
-{
-	border-width: 1px ! important;
-}
+
 /* Containers styleing*/
 .jSheetBarCorner
 {
@@ -188,9 +167,10 @@
 
 .jSheetEditPane
 {
-    overflow: auto;
+    overflow: auto ! important;
 	background-image: none ! important;
 	border-width: 0px;
+	position: relative ! important;
 }
 /* Bar item styling */
 
