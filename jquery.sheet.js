@@ -253,6 +253,8 @@ jQuery.sheet = {
 					jS.evt.cellEditAbandon();
 					
 					var sheet = jS.obj.sheet();
+					var bar = jS.obj.barLeft();
+					jS.cellUndoable.add(jQuery(sheet).add(bar));
 					
 					var currentRow = sheet.find('tr' + atRowQ);
 					var newRow = currentRow.clone();
@@ -268,9 +270,10 @@ jQuery.sheet = {
 						newRow.insertAfter(currentRow);
 					}
 					
-					var currentBar = jS.obj.barLeft().find('div' + atRowQ);
-					var newBar = currentBar.clone();
 					
+					var currentBar =  bar.find('div' + atRowQ);
+					var newBar = currentBar.clone();
+
 					jS.themeRoller.bar.style(newBar);
 					
 					newBar
@@ -298,6 +301,8 @@ jQuery.sheet = {
 					//offset formulas
 					var loc = jS.getTdLocation(sheet.find('tr:first').find('td' + atRowQ));
 					jS.offsetFormulaRange(loc[0], loc[1], 1, 0, insertBefore);
+					
+					jS.cellUndoable.add(sheet.add(bar));
 				},
 				addColumn: function(atColumn, insertBefore, atColumnQ) {
 					if (!atColumnQ) {
@@ -320,10 +325,14 @@ jQuery.sheet = {
 					jS.evt.cellEditAbandon();
 					
 					var sheet = jS.obj.sheet();
+					var bar = jS.obj.barTop();
+					
+					//make it undoable
+					jS.cellUndoable.add(sheet.add(bar));
 					
 					//there are 3 obj that need managed here div, col, and each tr's td
 					//Lets get the current div & col, then later we go through each row
-					var currentBar = jS.obj.barTop().find('div' + atColumn);
+					var currentBar = bar.find('div' + atColumn);
 					var currentCol = sheet.find('col' + atColumn);
 					
 					//Lets create our new bar, cell, and col
@@ -379,6 +388,9 @@ jQuery.sheet = {
 					//offset formulas
 					var loc = jS.getTdLocation(sheet.find('tr:first').find('td' + atColumn));
 					jS.offsetFormulaRange(loc[0], loc[1], 0, 1, insertBefore);
+					
+					//make it redoable
+					jS.cellUndoable.add(sheet.add(bar));
 				},
 				barLeft: function(reload, o) {//Works great!
 					jS.obj.barLeft().remove();
@@ -397,14 +409,15 @@ jQuery.sheet = {
 						};
 					}
 					
-					jS.evt.barMouseDown.height(barLeft);
-					
 					o.find('tr').each(function(i) {
 						var child = jQuery('<div>' + (i + 1) + '</div>');
 						jQuery(barLeft).append(child);
 						heightFn(i, jQuery(this), child);
 					});
-					barLeft.appendTo(jS.obj.barLeftParent());
+					
+					jS.evt.barMouseDown.height(
+						jS.obj.barLeftParent().append(barLeft)
+					);
 				},
 				barTop: function(reload, o) { //Works great!
 					jS.obj.barTop().remove();
@@ -438,7 +451,9 @@ jQuery.sheet = {
 						barTop.append(child);
 					});
 					
-					jS.obj.barTopParent().append(barTop);
+					jS.evt.barMouseDown.width(
+						jS.obj.barTopParent().append(barTop)
+					);
 				},
 				header: function() {
 					jS.obj.controls().remove();
@@ -577,9 +592,9 @@ jQuery.sheet = {
 					}
 					
 					var objContainer = jS.controlFactory.table().appendTo(jS.obj.ui());
-					jS.obj.pane().html(o);
+					var pane = jS.obj.pane().html(o);
 							
-					o = jS.tuneTableForSheetUse(o);
+					jS.tuneTableForSheetUse(o);
 								
 					jS.sheetDecorate(o);
 					
@@ -589,13 +604,13 @@ jQuery.sheet = {
 					jS.sheetTab(true);
 					
 					if (s.editable) {
-						o
+						pane
 							.mousedown(jS.evt.cellOnMouseDown);
 						if (s.lockFormulas) {
-							o
+							pane
 								.click(jS.evt.cellOnClickLocked);
 						} else {
-							o
+							pane
 								.click(jS.evt.cellOnClickReg)
 								.dblclick(jS.evt.cellOnDblClick);
 						}
