@@ -604,15 +604,15 @@ jQuery.sheet = {
 						if (s.lockFormulas) {
 							pane
 								.mousedown(function(e) {
-									jS.evt.cellOnClickLocked(e);
+									jS.evt.cellSetActiveLockedFormulas(jQuery(e.target));
 									return jS.evt.cellOnMouseDown(e);
 								});
 						} else {
 							pane
 								.mousedown(function(e) {
-									jS.evt.cellOnClickReg(e);
+									//jS.evt.cellSetActive(jQuery(e.target));
 									jS.evt.cellOnMouseDown(e);
-									return false;
+									//return false;
 								});
 							pane
 								.dblclick(jS.evt.cellOnDblClick);
@@ -838,6 +838,13 @@ jQuery.sheet = {
 						}
 						return true;
 					},
+					findCell: function(e) {
+						if (e.ctrlKey) { 
+							jS.cellFind();
+							return false;
+						}
+						return true;
+					},
 					redo: function(e) {
 						if (e.ctrlKey && !jS.cellLast.isEdit) { 
 							jS.cellUndoable.undoOrRedo();
@@ -871,6 +878,7 @@ jQuery.sheet = {
 								break;
 							case key.Z:			return jS.evt.keyDownHandler.undo(e);
 								break;
+							case key.F:			return jS.evt.keyDownHandler.findCell(e);
 							case key.CONTROL: //we need to filter these to keep cell state
 							case key.CAPS_LOCK:
 							case key.SHIFT:
@@ -880,12 +888,16 @@ jQuery.sheet = {
 							case key.LEFT:
 							case key.RIGHT:
 								break;
-							case key.HOME:		jS.cellLast.td.parent()
-													.find('td:first').mousedown().mouseup()
+							case key.HOME:		jS.evt.cellSetActive(
+													jS.cellLast.td.parent()
+														.find('td:first')
+												);
 								break;
 							case key.END:
-												jS.cellLast.td.parent()
-													.find('td:last').mousedown().mouseup();
+												jS.evt.cellSetActive(
+													jS.cellLast.td.parent()
+														.find('td:last')
+												);
 								break;
 							default: 			jS.cellLast.isEdit = true;
 						}
@@ -981,7 +993,7 @@ jQuery.sheet = {
 						case key.RIGHT: 	c++; break;
 					}
 					
-					jQuery(jS.getTd(jS.i, r, c)).mousedown().mouseup();
+					jS.evt.cellSetActive(jQuery(jS.getTd(jS.i, r, c)));
 					
 					return false;
 				},
@@ -998,21 +1010,21 @@ jQuery.sheet = {
 						return jS.cellSetActiveMulti(e);
 					}			
 				},
-				cellOnClickLocked: function(e) {
-					if (!isNaN(e.target.cellIndex)) {
-						if (!jQuery(e.target).attr('formula')) {
-							jS.cellEdit(jQuery(e.target));
+				cellSetActiveLockedFormulas: function(o) {
+					if (jS.isTd(o)) {
+						if (!o.attr('formula')) {
+							jS.cellEdit(o);
 						}
 					} else {
 						jS.evt.cellEditAbandon();
 						jS.obj.formula().focus().select();
 					}
 				},
-				cellOnClickReg: function(e) {
-					if (!isNaN(e.target.cellIndex)) {
-						jS.cellEdit(jQuery(e.target));
+				cellSetActive: function(o) {
+					if (jS.isTd(o)) {
+						jS.cellEdit(o);
 					} else { //this won't be a cell
-						var clickable = jQuery(e.target).hasClass('clickable');
+						var clickable = o.hasClass('clickable');
 						if (!clickable) {
 							jS.obj.formula().focus().select();
 						}
@@ -1197,6 +1209,14 @@ jQuery.sheet = {
 						}
 					}
 				}
+			},
+			isTd: function(o) {
+				if (o[0]) {
+					if (!isNaN(o[0].cellIndex)) { 
+						return true;
+					}
+				}
+				return false;
 			},
 			tuneTableForSheetUse: function(o) {
 				o
@@ -1734,8 +1754,10 @@ jQuery.sheet = {
 					setActive: function() {
 						this.clearActive();
 						this.clearHighlighted();
-						jS.cellLast.td
-							.addClass(jS.cl.cellActive + ' ' + jS.cl.uiCellActive + ' ' + jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
+						this.setHighlighted(
+							jS.cellLast.td
+								.addClass(jS.cl.cellActive)
+						);
 					},
 					setHighlighted: function(td) {
 						jQuery(td)
@@ -1743,7 +1765,7 @@ jQuery.sheet = {
 					},
 					clearActive: function() {
 						jS.obj.cellActive()
-							.removeClass(jS.cl.cellActive + ' ' + jS.cl.uiCellActive + ' ' + jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
+							.removeClass(jS.cl.cellActive);
 					},
 					clearHighlighted: function() {
 						jS.obj.cellHighlighted()
@@ -2607,7 +2629,7 @@ jQuery.sheet = {
 					
 					o = o.eq(0);
 					if (o.length > 0) {
-						o.mousedown().mouseup();
+						jS.evt.cellSetActive(o);
 					} else {
 						alert('No results found.');
 					}
@@ -2618,12 +2640,10 @@ jQuery.sheet = {
 					startRow: e.target.parentNode.rowIndex,
 					startColumn: e.target.cellIndex,
 					lastRow: -1,
-					lastColumn: -1
-				};//These are the events used to selected multiple rows.
-				jS.obj.pane()
-					.mousemove(function(e) {
-						o.endRow = e.target.parentNode.rowIndex;
-						o.endColumn = e.target.cellIndex;
+					lastColumn: -1,
+					highlight: function(target) {
+						o.endRow = target.parentNode.rowIndex;
+						o.endColumn = target.cellIndex;
 						
 						if (o.lastRow != o.endRow || o.lastColumn != o.endColumn) { //this prevents this method from firing too much
 							jS.themeRoller.cell.clearHighlighted();
@@ -2637,18 +2657,21 @@ jQuery.sheet = {
 								}
 							}
 						}
+					}
+				};//These are the events used to selected multiple rows.
+				
+				jS.themeRoller.cell.clearHighlighted();
+				jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, e.target.parentNode.rowIndex, e.target.cellIndex));
+				
+				jS.obj.pane()
+					.mousemove(function(e) {
+						o.highlight(e.target);
 					})
 					.mouseup(function() {
 						jS.obj.pane()
 							.unbind('mousemove')
 							.unbind('mouseup');
 					});
-					
-					//this helps with multi select so that when you are selecting cells you don't select the text within them
-					if (jQuery(e.target).attr('id') != jS.cellLast.td.attr('id') && jQuery(e.target).hasClass('clickable') == false) {
-						jS.themeRoller.cell.clearHighlighted();
-						return false;
-					}
 			},
 			cellSetActiveAll: function() {
 				if (s.editable) {
@@ -3720,6 +3743,7 @@ var key = {
 	SPACE: 				32,
 	TAB: 				9,
 	UP: 				38,
+	F:					70,
 	V:					86,
 	Y:					89,
 	Z:					90
