@@ -90,7 +90,8 @@ jQuery.fn.extend({
 			joinedResizing: false, 							//bool, this joins the column/row with the resize bar
 			boxModelCorrection: 2, 							//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
 			showErrors:		true,							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
-			calculations:	{}								//object, used to extend the standard functions that come with sheet
+			calculations:	{},								//object, used to extend the standard functions that come with sheet
+			mousedownModel: 'excel'							//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
 		}, settings);
 		
 		
@@ -601,22 +602,13 @@ jQuery.sheet = {
 					jS.sheetTab(true);
 					
 					if (s.editable) {
-						if (s.lockFormulas) {
-							pane
-								.mousedown(function(e) {
-									jS.evt.cellSetActiveLockedFormulas(jQuery(e.target));
-									return jS.evt.cellOnMouseDown(e);
-								});
-						} else {
-							pane
-								.mousedown(function(e) {
-									//jS.evt.cellSetActive(jQuery(e.target));
-									jS.evt.cellOnMouseDown(e);
-									//return false;
-								});
-							pane
-								.dblclick(jS.evt.cellOnDblClick);
-						}
+						pane
+							.mousedown(function(e) {
+								jS.evt.cellOnMouseDown(e);
+								return false;
+							});
+						pane
+							.dblclick(jS.evt.cellOnDblClick);
 					}
 					
 					jS.themeRoller.start(i);
@@ -888,13 +880,13 @@ jQuery.sheet = {
 							case key.LEFT:
 							case key.RIGHT:
 								break;
-							case key.HOME:		jS.evt.cellSetActive(
+							case key.HOME:		jS.evt.cellSetEditable(
 													jS.cellLast.td.parent()
 														.find('td:first')
 												);
 								break;
 							case key.END:
-												jS.evt.cellSetActive(
+												jS.evt.cellSetEditable(
 													jS.cellLast.td.parent()
 														.find('td:last')
 												);
@@ -922,43 +914,45 @@ jQuery.sheet = {
 				cellEditDone: function(forceCalc) {
 					switch (jS.cellLast.isEdit) {
 						case true:
-							// Any changes to the input controls are stored back into the table, with a recalc.
 							jS.obj.inPlaceEdit().remove();
 							var td = jS.cellLast.td;
 							
-							//Lets ensure that the cell being edited is actually active
-							if (td) { 
-								//first, let's make it undoable before we edit it
-								jS.cellUndoable.add(td);
-								
-								//This should return either a val from textbox or formula, but if fails it tries once more from formula.
-								var formula = jS.obj.formula();
-								var v = jS.manageTextToHtml(formula.val());
-								var prevVal = td.html();
+							switch(jS.isFormulaEditable(td)) {
+								case true:
+									//Lets ensure that the cell being edited is actually active
+									if (td) { 
+										//first, let's make it undoable before we edit it
+										jS.cellUndoable.add(td);
+										
+										//This should return either a val from textbox or formula, but if fails it tries once more from formula.
+										var formula = jS.obj.formula();
+										var v = jS.manageTextToHtml(formula.val());
+										var prevVal = td.html();
 
-								if (v.charAt(0) == '=') {
-									td
-										.attr('formula', v)
-										.html('');
-								} else {
-									td
-										.removeAttr('formula')
-										.html(v);
-								}
-								
-								if (v != prevVal || forceCalc) {
-									jS.calc(jS.i);
-								}
-								
-								jS.attrH.setHeight(jS.cellLast.row, 'cell');
-								
-								//Save the newest version of that cell
-								jS.cellUndoable.add(td);
-								
-								formula.focus().select();
-								jS.cellLast.isEdit = false;
-								s.fnAfterCellEdit(jS.cellLast);
-								jS.setDirty(true);
+										if (v.charAt(0) == '=') {
+											td
+												.attr('formula', v)
+												.html('');
+										} else {
+											td
+												.removeAttr('formula')
+												.html(v);
+										}
+										
+										if (v != prevVal || forceCalc) {
+											jS.calc(jS.i);
+										}
+										
+										jS.attrH.setHeight(jS.cellLast.row, 'cell');
+										
+										//Save the newest version of that cell
+										jS.cellUndoable.add(td);
+										
+										formula.focus().select();
+										jS.cellLast.isEdit = false;
+										s.fnAfterCellEdit(jS.cellLast);
+										jS.setDirty(true);
+									}
 							}
 							break;
 						default:
@@ -969,6 +963,8 @@ jQuery.sheet = {
 					jS.obj.inPlaceEdit().remove();
 					jS.themeRoller.cell.clearActive();
 					jS.themeRoller.bar.clearActive();
+					jS.themeRoller.cell.clearHighlighted();
+					
 					if (!skipCalc) {
 						jS.calc(jS.i);
 					}
@@ -993,7 +989,7 @@ jQuery.sheet = {
 						case key.RIGHT: 	c++; break;
 					}
 					
-					jS.evt.cellSetActive(jQuery(jS.getTd(jS.i, r, c)));
+					jS.evt.cellSetEditable(jQuery(jS.getTd(jS.i, r, c)));
 					
 					return false;
 				},
@@ -1010,17 +1006,7 @@ jQuery.sheet = {
 						return jS.cellSetActiveMulti(e);
 					}			
 				},
-				cellSetActiveLockedFormulas: function(o) {
-					if (jS.isTd(o)) {
-						if (!o.attr('formula')) {
-							jS.cellEdit(o);
-						}
-					} else {
-						jS.evt.cellEditAbandon();
-						jS.obj.formula().focus().select();
-					}
-				},
-				cellSetActive: function(o) {
+				cellSetEditable: function(o) {
 					if (jS.isTd(o)) {
 						jS.cellEdit(o);
 					} else { //this won't be a cell
@@ -1217,6 +1203,14 @@ jQuery.sheet = {
 					}
 				}
 				return false;
+			},
+			isFormulaEditable: function(o) {
+				if (s.lockFormulas) {
+					if(o.attr('formula') !== undefined) {
+						return false;
+					}
+				}
+				return true;
 			},
 			tuneTableForSheetUse: function(o) {
 				o
@@ -1520,7 +1514,11 @@ jQuery.sheet = {
 				
 				function fill(r, c, i) {
 					var td = jQuery(jS.getTd(jS.i, r, c));
-					fn(td, i);
+					
+					//make sure the formula isn't locked for this cell
+					if (jS.isFormulaEditable(td)) {
+						fn(td, i);
+					}
 				}
 				
 				var k = 0;
@@ -1610,7 +1608,7 @@ jQuery.sheet = {
 				jS.cylceCells(function (td) {
 					var formula = td.attr('formula');
 					
-					if (formula) {
+					if (formula && jS.isFormulaEditable(td)) {
 						formula = formula.replace(cE.regEx.cell, 
 							function(ignored, colStr, rowStr, pos) {
 								var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
@@ -2629,7 +2627,7 @@ jQuery.sheet = {
 					
 					o = o.eq(0);
 					if (o.length > 0) {
-						jS.evt.cellSetActive(o);
+						jS.evt.cellSetEditable(o);
 					} else {
 						alert('No results found.');
 					}
@@ -2651,10 +2649,17 @@ jQuery.sheet = {
 							o.lastRow = o.endRow;
 							o.lastColumn = o.endColumn;
 							
-							for (var i = (o.startRow < o.endRow ? o.startRow : o.endRow) ; i <= (o.startRow > o.endRow ? o.startRow : o.endRow); i++) {
-								for (var j = (o.startColumn < o.endColumn ? o.startColumn : o.endColumn); j <= (o.startColumn > o.endColumn ? o.startColumn : o.endColumn); j++) {
-									jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, i, j));
-								}
+							if (s.mousedownModel == 'oo') { //open office behavior for selecting cells
+								jS.evt.cellSetEditable(jQuery(target));
+							}
+							
+							o.cycleHighlighted(jS.themeRoller.cell.setHighlighted);
+						}
+					},
+					cycleHighlighted: function(fn) {
+						for (var i = (o.startRow < o.endRow ? o.startRow : o.endRow) ; i <= (o.startRow > o.endRow ? o.startRow : o.endRow); i++) {
+							for (var j = (o.startColumn < o.endColumn ? o.startColumn : o.endColumn); j <= (o.startColumn > o.endColumn ? o.startColumn : o.endColumn); j++) {
+								fn(jS.getTd(jS.i, i, j));
 							}
 						}
 					}
@@ -2663,11 +2668,29 @@ jQuery.sheet = {
 				jS.themeRoller.cell.clearHighlighted();
 				jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, e.target.parentNode.rowIndex, e.target.cellIndex));
 				
+				if (s.mousedownModel == 'excel') {
+					jS.evt.cellSetEditable(jQuery(e.target));
+				}
+				
 				jS.obj.pane()
 					.mousemove(function(e) {
 						o.highlight(e.target);
 					})
 					.mouseup(function() {
+						
+						if (s.mousedownModel == 'gdocs') {
+							var i = 0;
+							var setFirstActive = function(td) {
+								if (i == 0) {
+									jS.evt.cellSetEditable(jQuery(td));
+								} else {
+									jS.themeRoller.cell.setHighlighted(td);
+								}
+								i++;
+							};
+							o.cycleHighlighted(setFirstActive);
+						}
+						
 						jS.obj.pane()
 							.unbind('mousemove')
 							.unbind('mouseup');
