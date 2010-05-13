@@ -439,8 +439,6 @@ jQuery.sheet = {
 						};
 					}
 					
-					jS.evt.barMouseDown.width(barTop);
-					
 					parents.each(function(i) {
 						var v = cE.columnLabelString(i + 1);
 						var w = widthFn(this);
