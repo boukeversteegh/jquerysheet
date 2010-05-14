@@ -234,6 +234,24 @@
 	background-color: transparent ! important;
 }
 
+.jSheetFullScreen
+{
+	top: 5px;
+	left: 5px;
+	position: fixed;
+	top: expression(eval(document.body.scrollTop + 15) + "px");
+	left: expression(eval(document.body.scrollLeft) + "px");
+}
+
+.jSheetFullScreenTabContainer
+{
+	bottom: 10px;
+	left: 10px;
+	position: fixed;
+	top: expression(eval(document.body.scrollTop + 15) + "px");
+	left: expression(eval(document.body.scrollLeft) + "px");
+}
+
 /* Cell styler classes */
 .styleBold
 { font-weight: bold; }

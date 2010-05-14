@@ -132,6 +132,7 @@ jQuery.sheet = {
 				cellHighlighted:	function() { return jQuery('td.' + jS.cl.cellHighlighted); },
 				controls:			function() { return jQuery('#' + jS.id.controls); },
 				formula: 			function() { return jQuery('#' + jS.id.formula); },
+				fullScreen:			function() { return jQuery('div.' + jS.cl.fullScreen); },
 				inPlaceEdit:		function() { return jQuery('#' + jS.id.inPlaceEdit); },
 				label: 				function() { return jQuery('#' + jS.id.label); },
 				log: 				function() { return jQuery('#' + jS.id.log); },
@@ -183,6 +184,7 @@ jQuery.sheet = {
 				cellHighlighted: 	'jSheetCellHighighted',
 				controls:			'jSheetControls',
 				formula: 			'jSheetControls_formula',
+				fullScreen:			'jSheetFullScreen',
 				inPlaceEdit:		'jSheetInPlaceEdit',
 				menu:				'jSheetMenu',
 				sheet: 				'jSheet',
@@ -192,6 +194,7 @@ jQuery.sheet = {
 				pane: 				'jSheetEditPane',
 				tab:				'jSheetTab',
 				tabContainer:		'jSheetTabContainer',
+				tabContainerFullScreen: 'jSheetFullScreenTabContainer',
 				tableControl:		'tableControl',
 				toggle:				'cellStyleToggle',
 				ui:					'jSheetUI',
@@ -201,6 +204,7 @@ jQuery.sheet = {
 				uiCellHighlighted: 	'ui-state-highlight',
 				uiControl: 			'ui-widget-header ui-corner-top',
 				uiControlTextBox:	'ui-widget-content',
+				uiFullScreen:		'ui-widget-content ui-corner-all',
 				uiInPlaceEdit:		'ui-state-active',
 				uiMenu:				'ui-state-highlight',
 				uiMenuUl: 			'ui-widget-header',
@@ -1213,6 +1217,37 @@ jQuery.sheet = {
 					}
 				}
 				return true;
+			},
+			toggleFullScreen: function() {
+				if (jS.obj.fullScreen().is(':visible')) { //here we remove full screen
+					var w = s.parent.width();
+					var h = s.parent.height();
+					s.width = w;
+					s.height = h;
+					
+					jS.obj.tabContainer().insertAfter(
+						s.parent.append(jS.obj.fullScreen().children())
+					).removeClass(jS.cl.tabContainerFullScreen);
+					
+					jS.obj.fullScreen().remove();
+					
+					jS.sheetSyncSize(true);
+				} else { //here we make a full screen
+					var w = jQuery(window).width() - 15;
+					var h = jQuery(window).height() - 35;
+					s.width = w;
+					s.height = h;
+					
+					jS.obj.tabContainer().insertAfter(
+						jQuery('<div class="' + jS.cl.fullScreen + ' ' + jS.cl.uiFullScreen + '" />')
+							.width(w)
+							.height(h)
+							.append(s.parent.children())
+							.appendTo('body')
+					).addClass(jS.cl.tabContainerFullScreen);
+					
+					jS.sheetSyncSize(true);
+				}
 			},
 			tuneTableForSheetUse: function(o) {
 				o
@@ -2581,7 +2616,7 @@ jQuery.sheet = {
 				});
 				o.width(newSheetWidth);
 			},
-			sheetSyncSize: function() {
+			sheetSyncSize: function(skipParent) {
 				var h = s.height;
 				if (!h) {
 					h = 400; //Height really needs to be set by the parent
@@ -2589,7 +2624,9 @@ jQuery.sheet = {
 					h = 200;
 				}
 				
-				jS.obj.parent().height(h);
+				if (!skipParent) {
+					s.parent.height(h);
+				}
 				
 				var w = s.width - jS.attrH.width(jS.obj.barLeftParent()) - (s.boxModelCorrection);
 				
