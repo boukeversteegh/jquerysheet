@@ -1127,8 +1127,10 @@ jQuery.sheet = {
 								.unbind('mouseover')
 								.mouseover(function(e) {
 									selectFn(e.target);
-								})
-								.mouseup(function() {
+								});
+								
+							jQuery(document)
+								.one('mouseup', function() {
 									o
 										.unbind('mouseover')
 										.unbind('mouseup');
@@ -2675,8 +2677,10 @@ jQuery.sheet = {
 				jS.obj.pane()
 					.mousemove(function(e) {
 						o.highlight(e.target);
-					})
-					.mouseup(function() {
+					});
+					
+				jQuery(document)
+					.one('mouseup', function() {
 						
 						if (s.mousedownModel == 'gdocs') {
 							var i = 0;
