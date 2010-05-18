@@ -97,16 +97,16 @@ jQuery.fn.extend({
 		
 		var o = jQuery(this);
 		if (jQuery.sheet.instance) {
-			jQuery.sheet.instance.push(jQuery.sheet.createInstance(settings, jQuery.sheet.instance.length));
+			jQuery.sheet.instance.push(jQuery.sheet.createInstance(settings, jQuery.sheet.instance.length, settings.parent));
 		} else {
-			jQuery.sheet.instance = [jQuery.sheet.createInstance(settings, 0)];
+			jQuery.sheet.instance = [jQuery.sheet.createInstance(settings, 0, settings.parent)];
 		}
 		return o;
 	}
 });
 
 jQuery.sheet = {
-	createInstance: function(s, I) { //s = jQuery.sheet settings, I = jQuery.sheet Instance Integer
+	createInstance: function(s, I, origParent) { //s = jQuery.sheet settings, I = jQuery.sheet Instance Integer
 		var jS = {
 			version: '1.1.0',
 			i: 0,
@@ -116,20 +116,20 @@ jQuery.sheet = {
 			obj: {//obj = object references
 				//Please note, class references use the tag name because it's about 4 times faster
 				barCorner:			function() { return jQuery('#' + jS.id.barCorner + jS.i); },
-				barCornerAll:		function() { return jQuery('div.' + jS.cl.barCorner); },
+				barCornerAll:		function() { return s.parent.find('div.' + jS.cl.barCorner); },
 				barCornerParent:	function() { return jQuery('#' + jS.id.barCornerParent + jS.i); },
-				barCornerParentAll: function() { return jQuery('td.' + jS.cl.barCornerParent); },
+				barCornerParentAll: function() { return s.parent.find('td.' + jS.cl.barCornerParent); },
 				barTop: 			function() { return jQuery('#' + jS.id.barTop + jS.i); },
-				barTopAll:			function() { return jQuery('div.' + jS.cl.barTop); },
+				barTopAll:			function() { return s.parent.find('div.' + jS.cl.barTop); },
 				barTopParent: 		function() { return jQuery('#' + jS.id.barTopParent + jS.i); },
-				barTopParentAll:	function() { return jQuery('div.' + jS.cl.barTopParent); },
+				barTopParentAll:	function() { return s.parent.find('div.' + jS.cl.barTopParent); },
 				barLeft: 			function() { return jQuery('#' + jS.id.barLeft + jS.i); },
-				barLeftAll:			function() { return jQuery('div.' + jS.cl.barLeft); },
+				barLeftAll:			function() { return s.parent.find('div.' + jS.cl.barLeft); },
 				barLeftParent: 		function() { return jQuery('#' + jS.id.barLeftParent + jS.i); },
-				barLeftParentAll:	function() { return jQuery('div.' + jS.cl.barLeftParent); },
-				cell: 				function() { return jQuery('td.' + jS.cl.cellActive); },
-				cellActive:			function() { return jQuery('td.' + jS.cl.cellActive); },
-				cellHighlighted:	function() { return jQuery('td.' + jS.cl.cellHighlighted); },
+				barLeftParentAll:	function() { return s.parent.find('div.' + jS.cl.barLeftParent); },
+				cell: 				function() { return s.parent.find('td.' + jS.cl.cellActive); },
+				cellActive:			function() { return s.parent.find('td.' + jS.cl.cellActive); },
+				cellHighlighted:	function() { return s.parent.find('td.' + jS.cl.cellHighlighted); },
 				controls:			function() { return jQuery('#' + jS.id.controls); },
 				formula: 			function() { return jQuery('#' + jS.id.formula); },
 				fullScreen:			function() { return jQuery('div.' + jS.cl.fullScreen); },
@@ -138,18 +138,18 @@ jQuery.sheet = {
 				log: 				function() { return jQuery('#' + jS.id.log); },
 				menu:				function() { return jQuery('#' + jS.id.menu); },
 				pane: 				function() { return jQuery('#' + jS.id.pane + jS.i); },
-				paneAll:			function() { return jQuery('div.' + jS.cl.pane); },
+				paneAll:			function() { return s.parent.find('div.' + jS.cl.pane); },
 				parent: 			function() { return s.parent; },
 				sheet: 				function() { return jQuery('#' + jS.id.sheet + jS.i); },
-				sheetAll: 			function() { return jQuery('table.' + jS.cl.sheet); },
+				sheetAll: 			function() { return s.parent.find('table.' + jS.cl.sheet); },
 				tab:				function() { return jQuery('#' + jS.id.tab + jS.i); },
-				tabAll:				function() { return jQuery('a.' + jS.cl.tab); },
+				tabAll:				function() { return this.tabContainer().find('a.' + jS.cl.tab); },
 				tabContainer:		function() { return jQuery('#' + jS.id.tabContainer); },
 				tableBody: 			function() { return document.getElementById(jS.id.sheet + jS.i); },
 				tableControl:		function() { return jQuery('#' + jS.id.tableControl + jS.i); },
-				tableControlAll:	function() { return jQuery('table.' + jS.cl.tableControl); },
+				tableControlAll:	function() { return s.parent.find('table.' + jS.cl.tableControl); },
 				ui:					function() { return jQuery('#' + jS.id.ui); },
-				uiActive:			function() { return jQuery('div.' + jS.cl.uiActive); }
+				uiActive:			function() { return s.parent.find('div.' + jS.cl.uiActive); }
 			},
 			id: {//id = id's references
 				barCorner:			'jSheetBarCorner_' + I + '_',
@@ -1220,6 +1220,8 @@ jQuery.sheet = {
 			},
 			toggleFullScreen: function() {
 				if (jS.obj.fullScreen().is(':visible')) { //here we remove full screen
+					s.parent = origParent;
+					
 					var w = s.parent.width();
 					var h = s.parent.height();
 					s.width = w;
@@ -1231,7 +1233,7 @@ jQuery.sheet = {
 					
 					jS.obj.fullScreen().remove();
 					
-					jS.sheetSyncSize(true);
+					jS.sheetSyncSize();
 				} else { //here we make a full screen
 					var w = jQuery(window).width() - 15;
 					var h = jQuery(window).height() - 35;
@@ -1240,13 +1242,13 @@ jQuery.sheet = {
 					
 					jS.obj.tabContainer().insertAfter(
 						jQuery('<div class="' + jS.cl.fullScreen + ' ' + jS.cl.uiFullScreen + '" />')
-							.width(w)
-							.height(h)
 							.append(s.parent.children())
 							.appendTo('body')
 					).addClass(jS.cl.tabContainerFullScreen);
 					
-					jS.sheetSyncSize(true);
+					s.parent = jS.obj.fullScreen();
+					
+					jS.sheetSyncSize();
 				}
 			},
 			tuneTableForSheetUse: function(o) {
@@ -1774,7 +1776,7 @@ jQuery.sheet = {
 			themeRoller: {
 				start: function() {
 					//Style sheet			
-					jS.obj.parent().addClass(jS.cl.uiParent);
+					s.parent.addClass(jS.cl.uiParent);
 					jS.obj.sheet().addClass(jS.cl.uiSheet);
 					//Style bars
 					jS.obj.barLeft().find('div').addClass(jS.cl.uiBar);
@@ -2616,18 +2618,17 @@ jQuery.sheet = {
 				});
 				o.width(newSheetWidth);
 			},
-			sheetSyncSize: function(skipParent) {
+			sheetSyncSize: function() {
 				var h = s.height;
 				if (!h) {
 					h = 400; //Height really needs to be set by the parent
 				} else if (h < 200) {
 					h = 200;
 				}
-				
-				if (!skipParent) {
-					s.parent.height(h);
-				}
-				
+				s.parent
+					.height(h)
+					.width(s.width);
+					
 				var w = s.width - jS.attrH.width(jS.obj.barLeftParent()) - (s.boxModelCorrection);
 				
 				h = h - jS.attrH.height(jS.obj.controls()) - jS.attrH.height(jS.obj.barTopParent()) - (s.boxModelCorrection * 2);
