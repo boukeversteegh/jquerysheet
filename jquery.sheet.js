@@ -1151,9 +1151,10 @@ jQuery.sheet = {
 						o //let any user resize
 							.unbind('mousedown')
 							.mousedown(function(e) {
-								jS.evt.barMouseDown.first = jS.evt.barMouseDown.last = jS.rowLast = jS.getBarLeftIndex(e.target);
-								jS.evt.barMouseDown.select(o, e, selectRow, jS.rowResizer);
-								
+								if (!jQuery(e.target).hasClass(jS.cl.barLeft)) {
+									jS.evt.barMouseDown.first = jS.evt.barMouseDown.last = jS.rowLast = jS.getBarLeftIndex(e.target);
+									jS.evt.barMouseDown.select(o, e, selectRow, jS.rowResizer);
+								}
 								return false;
 							});
 						if (s.editable) { //only let editable select
@@ -1179,8 +1180,10 @@ jQuery.sheet = {
 						o //let any user resize
 							.unbind('mousedown')
 							.mousedown(function(e) {
-								jS.evt.barMouseDown.first = jS.evt.barMouseDown.last = jS.colLast = jS.getBarTopIndex(e.target);
-								jS.evt.barMouseDown.select(o, e, selectColumn, jS.columnResizer);
+								if (!jQuery(e.target).hasClass(jS.cl.barTop)) {
+									jS.evt.barMouseDown.first = jS.evt.barMouseDown.last = jS.colLast = jS.getBarTopIndex(e.target);
+									jS.evt.barMouseDown.select(o, e, selectColumn, jS.columnResizer);
+								}
 								
 								return false;
 							});
@@ -2964,8 +2967,13 @@ jQuery.sheet = {
 		};
 
 		jS.tableCell.prototype = {
+			td: null,
 			getTd: function() {
-				return document.getElementById(jS.getTdId(this.tableI, this.row - 1, this.col - 1));
+				if (!this.td) { //this attempts to check if the td is cached, then cache it if not, then return it
+					this.td = document.getElementById(jS.getTdId(this.tableI, this.row - 1, this.col - 1));	
+				}
+				
+				return this.td;
 			},
 			setValue: function(v, e) {
 				this.error = e;
@@ -2975,10 +2983,12 @@ jQuery.sheet = {
 			getValue: function() {
 				var v = this.value;
 				if (v === jS.EMPTY_VALUE && !this.getFormula()) {
-					v = this.getTd().innerHTML;
-					v = this.value = (v.length > 0 ? cE.parseFormulaStatic(v) : null);
+					
+					v = jQuery(this.getTd()).text(); //again, stability rules!
 
+					v = this.value = (v.length > 0 ? cE.parseFormulaStatic(v) : null);
 				}
+				
 				return (v === jS.EMPTY_VALUE ? null: v);
 			},
 			getFormat: function() {
@@ -2993,8 +3003,14 @@ jQuery.sheet = {
 			setFormulaFunc: function(v) {
 				this.formulaFunc = v;
 			},
+			formula: null,
 			getFormula: function() {
-				return jQuery(this.getTd()).attr('formula');
+				if (!this.formula) { //this if statement takes line breaks out of formulas so that they calculate better, then they are cached because the formulas to not change, on the cell 
+					var v = jQuery(this.getTd()).attr('formula'); 
+					this.formula = (v ? v.replace(/\n/g, ' ') : v);
+				}
+				
+				return this.formula;
 			},
 			setFormula: function(v) {
 				if (v && v.length > 0) {
