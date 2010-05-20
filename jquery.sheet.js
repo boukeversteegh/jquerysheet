@@ -974,7 +974,7 @@ jQuery.sheet = {
 					}
 					
 					jS.cellLast.td = jQuery('<td />');
-					jS.cellLast.row = jS.cellLast.col = 0;
+					jS.cellLast.row = jS.cellLast.col = -1;
 					jS.rowLast = jS.colLast = -1;
 					
 					jS.labelUpdate('', true);
@@ -992,6 +992,10 @@ jQuery.sheet = {
 						case key.LEFT: 		c--; break;
 						case key.RIGHT: 	c++; break;
 					}
+					
+					//we check here and make sure all values are above -1, so that we get a selected cell
+					c = (c < 0 ? 0 : c);
+					r = (r < 0 ? 0 : r);
 					
 					jS.evt.cellSetEditable(jQuery(jS.getTd(jS.i, r, c)));
 					
@@ -1161,7 +1165,7 @@ jQuery.sheet = {
 							selectRow = function(o, keepCurrent) {
 								if (!keepCurrent) { 
 									jS.themeRoller.cell.clearHighlighted();
-									jS.themeRoller.bar.clearActive();
+									//jS.themeRoller.bar.clearActive();
 								}
 								
 								var i = jS.getBarLeftIndex(o);
@@ -1191,7 +1195,7 @@ jQuery.sheet = {
 							selectColumn = function(o, keepCurrent) {
 								if (!keepCurrent) { 
 									jS.themeRoller.cell.clearHighlighted();
-									jS.themeRoller.bar.clearActive();
+									//jS.themeRoller.bar.clearActive();
 								}
 								var i = jS.getBarTopIndex(o);
 								
@@ -2751,11 +2755,11 @@ jQuery.sheet = {
 						rowCount++;
 					});
 					jS.obj.barTop().find('div').each(function(i) {
-						jS.themeRoller.bar.setActive('top', i);
+						//jS.themeRoller.bar.setActive('top', i);
 						colCount++;
 					});
 					
-					jS.labelUpdate('A1:' + cE.columnLabelString(colCount) + rowCount, true);
+					//jS.labelUpdate('A1:' + cE.columnLabelString(colCount) + rowCount, true);
 				}
 			},
 			cellSetActiveMultiColumn: function(colStart, colEnd) {
@@ -2764,13 +2768,13 @@ jQuery.sheet = {
 					for (var j = 0; j <= loc[0]; j++) {
 						jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, j, i));
 					}
-					jS.themeRoller.bar.setActive('top', i);
+					//jS.themeRoller.bar.setActive('top', i);
 				}
 			},
 			cellSetActiveMultiRow: function(rowStart, rowEnd) {
 				for (var i = (rowStart < rowEnd ? rowStart : rowEnd); i <= (rowEnd > rowStart ? rowEnd : rowStart); i++) {
 					jS.themeRoller.cell.setHighlighted(jS.obj.sheet().find('tr').eq(i).find('td'));
-					jS.themeRoller.bar.setActive('left', i);
+					//jS.themeRoller.bar.setActive('left', i);
 				}
 			},
 			sheetClearActive: function() {
