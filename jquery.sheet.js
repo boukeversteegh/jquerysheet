@@ -239,6 +239,132 @@ jQuery.sheet = {
 					}
 					jS.setTdIds();
 				},
+				addCells: function(eq, isBefore, eqO, qty, type) {
+					var sheet = jS.obj.sheet(); 
+					jS.evt.cellEditAbandon();
+					qty = (qty ? qty : 1);
+					type = (type ? type : 'row');
+					if (!eqO) {
+						if (!eq && jS.rowLast > -1) {
+							eqO = ':eq(' + jS.rowLast + ')';
+						} else if (!eq || jS.cellLast.row < 1) {
+							//if eq has no value, lets just add it to the end.
+							eqO = ':last';
+							eq = false;
+						} else if (eq === true) {//if eq is boolean, then lets add it just after the currently selected row.
+							eqO = ':eq(' + (jS.cellLast.row - 1) + ')';
+						} else {
+							//If eq is a number, lets add it at that row
+							eqO = ':eq(' + (eq - 1) + ')';
+						}
+					}				
+					
+					var o;
+					switch (type) {
+						case "row":
+							o = {
+								bar: jS.obj.barLeft().find('div' + eqO),
+								barParent: jS.obj.barLeft(),
+								cells: function() {
+									return sheet.find('tr' + eqO)
+								},
+								newBar: '<div class="' + jS.cl.uiBar + '" style="height: ' + (s.colMargin - s.boxModelCorrection) + 'px;" />',
+								loc: function() {
+									return jS.getTdLocation(o.cells().find('td:last'));
+								},
+								newCells: function() {
+									var j = o.loc()[0];
+									var newCells = '';
+									
+									for (var i = 0; i < j; i++) {
+										newCells += '<td />';
+									}
+									return '<tr style="height: ' + s.colMargin + 'px;">' + newCells + '</tr>';
+								},
+								reLabel: function() {
+									var label = parseInt(jQuery.trim(o.bar.text()));
+									o.bar.nextAll().each(function(i) {
+										jQuery(this).text(i + 1 + label);
+									});
+								},
+								dimensions: function(loc) {
+									jS.attrH.setHeight(loc[0], 'cell', false);
+								},
+								offset: [1, 0]
+							};
+							break;
+						case "col":
+							o = {
+								bar: jS.obj.barTop().find('div' + eqO),
+								barParent: jS.obj.barLeft(),
+								cells: function() {
+									var cells = jQuery();
+									sheet.find('tr').each(function() {
+										cells.add(jQuery(this).find('td' + eq));
+									});
+									return cells;
+								},
+								newBar: '<div class="' + jS.cl.uiBar + '"/>',
+								loc: function(cells) {
+									cells = (cells ? cells : o.cells());
+									return jS.getTdLocation(cells.first());
+								},
+								newCells: function() {
+									return '<td />';
+								},
+								reLabel: function() {
+									o.bar.nextAll().each(function(i) {
+										jQuery(this).text(cE.columnLabelString(i + 1));
+									});
+								},
+								dimensions: function(bar, cell) {
+									cell.width(s.newColumnWidth);
+									bar.width(s.newColumnWidth);
+								},
+								offset: [0, 1]
+							};
+							break;
+					}
+					
+					//make undoable
+					jS.cellUndoable.add(jQuery(sheet).add(o.barParent));
+					
+					var cells = o.cells();
+					var loc = o.loc(cells);					
+					var newBar = o.newBar;
+					var newCell = o.newCells();
+					
+					var newBars = '';
+					var newCells = '';
+					
+					for (var i = 0; i < qty; i++) {
+						newBars += newBar;
+						newCells += newCell;
+					}
+					
+					newBars = jQuery(newBars);
+					newCells = jQuery(newCells);
+					
+					if (isBefore) {
+						cells.before(newCells);
+						o.bar.before(newBars);
+					} else {
+						cells.after(newCells);
+						o.bar.after(newBars);
+					}
+					
+					jS.setTdIds(sheet);
+					
+					o.dimensions(loc, newBars, newCells);
+					o.reLabel();
+
+					jS.obj.pane().scroll();
+					
+					//offset formulas
+					jS.offsetFormulaRange(loc[0], loc[1], o.offset[0], o.offset[1], isBefore);
+					
+					jS.cellUndoable.add(jQuery(sheet).add(o.barParent));
+				},
 				addRow: function(atRow, insertBefore, atRowQ) {
 					if (!atRowQ) {
 						if (!atRow && jS.rowLast > -1) {
