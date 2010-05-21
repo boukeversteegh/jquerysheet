@@ -234,35 +234,54 @@ jQuery.sheet = {
 					}
 				},
 				addCells: function(eq, isBefore, eqO, qty, type) {
+					jS.setDirty(true);
+					
 					var sheet = jS.obj.sheet();
-					var sheetWidth = sheet.outerWidth();
-					jS.evt.cellEditAbandon();
+					var sheetWidth = sheet.width();
+					
+					//jS.evt.cellEditAbandon();
+					
 					qty = (qty ? qty : 1);
 					type = (type ? type : 'col');
 					
+					//var barLast = (type == 'row' ? jS.rowLast : jS.colLast);
+					var cellLastBar = (type == 'row' ? jS.cellLast.row : jS.cellLast.col);
+					
+					if (!eq) {
+						if (cellLastBar == -1) {
+							eq = ':last';
+						} else {
+							eq = ':eq(' + cellLastBar + ')';
+						}
+					} else if (!isNaN(eq)){
+						eq = ':eq(' + (eq - 1) + ')';
+					}
+					
+					/*
 					if (!eqO) {
-						if (!eq && (type == 'row' ? jS.rowLast : jS.colLast) > -1) {
-							eqO = ':eq(' + (type == 'row' ? jS.rowLast : jS.colLast) + ')';
-						} else if (!eq || (type == 'row' ? jS.cellLast.row : jS.cellLast.col) < 1) {
+						if (!eq && barLast > -1) {
+							eqO = ':eq(' + barLast + ')';
+						} else if (!eq || barLast < 1) {
 							//if eq has no value, lets just add it to the end.
 							eqO = ':last';
 							eq = false;
 						} else if (eq === true) {//if eq is boolean, then lets add it just after the currently selected row.
-							eqO = ':eq(' + ((type == 'row' ? jS.cellLast.row : jS.cellLast.col) - 1) + ')';
+							eqO = ':eq(' + (cellLastBar - 1) + ')';
 						} else {
 							//If eq is a number, lets add it at that row
 							eqO = ':eq(' + (eq - 1) + ')';
 						}
 					}
+					*/
 					
 					var o;
 					switch (type) {
 						case "row":
 							o = {
-								bar: jS.obj.barLeft().find('div' + eqO),
+								bar: jS.obj.barLeft().find('div' + eq),
 								barParent: jS.obj.barLeft(),
 								cells: function() {
-									return sheet.find('tr' + eqO)
+									return sheet.find('tr' + eq)
 								},
 								col: function() { return ''; },
 								newBar: '<div class="' + jS.cl.uiBar + '" style="height: ' + (s.colMargin - s.boxModelCorrection) + 'px;" />',
@@ -281,23 +300,23 @@ jQuery.sheet = {
 								},
 								newCol: '',
 								reLabel: function() {
-									var label = parseInt(jQuery.trim(o.bar.text()));
-									o.bar.nextAll().each(function(i) {
+									var label = parseInt(jQuery.trim(o.bar.prev().prev().text()));
+									o.bar.prev().prev().nextAll().each(function(i) {
 										jQuery(this).text(i + 1 + label);
 									});
 								},
 								dimensions: function(loc, bar, cell, col) {
 									bar.height(cell.height(s.colMargin).outerHeight() - s.boxModelCorrection);
 								},
-								offset: [1, 0]
+								offset: [qty, 0]
 							};
 							break;
 						case "col":
 							o = {
-								bar: jS.obj.barTop().find('div' + eqO),
+								bar: jS.obj.barTop().find('div' + eq),
 								barParent: jS.obj.barLeft(),
 								cells: function() {
-									var cellStart = sheet.find('tr:first td' + eqO);
+									var cellStart = sheet.find('tr:first td' + eq);
 									var cellEnd = sheet.find('td:last');
 									var loc1 = jS.getTdLocation(cellStart);
 									var loc2 = jS.getTdLocation(cellEnd);
@@ -312,7 +331,7 @@ jQuery.sheet = {
 									return cells;
 								},
 								col: function() {
-									return sheet.find('col' + eqO);
+									return sheet.find('col' + eq);
 								},
 								newBar: '<div class="' + jS.cl.uiBar + '"/>',
 								newCol: '<col />',
@@ -324,8 +343,8 @@ jQuery.sheet = {
 									return '<td />';
 								},
 								reLabel: function() {
-									o.bar.nextAll().each(function(i) {
-										var label = cE.columnLabelIndex(o.bar.text());
+									o.bar.prev().prev().nextAll().each(function(i) {
+										var label = cE.columnLabelIndex(o.bar.prev().prev().text());
 										jQuery(this).text(cE.columnLabelString(i + 1 + label));
 									});
 								},
@@ -341,7 +360,7 @@ jQuery.sheet = {
 									
 									sheet.width(sheetWidth + (w * qty));
 								},
-								offset: [0, 1]
+								offset: [0, qty]
 							};
 							break;
 					}
