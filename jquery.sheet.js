@@ -217,47 +217,43 @@ jQuery.sheet = {
 				uiTabActive:		'ui-state-highlight'
 			},
 			controlFactory: {
-				addRowMulti: function(qty) {
+				addRowMulti: function(qty, isBefore) {
 					if (!qty) {
 						qty = prompt('How many rows would you like to add?');
 					}
 					if (qty) {
-						for (var i = 0; i <= qty; i++) {
-							jS.controlFactory.addRow();
-						}
+						jS.controlFactory.addCells(null, isBefore, null, qty, 'row');
 					}
-					jS.setTdIds();
 				},
-				addColumnMulti: function(qty) {
+				addColumnMulti: function(qty, isBefore) {
 					if (!qty) {
 						qty = prompt('How many columns would you like to add?');
 					}
 					if (qty) {
-						for (var i = 0; i <= qty; i++) {
-							jS.controlFactory.addColumn();
-						}
+						jS.controlFactory.addCells(null, isBefore, null, qty, 'col');
 					}
-					jS.setTdIds();
 				},
 				addCells: function(eq, isBefore, eqO, qty, type) {
-					var sheet = jS.obj.sheet(); 
+					var sheet = jS.obj.sheet();
+					var sheetWidth = sheet.outerWidth();
 					jS.evt.cellEditAbandon();
 					qty = (qty ? qty : 1);
-					type = (type ? type : 'row');
+					type = (type ? type : 'col');
+					
 					if (!eqO) {
-						if (!eq && jS.rowLast > -1) {
-							eqO = ':eq(' + jS.rowLast + ')';
-						} else if (!eq || jS.cellLast.row < 1) {
+						if (!eq && (type == 'row' ? jS.rowLast : jS.colLast) > -1) {
+							eqO = ':eq(' + (type == 'row' ? jS.rowLast : jS.colLast) + ')';
+						} else if (!eq || (type == 'row' ? jS.cellLast.row : jS.cellLast.col) < 1) {
 							//if eq has no value, lets just add it to the end.
 							eqO = ':last';
 							eq = false;
 						} else if (eq === true) {//if eq is boolean, then lets add it just after the currently selected row.
-							eqO = ':eq(' + (jS.cellLast.row - 1) + ')';
+							eqO = ':eq(' + ((type == 'row' ? jS.cellLast.row : jS.cellLast.col) - 1) + ')';
 						} else {
 							//If eq is a number, lets add it at that row
 							eqO = ':eq(' + (eq - 1) + ')';
 						}
-					}				
+					}
 					
 					var o;
 					switch (type) {
@@ -268,27 +264,30 @@ jQuery.sheet = {
 								cells: function() {
 									return sheet.find('tr' + eqO)
 								},
+								col: function() { return ''; },
 								newBar: '<div class="' + jS.cl.uiBar + '" style="height: ' + (s.colMargin - s.boxModelCorrection) + 'px;" />',
 								loc: function() {
 									return jS.getTdLocation(o.cells().find('td:last'));
 								},
 								newCells: function() {
-									var j = o.loc()[0];
+									var j = o.loc()[1];
 									var newCells = '';
 									
-									for (var i = 0; i < j; i++) {
+									for (var i = 0; i <= j; i++) {
 										newCells += '<td />';
 									}
+									
 									return '<tr style="height: ' + s.colMargin + 'px;">' + newCells + '</tr>';
 								},
+								newCol: '',
 								reLabel: function() {
 									var label = parseInt(jQuery.trim(o.bar.text()));
 									o.bar.nextAll().each(function(i) {
 										jQuery(this).text(i + 1 + label);
 									});
 								},
-								dimensions: function(loc) {
-									jS.attrH.setHeight(loc[0], 'cell', false);
+								dimensions: function(loc, bar, cell, col) {
+									bar.height(cell.height(s.colMargin).outerHeight() - s.boxModelCorrection);
 								},
 								offset: [1, 0]
 							};
@@ -298,13 +297,25 @@ jQuery.sheet = {
 								bar: jS.obj.barTop().find('div' + eqO),
 								barParent: jS.obj.barLeft(),
 								cells: function() {
-									var cells = jQuery();
-									sheet.find('tr').each(function() {
-										cells.add(jQuery(this).find('td' + eq));
-									});
+									var cellStart = sheet.find('tr:first td' + eqO);
+									var cellEnd = sheet.find('td:last');
+									var loc1 = jS.getTdLocation(cellStart);
+									var loc2 = jS.getTdLocation(cellEnd);
+									
+									//we get the first cell then get all the other cells directly... faster ;)
+									var cells = jQuery(jS.getTd(jS.i, loc1[0], loc1[1]));
+									var cell;
+									for (var i = 1; i <= loc2[0]; i++) {
+										cells.push(jS.getTd(jS.i, i, loc1[1]));
+									}
+									
 									return cells;
 								},
+								col: function() {
+									return sheet.find('col' + eqO);
+								},
 								newBar: '<div class="' + jS.cl.uiBar + '"/>',
+								newCol: '<col />',
 								loc: function(cells) {
 									cells = (cells ? cells : o.cells());
 									return jS.getTdLocation(cells.first());
@@ -314,12 +325,21 @@ jQuery.sheet = {
 								},
 								reLabel: function() {
 									o.bar.nextAll().each(function(i) {
-										jQuery(this).text(cE.columnLabelString(i + 1));
+										var label = cE.columnLabelIndex(o.bar.text());
+										jQuery(this).text(cE.columnLabelString(i + 1 + label));
 									});
 								},
-								dimensions: function(bar, cell) {
-									cell.width(s.newColumnWidth);
-									bar.width(s.newColumnWidth);
+								dimensions: function(loc, bar, cell, col) {								
+									var w = s.newColumnWidth;
+									col
+										.width(w)
+										.css('width', w + 'px')
+										.attr('width', w + 'px');
+									
+									bar
+										.width(w - s.boxModelCorrection);
+									
+									sheet.width(sheetWidth + (w * qty));
 								},
 								offset: [0, 1]
 							};
@@ -330,32 +350,40 @@ jQuery.sheet = {
 					jS.cellUndoable.add(jQuery(sheet).add(o.barParent));
 					
 					var cells = o.cells();
-					var loc = o.loc(cells);					
+					var loc = o.loc(cells);	
+					var col = o.col();
+					
 					var newBar = o.newBar;
 					var newCell = o.newCells();
+					var newCol = o.newCol;
 					
+					var newCols = '';
 					var newBars = '';
 					var newCells = '';
 					
-					for (var i = 0; i < qty; i++) {
+					for (var i = 0; i < qty; i++) { //by keeping these variables strings temporarily, we cut down on using system resources
+						newCols += newCol;
 						newBars += newBar;
 						newCells += newCell;
 					}
 					
+					newCols = jQuery(newCols);
 					newBars = jQuery(newBars);
 					newCells = jQuery(newCells);
 					
 					if (isBefore) {
 						cells.before(newCells);
 						o.bar.before(newBars);
+						jQuery(col).before(newCols);
 					} else {
 						cells.after(newCells);
 						o.bar.after(newBars);
+						jQuery(col).after(newCols);
 					}
 					
 					jS.setTdIds(sheet);
 					
-					o.dimensions(loc, newBars, newCells);
+					o.dimensions(loc, newBars, newCells, newCols);
 					o.reLabel();
 
 					jS.obj.pane().scroll();
@@ -365,163 +393,11 @@ jQuery.sheet = {
 					
 					jS.cellUndoable.add(jQuery(sheet).add(o.barParent));
 				},
-				addRow: function(atRow, insertBefore, atRowQ) {
-					if (!atRowQ) {
-						if (!atRow && jS.rowLast > -1) {
-							atRowQ = ':eq(' + jS.rowLast + ')';
-						} else if (!atRow || jS.cellLast.row < 1) {
-							//if atRow has no value, lets just add it to the end.
-							atRowQ = ':last';
-							atRow = false;
-						} else if (atRow === true) {//if atRow is boolean, then lets add it just after the currently selected row.
-							atRowQ = ':eq(' + (jS.cellLast.row - 1) + ')';
-						} else {
-							//If atRow is a number, lets add it at that row
-							atRowQ = ':eq(' + (atRow - 1) + ')';
-						}
-					}
-					
-					jS.evt.cellEditAbandon();
-					
-					var sheet = jS.obj.sheet();
-					var bar = jS.obj.barLeft();
-					jS.cellUndoable.add(jQuery(sheet).add(bar));
-					
-					var currentRow = sheet.find('tr' + atRowQ);
-					var newRow = currentRow.clone();
-					newRow.find('td').andSelf().height(jS.attrH.height(currentRow.find('td:first'), true));
-					
-					jQuery(newRow).find('td')
-						.html('')
-						.attr('class', '')
-						.removeAttr('formula');
-					if (insertBefore) {
-						newRow.insertBefore(currentRow);
-					} else {
-						newRow.insertAfter(currentRow);
-					}
-					
-					
-					var currentBar =  bar.find('div' + atRowQ);
-					var newBar = currentBar.clone();
-
-					jS.themeRoller.bar.style(newBar);
-					
-					newBar
-						.html(parseInt(currentBar.text()) + 1)
-						.removeClass(jS.cl.uiActive)
-						.height(jS.attrH.height(newRow));
-					
-					//jS.log('New row at: ' + (parseInt(currentBar.text()) + 1));
-					
-					if (insertBefore) {
-						newBar.insertBefore(currentBar);
-					} else {
-						newBar.insertAfter(currentBar);
-					}
-					
-					if (atRow || atRowQ) {//If atRow equals anything it means that we inserted at a point, because of this we need to update the labels
-						jS.obj.barLeft().find('div').each(function(i) {
-							jQuery(this).text(i + 1);
-						});
-					}
-
-					jS.setTdIds(sheet);
-					jS.obj.pane().scroll();
-					
-					//offset formulas
-					var loc = jS.getTdLocation(sheet.find('tr' + atRowQ));
-					jS.offsetFormulaRange(loc[0], loc[1], 1, 0, insertBefore);
-					
-					jS.cellUndoable.add(sheet.add(bar));
+				addRow: function(atRow, isBefore, atRowQ) {
+					jS.controlFactory.addCells(atRow, isBefore, atRowQ, 1, 'row');
 				},
-				addColumn: function(atColumn, insertBefore, atColumnQ) {
-					if (!atColumnQ) {
-						if (!atColumn && jS.colLast > -1) {
-							atColumn = ':eq(' + jS.colLast + ')';
-						} else if (!atColumn || jS.cellLast.col < 1) {
-							//if atColumn has no value, lets just add it to the end.
-							atColumn = ':last';
-						} else if (atColumn === true) {
-							//if atColumn is boolean, then lets add it just after the currently selected row.
-							atColumn = ':eq(' + (jS.cellLast.col - 1) + ')';
-						} else {
-							//If atColumn is a number, lets add it at that row
-							atColumn = ':eq(' + (atColumn - 1) + ')';
-						}
-					} else {
-						atColumn = atColumnQ;
-					}
-
-					jS.evt.cellEditAbandon();
-					
-					var sheet = jS.obj.sheet();
-					var bar = jS.obj.barTop();
-					
-					//make it undoable
-					jS.cellUndoable.add(sheet.add(bar));
-					
-					//there are 3 obj that need managed here div, col, and each tr's td
-					//Lets get the current div & col, then later we go through each row
-					var currentBar = bar.find('div' + atColumn);
-					var currentCol = sheet.find('col' + atColumn);
-					
-					//Lets create our new bar, cell, and col
-					var newBar = jQuery('<div class="' + jS.cl.uiBar + '" />').width(s.newColumnWidth - s.boxModelCorrection);
-					var newCol = jQuery('<col />').width(s.newColumnWidth);
-					var newCell = '<td />';
-					
-					//This is just to get the new label
-					var currentIndex = cE.columnLabelIndex(currentBar.text());
-					var newLabel = cE.columnLabelString(currentIndex + 1);
-					jS.log('New Column: ' + currentIndex + ', ' + newLabel);
-					
-					if (insertBefore) {
-						currentCol.before(newCol);
-						currentBar.before(newBar);
-					} else {
-						currentCol.after(newCol);
-						currentBar.after(newBar);
-					}
-						
-					//Add new spreadsheet column to top
-					
-					var j = 0;
-					var addNewCellFn;
-					if (insertBefore) {
-						addNewCellFn = function(o) {
-							jQuery(o).find('td' + atColumn).before(newCell);
-						};
-					} else {
-						addNewCellFn = function(o) {
-							jQuery(o).find('td' + atColumn).after(newCell);
-						};
-					}
-					
-					sheet.find('tr').each(function(i) {
-						addNewCellFn(this);
-						j++;
-					});
-					
-					//jS.log('Sheet length: ' + j);		
-					
-					if (atColumn) {//If atColumn equals anything it means that we inserted at a point, because of this we need to update the labels
-						jS.obj.barTop().find('div').each(function(i) {
-							jQuery(this).text(cE.columnLabelString(i + 1));
-						});
-					}
-					
-					jS.attrH.syncSheetWidthFromTds();
-					
-					jS.setTdIds(sheet);
-					jS.obj.pane().scroll();
-					
-					//offset formulas
-					var loc = jS.getTdLocation(sheet.find('tr:first').find('td' + atColumn));
-					jS.offsetFormulaRange(loc[0], loc[1], 0, 1, insertBefore);
-					
-					//make it redoable
-					jS.cellUndoable.add(sheet.add(bar));
+				addColumn: function(atColumn, isBefore, atColumnQ) {
+					jS.controlFactory.addCells(atColumn, isBefore, atColumnQ, 1, 'col');
 				},
 				barLeft: function(reload, o) {//Works great!
 					jS.obj.barLeft().remove();
