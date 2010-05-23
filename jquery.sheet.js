@@ -2427,77 +2427,6 @@ jQuery.sheet = {
 				jS.setTdIds();
 				jS.calc(jS.i);
 			},
-			importSheet: {
-				xml: function (data) { //Will not accept CDATA tags
-					var table = jQuery('<table />');
-					var tbody = jQuery('<tbody />').appendTo(table);
-					
-					jQuery(data).find('document').each(function() { //document
-						var metaData = jQuery(this).find('metadata');
-						var columnCount = metaData.find('columns').text();
-						var rowCount = metaData.find('rows').text();
-						var title = metaData.find('title').html();
-						jQuery(this).find('data').children().each(function(i) { //rows
-							var thisRow = jQuery('<tr />');
-							jQuery(this).children().each(function(j) { //columns
-								var o = jQuery(this).html();
-								var style = jQuery(this).attr('style');
-								if (o.charAt(0) == '=') {
-									thisRow.append('<td formula="' + o + '"' + (style ? ' style=\"' + style + '\"' : '') + ' />');
-								} else {
-									thisRow.append('<td>' + o + '</td>');
-								}
-							});
-							tbody.append(thisRow);
-						});
-					});
-					
-					return table;
-				},
-				json: function(data, makeEval) {
-					sheet = (makeEval == true ? eval('(' + data + ')') : data);
-					
-					var tables = jQuery('<div />');
-					
-					for (var i = 0; i < sheet.length; i++) {
-						jS.i = jS.sheetCount + 1;
-						size_c = parseInt(sheet[i].metadata.columns) - 1;
-						size_r = parseInt(sheet[i].metadata.rows) - 1;
-						title = sheet[i].metadata.title;
-						title = (title ? title : "Sreadsheet " + jS.i);
-					
-						var table = jQuery("<table id='" + jS.id.sheet + jS.i + "' class='" + jS.cl.sheet + "' title='" + title + "' />");
-						
-						for (var x = 0; x <= size_r; x++) {				
-							var cur_row = jQuery('<tr />').appendTo(table);
-							
-							for(var y = 0; y <= size_c; y++) {	
-								var cur_val = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].value;
-								var style = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].style;
-								
-								var cur_td = jQuery('<td id="' + 'table' + jS.i + '_' + 'cell_c' + y + '_r' + x + '" ' + (style ? ' style=\"' + style + '\"' : '' ) + ' />');
-								try {
-									if(typeof(cur_val) == "number") {
-										cur_td.html(cur_val);
-									} else {
-										if (cur_val.charAt(0) == '=') {
-											cur_td.attr("formula", cur_val);
-										} else {
-											cur_td.html(cur_val);
-										}
-									}
-								} catch (e) {}
-							
-								cur_row.append(cur_td);
-
-							}
-						}
-						
-						tables.append(table);
-					}
-					return tables.children();
-				}
-			},
 			exportSheet: {
 				xml: function (skipCData) {
 					var sheetClone = jS.sheetDecorateRemove(true);			
@@ -2512,58 +2441,76 @@ jQuery.sheet = {
 					jQuery(sheetClone).each(function() {
 						var x = '';
 						var title = jQuery(this).attr('title');
-						
+
+						var col_widths='';
+
+						jQuery(this).find('colgroup').children().each(function (i) {
+							col_widths += '<c'+i+'>' + $(this).attr('width') + '</c'+i+'>';
+						});
+
 						var count = 0;
 						var cur_column = cur_row = '';
 						var max_column = max_row = 0;
+
 						jQuery(this).find('tr').each(function(i){
 							count = 0;
 							max_row = i;
+							
+							var cur_row_data = '';  //row buffer
+							var h = $(this).attr('height');
+							var cur_row_height = ' h="' + (h ? h : s.colMargin + 'px') + '"';
+
 							jQuery(this).find('td').each(function(){
 								count++;
-								
+
 								var id = jQuery(this).attr('id');
 								var txt = jQuery.trim(jQuery(this).text());
 								var pos = id.search(/cell_c/i);
 								var pos2 = id.search(/_r/i);
-								
+							
 								if (txt != '' && pos != -1 && pos2 != -1) {
 									cur_column = id.substr(pos+6, pos2-(pos+6));
 									cur_row = id.substr(pos2+2);
-									
+
 									if (max_column < cur_column) max_column = cur_column;
-									
+
 									if (max_row < cur_row) max_row = cur_row;
-									
-									if (count == 1) x += '<r'+cur_row+'>';
-									
+
+									//if (count == 1) x += '<r'+cur_row+'>';
+
 									var formula = jQuery(this).attr('formula');
 									if (formula)
 									{
 										txt = formula;
 									}
 									
+									var cl = jQuery(this).attr('class');
 									var style = jQuery(this).attr('style');
 									
-									x += '<c' + cur_column + '' + (style ? ' style=\"' + style + '\"' : '') + '>' + cdata[0] + txt + cdata[1] + '</c' + cur_column + '>';
+									//Add to current row
+									cur_row_data += '<c' + cur_column + '' + (style ? ' style=\"' + style + '\"' : '') + (cl ? ' class=\"' + cl + '\"' : '') + '>' + $('<div/>').text(txt).html() + '</c' + cur_column + '>';
 								}
 							});
-							
-							if (cur_row != '')
-								x += '</r'+cur_row+'>';
+
+							//if (cur_row != '')
+							//  x += '</r'+cur_row+'>';
+
+							if (cur_row_data.length > 0)// if row contained anything, add it
+								x += '<r'+cur_row+cur_row_height+'>'+cur_row_data+'</r'+cur_row+'>';
 							cur_column = cur_row = '';
 						});
-						
-						result += '<document>' + 
-									'<metadata>' + 
+
+						result += '<document>' +
+									'<metadata>' +
 										'<columns>' + (parseInt(max_column) + 1) + '</columns>' +  //length is 1 based, index is 0 based
 										'<rows>' + (parseInt(max_row) + 1) + '</rows>' +  //length is 1 based, index is 0 based
-										'<title>' + title + '</title>' + 
-									'</metadata>' + 
-									'<data>' + x + '</data>' + 
+										'<title>' + title + '</title>' +
+										'<col_widths>' + col_widths + '</col_widths>' +
+									'</metadata>' +
+									'<data>' + x + '</data>' +
 								'</document>';
 					});
-					
+
 					return '<documents>' + result + '</documents>';
 				},
 				json: function() {
@@ -3718,30 +3665,62 @@ jQuery.sheet = {
 	},
 	makeTable : {
 		xml: function (data) { //Will not accept CDATA tags
-			var table = jQuery('<table />');
-			var tbody = jQuery('<tbody />').appendTo(table);
+			var tables = jQuery('<div />');
+		
+			jQuery(data).find('document').each(function(i) { //document
+				var table = jQuery('<table />');
+				var tableWidth = 0;
+				var colgroup = jQuery('<colgroup />').appendTo(table);
+				var tbody = jQuery('<tbody />').appendTo(table);
 			
-			jQuery(data).find('document').each(function() { //document
 				var metaData = jQuery(this).find('metadata');
 				var columnCount = metaData.find('columns').text();
 				var rowCount = metaData.find('rows').text();
 				var title = metaData.find('title').html();
+				title = (title ? title : 'Spreadsheet ' + i);
+				var col_widths = metaData.find('col_widths').children();
+				
+				//go ahead and make the cols for colgroup
+				for (var i = 0; i < parseInt(jQuery.trim(columnCount)); i++) {
+					var w = parseInt(col_widths.eq(i).text().replace('px', ''));
+					w = (w ? w : 120); //if width doesn't exist, grab default
+					tableWidth += w;
+					colgroup.append('<col width="' + w + 'px" style="width: ' + w + 'px;" />');
+				}
+				
+				table.width(tableWidth);
+				
 				jQuery(this).find('data').children().each(function(i) { //rows
 					var thisRow = jQuery('<tr />');
-					jQuery(this).children().each(function(j) { //columns
-						var o = jQuery(this).html();
-						var style = jQuery(this).attr('style');
-						if (o.charAt(0) == '=') {
-							thisRow.append('<td formula="' + o + '"' + (style ? ' style=\"' + style + '\"' : '') + ' />');
-						} else {
-							thisRow.append('<td>' + o + '</td>');
+					var tds = jQuery(this).children();
+					for (var j = 0; j < columnCount; j++) { //cols, they need to be counted because we don't send them all on export
+						var newTd = '<td />';
+						var td = tds.eq(j);
+						
+						if (td) {
+							var o = td.html();
+							var cl = td.attr('class');
+							var style = td.attr('style');
+							
+							if (o) {
+								if (o.charAt(0) == '=') {
+									newTd = '<td formula="' + o + '"' + (style ? ' style=\"' + style + '\"' : '') + (cl ? ' class=\"' + cl + '\"' : '') + ' />';
+								} else {
+									newTd = '<td>' + o + '</td>';
+								}
+							}
 						}
-					});
+						
+						thisRow.append(newTd);
+					}
+					
 					tbody.append(thisRow);
 				});
+				
+				tables.append(table);
 			});
 			
-			return table;
+			return tables.children();
 		},
 		json: function(data, makeEval) {
 			sheet = (makeEval == true ? eval('(' + data + ')') : data);
