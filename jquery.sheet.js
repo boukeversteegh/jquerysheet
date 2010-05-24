@@ -1777,6 +1777,7 @@ jQuery.sheet = {
 				jS.sheetDecorateRemove();
 			},
 			formatSheet: function(o) {
+				var tableWidth = 0;
 				if (o.find('tbody').length < 1) {
 					o.wrapInner('<tbody />');
 				}
@@ -1785,12 +1786,14 @@ jQuery.sheet = {
 					o.remove('colgroup');
 					var colgroup = jQuery('<colgroup />');
 					o.find('tr:first').find('td').each(function() {
-						var w = jQuery(this).outerWidth() + (s.boxModelCorrection * 2);
+						var w = s.newColumnWidth;
 						jQuery('<col />')
 							.width(w)
 							.css('width', (w) + 'px')
 							.attr('width', (w) + 'px')
 							.appendTo(colgroup);
+						
+						tableWidth += w;
 					});
 					o.find('tr').each(function() {
 						jQuery(this)
@@ -1800,6 +1803,8 @@ jQuery.sheet = {
 					});
 					colgroup.prependTo(o);
 				}
+				
+				o.width(tableWidth);
 			},
 			themeRoller: {
 				start: function() {
@@ -1940,14 +1945,14 @@ jQuery.sheet = {
 					
 				jQuery(o).find('td.' + jS.cl.cellHighlighted)
 					.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
-					
+				/*
 				//IE Bug, match width with css width
 				jQuery(o).find('col').each(function(i) {
 					var v = jQuery(this).css('width');
 					v = ((v + '').match('px') ? v : v + 'px');
 					jQuery(o).find('col').eq(i).attr('width', v);
 				});
-				
+				*/
 				return o;
 			},
 			labelUpdate: function(v, setDirect) {
