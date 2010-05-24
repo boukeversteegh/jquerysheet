@@ -58,7 +58,7 @@
 	<a menu="menuEditRow">Row</a>
 	<a menu="menuEditSheet">Sheet</a>
 	<a onclick="sheetInstance.cellFind(); return false;">Find</a>
-	<a onclick="sheetInstance.appendToFormula(sheetInstance.getTdRange()); return false;">Get Cell Range</a>
+	<a onclick="sheetInstance.getTdRange(null, sheetInstance.obj.formula().val()); return false;">Get Cell Range</a>
 	<a menu="menuEditGetCellRangeAndWrap">Get Cell Range And Wrap With Function</a>
 	<a onclick="sheetInstance.cellUndoable.undoOrRedo(true); return false;">Undo</a>
 	<a onclick="sheetInstance.cellUndoable.undoOrRedo(); return false;">Redo</a>
@@ -92,11 +92,11 @@
 </div>
 
 <div id="menuEditGetCellRangeAndWrap" class="menu">
-	<a onclick="sheetInstance.appendToFormula('SUM(' + sheetInstance.getTdRange() + ')'); return false;" title="Wrap with SUM">SUM()</a>
-	<a onclick="sheetInstance.appendToFormula('CEILING(' + sheetInstance.getTdRange() + ')'); return false;" title="Wrap with CEILING">CEILING()</a>
-	<a onclick="sheetInstance.appendToFormula('COUNT(' + sheetInstance.getTdRange() + ')'); return false;" title="Wrap with COUNT">COUNT()</a>
-	<a onclick="sheetInstance.appendToFormula('MAX(' + sheetInstance.getTdRange() + ')'); return false;" title="Wrap with MAX">MAX()</a>
-	<a onclick="sheetInstance.appendToFormula('MIN(' + sheetInstance.getTdRange() + ')'); return false;" title="Wrap with MIN">MIN()</a>
+	<a onclick="sheetInstance.getTdRange(null, sheetInstance.obj.formula().val(), 'SUM'); return false;" title="Wrap with SUM">SUM()</a>
+	<a onclick="sheetInstance.getTdRange(null, sheetInstance.obj.formula().val(), 'CEILING'); return false;" title="Wrap with CEILING">CEILING()</a>
+	<a onclick="sheetInstance.getTdRange(null, sheetInstance.obj.formula().val(), 'COUNT'); return false;" title="Wrap with COUNT">COUNT()</a>
+	<a onclick="sheetInstance.getTdRange(null, sheetInstance.obj.formula().val(), 'MAX'); return false;" title="Wrap with MAX">MAX()</a>
+	<a onclick="sheetInstance.getTdRange(null, sheetInstance.obj.formula().val(), 'MIN'); return false;" title="Wrap with MIN">MIN()</a>
 </div>
 
 <div id="menuStyle" class="menu">

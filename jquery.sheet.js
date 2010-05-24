@@ -1026,12 +1026,7 @@ jQuery.sheet = {
 				},
 				cellOnMouseDown: function(e) {
 					if (e.shiftKey) {
-						jS.cellSetActiveMulti(e);
-						jQuery(document).one('mouseup', function() {
-							var v = jS.obj.formula().val();
-							jS.obj.formula().val(v + jS.getTdRange());
-						});
-						
+						jS.getTdRange(e, jS.obj.formula().val());
 						return false;
 					} else {
 						return jS.cellSetActiveMulti(e);
@@ -2774,34 +2769,66 @@ jQuery.sheet = {
 				jS.obj.formula().val('');
 				jS.obj.barSelected().removeClass(jS.cl.barSelected);
 			},
-			getTdRange: function() {
-				//three steps here,
-				//Get td's
-				//Get locations
-				//Get labels for locationa and return them
+			getTdRange: function(e, v, newFn, notSetFormula) {
+				var range = function(loc) {
+					return {
+						first: cE.columnLabelString(loc.first[1] + 1) + (loc.first[0] + 1),
+						last: cE.columnLabelString(loc.last[1] + 1) + (loc.last[0] + 1)
+					};
+				};
+				var label = function(loc) {
+					var rangeLabel = range(loc);
+					v = v + '';
+					v = (v.match(/=/) ? v : '=' + v); //make sure we can use this value as a formula
+
+					if (newFn) { //if a function is being sent, make sure it can be called by wrapping it in ()
+						v = v + newFn + '(';
+					}
+					
+					return v + rangeLabel.first + ':' + rangeLabel.last + (v.charAt(v.length - 1) == '(' ? ')' : '');
+				};
+				var newVal = '';
 				
-				var cells = jS.obj.cellHighlighted();
-				
-				if (cells.length) {
-					var loc = { //tr/td column and row index
-						first: jS.getTdLocation(cells.first()),
-						last: jS.getTdLocation(cells.last())
+				if (e) { //if from an event, we use mousemove method
+					var o = {
+						first: jS.getTdLocation([e.target])
 					};
 					
-					//Adjust 0 based tr/td to cell/column/row index
-					loc.first[0]++;
-					loc.first[1]++;
-					loc.last[0]++;
-					loc.last[1]++;
+					var sheet = jS.obj.sheet().mousemove(function(e) {
+						o.last = jS.getTdLocation([e.target]);
+						
+						newVal = label(o);
+						
+						if (!notSetFormula) {
+							jS.obj.formula().val(newVal);
+							jS.obj.inPlaceEdit().val(newVal);
+						}
+					});
 					
-					var label = {
-						first: cE.columnLabelString(loc.first[1]) + loc.first[0],
-						last: cE.columnLabelString(loc.last[1]) + loc.last[0]
-					};
-					
-					return label.first + ":" + label.last;
+					jQuery(document).one('mouseup', function() {
+						sheet.unbind('mousemove');
+						return newVal;
+					});
 				} else {
-					return '';
+					var cells = jS.obj.cellHighlighted().not(jS.obj.cellActive());
+					
+					if (cells.length) {
+						var o = { //tr/td column and row index
+							first: jS.getTdLocation(cells.first()),
+							last: jS.getTdLocation(cells.last())
+						};
+						
+						newVal = label(o);
+						
+						if (!notSetFormula) {
+							jS.obj.formula().val(newVal);
+							jS.obj.inPlaceEdit().val(newVal);
+						}
+						
+						return newVal;
+					} else {
+						return '';
+					}
 				}
 			},
 			getTdId: function(tableI, row, col) {
