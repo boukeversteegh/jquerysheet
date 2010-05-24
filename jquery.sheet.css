@@ -179,12 +179,14 @@
 {
     position: relative ! important;
 	border-width: 0px ! important;
+	min-width: 100000px;
 }
 
 .jSheetBarLeft
 {
 	position: relative ! important;
 	border-width: 0px ! important;
+	min-height: 100000px;
 }
 .jSheetBarLeft div
 {

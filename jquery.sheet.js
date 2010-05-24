@@ -423,7 +423,7 @@ jQuery.sheet = {
 				},
 				barLeft: function(reload, o) {//Works great!
 					jS.obj.barLeft().remove();
-					var barLeft = jQuery('<div border="1px" id="' + jS.id.barLeft + jS.i + '" class="' + jS.cl.barLeft + '" />').height('10000px');
+					var barLeft = jQuery('<div border="1px" id="' + jS.id.barLeft + jS.i + '" class="' + jS.cl.barLeft + '" />');
 					var heightFn;
 					if (reload) { //This is our standard way of detecting height when a sheet loads from a url
 						heightFn = function(i, objSource, objBar) {
@@ -450,7 +450,7 @@ jQuery.sheet = {
 				},
 				barTop: function(reload, o) { //Works great!
 					jS.obj.barTop().remove();
-					var barTop = jQuery('<div id="' + jS.id.barTop + jS.i + '" class="' + jS.cl.barTop + '" />').width('10000px');
+					var barTop = jQuery('<div id="' + jS.id.barTop + jS.i + '" class="' + jS.cl.barTop + '" />');
 					barTop.height(s.colMargin);
 					
 					var parents;
@@ -996,8 +996,6 @@ jQuery.sheet = {
 					return false;
 				},
 				cellSetFocus: function(keyCode, reverse) { //invoces a click on next/prev cell
-					
-					
 					var c = jS.cellLast.col;
 					var r = jS.cellLast.row;
 					
@@ -2789,34 +2787,57 @@ jQuery.sheet = {
 				jS.obj.barSelected().removeClass(jS.cl.barSelected);
 			},
 			getTdRange: function(e, v, newFn, notSetFormula) {
+				jS.cellLast.isEdit = true;
+				
 				var range = function(loc) {
-					return {
-						first: cE.columnLabelString(loc.first[1] + 1) + (loc.first[0] + 1),
-						last: cE.columnLabelString(loc.last[1] + 1) + (loc.last[0] + 1)
-					};
+					if (loc.first[1] > loc.last[1] ||
+						loc.first[0] > loc.last[0]
+					) {
+						return {
+							first: cE.columnLabelString(loc.last[1] + 1) + (loc.last[0] + 1),
+							last: cE.columnLabelString(loc.first[1] + 1) + (loc.first[0] + 1)
+						};
+					} else {
+						return {
+							first: cE.columnLabelString(loc.first[1] + 1) + (loc.first[0] + 1),
+							last: cE.columnLabelString(loc.last[1] + 1) + (loc.last[0] + 1)
+						};
+					}
 				};
 				var label = function(loc) {
 					var rangeLabel = range(loc);
-					v = v + '';
-					v = (v.match(/=/) ? v : '=' + v); //make sure we can use this value as a formula
-
-					if (newFn) { //if a function is being sent, make sure it can be called by wrapping it in ()
-						v = v + newFn + '(';
+					var v2 = v + '';
+					v2 = (v2.match(/=/) ? v2 : '=' + v2); //make sure we can use this value as a formula
+					
+					if (newFn || v2.charAt(v2.length - 1) != '(') { //if a function is being sent, make sure it can be called by wrapping it in ()
+						v2 = v2 + (newFn ? newFn : '') + '(';
 					}
 					
-					return v + rangeLabel.first + ':' + rangeLabel.last + (v.charAt(v.length - 1) == '(' ? ')' : '');
+					var formula;
+					var lastChar = '';
+					if (rangeLabel.first != rangeLabel.last) {
+						formula = rangeLabel.first + ':' + rangeLabel.last;
+					} else {
+						formula = rangeLabel.first;
+					}
+					
+					if (v2.charAt(v2.length - 1) == '(') {
+						lastChar = ')';
+					}
+					
+					return v2 + formula + lastChar;
 				};
 				var newVal = '';
 				
 				if (e) { //if from an event, we use mousemove method
-					var o = {
+					var loc = {
 						first: jS.getTdLocation([e.target])
 					};
 					
 					var sheet = jS.obj.sheet().mousemove(function(e) {
-						o.last = jS.getTdLocation([e.target]);
+						loc.last = jS.getTdLocation([e.target]);
 						
-						newVal = label(o);
+						newVal = label(loc);
 						
 						if (!notSetFormula) {
 							jS.obj.formula().val(newVal);
@@ -2832,12 +2853,12 @@ jQuery.sheet = {
 					var cells = jS.obj.cellHighlighted().not(jS.obj.cellActive());
 					
 					if (cells.length) {
-						var o = { //tr/td column and row index
+						var loc = { //tr/td column and row index
 							first: jS.getTdLocation(cells.first()),
 							last: jS.getTdLocation(cells.last())
 						};
 						
-						newVal = label(o);
+						newVal = label(loc);
 						
 						if (!notSetFormula) {
 							jS.obj.formula().val(newVal);
