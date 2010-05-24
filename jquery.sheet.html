@@ -51,7 +51,8 @@
 			$('#jQuerySheet0').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
 				editable: true,
-				inlineMenu: inlineMenu($.sheet.instance)
+				inlineMenu: inlineMenu($.sheet.instance),
+				cellSelectModel: 'excel'
 			});
 			
 			$('#jQuerySheet1').sheet({
@@ -59,13 +60,15 @@
 				buildSheet: $.sheet.makeTable.fromSize("5x25", 18, 180)
 							.add($.sheet.makeTable.fromSize("5x25", 18, 180))
 							.add($.sheet.makeTable.fromSize("5x25", 18, 180)),
-				inlineMenu: inlineMenu($.sheet.instance)
+				inlineMenu: inlineMenu($.sheet.instance),
+				cellSelectModel: 'oo'
 			});
 			
 			$('#jQuerySheet2').sheet({
 				title: 'Spreadsheet created html table in div',
 				buildSheet: true,
-				inlineMenu: inlineMenu($.sheet.instance)
+				inlineMenu: inlineMenu($.sheet.instance),
+				cellSelectModel: 'gdocs'
 			});
 			
 			//examples of how to use jQuery.sheet

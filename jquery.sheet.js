@@ -91,7 +91,7 @@ jQuery.fn.extend({
 			boxModelCorrection: 2, 							//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
 			showErrors:		true,							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
 			calculations:	{},								//object, used to extend the standard functions that come with sheet
-			mousedownModel: 'excel'							//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
+			cellSelectModel: 'excel'						//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
 		}, settings);
 		
 		
@@ -659,7 +659,7 @@ jQuery.sheet = {
 						'<tbody>' +
 							'<tr>' + 
 								'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.cl.barCornerParent + '">' + //corner
-									'<div style="height: ' + s.colMargin + '; width: ' + s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="' + jS.cl.barCorner +'"' + (s.editable ? ' onClick="jQuery.sheet.instance[' + I + '].cellSetActiveAll();"' : '') + ' title="Select All">&nbsp;</div>' +
+									'<div style="height: ' + s.colMargin + '; width: ' + s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="' + jS.cl.barCorner +'"' + (s.editable ? ' onClick="jQuery.sheet.instance[' + I + '].cellSetActiveBar(\'all\');"' : '') + ' title="Select All">&nbsp;</div>' +
 								'</td>' + 
 								'<td class="' + jS.cl.barTopTd + '">' + //barTop
 									'<div id="' + jS.id.barTopParent + jS.i + '" class="' + jS.cl.barTopParent + '"></div>' +
@@ -907,16 +907,8 @@ jQuery.sheet = {
 							case key.LEFT:
 							case key.RIGHT:
 								break;
-							case key.HOME:		jS.evt.cellSetEditable(
-													jS.cellLast.td.parent()
-														.find('td:first')
-												);
-								break;
-							case key.END:
-												jS.evt.cellSetEditable(
-													jS.cellLast.td.parent()
-														.find('td:last')
-												);
+							case key.HOME:
+							case key.END:		jS.evt.cellSetFocus(e.keyCode);
 								break;
 							default: 			jS.cellLast.isEdit = true;
 						}
@@ -1006,6 +998,8 @@ jQuery.sheet = {
 					return false;
 				},
 				cellSetFocus: function(keyCode) { //invoces a click on next/prev cell
+					
+					
 					var c = jS.cellLast.col;
 					var r = jS.cellLast.row;
 					
@@ -1014,13 +1008,19 @@ jQuery.sheet = {
 						case key.DOWN: 		r++; break;
 						case key.LEFT: 		c--; break;
 						case key.RIGHT: 	c++; break;
+						case key.HOME:		c = 0; break;
+						case key.END:		c = jS.cellLast.td.parent().find('td').length; break;
 					}
 					
 					//we check here and make sure all values are above -1, so that we get a selected cell
 					c = (c < 0 ? 0 : c);
 					r = (r < 0 ? 0 : r);
 					
-					jS.evt.cellSetEditable(jQuery(jS.getTd(jS.i, r, c)));
+					var td = jS.getTd(jS.i, r, c);
+					if (td) {
+						jS.themeRoller.cell.clearHighlighted();
+						jS.cellEdit(jQuery(td));
+					}
 					
 					return false;
 				},
@@ -1192,7 +1192,7 @@ jQuery.sheet = {
 								
 								jS.evt.barMouseDown.last = i;
 								
-								jS.cellSetActiveMultiRow(jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
+								jS.cellSetActiveBar('row', jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
 							};
 						}
 					},
@@ -1221,7 +1221,7 @@ jQuery.sheet = {
 								
 								jS.evt.barMouseDown.last = i;
 								
-								jS.cellSetActiveMultiColumn(jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
+								jS.cellSetActiveBar('col', jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
 							};
 						}
 					}
@@ -1820,7 +1820,6 @@ jQuery.sheet = {
 				cell: {
 					setActive: function() {
 						this.clearActive();
-						this.clearHighlighted();
 						this.setHighlighted(
 							jS.cellLast.td
 								.addClass(jS.cl.cellActive)
@@ -2260,8 +2259,8 @@ jQuery.sheet = {
 				
 				var margin = 20;
 				
-				jS.log('td: [' + tdPos.left + ', ' + tdPos.top + ']');
-				jS.log('pane: [' + panePos.left + ', ' + panePos.top + ']');
+				//jS.log('td: [' + tdPos.left + ', ' + tdPos.top + ']');
+				//jS.log('pane: [' + panePos.left + ', ' + panePos.top + ']');
 				
 				if ((tdPos.left + tdWidth + margin) > (panePos.left + paneWidth)) { //right
 					pane.stop().scrollTo(td, {
@@ -2669,8 +2668,8 @@ jQuery.sheet = {
 							o.lastRow = o.endRow;
 							o.lastColumn = o.endColumn;
 							
-							if (s.mousedownModel == 'oo') { //open office behavior for selecting cells
-								jS.evt.cellSetEditable(jQuery(target));
+							if (s.cellSelectModel == 'oo') { //open office behavior for selecting cells
+								jS.cellEdit(jQuery(target));
 							}
 							
 							o.cycleHighlighted(jS.themeRoller.cell.setHighlighted);
@@ -2690,80 +2689,93 @@ jQuery.sheet = {
 					jS.themeRoller.cell.clearHighlighted();
 					jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, e.target.parentNode.rowIndex, e.target.cellIndex));
 					
-					if (s.mousedownModel == 'excel') {
-						jS.evt.cellSetEditable(jQuery(e.target));
+					switch (s.cellSelectModel) {
+						case 'excel':
+						case 'gdocs': jS.cellEdit(jQuery(e.target)); break;
 					}
 					
 					jS.obj.pane()
 						.mousemove(function(e) {
 							o.highlight(e.target);
 						});
-						
+					
+					//We do this to ensure this function runs, the user may not move their mouse
+					o.highlight(e.target);
+					
 					jQuery(document)
 						.one('mouseup', function() {
-							
-							if (s.mousedownModel == 'gdocs') {
-								var i = 0;
-								var setFirstActive = function(td) {
-									if (i == 0) {
-										jS.evt.cellSetEditable(jQuery(td));
-									} else {
-										jS.themeRoller.cell.setHighlighted(td);
-									}
-									i++;
-								};
-								o.cycleHighlighted(setFirstActive);
-							}
-							
+
 							jS.obj.pane()
 								.unbind('mousemove')
 								.unbind('mouseup');
 						});
-				} else {
-					//return false;
 				}
 			},
-			cellSetActiveAll: function() {
+			cellSetActiveBar: function(type, start, end) {
 				var loc = jS.sheetSize();
-				var setActive = function(td) {
-					jS.cellEdit(jQuery(td));
-				};
-				for (var i = 0; i <= loc[0]; i++) {
-					for (var j = 0; j <= loc[1]; j++) {
-						var td = jS.getTd(jS.i, i, j);
-						setActive(td);
-						setActive = function() {};
-						jS.themeRoller.cell.setHighlighted(td);
+				var first = (start < end ? start : end);
+				var last = (start < end ? end : start);
+				
+				var setActive = function(td, rowStart, colStart, rowFollow, colFollow) {
+					switch (s.cellSelectModel) {
+						case 'oo': //follow cursor behavior
+							jS.cellEdit(jQuery(jS.getTd(jS.i, rowFollow, colFollow)));
+							break;
+						default: //stay at initial cell
+							jS.cellEdit(jQuery(jS.getTd(jS.i, rowStart, colStart)));
+							break;
 					}
-				}
-			},
-			cellSetActiveMultiColumn: function(colStart, colEnd) {
-				var loc = jS.sheetSize();
-				var setActive = function(td) {
-					jS.cellEdit(jQuery(td));
+					
+					setActive = function(td) { //save resources
+						return td
+					};
+					
+					return td;
 				};
-				for (var i = (colStart < colEnd ? colStart : colEnd); i <= (colEnd > colStart ? colEnd : colStart); i++) {
-					for (var j = 0; j <= loc[0]; j++) {
-						var td = jS.getTd(jS.i, j, i);
-						setActive(td);
-						setActive = function() {};
-						jS.themeRoller.cell.setHighlighted(td);
-					}
+
+				var cycleFn;
+
+				switch (type) {
+					case 'col':
+						cycleFn = function() {
+							for (var i = 0; i <= loc[0]; i++) { //rows
+								for (var j = first; j <= last; j++) { //cols
+									jS.themeRoller.cell.setHighlighted(
+										setActive(jS.getTd(jS.i, i, j), 0, start, 0, end)
+									);
+								}
+							}
+						};
+						break;
+					case 'row':
+						cycleFn = function() {
+							for (var i = first; i <= last; i++) { //rows
+								for (var j = 0; j <= loc[1]; j++) { //cols
+									jS.themeRoller.cell.setHighlighted(
+										setActive(jS.getTd(jS.i, i, j), start, 0, end, 0)
+									);
+								}
+							}
+						};
+						break;
+					case 'all':
+						cycleFn = function() {
+							setActive = function(td) {
+								jS.cellEdit(jQuery(td));
+								setActive = function() {};
+							};
+							for (var i = 0; i <= loc[0]; i++) {
+								for (var j = 0; j <= loc[1]; j++) {
+									var td = jS.getTd(jS.i, i, j);
+									setActive(td);
+									jS.themeRoller.cell.setHighlighted(td);
+								}
+							}
+						};
+						break;
 				}
-			},
-			cellSetActiveMultiRow: function(rowStart, rowEnd) {
-				var loc = jS.sheetSize();
-				var setActive = function(td) {
-					jS.cellEdit(jQuery(td));
-				};
-				for (var i = (rowStart < rowEnd ? rowStart : rowEnd); i <= (rowEnd > rowStart ? rowEnd : rowStart); i++) {
-					for (var j = 0; j <= loc[1]; j++) {
-						var td = jS.getTd(jS.i, i, j);
-						setActive(td);
-						setActive = function() {};
-						jS.themeRoller.cell.setHighlighted(td);
-					}
-				}
+				
+				cycleFn();
 			},
 			sheetClearActive: function() {
 				jS.obj.formula().val('');
