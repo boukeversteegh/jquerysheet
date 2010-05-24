@@ -91,7 +91,8 @@ jQuery.fn.extend({
 			boxModelCorrection: 2, 							//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
 			showErrors:		true,							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
 			calculations:	{},								//object, used to extend the standard functions that come with sheet
-			cellSelectModel: 'excel'						//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
+			cellSelectModel: 'excel',						//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
+			autoAddCells:	true
 		}, settings);
 		
 		
@@ -787,7 +788,7 @@ jQuery.sheet = {
 				keyDownHandler: {
 					enterOnInPlaceEdit: function(e) {
 						if (!e.shiftKey) {
-							return jS.evt.cellSetFocus(key.DOWN);
+							return jS.evt.cellSetFocus(key.ENTER);
 						} else {
 							return true;
 						}
@@ -801,11 +802,7 @@ jQuery.sheet = {
 						}
 					},
 					tab: function(e) {
-						if (e.shiftKey) {
-							return jS.evt.cellSetFocus(key.LEFT);
-						} else {
-							return jS.evt.cellSetFocus(key.RIGHT);
-						}
+						return jS.evt.cellSetFocus(key.TAB, e.shiftKey);
 					},
 					pasteOverCells: function(e) { //used for pasting from other spreadsheets
 						if (e.ctrlKey) {
@@ -970,6 +967,7 @@ jQuery.sheet = {
 										formula.focus().select();
 										jS.cellLast.isEdit = false;
 										s.fnAfterCellEdit(jS.cellLast);
+										
 										jS.setDirty(true);
 									}
 							}
@@ -997,7 +995,7 @@ jQuery.sheet = {
 						.val('');
 					return false;
 				},
-				cellSetFocus: function(keyCode) { //invoces a click on next/prev cell
+				cellSetFocus: function(keyCode, reverse) { //invoces a click on next/prev cell
 					
 					
 					var c = jS.cellLast.col;
@@ -1008,8 +1006,27 @@ jQuery.sheet = {
 						case key.DOWN: 		r++; break;
 						case key.LEFT: 		c--; break;
 						case key.RIGHT: 	c++; break;
+						case key.ENTER:		r++;
+							if (s.autoAddCells) {
+								if (jS.cellLast.row == jS.sheetSize()[0]) {
+									jS.controlFactory.addCells(':last', false, null, 1, 'row');
+								}
+							}
+							break;
+						case key.TAB:
+							if (reverse) {
+								c--;
+							} else { 
+								c++;
+							}
+							if (s.autoAddCells) {
+								if (jS.cellLast.col == jS.sheetSize()[1]) {
+									jS.controlFactory.addCells(':last', false, null, 1, 'col');
+								}
+							}
+							break;
 						case key.HOME:		c = 0; break;
-						case key.END:		c = jS.cellLast.td.parent().find('td').length; break;
+						case key.END:		c = jS.cellLast.td.parent().find('td').length - 1; break;
 					}
 					
 					//we check here and make sure all values are above -1, so that we get a selected cell
@@ -1031,16 +1048,6 @@ jQuery.sheet = {
 					} else {
 						return jS.cellSetActiveMulti(e);
 					}			
-				},
-				cellSetEditable: function(o) {
-					if (jS.isTd(o)) {
-						jS.cellEdit(o);
-					} else { //this won't be a cell
-						var clickable = o.hasClass('clickable');
-						if (!clickable) {
-							jS.obj.formula().focus().select();
-						}
-					}
 				},
 				cellOnDblClick: function(e) {
 					jS.cellLast.isEdit = jS.isSheetEdit = true;
@@ -2646,7 +2653,7 @@ jQuery.sheet = {
 					
 					o = o.eq(0);
 					if (o.length > 0) {
-						jS.evt.cellSetEditable(o);
+						jS.cellEdit(o);
 					} else {
 						alert('No results found.');
 					}
