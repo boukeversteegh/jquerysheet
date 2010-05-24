@@ -299,10 +299,9 @@ jQuery.sheet = {
 									return '<tr style="height: ' + s.colMargin + 'px;">' + newCells + '</tr>';
 								},
 								newCol: '',
-								reLabel: function() {
-									var label = parseInt(jQuery.trim(o.bar.prev().prev().text()));
-									o.bar.prev().prev().nextAll().each(function(i) {
-										jQuery(this).text(i + 1 + label);
+								reLabel: function() {								
+									o.barParent.children().each(function(i) {
+										jQuery(this).text(i + 1);
 									});
 								},
 								dimensions: function(loc, bar, cell, col) {
@@ -314,7 +313,7 @@ jQuery.sheet = {
 						case "col":
 							o = {
 								bar: jS.obj.barTop().find('div' + eq),
-								barParent: jS.obj.barLeft(),
+								barParent: jS.obj.barTop(),
 								cells: function() {
 									var cellStart = sheet.find('tr:first td' + eq);
 									var cellEnd = sheet.find('td:last');
@@ -343,9 +342,8 @@ jQuery.sheet = {
 									return '<td />';
 								},
 								reLabel: function() {
-									o.bar.prev().prev().nextAll().each(function(i) {
-										var label = cE.columnLabelIndex(o.bar.prev().prev().text());
-										jQuery(this).text(cE.columnLabelString(i + 1 + label));
+									o.barParent.children().each(function(i) {
+										jQuery(this).text(cE.columnLabelString(i + 1));
 									});
 								},
 								dimensions: function(loc, bar, cell, col) {								
@@ -408,8 +406,12 @@ jQuery.sheet = {
 					jS.obj.pane().scroll();
 					
 					//offset formulas
-					jS.offsetFormulaRange(loc[0], loc[1], o.offset[0], o.offset[1], isBefore);
+					jS.offsetFormulaRange((isBefore ? loc[0] - qty : loc[0]) , (isBefore ? loc[1] - qty : loc[0]), o.offset[0], o.offset[1], isBefore);
 					
+					//Because the line numbers get bigger, it is possible that the bars have changed in size, lets sync them
+					jS.sheetSyncSize();
+					
+					//Let's make it redoable
 					jS.cellUndoable.add(jQuery(sheet).add(o.barParent));
 				},
 				addRow: function(atRow, isBefore, atRowQ) {
@@ -657,7 +659,7 @@ jQuery.sheet = {
 						'<tbody>' +
 							'<tr>' + 
 								'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.cl.barCornerParent + '">' + //corner
-									'<div style="height: ' + s.colMargin + '; width: ' + s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="' + jS.cl.barCorner +'" onClick="jQuery.sheet.instance[' + I + '].cellSetActiveAll();" title="Select All">&nbsp;</div>' +
+									'<div style="height: ' + s.colMargin + '; width: ' + s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="' + jS.cl.barCorner +'"' + (s.editable ? ' onClick="jQuery.sheet.instance[' + I + '].cellSetActiveAll();"' : '') + ' title="Select All">&nbsp;</div>' +
 								'</td>' + 
 								'<td class="' + jS.cl.barTopTd + '">' + //barTop
 									'<div id="' + jS.id.barTopParent + jS.i + '" class="' + jS.cl.barTopParent + '"></div>' +
@@ -1626,10 +1628,10 @@ jQuery.sheet = {
 				}
 				
 				function isInFormula(loc) {
-					if ((loc[0]) >= shiftedRange.first[0] &&
-						(loc[1]) >= shiftedRange.first[1] &&
-						(loc[0]) <= shiftedRange.last[0] &&
-						(loc[1]) <= shiftedRange.last[1]
+					if ((loc[0] - 1) >= shiftedRange.first[0] &&
+						(loc[1] - 1) >= shiftedRange.first[1] &&
+						(loc[0] - 1) <= shiftedRange.last[0] &&
+						(loc[1] - 1) <= shiftedRange.last[1]
 					) {
 						return true;
 					} else {
@@ -1640,17 +1642,17 @@ jQuery.sheet = {
 				function isInFormulaRange(startLoc, endLoc) {
 					if (
 						(
-							(startLoc[0] - 1) > shiftedRange.first[0] &&
-							(startLoc[1] - 1) > shiftedRange.first[1]
+							(startLoc[0] - 1) >= shiftedRange.first[0] &&
+							(startLoc[1] - 1) >= shiftedRange.first[1]
 						) && (
-							(startLoc[0] - 1) < shiftedRange.last[0] &&
-							(startLoc[1] - 1) < shiftedRange.last[1]
+							(startLoc[0] - 1) <= shiftedRange.last[0] &&
+							(startLoc[1] - 1) <= shiftedRange.last[1]
 						) && (
-							(endLoc[0] - 1) > shiftedRange.first[0] &&
-							(endLoc[1] - 1) > shiftedRange.first[1]
+							(endLoc[0] - 1) >= shiftedRange.first[0] &&
+							(endLoc[1] - 1) >= shiftedRange.first[1]
 						) && (
-							(endLoc[0] - 1) < shiftedRange.last[0] &&
-							(endLoc[1] - 1) < shiftedRange.last[1]
+							(endLoc[0] - 1) <= shiftedRange.last[0] &&
+							(endLoc[1] - 1) <= shiftedRange.last[1]
 						)
 					) {
 						return true;
@@ -2253,15 +2255,18 @@ jQuery.sheet = {
 			},
 			followMe: function(td) {
 				var pane = jS.obj.pane();
-				var panePos = pane.position();
+				var panePos = pane.offset();
 				var paneWidth = pane.width();
 				var paneHeight = pane.height();
-				
-				var tdPos = td.position();
+
+				var tdPos = td.offset();
 				var tdWidth = td.width();
 				var tdHeight = td.height();
 				
 				var margin = 20;
+				
+				jS.log('td: [' + tdPos.left + ', ' + tdPos.top + ']');
+				jS.log('pane: [' + panePos.left + ', ' + panePos.top + ']');
 				
 				if ((tdPos.left + tdWidth + margin) > (panePos.left + paneWidth)) { //right
 					pane.stop().scrollTo(td, {
@@ -2685,69 +2690,84 @@ jQuery.sheet = {
 					}
 				};//These are the events used to selected multiple rows.
 				
-				jS.themeRoller.cell.clearHighlighted();
-				jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, e.target.parentNode.rowIndex, e.target.cellIndex));
+				if (typeof(o.startColumn) != 'undefined') {
 				
-				if (s.mousedownModel == 'excel') {
-					jS.evt.cellSetEditable(jQuery(e.target));
-				}
-				
-				jS.obj.pane()
-					.mousemove(function(e) {
-						o.highlight(e.target);
-					});
+					jS.themeRoller.cell.clearHighlighted();
+					jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, e.target.parentNode.rowIndex, e.target.cellIndex));
 					
-				jQuery(document)
-					.one('mouseup', function() {
+					if (s.mousedownModel == 'excel') {
+						jS.evt.cellSetEditable(jQuery(e.target));
+					}
+					
+					jS.obj.pane()
+						.mousemove(function(e) {
+							o.highlight(e.target);
+						});
 						
-						if (s.mousedownModel == 'gdocs') {
-							var i = 0;
-							var setFirstActive = function(td) {
-								if (i == 0) {
-									jS.evt.cellSetEditable(jQuery(td));
-								} else {
-									jS.themeRoller.cell.setHighlighted(td);
-								}
-								i++;
-							};
-							o.cycleHighlighted(setFirstActive);
-						}
-						
-						jS.obj.pane()
-							.unbind('mousemove')
-							.unbind('mouseup');
-					});
+					jQuery(document)
+						.one('mouseup', function() {
+							
+							if (s.mousedownModel == 'gdocs') {
+								var i = 0;
+								var setFirstActive = function(td) {
+									if (i == 0) {
+										jS.evt.cellSetEditable(jQuery(td));
+									} else {
+										jS.themeRoller.cell.setHighlighted(td);
+									}
+									i++;
+								};
+								o.cycleHighlighted(setFirstActive);
+							}
+							
+							jS.obj.pane()
+								.unbind('mousemove')
+								.unbind('mouseup');
+						});
+				} else {
+					//return false;
+				}
 			},
 			cellSetActiveAll: function() {
-				if (s.editable) {
-					var rowCount = 0;
-					var colCount = 0;
-					
-					jS.obj.barLeft().find('div').each(function(i) {
-						jS.cellSetActiveMultiRow(i, i);
-						rowCount++;
-					});
-					jS.obj.barTop().find('div').each(function(i) {
-						//jS.themeRoller.bar.setActive('top', i);
-						colCount++;
-					});
-					
-					//jS.labelUpdate('A1:' + cE.columnLabelString(colCount) + rowCount, true);
+				var loc = jS.sheetSize();
+				var setActive = function(td) {
+					jS.cellEdit(jQuery(td));
+				};
+				for (var i = 0; i <= loc[0]; i++) {
+					for (var j = 0; j <= loc[1]; j++) {
+						var td = jS.getTd(jS.i, i, j);
+						setActive(td);
+						setActive = function() {};
+						jS.themeRoller.cell.setHighlighted(td);
+					}
 				}
 			},
 			cellSetActiveMultiColumn: function(colStart, colEnd) {
 				var loc = jS.sheetSize();
+				var setActive = function(td) {
+					jS.cellEdit(jQuery(td));
+				};
 				for (var i = (colStart < colEnd ? colStart : colEnd); i <= (colEnd > colStart ? colEnd : colStart); i++) {
 					for (var j = 0; j <= loc[0]; j++) {
-						jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, j, i));
+						var td = jS.getTd(jS.i, j, i);
+						setActive(td);
+						setActive = function() {};
+						jS.themeRoller.cell.setHighlighted(td);
 					}
-					//jS.themeRoller.bar.setActive('top', i);
 				}
 			},
 			cellSetActiveMultiRow: function(rowStart, rowEnd) {
+				var loc = jS.sheetSize();
+				var setActive = function(td) {
+					jS.cellEdit(jQuery(td));
+				};
 				for (var i = (rowStart < rowEnd ? rowStart : rowEnd); i <= (rowEnd > rowStart ? rowEnd : rowStart); i++) {
-					jS.themeRoller.cell.setHighlighted(jS.obj.sheet().find('tr').eq(i).find('td'));
-					//jS.themeRoller.bar.setActive('left', i);
+					for (var j = 0; j <= loc[1]; j++) {
+						var td = jS.getTd(jS.i, i, j);
+						setActive(td);
+						setActive = function() {};
+						jS.themeRoller.cell.setHighlighted(td);
+					}
 				}
 			},
 			sheetClearActive: function() {
