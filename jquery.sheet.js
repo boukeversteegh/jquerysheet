@@ -1,6 +1,6 @@
 /*
 jQuery.sheet() Spreadsheet with Calculations Plugin
-Version: 1.1.0 SVN
+Version: 1.1.0 RC 2
 http://code.google.com/p/jquerysheet/
 		
 Copyright (C) 2010 Robert Plummer
@@ -109,7 +109,7 @@ jQuery.fn.extend({
 jQuery.sheet = {
 	createInstance: function(s, I, origParent) { //s = jQuery.sheet settings, I = jQuery.sheet Instance Integer
 		var jS = {
-			version: '1.1.0',
+			version: '1.1.0 RC2',
 			i: 0,
 			I: I,
 			sheetCount: 0,
@@ -728,7 +728,7 @@ jQuery.sheet = {
 				},
 				inPlaceEdit: function(td) {
 					jS.obj.inPlaceEdit().remove();
-					var formula = jS.obj.formula();
+					var formula = jS.obj.formula();					
 					var offset = td.offset();
 					var style = td.attr('style');
 					var w = td.width();
@@ -740,10 +740,10 @@ jQuery.sheet = {
 						.height(h)
 						.keydown(jS.evt.inPlaceEditOnKeyDown)
 						.keyup(function() {
-							formula.val(jQuery(this).val());
+							formula.val(textarea.val());
 						})
 						.change(function() {
-							formula.val(jQuery(this).val());
+							formula.val(textarea.val());
 						})
 						.appendTo('body')
 						.val(formula.val())
@@ -788,7 +788,7 @@ jQuery.sheet = {
 				keyDownHandler: {
 					enterOnInPlaceEdit: function(e) {
 						if (!e.shiftKey) {
-							return jS.evt.cellSetFocus(key.ENTER);
+							return jS.evt.cellSetFocusFromKeyCode(e);
 						} else {
 							return true;
 						}
@@ -798,11 +798,11 @@ jQuery.sheet = {
 							jS.cellLast.td.dblclick();
 							return false;
 						} else {
-							return jS.evt.cellSetFocus(key.DOWN);
+							return this.enterOnInPlaceEdit(e);
 						}
 					},
 					tab: function(e) {
-						return jS.evt.cellSetFocus(key.TAB, e.shiftKey);
+						return jS.evt.cellSetFocusFromKeyCode(e);
 					},
 					pasteOverCells: function(e) { //used for pasting from other spreadsheets
 						if (e.ctrlKey) {
@@ -875,6 +875,22 @@ jQuery.sheet = {
 						}
 						return true;
 					},
+					pageUpDown: function(reverse) {
+						var pane = jS.obj.pane();
+						var left = jS.cellLast.td.position().left;
+						var top = 0;
+						
+						if (reverse) {
+							top = 10;
+							pane.scrollTop(pane.scrollTop() - pane.height());
+							
+						} else {
+							top = pane.height() - (s.colMargin * 3);
+							pane.scrollTop(pane.scrollTop() + top);
+						}
+						
+						jS.evt.cellSetFocusFromCoordinates(left, top);
+					},
 					formulaOnKeyDown: function(e) {
 						switch (e.keyCode) {
 							case key.ESCAPE: 	jS.evt.cellEditAbandon();
@@ -886,7 +902,11 @@ jQuery.sheet = {
 							case key.LEFT:
 							case key.UP:
 							case key.RIGHT:
-							case key.DOWN:		return jS.evt.cellSetFocus(e.keyCode);
+							case key.DOWN:		return jS.evt.cellSetFocusFromKeyCode(e);
+								break;
+							case key.PAGE_UP:	return jS.evt.keyDownHandler.pageUpDown(true);
+								break;
+							case key.PAGE_DOWN:	return jS.evt.keyDownHandler.pageUpDown();
 								break;
 							case key.V:			return jS.evt.keyDownHandler.pasteOverCells(e);
 								break;
@@ -905,7 +925,7 @@ jQuery.sheet = {
 							case key.RIGHT:
 								break;
 							case key.HOME:
-							case key.END:		jS.evt.cellSetFocus(e.keyCode);
+							case key.END:		jS.evt.cellSetFocusFromKeyCode(e);
 								break;
 							default: 			jS.cellLast.isEdit = true;
 						}
@@ -931,6 +951,8 @@ jQuery.sheet = {
 					switch (jS.cellLast.isEdit) {
 						case true:
 							jS.obj.inPlaceEdit().remove();
+							var formula = jS.obj.formula();
+							formula.unbind('keydown'); //remove any lingering events from inPlaceEdit
 							var td = jS.cellLast.td;
 							
 							switch(jS.isFormulaEditable(td)) {
@@ -941,7 +963,6 @@ jQuery.sheet = {
 										jS.cellUndoable.add(td);
 										
 										//This should return either a val from textbox or formula, but if fails it tries once more from formula.
-										var formula = jS.obj.formula();
 										var v = jS.manageTextToHtml(formula.val());
 										var prevVal = td.html();
 
@@ -995,16 +1016,31 @@ jQuery.sheet = {
 						.val('');
 					return false;
 				},
-				cellSetFocus: function(keyCode, reverse) { //invoces a click on next/prev cell
-					var c = jS.cellLast.col;
-					var r = jS.cellLast.row;
+				cellSetFocusFromCoordinates: function(left, top, skipOffset) {
+					var paneOffset = (skipOffset ? {left: 0, top: 0} : jS.obj.pane().offset());
+					top += paneOffset.top;
+					left += paneOffset.left;
 					
-					switch (keyCode) {
+					var td = jQuery(document.elementFromPoint(left, top));
+					
+					
+					if (jS.isTd(td)) {
+						jS.themeRoller.cell.clearHighlighted();
+						jS.cellEdit(td);
+					}
+				},
+				cellSetFocusFromKeyCode: function(e) { //invoces a click on next/prev cell
+					var c = jS.cellLast.col; //we don't set the cellLast.col here so that we never go into indexes that don't exist
+					var r = jS.cellLast.row;
+					var overrideIsEdit = false;
+					
+					switch (e.keyCode) {
 						case key.UP: 		r--; break;
 						case key.DOWN: 		r++; break;
 						case key.LEFT: 		c--; break;
 						case key.RIGHT: 	c++; break;
 						case key.ENTER:		r++;
+							overrideIsEdit = true;
 							if (s.autoAddCells) {
 								if (jS.cellLast.row == jS.sheetSize()[0]) {
 									jS.controlFactory.addCells(':last', false, null, 1, 'row');
@@ -1031,13 +1067,21 @@ jQuery.sheet = {
 					c = (c < 0 ? 0 : c);
 					r = (r < 0 ? 0 : r);
 					
-					var td = jS.getTd(jS.i, r, c);
-					if (td) {
-						jS.themeRoller.cell.clearHighlighted();
-						jS.cellEdit(jQuery(td));
+					//to get the td could possibly make keystrokes slow, we prevent it here so the user doesn't even know we are listening ;)
+					if (!jS.cellLast.isEdit || overrideIsEdit) {
+						//get the td that we want to go to
+						var td = jS.getTd(jS.i, r, c);
+					
+						//if the td exists, lets go to it
+						if (td) {
+							jS.themeRoller.cell.clearHighlighted();
+							jS.cellEdit(jQuery(td));
+							return false;
+						}
 					}
 					
-					return false;
+					//default, can be overridden above
+					return true;
 				},
 				cellOnMouseDown: function(e) {
 					if (e.shiftKey) {
@@ -1136,7 +1180,7 @@ jQuery.sheet = {
 					
 					return resizeBar.start(e);
 				},
-				scrollBars: function(killTimer) {
+				scrollBars: function() {
 					var o = { //cut down on recursion, grabe them once
 						pane: jS.obj.pane(), 
 						barLeft: jS.obj.barLeftParent(), 
