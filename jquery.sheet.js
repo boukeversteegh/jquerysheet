@@ -889,7 +889,7 @@ jQuery.sheet = {
 							pane.scrollTop(pane.scrollTop() + top);
 						}
 						
-						jS.evt.cellSetFocusFromCoordinates(left, top);
+						return jS.evt.cellSetFocusFromCoordinates(left, top);
 					},
 					formulaOnKeyDown: function(e) {
 						switch (e.keyCode) {
@@ -1018,15 +1018,25 @@ jQuery.sheet = {
 				},
 				cellSetFocusFromCoordinates: function(left, top, skipOffset) {
 					var paneOffset = (skipOffset ? {left: 0, top: 0} : jS.obj.pane().offset());
-					top += paneOffset.top;
-					left += paneOffset.left;
+					top += paneOffset.top + 2;
+					left += paneOffset.left + 2;
 					
 					var td = jQuery(document.elementFromPoint(left, top));
 					
+					/*
+					//I use this snippet to help me know where the point was positioned
+					jQuery('<div class="ui-widget-content" style="position: absolute;">TESTING TESTING</div>')
+						.css('top', top + 'px')
+						.css('left', left + 'px')
+						.appendTo('body');
+					*/
 					
 					if (jS.isTd(td)) {
 						jS.themeRoller.cell.clearHighlighted();
 						jS.cellEdit(td);
+						return false;
+					} else {
+						return true;
 					}
 				},
 				cellSetFocusFromKeyCode: function(e) { //invoces a click on next/prev cell
@@ -1850,7 +1860,10 @@ jQuery.sheet = {
 					colgroup.prependTo(o);
 				}
 				
-				o.width(tableWidth);
+				o
+					.removeAttr('width')
+					.css('width', '')
+					.width(tableWidth);
 			},
 			themeRoller: {
 				start: function() {
