@@ -987,9 +987,17 @@ jQuery.sheet = {
 										
 										formula.focus().select();
 										jS.cellLast.isEdit = false;
-										s.fnAfterCellEdit(jS.cellLast);
 										
 										jS.setDirty(true);
+										
+										//perform final function call
+										s.fnAfterCellEdit({
+											td: jS.cellLast.td,
+											row: jS.cellLast.row,
+											col: jS.cellLast.col,
+											spreadsheetIndex: jS.i,
+											sheetIndex: I
+										});
 									}
 							}
 							break;
