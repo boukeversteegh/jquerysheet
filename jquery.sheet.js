@@ -232,13 +232,6 @@ jQuery.sheet = {
 				delete jS;
 				delete origParent.sheetInstance;
 			},
-			killAll: function() {
-				for (var i = 0; i < jQuery.sheet.instance.length; i++) {
-					try {
-						jQuery.sheet.instance[i].kill();
-					} catch(e) {}
-				}
-			},
 			controlFactory: {
 				addRowMulti: function(qty, isBefore) {
 					if (!qty) {
@@ -4005,6 +3998,13 @@ jQuery.sheet = {
 			}
 			
 			return newSheet;
+		}
+	},
+	killAll: function() {
+		for (var i = 0; i < jQuery.sheet.instance.length; i++) {
+			try {
+				jQuery.sheet.instance[i].kill();
+			} catch(e) {}
 		}
 	}
 };
