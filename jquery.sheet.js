@@ -1,6 +1,6 @@
 /*
 jQuery.sheet() Spreadsheet with Calculations Plugin
-Version: 1.1.0 RC 2
+Version: 1.1.0 RC 3
 http://code.google.com/p/jquerysheet/
 		
 Copyright (C) 2010 Robert Plummer
@@ -112,7 +112,7 @@ jQuery.fn.extend({
 jQuery.sheet = {
 	createInstance: function(s, I, origParent) { //s = jQuery.sheet settings, I = jQuery.sheet Instance Integer
 		var jS = {
-			version: '1.1.0 RC2',
+			version: '1.1.0 RC3',
 			i: 0,
 			I: I,
 			sheetCount: 0,
