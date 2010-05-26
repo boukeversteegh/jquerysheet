@@ -92,7 +92,8 @@ jQuery.fn.extend({
 			showErrors:		true,							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
 			calculations:	{},								//object, used to extend the standard functions that come with sheet
 			cellSelectModel: 'excel',						//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
-			autoAddCells:	true
+			autoAddCells:	true,
+			caseInsensitive: false
 		}, settings);
 		
 		
@@ -3473,6 +3474,10 @@ jQuery.sheet = {
 				range: 				/\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g, //A1:B4
 				remoteCell:			/\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g, //SHEET1:A1
 				remoteCellRange: 	/\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g, //SHEET1:A1:B4
+				cellInsensitive: 				/\$?([a-zA-Z]+)\$?([0-9]+)/gi, //a1
+				rangeInsensitive: 				/\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/gi, //a1:a4
+				remoteCellInsensitive:			/\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/gi, //sheet1:a1
+				remoteCellRangeInsensitive: 	/\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/gi, //sheet1:a1:b4
 				amp: 				/&/g,
 				gt: 				/</g,
 				lt: 				/>/g,
@@ -3783,6 +3788,14 @@ jQuery.sheet = {
 			s.parent.after('<textarea id="' + jS.id.log + '" class="' + jS.cl.log + '" />');
 		} else {
 			jS.log = emptyFN;
+		}
+		
+		//this makes it case insensitive
+		if (s.caseInsensitive) {
+			cE.regEx.cell = cE.regEx.cellInsensitive;
+			cE.regEx.range = cE.regEx.rangeInsensitive;
+			cE.regEx.remoteCell = cE.regEx.remoteCellInsensitive;
+			cE.regEx.remoteCellRange = cE.regEx.remoteCellRangeInsensitive;
 		}
 		
 		if (!s.showErrors) {
