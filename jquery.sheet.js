@@ -881,7 +881,7 @@ jQuery.sheet = {
 						var top = 0;
 						
 						if (reverse) {
-							top = 10;
+							top = 0;
 							pane.scrollTop(pane.scrollTop() - pane.height());
 							
 						} else {
