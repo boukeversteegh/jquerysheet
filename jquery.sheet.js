@@ -97,11 +97,13 @@ jQuery.fn.extend({
 		}, settings);
 		
 		
-		var o = jQuery(this);
+		var o = settings.parent;
 		if (jQuery.sheet.instance) {
-			jQuery.sheet.instance.push(jQuery.sheet.createInstance(settings, jQuery.sheet.instance.length, settings.parent));
+			o.sheetInstance = jQuery.sheet.createInstance(settings, jQuery.sheet.instance.length, o);
+			jQuery.sheet.instance.push(o.sheetInstance);
 		} else {
-			jQuery.sheet.instance = [jQuery.sheet.createInstance(settings, 0, settings.parent)];
+			o.sheetInstance = jQuery.sheet.createInstance(settings, 0, o);
+			jQuery.sheet.instance = [o.sheetInstance];
 		}
 		return o;
 	}
@@ -170,7 +172,7 @@ jQuery.sheet = {
 				sheet: 				'jSheet_' + I + '_',
 				tableControl:		'tableControl_' + I + '_',
 				tab:				'jSheetTab_' + I,
-				tabContainer:		'jSheetTabContainer_' + I,
+				tabContainer:		'jSheetTabContainer_' + I + '_',
 				ui:					'jSheetUI_' + I
 			},
 			cl: {//cl = class references
@@ -217,6 +219,25 @@ jQuery.sheet = {
 				uiSheet:			'ui-widget-content',
 				uiTab:				'ui-widget-header',
 				uiTabActive:		'ui-state-highlight'
+			},
+			kill: function() {
+				jS.obj.tabContainer().remove();
+				jS.obj.fullScreen().remove();
+				jS.obj.inPlaceEdit().remove();
+				origParent.removeClass(jS.cl.uiParent).html('');
+				cE = s = jQuery.sheet.instance[I] = jS = origParent.sheetInstance = null;
+				delete cE;
+				delete s;
+				delete jQuery.sheet.instance[I];
+				delete jS;
+				delete origParent.sheetInstance;
+			},
+			killAll: function() {
+				for (var i = 0; i < jQuery.sheet.instance.length; i++) {
+					try {
+						jQuery.sheet.instance[i].kill();
+					} catch(e) {}
+				}
 			},
 			controlFactory: {
 				addRowMulti: function(qty, isBefore) {
@@ -1026,26 +1047,34 @@ jQuery.sheet = {
 					return false;
 				},
 				cellSetFocusFromCoordinates: function(left, top, skipOffset) {
-					var paneOffset = (skipOffset ? {left: 0, top: 0} : jS.obj.pane().offset());
+					var pane = jS.obj.pane();
+					var paneOffset = (skipOffset ? {left: 0, top: 0} : pane.offset());
+					
 					top += paneOffset.top + 2;
 					left += paneOffset.left + 2;
 					
-					var td = jQuery(document.elementFromPoint(left, top));
-					
-					/*
-					//I use this snippet to help me know where the point was positioned
-					jQuery('<div class="ui-widget-content" style="position: absolute;">TESTING TESTING</div>')
-						.css('top', top + 'px')
-						.css('left', left + 'px')
-						.appendTo('body');
-					*/
-					
-					if (jS.isTd(td)) {
-						jS.themeRoller.cell.clearHighlighted();
-						jS.cellEdit(td);
-						return false;
+					//here we double check that the coordinates are inside that of the pane, if so then we can continue
+					if ((top >= paneOffset.top && top <= paneOffset.top + pane.height()) &&
+						(left >= paneOffset.left && left <= paneOffset.left + pane.width())) {
+						var td = jQuery(document.elementFromPoint(left - $window.scrollLeft(), top - $window.scrollTop()));
+						
+						
+						//I use this snippet to help me know where the point was positioned
+						/*jQuery('<div class="ui-widget-content" style="position: absolute;">TESTING TESTING</div>')
+							.css('top', top + 'px')
+							.css('left', left + 'px')
+							.appendTo('body');
+						*/
+						
+						if (jS.isTd(td)) {
+							jS.themeRoller.cell.clearHighlighted();
+							jS.cellEdit(td);
+							return false;
+						} else {
+							return true;
+						}
 					} else {
-						return true;
+						return false;
 					}
 				},
 				cellSetFocusFromKeyCode: function(e) { //invoces a click on next/prev cell
@@ -1328,8 +1357,8 @@ jQuery.sheet = {
 					
 					jS.sheetSyncSize();
 				} else { //here we make a full screen
-					var w = jQuery(window).width() - 15;
-					var h = jQuery(window).height() - 35;
+					var w = $window.width() - 15;
+					var h = $window.height() - 35;
 					s.width = w;
 					s.height = h;
 					
@@ -2724,6 +2753,7 @@ jQuery.sheet = {
 				}
 			},
 			cellSetActiveMulti: function(e) {
+				var ooSelectModel = function() {};
 				var o = {
 					startRow: e.target.parentNode.rowIndex,
 					startColumn: e.target.cellIndex,
@@ -2739,9 +2769,8 @@ jQuery.sheet = {
 							o.lastRow = o.endRow;
 							o.lastColumn = o.endColumn;
 							
-							if (s.cellSelectModel == 'oo') { //open office behavior for selecting cells
-								jS.cellEdit(jQuery(target));
-							}
+							//open office select model, left out to prevent if statement from firing all the time
+							ooSelectModel(target);
 							
 							o.cycleHighlighted(jS.themeRoller.cell.setHighlighted);
 						}
@@ -2756,7 +2785,16 @@ jQuery.sheet = {
 				};//These are the events used to selected multiple rows.
 				
 				if (typeof(o.startColumn) != 'undefined') {
-				
+					
+					if (s.cellSelectModel == 'oo') { //open office behavior for selecting cells
+						ooSelectModel = function(target) {
+							var td = jQuery(target);
+							if (jS.isTd(td)) {
+								jS.cellEdit(td);
+							}
+						};
+					}
+					
 					jS.themeRoller.cell.clearHighlighted();
 					jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, e.target.parentNode.rowIndex, e.target.cellIndex));
 					
@@ -3758,6 +3796,7 @@ jQuery.sheet = {
 			}
 		};
 		
+		var $window = jQuery(window);
 		
 		//initialize this instance of sheet
 		jS.s = s;
@@ -3821,7 +3860,7 @@ jQuery.sheet = {
 			}
 		}
 		
-		jQuery(window).resize(function() {
+		$window.resize(function() {
 			s.width = s.parent.width();
 			s.height = s.parent.height();
 			jS.sheetSyncSize();
@@ -3908,7 +3947,7 @@ jQuery.sheet = {
 				for (var x = 0; x <= size_r; x++) {				
 					var cur_row = jQuery('<tr />').appendTo(table);
 					
-					for(var y = 0; y <= size_c; y++) {	
+					for (var y = 0; y <= size_c; y++) {	
 						var cur_val = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].value;
 						var style = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].style;
 						
