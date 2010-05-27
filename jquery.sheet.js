@@ -1766,7 +1766,7 @@ jQuery.sheet = {
 						formula = formula.replace(cE.regEx.cell, 
 							function(ignored, colStr, rowStr, pos) {
 								var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
-								if (!colStr.match('SHEET') &&
+								if (!colStr.match(cE.regEx.sheet) &&
 									charAt[0] != ':' &&
 									charAt[1] != ':'
 								) { //verify it's not a range or an exact location
@@ -1786,7 +1786,7 @@ jQuery.sheet = {
 						formula = formula.replace(cE.regEx.range, 
 							function(ignored, startColStr, startRowStr, endColStr, endRowStr, pos) {
 								var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
-								if (!startColStr.match('SHEET') &&
+								if (!startColStr.match(cE.regEx.sheet) &&
 									charAt[0] != ':'
 								) {
 									
@@ -1833,7 +1833,7 @@ jQuery.sheet = {
 						charAt[0] = (charAt[0] ? charAt[0] : '');
 						charAt[1] = (charAt[1] ? charAt[1] : '');
 						
-						if (colStr.match('SHEET') || 
+						if (colStr.match(cE.regEx.sheet) || 
 							charAt[0] == ':' || 
 							charAt[1] == ':'
 						) { //verify it's not a range or an exact location
@@ -3460,7 +3460,7 @@ jQuery.sheet = {
 				// Converts A to 1, B to 2, Z to 26, AA to 27.
 				var num = 0;
 				for (var i = 0; i < str.length; i++) {
-					var digit = str.charCodeAt(i) - 65 + 1;	   // 65 == 'A'.
+					var digit = str.toUpperCase().charCodeAt(i) - 65 + 1;	   // 65 == 'A'.
 					num = (num * 26) + digit;
 				}
 				return num;
@@ -3505,10 +3505,12 @@ jQuery.sheet = {
 				range: 				/\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g, //A1:B4
 				remoteCell:			/\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g, //SHEET1:A1
 				remoteCellRange: 	/\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g, //SHEET1:A1:B4
+				sheet: 				/SHEET/,
 				cellInsensitive: 				/\$?([a-zA-Z]+)\$?([0-9]+)/gi, //a1
 				rangeInsensitive: 				/\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/gi, //a1:a4
 				remoteCellInsensitive:			/\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/gi, //sheet1:a1
 				remoteCellRangeInsensitive: 	/\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/gi, //sheet1:a1:b4
+				sheetInsensitive:	/SHEET/i,
 				amp: 				/&/g,
 				gt: 				/</g,
 				lt: 				/>/g,
@@ -3822,14 +3824,6 @@ jQuery.sheet = {
 			jS.log = emptyFN;
 		}
 		
-		//this makes it case insensitive
-		if (s.caseInsensitive) {
-			cE.regEx.cell = cE.regEx.cellInsensitive;
-			cE.regEx.range = cE.regEx.rangeInsensitive;
-			cE.regEx.remoteCell = cE.regEx.remoteCellInsensitive;
-			cE.regEx.remoteCellRange = cE.regEx.remoteCellRangeInsensitive;
-		}
-		
 		if (!s.showErrors) {
 			cE.makeError = emptyFN;
 		}
@@ -3845,13 +3839,7 @@ jQuery.sheet = {
 		jS.log('Startup');
 		
 
-		//Make functions upper and lower case compatible
-		for (var k in cE.fn) {
-			var kLower = k.toLowerCase();
-			if (kLower != k) {
-				cE.fn[kLower] = cE.fn[k];
-			}
-		}
+		
 		
 		$window.resize(function() {
 			s.width = s.parent.width();
@@ -3859,7 +3847,24 @@ jQuery.sheet = {
 			jS.sheetSyncSize();
 		});
 		
-		jQuery.extend(cE.fn, s.calculations);
+		cE.fn = jQuery.extend(cE.fn, s.calculations);
+		
+		//this makes cells and functions case insensitive
+		if (s.caseInsensitive) {
+			cE.regEx.cell = cE.regEx.cellInsensitive;
+			cE.regEx.range = cE.regEx.rangeInsensitive;
+			cE.regEx.remoteCell = cE.regEx.remoteCellInsensitive;
+			cE.regEx.remoteCellRange = cE.regEx.remoteCellRangeInsensitive;
+			cE.regEx.sheet = cE.regEx.sheetInsensitive;
+			
+			//Make sheet functions upper and lower case compatible
+			for (var k in cE.fn) {
+				var kLower = k.toLowerCase();
+				if (kLower != k) {
+					cE.fn[kLower] = cE.fn[k];
+				}
+			}
+		}
 		
 		jS.openSheet(o);
 		
@@ -4001,10 +4006,16 @@ jQuery.sheet = {
 		}
 	},
 	killAll: function() {
-		for (var i = 0; i < jQuery.sheet.instance.length; i++) {
-			try {
-				jQuery.sheet.instance[i].kill();
-			} catch(e) {}
+		if (jQuery.sheet) {
+			if (jQuery.sheet.instance) {
+				for (var i = 0; i < jQuery.sheet.instance.length; i++) {
+					if (jQuery.sheet.instance[i]) {
+						if (jQuery.sheet.instance[i].kill) {
+							jQuery.sheet.instance[i].kill();
+						}
+					}
+				}
+			}
 		}
 	}
 };
