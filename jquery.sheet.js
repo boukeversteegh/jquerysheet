@@ -133,7 +133,9 @@ jQuery.sheet = {
 				barLeftParentAll:	function() { return s.parent.find('div.' + jS.cl.barLeftParent); },
 				cell: 				function() { return s.parent.find('td.' + jS.cl.cellActive); },
 				cellActive:			function() { return s.parent.find('td.' + jS.cl.cellActive); },
-				cellHighlighted:	function() { return s.parent.find('td.' + jS.cl.cellHighlighted); },
+				cellHighlighted:	function() { 
+					return jQuery(jS.highlightedLast.td ? jS.highlightedLast.td :jS.obj.cellActive()); //give them a dud td;
+				},
 				controls:			function() { return jQuery('#' + jS.id.controls); },
 				formula: 			function() { return jQuery('#' + jS.id.formula); },
 				fullScreen:			function() { return jQuery('div.' + jS.cl.fullScreen); },
@@ -297,7 +299,7 @@ jQuery.sheet = {
 								bar: jS.obj.barLeft().find('div' + eq),
 								barParent: jS.obj.barLeft(),
 								cells: function() {
-									return sheet.find('tr' + eq)
+									return sheet.find('tr' + eq);
 								},
 								col: function() { return ''; },
 								newBar: '<div class="' + jS.cl.uiBar + '" style="height: ' + (s.colMargin - s.boxModelCorrection) + 'px;" />',
@@ -1129,7 +1131,11 @@ jQuery.sheet = {
 						jS.getTdRange(e, jS.obj.formula().val());
 						return false;
 					} else {
-						return jS.cellSetActiveMulti(e);
+						if (jS.isTd([e.target])) {
+							return jS.cellEdit(jQuery(e.target), true);
+						} else {
+							return true;
+						}
 					}			
 				},
 				cellOnDblClick: function(e) {
@@ -1398,7 +1404,7 @@ jQuery.sheet = {
 					o = (o ? o : jS.obj.sheet());
 					o.find('col').each(function() {
 						w += jQuery(this).width();
-					})
+					});
 					o.width(w);
 					return w;
 				},
@@ -1657,13 +1663,13 @@ jQuery.sheet = {
 						o
 							.attr('formula', (skipOffsetForumals ? v : jS.offsetFormula(v, i + formulaOffset, 0)))
 							.html(''); //we subtract one here because cells are 1 based and indexes are 0 based
-					}
+					};
 				} else {
 					fn = function (o) {
 						o
 							.removeAttr('formula')
 							.html(v);
-					}
+					};
 				}
 				
 				function fill(r, c, i) {
@@ -1820,6 +1826,16 @@ jQuery.sheet = {
 					}
 				}
 			},
+			cycleCellsAndMaintainPoint: function(fn, firstLoc, lastLoc) {
+				var o = [];
+				for (var i = (firstLoc[0] < lastLoc[0] ? firstLoc[0] : lastLoc[0]) ; i <= (firstLoc[0] > lastLoc[0] ? firstLoc[0] : lastLoc[0]); i++) {
+					for (var j = (firstLoc[1] < lastLoc[1] ? firstLoc[1] : lastLoc[1]); j <= (firstLoc[1] > lastLoc[1] ? firstLoc[1] : lastLoc[[1]]); j++) {
+						o.push(jS.getTd(jS.i, i, j));
+						fn(o[o.length - 1]);
+					}
+				}
+				return o;
+			},
 			offsetFormula: function(formula, rowOffset, colOffset, includeRanges) {		
 				//Cell References Fixed
 				var charAt = [];
@@ -1929,6 +1945,11 @@ jQuery.sheet = {
 					clearHighlighted: function() {
 						jS.obj.cellHighlighted()
 							.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
+						
+						jS.highlightedLast.rowStart = -1;
+						jS.highlightedLast.colStart = -1;
+						jS.highlightedLast.rowEnd = -1;
+						jS.highlightedLast.colEnd = -1;
 					}
 				},
 				bar: {
@@ -2051,7 +2072,7 @@ jQuery.sheet = {
 					jS.obj.label().html(v);
 				}
 			},
-			cellEdit: function(td) {
+			cellEdit: function(td, isDrag) {
 				//This finished up the edit of the last cell
 				jS.evt.cellEditDone();
 				jS.followMe(td);
@@ -2069,18 +2090,73 @@ jQuery.sheet = {
 					.val(v)
 					.focus()
 					.select();
-				jS.cellSetActive(td, loc);
+				jS.cellSetActive(td, loc, isDrag);
 			},
-			cellSetActive: function(td, loc) {
-				jS.cellLast.td = td; //save the current cell/td
-				jS.cellLast.row = jS.rowLast = loc[0];
-				jS.cellLast.col = jS.colLast = loc[1];
-				
-				jS.themeRoller.bar.clearActive();
-				
-				jS.themeRoller.cell.setActive(); //themeroll the cell and bars
-				jS.themeRoller.bar.setActive('left', jS.cellLast.row);
-				jS.themeRoller.bar.setActive('top', jS.cellLast.col);
+			cellSetActive: function(td, loc, isDrag) {
+				if (typeof(loc[1]) != 'undefined') {
+					jS.cellLast.td = td; //save the current cell/td
+					
+					jS.cellLast.row = jS.rowLast = loc[0];
+					jS.cellLast.col = jS.colLast = loc[1];
+					
+					jS.themeRoller.bar.clearActive();
+					jS.themeRoller.cell.clearHighlighted();
+					
+					jS.highlightedLast.td = td;
+					
+					jS.themeRoller.cell.setActive(); //themeroll the cell and bars
+					jS.themeRoller.bar.setActive('left', jS.cellLast.row);
+					jS.themeRoller.bar.setActive('top', jS.cellLast.col);
+					
+					var ooSelectModel;
+					
+					jS.highlightedLast.rowStart = loc[0];
+					jS.highlightedLast.colStart = loc[1];
+					jS.highlightedLast.rowLast = loc[0];
+					jS.highlightedLast.colLast = loc[1];
+					
+					switch (s.cellSelectModel) {
+						case 'excel':
+						case 'gdocs':
+							ooSelectModel = function() {};
+							break;
+						case 'oo':
+							ooSelectModel = function(target) {
+								var td = jQuery(target);
+								if (jS.isTd(td)) {
+									jS.cellEdit(td);
+								}
+							};
+							break;
+					}
+					
+					if (isDrag) {
+						jS.obj.pane()
+							.mousemove(function(e) {
+								var endLoc = jS.getTdLocation([e.target]);
+								
+								if (loc[1] != endLoc[1] || loc[0] != endLoc[0]) { //this prevents this method from firing too much
+									jS.themeRoller.cell.clearHighlighted();
+									
+									jS.highlightedLast.colEnd = endLoc[1];
+									jS.highlightedLast.rowEnd = endLoc[0];
+									
+									//open office select model, left out to prevent if statement from firing all the time
+									ooSelectModel(e.target);
+									
+									jS.highlightedLast.td = jS.cycleCellsAndMaintainPoint(jS.themeRoller.cell.setHighlighted, loc, endLoc);
+								}
+							});
+						
+						jQuery(document)
+							.one('mouseup', function() {
+	
+								jS.obj.pane()
+									.unbind('mousemove')
+									.unbind('mouseup');
+							});
+					}
+				}
 			},
 			colLast: 0,
 			rowLast: 0,
@@ -2089,6 +2165,13 @@ jQuery.sheet = {
 				row: -1,
 				col: -1,
 				isEdit: false
+			},
+			highlightedLast: {
+				td: jQuery('<td />'),
+				rowStart: -1,
+				colStart: -1,
+				rowEnd: -1,
+				colEnd: -1
 			},
 			cellStyleToggle: function(setClass, removeClass) {
 				//Lets check to remove any style classes
@@ -2745,74 +2828,6 @@ jQuery.sheet = {
 					}
 				}
 			},
-			cellSetActiveMulti: function(e) {
-				var ooSelectModel = function() {};
-				var o = {
-					startRow: e.target.parentNode.rowIndex,
-					startColumn: e.target.cellIndex,
-					lastRow: -1,
-					lastColumn: -1,
-					highlight: function(target) {
-						o.endRow = target.parentNode.rowIndex;
-						o.endColumn = target.cellIndex;
-						
-						if (o.lastRow != o.endRow || o.lastColumn != o.endColumn) { //this prevents this method from firing too much
-							jS.themeRoller.cell.clearHighlighted();
-							
-							o.lastRow = o.endRow;
-							o.lastColumn = o.endColumn;
-							
-							//open office select model, left out to prevent if statement from firing all the time
-							ooSelectModel(target);
-							
-							o.cycleHighlighted(jS.themeRoller.cell.setHighlighted);
-						}
-					},
-					cycleHighlighted: function(fn) {
-						for (var i = (o.startRow < o.endRow ? o.startRow : o.endRow) ; i <= (o.startRow > o.endRow ? o.startRow : o.endRow); i++) {
-							for (var j = (o.startColumn < o.endColumn ? o.startColumn : o.endColumn); j <= (o.startColumn > o.endColumn ? o.startColumn : o.endColumn); j++) {
-								fn(jS.getTd(jS.i, i, j));
-							}
-						}
-					}
-				};//These are the events used to selected multiple rows.
-				
-				if (typeof(o.startColumn) != 'undefined') {
-					
-					if (s.cellSelectModel == 'oo') { //open office behavior for selecting cells
-						ooSelectModel = function(target) {
-							var td = jQuery(target);
-							if (jS.isTd(td)) {
-								jS.cellEdit(td);
-							}
-						};
-					}
-					
-					jS.themeRoller.cell.clearHighlighted();
-					jS.themeRoller.cell.setHighlighted(jS.getTd(jS.i, e.target.parentNode.rowIndex, e.target.cellIndex));
-					
-					switch (s.cellSelectModel) {
-						case 'excel':
-						case 'gdocs': jS.cellEdit(jQuery(e.target)); break;
-					}
-					
-					jS.obj.pane()
-						.mousemove(function(e) {
-							o.highlight(e.target);
-						});
-					
-					//We do this to ensure this function runs, the user may not move their mouse
-					o.highlight(e.target);
-					
-					jQuery(document)
-						.one('mouseup', function() {
-
-							jS.obj.pane()
-								.unbind('mousemove')
-								.unbind('mouseup');
-						});
-				}
-			},
 			cellSetActiveBar: function(type, start, end) {
 				var loc = jS.sheetSize();
 				var first = (start < end ? start : end);
@@ -2829,7 +2844,7 @@ jQuery.sheet = {
 					}
 					
 					setActive = function(td) { //save resources
-						return td
+						return td;
 					};
 					
 					return td;
@@ -2837,14 +2852,15 @@ jQuery.sheet = {
 
 				var cycleFn;
 
+				var td = [];
+				
 				switch (type) {
 					case 'col':
 						cycleFn = function() {
 							for (var i = 0; i <= loc[0]; i++) { //rows
 								for (var j = first; j <= last; j++) { //cols
-									jS.themeRoller.cell.setHighlighted(
-										setActive(jS.getTd(jS.i, i, j), 0, start, 0, end)
-									);
+									td.push(jS.getTd(jS.i, i, j));
+									jS.themeRoller.cell.setHighlighted(setActive(td[td.length - 1], 0, start, 0, end));
 								}
 							}
 						};
@@ -2853,9 +2869,8 @@ jQuery.sheet = {
 						cycleFn = function() {
 							for (var i = first; i <= last; i++) { //rows
 								for (var j = 0; j <= loc[1]; j++) { //cols
-									jS.themeRoller.cell.setHighlighted(
-										setActive(jS.getTd(jS.i, i, j), start, 0, end, 0)
-									);
+									td.push(jS.getTd(jS.i, i, j));
+									jS.themeRoller.cell.setHighlighted(setActive(td[td.length - 1], start, 0, end, 0));
 								}
 							}
 						};
@@ -2868,16 +2883,24 @@ jQuery.sheet = {
 							};
 							for (var i = 0; i <= loc[0]; i++) {
 								for (var j = 0; j <= loc[1]; j++) {
-									var td = jS.getTd(jS.i, i, j);
-									setActive(td);
-									jS.themeRoller.cell.setHighlighted(td);
+									td.push(jS.getTd(jS.i, i, j));
+									setActive(td[td.length - 1]);
+									jS.themeRoller.cell.setHighlighted(td[td.length - 1]);
 								}
 							}
+							first = [0, 0];
+							last = loc;
 						};
 						break;
 				}
 				
 				cycleFn();
+				
+				jS.highlightedLast.td = td;
+				jS.highlightedLast.rowStart = first[0];
+				jS.highlightedLast.colStart = first[1];
+				jS.highlightedLast.rowEnd = last[0];
+				jS.highlightedLast.colEnd = last[1];
 			},
 			sheetClearActive: function() {
 				jS.obj.formula().val('');
