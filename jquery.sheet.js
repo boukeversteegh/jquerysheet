@@ -131,11 +131,8 @@ jQuery.sheet = {
 				barLeftAll:			function() { return s.parent.find('div.' + jS.cl.barLeft); },
 				barLeftParent: 		function() { return jQuery('#' + jS.id.barLeftParent + jS.i); },
 				barLeftParentAll:	function() { return s.parent.find('div.' + jS.cl.barLeftParent); },
-				cell: 				function() { return s.parent.find('td.' + jS.cl.cellActive); },
-				cellActive:			function() { return s.parent.find('td.' + jS.cl.cellActive); },
-				cellHighlighted:	function() { 
-					return jQuery(jS.highlightedLast.td ? jS.highlightedLast.td :jS.obj.cellActive()); //give them a dud td;
-				},
+				cellActive:			function() { return jQuery(jS.cellLast.td); },
+				cellHighlighted:	function() { return jQuery(jS.highlightedLast.td); },
 				controls:			function() { return jQuery('#' + jS.id.controls); },
 				formula: 			function() { return jQuery('#' + jS.id.formula); },
 				fullScreen:			function() { return jQuery('div.' + jS.cl.fullScreen); },
@@ -1519,7 +1516,7 @@ jQuery.sheet = {
 			toggleHide: {//These are not ready for prime time
 				row: function(i) {
 					if (!i) {//If i is empty, lets get the current row
-						i = jS.obj.cell().parent().attr('rowIndex');
+						i = jS.obj.cellActive().parent().attr('rowIndex');
 					}
 					if (i) {//Make sure that i equals something
 						var o = jS.obj.barLeft().find('div').eq(i);
@@ -1541,7 +1538,7 @@ jQuery.sheet = {
 				},
 				column: function(i) {
 					if (!i) {
-						i = jS.obj.cell().attr('cellIndex');
+						i = jS.obj.cellActive().attr('cellIndex');
 					}
 					if (i) {
 						//We need to hide both the col and td of the same i
@@ -2637,17 +2634,24 @@ jQuery.sheet = {
 							max_row = i;
 							
 							var cur_row_data = '';  //row buffer
-							var h = $(this).attr('height');
-							var cur_row_height = ' h="' + (h ? h : s.colMargin + 'px') + '"';
+							var h = jQuery(this).attr('height');
+							var height = (h ? h : s.colMargin);
 
 							jQuery(this).find('td').each(function(){
 								count++;
 
 								var id = jQuery(this).attr('id');
+								var colSpan = jQuery(this).attr('colspan');
+								colSpan = (colSpan > 1 ? colSpan : null);
 								var txt = jQuery.trim(jQuery(this).text());
 								var pos = id.search(/cell_c/i);
 								var pos2 = id.search(/_r/i);
-							
+								var formula = jQuery(this).attr('formula');
+								if (formula)
+								{
+									txt = formula;
+								}
+								
 								if (txt != '' && pos != -1 && pos2 != -1) {
 									cur_column = id.substr(pos+6, pos2-(pos+6));
 									cur_row = id.substr(pos2+2);
@@ -2657,26 +2661,25 @@ jQuery.sheet = {
 									if (max_row < cur_row) max_row = cur_row;
 
 									//if (count == 1) x += '<r'+cur_row+'>';
-
-									var formula = jQuery(this).attr('formula');
-									if (formula)
-									{
-										txt = formula;
-									}
 									
 									var cl = jQuery(this).attr('class');
 									var style = jQuery(this).attr('style');
 									
 									//Add to current row
-									cur_row_data += '<c' + cur_column + '' + (style ? ' style=\"' + style + '\"' : '') + (cl ? ' class=\"' + cl + '\"' : '') + '>' + $('<div/>').text(txt).html() + '</c' + cur_column + '>';
+									cur_row_data += '<c' + cur_column +
+										(style ? ' style=\"' + style + '\"' : '') + 
+										(cl ? ' class=\"' + cl + '\"' : '') + 
+										(colSpan ? ' colspan=\"' + colSpan + '\"' : '') +
+									'>' + txt + '</c' + cur_column + '>';
 								}
 							});
 
 							//if (cur_row != '')
 							//  x += '</r'+cur_row+'>';
 
-							if (cur_row_data.length > 0)// if row contained anything, add it
-								x += '<r'+cur_row+cur_row_height+'>'+cur_row_data+'</r'+cur_row+'>';
+							if (cur_row_data.length > 0) {// if row contained anything, add it
+								x += '<r' + cur_row + ' h=\"' + height + '\">' + cur_row_data + '</r' + cur_row + '>';
+							}
 							cur_column = cur_row = '';
 						});
 
@@ -2712,6 +2715,8 @@ jQuery.sheet = {
 								count++;
 								
 								var id = jQuery(this).attr('id');
+								var colSpan = jQuery(this).attr('colspan');
+								colSpan = (colSpan > 1 ? colSpan : null);
 								var txt = jQuery.trim(jQuery(this).text());
 								var pos = id.search(/cell_c/i);
 								var pos2 = id.search(/_r/i);
@@ -2737,7 +2742,8 @@ jQuery.sheet = {
 									try {
 										doc['data']['r'+cur_row]['c'+cur_column] = {
 											value: txt,
-											style: style
+											style: style,
+											colspan: colSpan
 										};
 									} catch (e) {}
 								}
@@ -3907,6 +3913,7 @@ jQuery.sheet = {
 				var columnCount = metaData.find('columns').text();
 				var rowCount = metaData.find('rows').text();
 				var title = metaData.find('title').html();
+				var data = jQuery(this).find('data');
 				title = (title ? title : 'Spreadsheet ' + i);
 				var col_widths = metaData.find('col_widths').children();
 				
@@ -3918,26 +3925,40 @@ jQuery.sheet = {
 					colgroup.append('<col width="' + w + 'px" style="width: ' + w + 'px;" />');
 				}
 				
-				table.width(tableWidth);
+				table
+					.width(tableWidth)
+					.attr('title', title);
 				
-				jQuery(this).find('data').children().each(function(i) { //rows
-					var thisRow = jQuery('<tr />');
-					var tds = jQuery(this).children();
+				for (var i = 0; i < rowCount; i++) { //rows
+					var tds = data.find('R' + i);
+					var height = data.attr('h');
+					var thisRow = jQuery('<tr height="' + height + '" />');
+					
 					for (var j = 0; j < columnCount; j++) { //cols, they need to be counted because we don't send them all on export
-						var newTd = '<td />';
-						var td = tds.eq(j);
+						var newTd = '<td />'; //we give td a default empty td
+						var td = tds.find('C' + j);
 						
 						if (td) {
-							var o = td.html();
+							var o = td.text();
 							var cl = td.attr('class');
 							var style = td.attr('style');
+							var colSpan = td.attr('colspan');
 							
-							if (o) {
+							var formula = '';
+							var text = '';
+							if (o.length > 0) {
 								if (o.charAt(0) == '=') {
-									newTd = '<td formula="' + o + '"' + (style ? ' style=\"' + style + '\"' : '') + (cl ? ' class=\"' + cl + '\"' : '') + ' />';
+									formula = ' formula="' + o + '"';
 								} else {
-									newTd = '<td>' + o + '</td>';
+									text = o;
 								}
+								
+								newTd = '<td' + formula + 
+									(style ? ' style=\"' + style + '\"' : '') + 
+									(cl ? ' class=\"' + cl + '\"' : '') +
+									(colSpan ? ' colspan=\"' + colSpan + '\"' : '') +
+									(height ? ' height=\"' + height + 'px\"' : '') +
+								'>' + text + '</td>';
 							}
 						}
 						
@@ -3945,7 +3966,7 @@ jQuery.sheet = {
 					}
 					
 					tbody.append(thisRow);
-				});
+				}
 				
 				tables.append(table);
 			});
@@ -3965,14 +3986,19 @@ jQuery.sheet = {
 			
 				var table = jQuery("<table title='" + title + "' />");
 				
-				for (var x = 0; x <= size_r; x++) {				
+				for (var x = 0; x <= size_r; x++) { //tr
 					var cur_row = jQuery('<tr />').appendTo(table);
 					
-					for (var y = 0; y <= size_c; y++) {	
+					for (var y = 0; y <= size_c; y++) { //td
 						var cur_val = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].value;
+						var colSpan = sheet[i].data["r"+ (x + 1)]["c" + (y + 1)].colSpan;
 						var style = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].style;
+						var cl = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].cl;
 						
-						var cur_td = jQuery('<td' + (style ? ' style=\"' + style + '\"' : '' ) + ' />');
+						var cur_td = jQuery('<td' + (style ? ' style=\"' + style + '\"' : '' ) + 
+								(cl ? ' class=\"' + cl + '\"' : '' ) + 
+								(colSpan ? ' colspan=\"' + colSpan + '\"' : '' ) + 
+							' />');
 						try {
 							if(typeof(cur_val) == "number") {
 								cur_td.html(cur_val);
