@@ -18,7 +18,7 @@
 	<a onclick="sheetInstance.viewSource(true); return false;" title="Shows the HTML that makes up the current spreadsheet.">Pretty Source</a>
 	<a onclick="sheetInstance.viewSource(false); return false;" title="Shows the compact HTML that makes up the current spreadsheet.">Compact Source</a>
 	<a onclick="sheetInstance.print(sheetInstance.HTMLtoPrettySource(jQuery(sheetInstance.exportSheet.xml(true))[0])); return false;">As XML</a>
-	<a onclick="sheetInstance.print(sheetInstance.exportSheet.json()); return false;">As JSON</a>
+	<a onclick="sheetInstance.print(JSON.stringify(sheetInstance.exportSheet.json())); return false;">As JSON</a>
 	<a menu="menuViewFunctionReference">Function Reference</a>
 	<a onclick="sheetInstance.toggleFullScreen();">Toggle Full Screen View</a>
 </div>

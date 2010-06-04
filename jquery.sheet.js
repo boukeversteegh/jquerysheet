@@ -530,7 +530,7 @@ jQuery.sheet = {
 						if (jQuery.mbMenu) {
 							jQuery('<div />').load(s.urlMenu, function() {
 								jQuery('<td style="width: 50px; text-align: center;" id="' + jS.id.menu + '" class="rootVoices ui-corner-tl ' + jS.cl.menu + '" />')
-									.html(jQuery(this).html().replace(/sheetInstance/g, "$.sheet.instance[0]"))
+									.html(jQuery(this).html().replace(/sheetInstance/g, "jQuery.sheet.instance[0]"))
 									.prependTo(firstRowTr)
 									.buildMenu({
 										menuWidth:		100,
@@ -2607,159 +2607,121 @@ jQuery.sheet = {
 			exportSheet: {
 				xml: function (skipCData) {
 					var sheetClone = jS.sheetDecorateRemove(true);			
-					var result = "";
+					var document = "";
 					
 					var cdata = ['<![CDATA[',']]>'];
 					
 					if (skipCData) {
 						cdata = ['',''];
 					}
-					
+
 					jQuery(sheetClone).each(function() {
-						var x = '';
-						var title = jQuery(this).attr('title');
+						var row = '';
+						var table = jQuery(this);
+						var colCount = 0;
+						var col_widths = '';
 
-						var col_widths='';
-
-						jQuery(this).find('colgroup').children().each(function (i) {
-							col_widths += '<c'+i+'>' + $(this).attr('width') + '</c'+i+'>';
+						table.find('colgroup').children().each(function (i) {
+							col_widths += '<c' + i + '>' + (jQuery(this).attr('width') + '').replace('px', '') + '</c' + i + '>';
 						});
-
-						var count = 0;
-						var cur_column = cur_row = '';
-						var max_column = max_row = 0;
-
-						jQuery(this).find('tr').each(function(i){
-							count = 0;
-							max_row = i;
+						
+						var trs = table.find('tr');
+						var rowCount = trs.length;
+						
+						trs.each(function(i){
+							var col = '';
 							
-							var cur_row_data = '';  //row buffer
-							var h = jQuery(this).attr('height');
+							var tr = jQuery(this);
+							var h = tr.attr('height');
 							var height = (h ? h : s.colMargin);
-
-							jQuery(this).find('td').each(function(){
-								count++;
-
-								var id = jQuery(this).attr('id');
-								var colSpan = jQuery(this).attr('colspan');
-								colSpan = (colSpan > 1 ? colSpan : null);
-								var txt = jQuery.trim(jQuery(this).text());
-								var pos = id.search(/cell_c/i);
-								var pos2 = id.search(/_r/i);
-								var formula = jQuery(this).attr('formula');
-								if (formula)
-								{
-									txt = formula;
-								}
+							var tds = tr.find('td');
+							colCount = tds.length;
+							
+							tds.each(function(j){
+								var td = jQuery(this);
+								var colSpan = td.attr('colspan');
+								colSpan = (colSpan > 1 ? colSpan : '');
 								
-								if (txt != '' && pos != -1 && pos2 != -1) {
-									cur_column = id.substr(pos+6, pos2-(pos+6));
-									cur_row = id.substr(pos2+2);
-
-									if (max_column < cur_column) max_column = cur_column;
-
-									if (max_row < cur_row) max_row = cur_row;
-
-									//if (count == 1) x += '<r'+cur_row+'>';
+								var formula = td.attr('formula');
+								var text = (formula ? formula : td.text());
+								var cl = td.attr('class');
+								var style = td.attr('style');
 									
-									var cl = jQuery(this).attr('class');
-									var style = jQuery(this).attr('style');
-									
-									//Add to current row
-									cur_row_data += '<c' + cur_column +
-										(style ? ' style=\"' + style + '\"' : '') + 
-										(cl ? ' class=\"' + cl + '\"' : '') + 
-										(colSpan ? ' colspan=\"' + colSpan + '\"' : '') +
-									'>' + txt + '</c' + cur_column + '>';
-								}
+								//Add to current row
+								col += '<c' + j +
+									(style ? ' style=\"' + style + '\"' : '') + 
+									(cl ? ' class=\"' + cl + '\"' : '') + 
+									(colSpan ? ' colspan=\"' + colSpan + '\"' : '') +
+								'>' + text + '</c' + j + '>';
 							});
-
-							//if (cur_row != '')
-							//  x += '</r'+cur_row+'>';
-
-							if (cur_row_data.length > 0) {// if row contained anything, add it
-								x += '<r' + cur_row + ' h=\"' + height + '\">' + cur_row_data + '</r' + cur_row + '>';
-							}
-							cur_column = cur_row = '';
+							
+							row += '<r' + i + ' h=\"' + height + '\">' + col + '</r' + i + '>';
 						});
 
-						result += '<document>' +
+						document += '<document title="' + table.attr('title') + '">' +
 									'<metadata>' +
-										'<columns>' + (parseInt(max_column) + 1) + '</columns>' +  //length is 1 based, index is 0 based
-										'<rows>' + (parseInt(max_row) + 1) + '</rows>' +  //length is 1 based, index is 0 based
-										'<title>' + title + '</title>' +
+										'<columns>' + colCount + '</columns>' +  //length is 1 based, index is 0 based
+										'<rows>' + rowCount + '</rows>' +  //length is 1 based, index is 0 based
 										'<col_widths>' + col_widths + '</col_widths>' +
 									'</metadata>' +
-									'<data>' + x + '</data>' +
+									'<data>' + row + '</data>' +
 								'</document>';
 					});
 
-					return '<documents>' + result + '</documents>';
+					return '<documents>' + document + '</documents>';
 				},
 				json: function() {
 					var sheetClone = jS.sheetDecorateRemove(true);
-					var docs = []; //documents
+					var documents = []; //documents
 					
 					jQuery(sheetClone).each(function() {
-						var doc = { //document
-							metadata:{},
-							data:{}
+						var document = {}; //document
+						document['metadata'] = {};
+						document['data'] = {};
+						
+						var table = jQuery(this);
+						
+						var trs = table.find('tr');
+						var rowCount = trs.length;
+						var colCount = 0;
+						var col_widths = '';
+						
+						trs.each(function(i) {
+							var tr = jQuery(this);
+							var tds = tr.find('td');
+							colCount = tds.length;
+							
+							document['data']['r' + i] = {};
+							document['data']['r' + i]['h'] = tr.attr('height');
+							
+							tds.each(function(j) {
+								var td = jQuery(this);
+								var colSpan = td.attr('colspan');
+								colSpan = (colSpan > 1 ? colSpan : null);
+								var formula = td.attr('formula');
+
+								document['data']['r' + i]['c' + j] = {
+									'value': (formula ? formula : td.text()),
+									'style': td.attr('style'),
+									'colspan': colSpan,
+									'cl': td.attr('class')
+								};
+							});
+						});
+						document['metadata'] = {
+							'columns': colCount, //length is 1 based, index is 0 based
+							'rows': rowCount, //length is 1 based, index is 0 based
+							'title': table.attr('title'),
+							'col_widths': {}
 						};
 						
-						var count = 0;
-						var cur_column = cur_row = '';
-						var max_column = max_row = 0;
-						jQuery(this).find('tr').each(function(){
-							count = 0;
-							jQuery(this).find('td').each(function(){
-								count++;
-								
-								var id = jQuery(this).attr('id');
-								var colSpan = jQuery(this).attr('colspan');
-								colSpan = (colSpan > 1 ? colSpan : null);
-								var txt = jQuery.trim(jQuery(this).text());
-								var pos = id.search(/cell_c/i);
-								var pos2 = id.search(/_r/i);
-								
-								if (txt != '' && pos != -1 && pos2 != -1) {
-									cur_column = id.substr(pos+6, pos2-(pos+6));
-									cur_row = id.substr(pos2+2);
-									
-									if (max_column < cur_column) max_column = cur_column;
-									
-									if (max_row < cur_row) max_row = cur_row;
-									
-									if (count == 1) doc['data']['r' + cur_row] = {};
-									
-									var formula = jQuery(this).attr('formula');
-									if (formula)
-									{
-										txt = formula;
-									}
-									
-									var style = jQuery(this).attr('style');
-									
-									try {
-										doc['data']['r'+cur_row]['c'+cur_column] = {
-											value: txt,
-											style: style,
-											colspan: colSpan
-										};
-									} catch (e) {}
-								}
-							});
-							
-							
-							cur_column = cur_row = '';
+						table.find('colgroup').children().each(function(i) {
+							document['metadata']['col_widths']['c' + i] = (jQuery(this).attr('width') + '').replace('px', '');
 						});
-						doc['metadata'] = {
-							columns: parseInt(max_column) + 1, //length is 1 based, index is 0 based
-							rows: parseInt(max_row) + 1, //length is 1 based, index is 0 based
-							title: jQuery(this).attr('title')
-						};
-						docs.push(doc); //append to documents
+						
+						documents.push(document); //append to documents
 					});
-					return docs;
+					return documents;
 				},
 				html: function() {
 					return jS.sheetDecorateRemove(true);
@@ -3907,14 +3869,13 @@ jQuery.sheet = {
 				var table = jQuery('<table />');
 				var tableWidth = 0;
 				var colgroup = jQuery('<colgroup />').appendTo(table);
-				var tbody = jQuery('<tbody />').appendTo(table);
+				var tbody = jQuery('<tbody />');
 			
 				var metaData = jQuery(this).find('metadata');
 				var columnCount = metaData.find('columns').text();
 				var rowCount = metaData.find('rows').text();
-				var title = metaData.find('title').html();
+				var title = jQuery(this).attr('title');
 				var data = jQuery(this).find('data');
-				title = (title ? title : 'Spreadsheet ' + i);
 				var col_widths = metaData.find('col_widths').children();
 				
 				//go ahead and make the cols for colgroup
@@ -3930,45 +3891,41 @@ jQuery.sheet = {
 					.attr('title', title);
 				
 				for (var i = 0; i < rowCount; i++) { //rows
-					var tds = data.find('R' + i);
-					var height = data.attr('h');
-					var thisRow = jQuery('<tr height="' + height + '" />');
+					var tds = data.find('r' + i);
+					var height = (data.attr('h') + '').replace('px', '');
+					height = parseInt(height);
+					
+					var thisRow = jQuery('<tr height="' + (height ? height : 18) + 'px" />');
 					
 					for (var j = 0; j < columnCount; j++) { //cols, they need to be counted because we don't send them all on export
 						var newTd = '<td />'; //we give td a default empty td
-						var td = tds.find('C' + j);
+						var td = tds.find('c' + j);
 						
 						if (td) {
-							var o = td.text();
+							var text = td.text() + '';
 							var cl = td.attr('class');
 							var style = td.attr('style');
 							var colSpan = td.attr('colspan');
 							
 							var formula = '';
-							var text = '';
-							if (o.length > 0) {
-								if (o.charAt(0) == '=') {
-									formula = ' formula="' + o + '"';
-								} else {
-									text = o;
-								}
-								
-								newTd = '<td' + formula + 
-									(style ? ' style=\"' + style + '\"' : '') + 
-									(cl ? ' class=\"' + cl + '\"' : '') +
-									(colSpan ? ' colspan=\"' + colSpan + '\"' : '') +
-									(height ? ' height=\"' + height + 'px\"' : '') +
-								'>' + text + '</td>';
+							if (text.charAt(0) == '=') {
+								formula = ' formula="' + text + '"';
 							}
+							
+							newTd = '<td' + formula + 
+								(style ? ' style=\"' + style + '\"' : '') + 
+								(cl ? ' class=\"' + cl + '\"' : '') +
+								(colSpan ? ' colspan=\"' + colSpan + '\"' : '') +
+								(height ? ' height=\"' + height + 'px\"' : '') +
+							'>' + text + '</td>';
 						}
-						
 						thisRow.append(newTd);
-					}
-					
+					}	
 					tbody.append(thisRow);
 				}
-				
-				tables.append(table);
+				table
+					.append(tbody)
+					.appendTo(tables);
 			});
 			
 			return tables.children();
@@ -3979,23 +3936,53 @@ jQuery.sheet = {
 			var tables = jQuery('<div />');
 			
 			for (var i = 0; i < sheet.length; i++) {
-				size_c = parseInt(sheet[i].metadata.columns) - 1;
-				size_r = parseInt(sheet[i].metadata.rows) - 1;
+				var colCount = parseInt(sheet[i].metadata.columns);
+				var rowCount = parseInt(sheet[i].metadata.rows);
 				title = sheet[i].metadata.title;
-				title = (title ? title : "Sreadsheet " + i);
+				title = (title ? title : "Spreadsheet " + i);
 			
-				var table = jQuery("<table title='" + title + "' />");
+				var table = jQuery("<table />");
+				var tableWidth = 0;
+				var colgroup = jQuery('<colgroup />').appendTo(table);
+				var tbody = jQuery('<tbody />');
 				
-				for (var x = 0; x <= size_r; x++) { //tr
-					var cur_row = jQuery('<tr />').appendTo(table);
+				//go ahead and make the cols for colgroup
+				if (sheet[i]['metadata']['col_widths']) {
+					for (var x = 0; x < colCount; x++) {
+						var w = 120;
+						if (sheet[i]['metadata']['col_widths']['c' + x]) {
+							var newW = parseInt(sheet[i]['metadata']['col_widths']['c' + x].replace('px', ''));
+							w = (newW ? newW : 120); //if width doesn't exist, grab default
+							tableWidth += w;
+						}
+						colgroup.append('<col width="' + w + 'px" style="width: ' + w + 'px;" />');
+					}
+				}
+				
+				table
+					.attr('title', title)
+					.width(tableWidth);
+				
+				for (var x = 0; x < rowCount; x++) { //tr
+					var tr = jQuery('<tr />').appendTo(table);
+					tr.attr('height', (sheet[i]['data']['r' + x].h ? sheet[i]['data']['r' + x].h : 18));
 					
-					for (var y = 0; y <= size_c; y++) { //td
-						var cur_val = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].value;
-						var colSpan = sheet[i].data["r"+ (x + 1)]["c" + (y + 1)].colSpan;
-						var style = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].style;
-						var cl = sheet[i].data["r" + (x + 1)]["c" + (y + 1)].cl;
+					for (var y = 0; y < colCount; y++) { //td
+						var cell = sheet[i]['data']['r' + x]['c' + y];
+						var cur_val;
+						var colSpan;
+						var style;
+						var cl;
 						
-						var cur_td = jQuery('<td' + (style ? ' style=\"' + style + '\"' : '' ) + 
+						if (cell) {
+							cur_val = cell.value + '';
+							colSpan = cell.colSpan + '';
+							style = cell.style + '';
+							cl = cell.cl + '';
+						}
+
+						var cur_td = jQuery('<td' + 
+								(style ? ' style=\"' + style + '\"' : '' ) + 
 								(cl ? ' class=\"' + cl + '\"' : '' ) + 
 								(colSpan ? ' colspan=\"' + colSpan + '\"' : '' ) + 
 							' />');
@@ -4011,7 +3998,7 @@ jQuery.sheet = {
 							}
 						} catch (e) {}
 					
-						cur_row.append(cur_td);
+						tr.append(cur_td);
 
 					}
 				}
