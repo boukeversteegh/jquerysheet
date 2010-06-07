@@ -1638,7 +1638,9 @@ jQuery.sheet = {
 			fillUpOrDown: function(goUp, skipOffsetForumals) { //default behavior is to go down var goUp changes it
 				var cells = jS.obj.cellHighlighted();
 				var cellActive = jS.obj.cellActive();
-				var cellActiveClone = cellActive.clone();
+				//Make it undoable
+				jS.cellUndoable.add(cells);
+				
 				var startFromActiveCell = cellActive.hasClass(jS.cl.uiCellHighlighted);
 				var locFirst = jS.getTdLocation(cells.first());
 				var locLast = jS.getTdLocation(cells.last());
@@ -1688,9 +1690,10 @@ jQuery.sheet = {
 					}
 				}
 				
-				cellActive.replaceWith(cellActiveClone); //this is to make sure the original doesn't increment;
-				
 				jS.calc(jS.i);
+				
+				//Make it redoable
+				jS.cellUndoable.add(cells);
 			},
 			offsetFormulaRange: function(row, col, rowOffset, colOffset, isBefore) {//col = int; offset = int
 				var shiftedRange = {
@@ -3047,7 +3050,9 @@ jQuery.sheet = {
 						}
 					});
 					
-					jS.themeRoller.cell.setActive(jS.cellLast.td);
+					jS.themeRoller.cell.clearActive();
+					jS.themeRoller.bar.clearActive();
+					jS.themeRoller.cell.clearHighlighted();
 				},
 				get: function() { //gets the current cell
 					return jQuery(this.stack[this.i]);
@@ -3056,8 +3061,10 @@ jQuery.sheet = {
 					var oldTds = tds.clone().each(function() {
 						var o = jQuery(this);
 						var id = o.attr('id');
-						o.removeAttr('id'); //id can only exist in one location, on the sheet, so here we use the id as the attr 'undoable'
-						o.attr('undoable', id);
+						o
+							.removeAttr('id') //id can only exist in one location, on the sheet, so here we use the id as the attr 'undoable'
+							.attr('undoable', id)
+							.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
 					});
 					if (this.stack.length > 0) {
 						this.stack.unshift(oldTds);
