@@ -29,7 +29,7 @@ http://www.gnu.org/licenses/
 					</metadata>
 					<data>
 						<r{Row_Index}> //repeats
-							<c{Column_Index} style=""></c{Column_Index}> //repeats
+							<c{Column_Index} style="" width="0" cl="{Classes used for styling}"></c{Column_Index}> //repeats
 						</r{Row_Index}>
 					</data>
 				</document>
@@ -46,7 +46,9 @@ http://www.gnu.org/licenses/
 						r{Row_Index}: { //repeats
 							c{Column_Index}: { //repeats
 								value: '',
-								style: ''
+								style: '',
+								width: 0,
+								cl: {Classes used for styling}
 							}
 						}
 					}
@@ -1690,6 +1692,7 @@ jQuery.sheet = {
 					}
 				}
 				
+				jS.setDirty(true);
 				jS.calc(jS.i);
 				
 				//Make it redoable
