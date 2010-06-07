@@ -1273,19 +1273,15 @@ jQuery.sheet = {
 								return false;
 							});
 						if (s.editable) { //only let editable select
-							selectRow = function(o, keepCurrent) {
-								if (!keepCurrent) { 
-									jS.themeRoller.cell.clearHighlighted();
-									//jS.themeRoller.bar.clearActive();
+							selectRow = function(o) {
+								if (!jQuery(o).attr('id')) {
+									var i = jS.getBarLeftIndex(o);
+									
+									jS.rowLast = i; //keep track of last row for inserting new rows
+									jS.evt.barMouseDown.last = i;
+									
+									jS.cellSetActiveBar('row', jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
 								}
-								
-								var i = jS.getBarLeftIndex(o);
-								
-								jS.rowLast = i; //keep track of last row for inserting new rows
-								
-								jS.evt.barMouseDown.last = i;
-								
-								jS.cellSetActiveBar('row', jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
 							};
 						}
 					},
@@ -1303,18 +1299,15 @@ jQuery.sheet = {
 								return false;
 							});
 						if (s.editable) { //only let editable select
-							selectColumn = function(o, keepCurrent) {
-								if (!keepCurrent) { 
-									jS.themeRoller.cell.clearHighlighted();
-									//jS.themeRoller.bar.clearActive();
+							selectColumn = function(o) {
+								if (!jQuery(o).attr('id')) {
+									var i = jS.getBarTopIndex(o);
+									
+									jS.colLast = i; //keep track of last column for inserting new columns
+									jS.evt.barMouseDown.last = i;
+									
+									jS.cellSetActiveBar('col', jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
 								}
-								var i = jS.getBarTopIndex(o);
-								
-								jS.colLast = i; //keep track of last column for inserting new columns
-								
-								jS.evt.barMouseDown.last = i;
-								
-								jS.cellSetActiveBar('col', jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
 							};
 						}
 					}
@@ -1464,8 +1457,8 @@ jQuery.sheet = {
 			},
 			columnResizer: {
 				xyDimension: 0,
-				getIndex: function(td) {
-					return jS.getBarTopIndex(td);
+				getIndex: function(o) {
+					return jS.getBarTopIndex(o);
 				},
 				getSize: function(o) {
 					return jS.attrH.width(o, true);
