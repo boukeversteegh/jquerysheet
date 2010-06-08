@@ -4,7 +4,6 @@
 	<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
 	<META HTTP-EQUIV="Expires" CONTENT="-1">
 	<title>jQuery.sheet - The Web Based Spreadsheet</title>
-	
 	<!--Required-->
 		<link rel="stylesheet" type="text/css" href="jquery.sheet.css"></link>
 		<link rel="stylesheet" type="text/css" href="theme/jquery-ui-1.8.1.custom.css"></link>
@@ -49,24 +48,21 @@
 			//Here is where we initiate the sheets
 			//every time sheet is created it creates a new jQuery.sheet.instance (array), to manipulate each sheet, the jQuery object is returned
 			$('#jQuerySheet0').sheet({
-				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
+				title: 'Enduser Documentation',
 				editable: true,
-				inlineMenu: inlineMenu($.sheet.instance),
-				cellSelectModel: 'excel'
+				inlineMenu: inlineMenu($.sheet.instance)
 			});
 
 			$('#jQuerySheet1').sheet({
-				title: 'Spreadsheet created from div w/ table inside - Editable',
-				buildSheet: $.sheet.makeTable.fromSize("5x25", 18, 180)
-							.add($.sheet.makeTable.fromSize("5x25", 18, 180))
-							.add($.sheet.makeTable.fromSize("5x25", 18, 180)),
+				title: 'Developer Documentation',
+				urlGet: 'sheets/developer.documentation.html',
 				inlineMenu: inlineMenu($.sheet.instance),
 				cellSelectModel: 'oo'
 			});
 			
 			$('#jQuerySheet2').sheet({
-				title: 'Spreadsheet created html table in div',
-				buildSheet: true,
+				title: 'About Sheet',
+				urlGet: 'sheets/about.html',
 				inlineMenu: inlineMenu($.sheet.instance),
 				cellSelectModel: 'gdocs'
 			});
@@ -99,7 +95,7 @@
 			$('#jQuerySheet').sheet({
 				title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
 				inlineMenu: inlineMenu(jQuery.sheet.instance),
-				buildSheet: jS.controlFactory.sheet('5x100').add(jS.controlFactory.sheet('5x100'))
+				buildSheet: $.sheet.makeTable.fromSize('5x100').add($.sheet.makeTable.fromSize('5x100'))
 			});
 			*/
 			
@@ -140,721 +136,826 @@
 						
 			return menu;
 		}
+		
+		function goToObj(s) {
+			$('html, body').animate({
+				scrollTop: $(s).offset().top
+			}, 'slow');
+			return false;
+		}
 	</script>
+	<!--Page styles-->
+	<style>
+		body
+		{
+			background-color: #464646;
+			padding: 0px;
+			margin: 0px;
+			padding-bottom: 100px;
+		}
+		.wrapper
+		{
+			margin: 10px;
+			background-color: #CCCCCC;
+		}
+		.locked
+		{
+			position: fixed;
+			top: expression(eval(document.body.scrollTop) + "px");
+			left: 20px;
+			z-index: 100;
+		}
+		#structures
+		{
+			text-align: center;
+			width: 100%;
+			font-size: 1.5em;
+			padding: 10px;
+		}
+		#header
+		{
+			text-align: center;
+			font-size: 1.5em;
+			padding: 18px;
+			border-left: none;
+			broder-right: none;
+		}
+		#footer
+		{
+			text-align: center;
+			color: white;
+			font-size: .9em;
+		}
+		#footer a
+		{
+			font-size: 1.2em;
+			color: #FFFFFF;
+		}
+	</style>
 </head>
 <body>
-	<table style="width: 100%;">
+	<table class="locked ui-widget-header ui-corner-all">
 		<tr>
-			<td rowspan="2" style="width: 20%; vertical-align: top;">				
-				<form method="post" action="https://www.paypal.com/cgi-bin/webscr" name="_xclick"><input type="hidden" name="cmd" value="_xclick"/><input type="hidden" name="business" value="axel180@aim.com"/><input type="hidden" name="item_name" value="jQuery.Sheet Development"/><input type="hidden" name="currency_code" value="USD"/><input type="hidden" name="amount" value="25.00"/><input type="image" border="0" name="submit" src="http://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" alt="Make payments with PayPal - it"/> <br/>Buy my a couple gallons of gas :)</form>
-				<br />
+			<td style="text-align: center; padding-left: 20px;">
 				<span id="themeSwitcher"></span>
-				<br />
-				<b>Did you know?</b>
-				<ul>
-					<li>jQuery.sheet supports multi spreadsheets</li>
-					<li>Within a single sheet, you can reference cell values by using the syntax like "A1" or a group of cells like this "A1:B4"</li>
-					<li>Within multi sheets, you can reference cell values from other sheets by using the syntax like "SHEET2:A1" or a group of cells like this "SHEET2:A1:B4"</li>
-					<li>jQuery.sheet is licensed under Dual licensed under the LGPL and GPL licenses (http://www.gnu.org/licenses)</li>
-					<li>
-						jQuery.sheet uses <a href="http://jqueryui.com/themeroller/">jQuery UI Themeroller</a>, which lets you change your theme
-					</li>
-					<li>jQuery.sheet has built in methods to export the sheet as
-						<ul>
-							<li>HTML: jQuery.sheet.export.html()</li>
-							<li>XML: jQuery.sheet.export.xml()</li>
-							<li>jSON: jQuery.sheet.export.json()</li>
-						</ul>
-					</li>
-					<li>When coding with jQuery.sheet, you can use it's shorthand "jS", example: jS.openSheet(tableObjects)</li>
-					<li>jQuery.sheet won't effect html around it</li>
-					<li>jQuery.sheet and it's spreadsheet cell location bars are resizable (dependant on jQuery UI)</li>
-				</ul>				
 			</td>
 		</tr>
 		<tr>
-			<td colspan="2" style="vertical-align: top;">
-				<div id="jQuerySheet0" style="height: 450px;"></div>
-				<br /><br />
-				<div id="jQuerySheet1" style="height: 450px;"></div>
-				<br /><br />
-				<div id="jQuerySheet2" style="height: 450px;">
-					<table title="Spreeadsheet 1">
-						<tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-					</table>
-					<table title="Spreeadsheet 2">
-						<tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-					</table>
-					<table title="Spreeadsheet 3">
-						<tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-						<tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr><tr>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-							<td></td>
-						</tr>
-					</table>
-				</div>
+			<td colspan="2">
+				<ul style="padding-left: 15px;">
+					<li><a href="#jQuerySheet0" onclick="return goToObj('#jQuerySheet0');">Enduser Documentation</a></li>
+					<li><a href="#jQuerySheet1" onclick="return goToObj('#jQuerySheet1');">Developer Documentation</a></li>
+					<li><a href="#jQuerySheet2" onclick="return goToObj('#jQuerySheet2');">About</a></li>
+					<li><a href="#structures" onclick="return goToObj('#structures');">XML & JSON Structures</a></li>
+				</ul>
+			</td>
+		</tr>
+		<tr>
+			<td style="text-align: center;">
+				<form method="post" action="https://www.paypal.com/cgi-bin/webscr" name="_xclick">
+					<input type="hidden" name="cmd" value="_xclick"/>
+					<input type="hidden" name="business" value="axel180@aim.com"/>
+					<input type="hidden" name="item_name" value="jQuery.Sheet Development"/>
+					<input type="hidden" name="currency_code" value="USD"/>
+					<input type="hidden" name="amount" value="25.00"/>
+					<input type="image" border="0" name="submit" src="http://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" alt="Make payments with PayPal - it"/>
+				</form>
 			</td>
 		</tr>
 	</table>
+	<h1 id="header" class="ui-state-default">jQuery.sheet - The Web Based Spreadsheet, Examples and Documentation</h1>
+	<div class="ui-corner-all wrapper">
+		<table style="width: 100%;">
+			<tr>
+				<td rowspan="2" style="width: 200px; vertical-align: top;">				
+					<!--
+					<b>Did you know?</b>
+					<ul>
+						<li>jQuery.sheet supports multi spreadsheets</li>
+						<li>Within a single sheet, you can reference cell values by using the syntax like "A1" or a group of cells like this "A1:B4"</li>
+						<li>Within multi sheets, you can reference cell values from other sheets by using the syntax like "SHEET2:A1" or a group of cells like this "SHEET2:A1:B4"</li>
+						<li>jQuery.sheet is licensed under Dual licensed under the LGPL and GPL licenses (http://www.gnu.org/licenses)</li>
+						<li>
+							jQuery.sheet uses <a href="http://jqueryui.com/themeroller/">jQuery UI Themeroller</a>, which lets you change your theme
+						</li>
+						<li>jQuery.sheet has built in methods to export the sheet as
+							<ul>
+								<li>HTML: jQuery.sheet.export.html()</li>
+								<li>XML: jQuery.sheet.export.xml()</li>
+								<li>jSON: jQuery.sheet.export.json()</li>
+							</ul>
+						</li>
+						<li>When coding with jQuery.sheet, you can use it's shorthand "jS", example: jS.openSheet(tableObjects)</li>
+						<li>jQuery.sheet won't effect html around it</li>
+						<li>jQuery.sheet and it's spreadsheet cell location bars are resizable (dependant on jQuery UI)</li>
+					</ul>
+					-->
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" style="vertical-align: top;">
+					<div id="jQuerySheet0" style="height: 450px;"></div>
+					<br /><br />
+					<div id="jQuerySheet1" style="height: 450px;"></div>
+					<br /><br />
+					<div id="jQuerySheet2" style="height: 450px;">
+						<table title="Spreeadsheet 1">
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+						</table>
+						<table title="Spreeadsheet 2">
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+						</table>
+						<table title="Spreeadsheet 3">
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr><tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td></td>
+							</tr>
+						</table>
+					</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+	
+	<h2 id="structures" class="ui-state-default">Structures</h2>
+
+	<div class="wrapper">
+		<table style="width: 100%;">
+			<tr>
+				<td class="ui-widget-header">HTML</td>
+				<td class="ui-widget-header">JSON</td>
+			</tr>
+			<tr>
+				<td style="width: 50%; vertical-align: top;">
+					&lt;documents&gt;<br />&nbsp;&nbsp; &nbsp;&lt;document&gt; //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &lt;metadata&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;columns&gt;{Column_Count}&lt;/columns&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;rows&gt;{Row_Count}&lt;/rows&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;title&gt;&lt;/title&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &lt;/metadata&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &lt;data&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;r{Row_Index}&gt; //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;c{Column_Index} style="" width="0" cl="{Classes used for styling}"&gt;&lt;/c{Column_Index}&gt; //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/r{Row_Index}&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &lt;/data&gt;<br />&nbsp;&nbsp; &nbsp;&lt;/document&gt;<br />&lt;/documents&gt;<br />
+				</td>
+				<td style="width: 50%; vertical-align: top;">
+					[<br />&nbsp;&nbsp; &nbsp;{ //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; metadata: {<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; columns: Column_Count,<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; rows: Row_Count,<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; title: ''<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; },<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; data: {<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; r{Row_Index}: { //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; c{Column_Index}: { //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; value: '',<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; style: '',<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; width: 0,<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; cl: {Classes used for styling}<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; }<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; }<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; }<br />&nbsp;&nbsp; &nbsp;}<br />];
+				</td>
+			</tr>
+		</table>
+	</div>
+
 	<span id="inlineMenu" style="display: none;">
 		<span>
 			<a href="#" onclick="sheetInstance.controlFactory.addRow(); return false;" title="Insert Row After Selected"><img alt="Insert Row After Selected" src="pics/icons/sheet_row_add.png"/></a>
@@ -890,5 +991,14 @@
 			<!--<a href="#" onclick="insertAt('jSheetControls_formula', '~np~text~'+'/np~');return false;" title="Non-parsed"><img alt="Non-parsed" src="pics/icons/noparse.png"/></a>-->
 		</span>
 	</span>
+
+	<div id="footer" class="ui-corner-all">
+		<a href="http://www.visop-dev.com/jquerysheet.html">jQuery.sheet() The Web Based Spreadsheet</a> |
+		<a href="http://www.VisOp-Dev.com">Home</a> | 
+		<a href="http://plugins.jquery.com/project/sheet">Project</a>  | 
+		<a href="http://code.google.com/p/jquerysheet">Code</a><br />
+		<a href="mailto:rplummer@visop-dev.com">Copyright (C) 2010 Robert Plummer</a> | 
+		<a href="http://www.gnu.org/licenses/">Dual licensed under the LGPL v2 and GPL v2 licenses<a/>
+	</div>
 </body>
 </html>

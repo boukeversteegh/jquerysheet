@@ -1,5 +1,5 @@
 /*
-jQuery.sheet() Spreadsheet with Calculations Plugin
+jQuery.sheet() The Web Based Spreadsheet
 Version: 1.1.0 RC 3
 http://code.google.com/p/jquerysheet/
 		
@@ -17,43 +17,6 @@ http://www.gnu.org/licenses/
 		DOM elements are all 0 based (tr/td/table)
 		Spreadsheet elements are all 1 based (A1, A1:B4, TABLE2:A1, TABLE2:A1:B4)
 		Column/Row/Cell
-	sheet import and export methods structure (jS.importSheet.xml(obj), jS.importSheet.json(obj), jS.exportSheet.xml(), jS.exportSheet.json());
-		xml structure:
-			//xml
-			<documents>
-				<document> //repeats
-					<metadata>
-						<columns>{Column_Count}</columns>
-						<rows>{Row_Count}</rows>
-						<title></title>
-					</metadata>
-					<data>
-						<r{Row_Index}> //repeats
-							<c{Column_Index} style="" width="0" cl="{Classes used for styling}"></c{Column_Index}> //repeats
-						</r{Row_Index}>
-					</data>
-				</document>
-			</documents>
-		json structure:
-			[//documents
-				{ //document repeats
-					metadata: {
-						columns: Column_Count,
-						rows: Row_Count,
-						title: ''
-					},
-					data: {
-						r{Row_Index}: { //repeats
-							c{Column_Index}: { //repeats
-								value: '',
-								style: '',
-								width: 0,
-								cl: {Classes used for styling}
-							}
-						}
-					}
-				}
-			];
 	DOCTYPE:
 		It is recommended to use STRICT doc types on the viewing page when using sheet to ensure that the heights/widths of bars and sheet rows show up correctly
 		Example of recommended doc type: <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -61,7 +24,7 @@ http://www.gnu.org/licenses/
 jQuery.fn.extend({
 	sheet: function(settings) {
 		settings = jQuery.extend({
-			urlGet: 		"documentation.html", 			//local url, if you want to get a sheet from a url
+			urlGet: 		"sheets/enduser.documentation.html", //local url, if you want to get a sheet from a url
 			urlSave: 		"save.html", 					//local url, for use only with the default save for sheet
 			editable: 		true, 							//bool, Makes the jSheetControls_formula & jSheetControls_fx appear
 			urlMenu: 		"menu.html", 					//local url, for the menu to the right of title
@@ -1090,9 +1053,10 @@ jQuery.sheet = {
 							}
 							break;
 						case key.TAB:
-							if (reverse) {
+							overrideIsEdit = true;
+							if (e.shiftKey) {
 								c--;
-							} else { 
+							} else {
 								c++;
 							}
 							if (s.autoAddCells) {
@@ -1150,7 +1114,7 @@ jQuery.sheet = {
 					} else if (i != '-1' && jS.i == i) {
 						jS.sheetTab();
 					} else {
-						jS.addSheet();
+						jS.addSheet('5x10');
 					}
 					return false;
 				},
@@ -2104,7 +2068,8 @@ jQuery.sheet = {
 					jS.themeRoller.bar.setActive('left', jS.cellLast.row);
 					jS.themeRoller.bar.setActive('top', jS.cellLast.col);
 					
-					var ooSelectModel;
+					var selectModel;
+					var clearHighlightedModel;
 					
 					jS.highlightedLast.rowStart = loc[0];
 					jS.highlightedLast.colStart = loc[1];
@@ -2114,15 +2079,17 @@ jQuery.sheet = {
 					switch (s.cellSelectModel) {
 						case 'excel':
 						case 'gdocs':
-							ooSelectModel = function() {};
+							selectModel = function() {};
+							clearHighlightedModel = jS.themeRoller.cell.clearHighlighted;
 							break;
 						case 'oo':
-							ooSelectModel = function(target) {
+							selectModel = function(target) {
 								var td = jQuery(target);
 								if (jS.isTd(td)) {
 									jS.cellEdit(td);
 								}
 							};
+							clearHighlightedModel = function() {};
 							break;
 					}
 					
@@ -2132,14 +2099,17 @@ jQuery.sheet = {
 								var endLoc = jS.getTdLocation([e.target]);
 								
 								if (loc[1] != endLoc[1] || loc[0] != endLoc[0]) { //this prevents this method from firing too much
-									jS.themeRoller.cell.clearHighlighted();
+									//clear highlighted cells if needed
+									clearHighlightedModel();
 									
+									//set current bars
 									jS.highlightedLast.colEnd = endLoc[1];
 									jS.highlightedLast.rowEnd = endLoc[0];
 									
-									//open office select model, left out to prevent if statement from firing all the time
-									ooSelectModel(e.target);
+									//select active cell if needed
+									selectModel(e.target);
 									
+									//highlight the cells
 									jS.highlightedLast.td = jS.cycleCellsAndMaintainPoint(jS.themeRoller.cell.setHighlighted, loc, endLoc);
 								}
 							});
