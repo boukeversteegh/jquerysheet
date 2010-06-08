@@ -48,23 +48,26 @@
 			//Here is where we initiate the sheets
 			//every time sheet is created it creates a new jQuery.sheet.instance (array), to manipulate each sheet, the jQuery object is returned
 			$('#jQuerySheet0').sheet({
-				title: 'Enduser Documentation',
-				editable: true,
-				inlineMenu: inlineMenu($.sheet.instance)
-			});
-
-			$('#jQuerySheet1').sheet({
-				title: 'Developer Documentation',
-				urlGet: 'sheets/developer.documentation.html',
+				title: 'Spreadsheet Playground',
 				inlineMenu: inlineMenu($.sheet.instance),
-				cellSelectModel: 'oo'
+				urlGet: 'sheets/numberstesting.html'
 			});
 			
+			$('#jQuerySheet1').sheet({
+				title: 'Enduser Documentation',
+				editable: false
+			});
+
 			$('#jQuerySheet2').sheet({
+				title: 'Developer Documentation',
+				urlGet: 'sheets/developer.documentation.html',
+				editable: false
+			});
+			
+			$('#jQuerySheet3').sheet({
 				title: 'About Sheet',
 				urlGet: 'sheets/about.html',
-				inlineMenu: inlineMenu($.sheet.instance),
-				cellSelectModel: 'gdocs'
+				editable: false
 			});
 			
 			//examples of how to use jQuery.sheet
@@ -171,6 +174,8 @@
 			width: 100%;
 			font-size: 1.5em;
 			padding: 10px;
+			border-left: none;
+			broder-right: none;
 		}
 		#header
 		{
@@ -194,40 +199,41 @@
 	</style>
 </head>
 <body>
-	<table class="locked ui-widget-header ui-corner-all">
-		<tr>
-			<td style="text-align: center; padding-left: 20px;">
-				<span id="themeSwitcher"></span>
-			</td>
-		</tr>
-		<tr>
-			<td colspan="2">
-				<ul style="padding-left: 15px;">
-					<li><a href="#jQuerySheet0" onclick="return goToObj('#jQuerySheet0');">Enduser Documentation</a></li>
-					<li><a href="#jQuerySheet1" onclick="return goToObj('#jQuerySheet1');">Developer Documentation</a></li>
-					<li><a href="#jQuerySheet2" onclick="return goToObj('#jQuerySheet2');">About</a></li>
-					<li><a href="#structures" onclick="return goToObj('#structures');">XML & JSON Structures</a></li>
-				</ul>
-			</td>
-		</tr>
-		<tr>
-			<td style="text-align: center;">
-				<form method="post" action="https://www.paypal.com/cgi-bin/webscr" name="_xclick">
-					<input type="hidden" name="cmd" value="_xclick"/>
-					<input type="hidden" name="business" value="axel180@aim.com"/>
-					<input type="hidden" name="item_name" value="jQuery.Sheet Development"/>
-					<input type="hidden" name="currency_code" value="USD"/>
-					<input type="hidden" name="amount" value="25.00"/>
-					<input type="image" border="0" name="submit" src="http://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" alt="Make payments with PayPal - it"/>
-				</form>
-			</td>
-		</tr>
-	</table>
 	<h1 id="header" class="ui-state-default">jQuery.sheet - The Web Based Spreadsheet, Examples and Documentation</h1>
 	<div class="ui-corner-all wrapper">
 		<table style="width: 100%;">
 			<tr>
 				<td rowspan="2" style="width: 200px; vertical-align: top;">				
+					<table class="locked ui-widget-header ui-corner-all" style="background-image: none;">
+						<tr>
+							<td style="text-align: center; padding-left: 20px;">
+								<span id="themeSwitcher"></span>
+							</td>
+						</tr>
+						<tr>
+							<td colspan="2">
+								<ul style="padding-left: 15px;">
+									<li><a href="#jQuerySheet0" onclick="return goToObj('#jQuerySheet0');">Playground</a></li>
+									<li><a href="#jQuerySheet0" onclick="return goToObj('#jQuerySheet1');">Enduser Documentation</a></li>
+									<li><a href="#jQuerySheet1" onclick="return goToObj('#jQuerySheet2');">Developer Documentation</a></li>
+									<li><a href="#jQuerySheet2" onclick="return goToObj('#jQuerySheet3');">About</a></li>
+									<li><a href="#structures" onclick="return goToObj('#structures');">XML & JSON Structures</a></li>
+								</ul>
+							</td>
+						</tr>
+						<tr>
+							<td style="text-align: center;">
+								<form method="post" action="https://www.paypal.com/cgi-bin/webscr" name="_xclick">
+									<input type="hidden" name="cmd" value="_xclick"/>
+									<input type="hidden" name="business" value="axel180@aim.com"/>
+									<input type="hidden" name="item_name" value="jQuery.Sheet Development"/>
+									<input type="hidden" name="currency_code" value="USD"/>
+									<input type="hidden" name="amount" value="25.00"/>
+									<input type="image" border="0" name="submit" src="http://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" alt="Make payments with PayPal - it"/>
+								</form>
+							</td>
+						</tr>
+					</table>
 					<!--
 					<b>Did you know?</b>
 					<ul>
@@ -932,24 +938,61 @@
 							</tr>
 						</table>
 					</div>
+					<br /><br />
+					<div id="jQuerySheet3"></div>
 				</td>
 			</tr>
 		</table>
 	</div>
 	
 	<h2 id="structures" class="ui-state-default">Structures</h2>
-
-	<div class="wrapper">
+	
+	<div class="wrapper ui-corner-all">
+		<table>
+			<tr>
+				<td style="vertical-align: top;">
+					For use with export methods: 
+					<ul>
+						<li>jQuery().sheetInstance.export.html()</li>
+						<li>jQuery().sheetInstance.export.xml()</li>
+						<li>jQuery().sheetInstance.export.json()</li>
+					</ul>
+				</td>
+				<td style="vertical-align: top;">
+					For use with makeTable methods: 
+					<ul>
+						<li>jQuery.sheet.makeTable.fromSize('10x100')</li>
+						<li>jQuery.sheet.makeTable.xml()</li>
+						<li>jQuery.sheet.makeTable.json()</li>
+					</ul>
+					
+					Use these like this:<br />
+					$(function() {<br />
+					&nbsp;&nbsp;$('#div').sheet({<br />
+					&nbsp;&nbsp;&nbsp;&nbsp;buildSheet: jQuery.sheet.makeTable.xml(myXmlVariable)<br/>
+					&nbsp;&nbsp;});<br/>
+					});<br/>
+				</td>
+			</tr>
+		</table>
+		
+		<br /><br />
+		<span style="font-size: .8em;">(*NOTE: jQuery.sheet.instance[instanceIndex] == jQuery().sheetInstance)</span>
+		<br /><br />
 		<table style="width: 100%;">
 			<tr>
-				<td class="ui-widget-header">HTML</td>
+				<td class="ui-widget-header ui-corner-tl">HTML</td>
 				<td class="ui-widget-header">JSON</td>
+				<td class="ui-widget-header ui-corner-tr">XML</td>
 			</tr>
 			<tr>
-				<td style="width: 50%; vertical-align: top;">
+				<td style="width: 33%; vertical-align: top;">
+					&lt;TABLE&nbsp;title=""&gt;<br>&nbsp;&nbsp;&lt;COLGROUP&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;COL&nbsp;width=""&nbsp;style="width:&nbsp;;"/&gt;<br>&nbsp;&nbsp;&lt;/COLGROUP&gt;<br>&nbsp;&nbsp;&lt;TBODY&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;TR&nbsp;&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;TD&nbsp;&nbsp;class="Classes&nbsp;used&nbsp;for&nbsp;styling."&gt;&lt;/TD&gt;<br>&nbsp;&nbsp;&nbsp;&nbsp;&lt;/TR&gt;<br>&nbsp;&nbsp;&lt;/TBODY&gt;<br>&lt;/TABLE&gt;<br><br>
+				</td>
+				<td style="width: 33%; vertical-align: top;">
 					&lt;documents&gt;<br />&nbsp;&nbsp; &nbsp;&lt;document&gt; //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &lt;metadata&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;columns&gt;{Column_Count}&lt;/columns&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;rows&gt;{Row_Count}&lt;/rows&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;title&gt;&lt;/title&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &lt;/metadata&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &lt;data&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;r{Row_Index}&gt; //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;c{Column_Index} style="" width="0" cl="{Classes used for styling}"&gt;&lt;/c{Column_Index}&gt; //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/r{Row_Index}&gt;<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &lt;/data&gt;<br />&nbsp;&nbsp; &nbsp;&lt;/document&gt;<br />&lt;/documents&gt;<br />
 				</td>
-				<td style="width: 50%; vertical-align: top;">
+				<td style="width: 33%; vertical-align: top;">
 					[<br />&nbsp;&nbsp; &nbsp;{ //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; metadata: {<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; columns: Column_Count,<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; rows: Row_Count,<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; title: ''<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; },<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; data: {<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; r{Row_Index}: { //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; c{Column_Index}: { //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; value: '',<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; style: '',<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; width: 0,<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; cl: {Classes used for styling}<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; }<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; }<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; }<br />&nbsp;&nbsp; &nbsp;}<br />];
 				</td>
 			</tr>

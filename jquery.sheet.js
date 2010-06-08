@@ -494,32 +494,37 @@ jQuery.sheet = {
 						//Page Menu Control	
 						if (jQuery.mbMenu) {
 							jQuery('<div />').load(s.urlMenu, function() {
-								jQuery('<td style="width: 50px; text-align: center;" id="' + jS.id.menu + '" class="rootVoices ui-corner-tl ' + jS.cl.menu + '" />')
-									.html(jQuery(this).html().replace(/sheetInstance/g, "jQuery.sheet.instance[0]"))
-									.prependTo(firstRowTr)
-									.buildMenu({
-										menuWidth:		100,
-										openOnRight:	false,
-										containment: 	s.parent.id,
-										hasImages:		false,
-										fadeInTime:		0,
-										fadeOutTime:	0,
-										adjustLeft:		2,
-										minZindex:		"auto",
-										adjustTop:		10,
-										opacity:		.95,
-										shadow:			false,
-										closeOnMouseOut:true,
-										closeAfter:		1000,
-										hoverIntent:	0, //if you use jquery.hoverIntent.js set this to time in milliseconds; 0= false;
-										submenuHoverIntent: 0
-									})
-									.hover(function() {
-										//not going to add to jS.cl because this isn't our control
-										jQuery(this).addClass(jS.cl.uiMenu);
-									}, function() {
-										jQuery(this).removeClass(jS.cl.uiMenu);
-									});
+								var menu = jQuery('<td style="width: 50px; text-align: center;" id="' + jS.id.menu + '" class="rootVoices ui-corner-tl ' + jS.cl.menu + '" />')
+									.html(
+										jQuery(this).html()
+											.replace(/sheetInstance/g, "jQuery.sheet.instance[" + I + "]")
+											.replace(/menuInstance/g, I));
+											
+									menu
+										.prependTo(firstRowTr)
+										.buildMenu({
+											menuWidth:		100,
+											openOnRight:	false,
+											containment: 	s.parent.attr('id'),
+											hasImages:		false,
+											fadeInTime:		0,
+											fadeOutTime:	0,
+											adjustLeft:		2,
+											minZindex:		"auto",
+											adjustTop:		10,
+											opacity:		.95,
+											shadow:			false,
+											closeOnMouseOut:true,
+											closeAfter:		1000,
+											hoverIntent:	0, //if you use jquery.hoverIntent.js set this to time in milliseconds; 0= false;
+											submenuHoverIntent: 0
+										})
+										.hover(function() {
+											//not going to add to jS.cl because this isn't our control
+											jQuery(this).addClass(jS.cl.uiMenu);
+										}, function() {
+											jQuery(this).removeClass(jS.cl.uiMenu);
+										});
 							});
 						}
 						

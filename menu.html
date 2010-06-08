@@ -1,29 +1,29 @@
-<span class="rootVoice" menu="menu" style="width: 15px;">MENU</span>
+<span class="rootVoice" menu="menu_menuInstance" style="width: 15px;">MENU</span>
 
-<div id="menu" class="menu">
-	<a menu="menuFile">File</a>
-	<a menu="menuView">View</a>
-	<a menu="menuEdit">Edit</a>
-	<a menu="menuStyle">Style</a>
+<div id="menu_menuInstance" class="menu">
+	<a menu="menuFile_menuInstance">File</a>
+	<a menu="menuView_menuInstance">View</a>
+	<a menu="menuEdit_menuInstance">Edit</a>
+	<a menu="menuStyle_menuInstance">Style</a>
 </div>
 
-<div id="menuFile" class="menu">
+<div id="menuFile_menuInstance" class="menu">
 	<a onclick="sheetInstance.newSheet(); return false;" title="Creates a new spreadsheet.">New</a>
 	<a onclick="sheetInstance.s.fnOpen(); return false;" title="Open a new spreadsheet.">Open</a>
 	<a onclick="sheetInstance.s.fnSave(); return false;" title="Save the current spreadsheet.">Save</a>
 	<a onclick="sheetInstance.s.fnClose(); return false;" title="Close the current spreadsheet without saving.">Close</a>
 </div>
 
-<div id="menuView" class="menu">
+<div id="menuView_menuInstance" class="menu">
 	<a onclick="sheetInstance.viewSource(true); return false;" title="Shows the HTML that makes up the current spreadsheet.">Pretty Source</a>
 	<a onclick="sheetInstance.viewSource(false); return false;" title="Shows the compact HTML that makes up the current spreadsheet.">Compact Source</a>
 	<a onclick="sheetInstance.print(sheetInstance.HTMLtoPrettySource(jQuery(sheetInstance.exportSheet.xml(true))[0])); return false;">As XML</a>
 	<a onclick="sheetInstance.print(JSON.stringify(sheetInstance.exportSheet.json())); return false;">As JSON</a>
-	<a menu="menuViewFunctionReference">Function Reference</a>
+	<a menu="menuViewFunctionReference_menuInstance">Function Reference</a>
 	<a onclick="sheetInstance.toggleFullScreen();">Toggle Full Screen View</a>
 </div>
 
-<div id="menuViewFunctionReference" class="menu">
+<div id="menuViewFunctionReference_menuInstance" class="menu">
 	<a>Usage Example: =SUM(SUM(A1:B1) + SUM(D7))</a>
 	<a>=(TRUE(N(A1)) || FALSE(N(B1)))</a>
 	<a title="Returns the absolute value of a number">ABS()</a>
@@ -51,20 +51,20 @@
 	<a title="Converts a text value that represents a number to a number">VALUE()</a>
 </div>
 
-<div id="menuEdit" class="menu">
+<div id="menuEdit_menuInstance" class="menu">
 	<a onclick="sheetInstance.merge(); return false;">Merge</a>
 	<a onclick="sheetInstance.unmerge(); return false;">Un-Merge</a>
-	<a menu="menuEditColumn">Column</a>
-	<a menu="menuEditRow">Row</a>
-	<a menu="menuEditSheet">Sheet</a>
+	<a menu="menuEditColumn_menuInstance">Column</a>
+	<a menu="menuEditRow_menuInstance">Row</a>
+	<a menu="menuEditSheet_menuInstance">Sheet</a>
 	<a onclick="sheetInstance.cellFind(); return false;">Find</a>
 	<a onclick="sheetInstance.getTdRange(null, sheetInstance.obj.formula().val()); return false;">Get Cell Range</a>
-	<a menu="menuEditGetCellRangeAndWrap">Get Cell Range And Wrap With Function</a>
+	<a menu="menuEditGetCellRangeAndWrap_menuInstance">Get Cell Range And Wrap With Function</a>
 	<a onclick="sheetInstance.cellUndoable.undoOrRedo(true); return false;">Undo</a>
 	<a onclick="sheetInstance.cellUndoable.undoOrRedo(); return false;">Redo</a>
 </div>
 
-<div id="menuEditColumn" class="menu">
+<div id="menuEditColumn_menuInstance" class="menu">
 	<a onclick="sheetInstance.controlFactory.addColumn(null, null, ':last'); return false;" title="Adds an additional column to the right of the spreadsheet.">Add Column</a>
 	<a onclick="sheetInstance.controlFactory.addColumnMulti(); return false;" title="Adds an additional columns to the right of the spreadsheet.">Add Multi-Columns</a>
 	<a onclick="sheetInstance.deleteColumn(); return false;" title="Deletes the current column thats highlighted.">Delete Column</a>
@@ -75,7 +75,7 @@
 	<!--<a onclick="sheetInstance.toggleHide.columnAll();" title="Unhides all the hidden columns.">Show All</a>
 	<a onclick="sheetInstance.toggleHide.column();" title="Hides or shows the currently selected column.">Toggle Hide Column</a>-->
 </div>
-<div id="menuEditRow" class="menu">
+<div id="menuEditRow_menuInstance" class="menu">
 	<a onclick="sheetInstance.controlFactory.addRow(null, null, ':last'); return false;" title="Adds an additional row to bottom of the spreadsheet.">Add Row</a>
 	<a onclick="sheetInstance.controlFactory.addRowMulti(); return false;" title="Adds an additional rows to bottom of the spreadsheet.">Add Multi-Rows</a>
 	<a onclick="sheetInstance.deleteRow(); return false;" title="Delets the current row thats highlighted.">Delete Row</a>
@@ -84,14 +84,14 @@
 	<!--<a onclick="sheetInstance.toggleHide.rowAll();" title="Unhides all the hidden rows.">Show All</a>
 	<a onclick="sheetInstance.toggleHide.row();" title="Hides or shows the currently selected row.">Toggle Hide Row</a>-->
 </div>
-<div id="menuEditSheet" class="menu">
+<div id="menuEditSheet_menuInstance" class="menu">
 	<a onclick="sheetInstance.addSheet(); return false;" title="Add new spreadsheet.">Add Spreadsheet</a>
 	<a onclick="sheetInstance.deleteSheet(); return false;" title="Delete the current spreadsheet.">Delete Spreadsheet</a>
 	<a onclick="sheetInstance.calc(sheetInstance.obj.tableBody()); return false;" title="Recompiles the current sheet">Refresh Calculations</a>
 	<a onclick="sheetInstance.sheetTitle(); return false;" title="Change the title of the sheet.">Title</a>
 </div>
 
-<div id="menuEditGetCellRangeAndWrap" class="menu">
+<div id="menuEditGetCellRangeAndWrap_menuInstance" class="menu">
 	<a onclick="sheetInstance.getTdRange(null, sheetInstance.obj.formula().val(), 'SUM'); return false;" title="Wrap with SUM">SUM()</a>
 	<a onclick="sheetInstance.getTdRange(null, sheetInstance.obj.formula().val(), 'CEILING'); return false;" title="Wrap with CEILING">CEILING()</a>
 	<a onclick="sheetInstance.getTdRange(null, sheetInstance.obj.formula().val(), 'COUNT'); return false;" title="Wrap with COUNT">COUNT()</a>
@@ -99,7 +99,7 @@
 	<a onclick="sheetInstance.getTdRange(null, sheetInstance.obj.formula().val(), 'MIN'); return false;" title="Wrap with MIN">MIN()</a>
 </div>
 
-<div id="menuStyle" class="menu">
+<div id="menuStyle_menuInstance" class="menu">
 	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleBold'); return false;">Bold</a>
 	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleItalics'); return false;">Italics</a>
 	<a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleUnderline', 'styleLineThrough'); return false;">Underline</a>
