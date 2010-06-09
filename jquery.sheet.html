@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 <head>
 	<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
 	<META HTTP-EQUIV="Expires" CONTENT="-1">
@@ -64,12 +64,6 @@
 				editable: false
 			});
 			
-			$('#jQuerySheet3').sheet({
-				title: 'About Sheet',
-				urlGet: 'sheets/about.html',
-				editable: false
-			});
-			
 			//examples of how to use jQuery.sheet
 			/*
 			//Inline sheet(s), non-editable (like a gridview)
@@ -101,8 +95,20 @@
 				buildSheet: $.sheet.makeTable.fromSize('5x100').add($.sheet.makeTable.fromSize('5x100'))
 			});
 			*/
-			
+
+			//This is to give a themeswitcher on the page
 			$('#themeSwitcher').themeswitcher();
+
+			//This is for some fancy menu stuff
+			var o = $('#structures');
+			var top = o.offset().top - 300;
+			$(document).scroll(function(e) {
+				if ($(this).scrollTop() > top) {
+					$('#lockedMenu').removeClass('locked');
+				} else {
+					$('#lockedMenu').addClass('locked');
+				}
+			}).scroll();
 		});
 		
 		//This function builds the inline menu to make it easy to interact with each sheet instance
@@ -171,19 +177,16 @@
 		#structures
 		{
 			text-align: center;
-			width: 100%;
 			font-size: 1.5em;
 			padding: 10px;
-			border-left: none;
-			broder-right: none;
+			border: none;
 		}
 		#header
 		{
 			text-align: center;
 			font-size: 1.5em;
 			padding: 18px;
-			border-left: none;
-			broder-right: none;
+			border: none;
 		}
 		#footer
 		{
@@ -200,11 +203,11 @@
 </head>
 <body>
 	<h1 id="header" class="ui-state-default">jQuery.sheet - The Web Based Spreadsheet, Examples and Documentation</h1>
-	<div class="ui-corner-all wrapper">
+	<div id="mainWrapper" class="ui-corner-all wrapper">
 		<table style="width: 100%;">
 			<tr>
 				<td rowspan="2" style="width: 200px; vertical-align: top;">				
-					<table class="locked ui-widget-header ui-corner-all" style="background-image: none;">
+					<table id="lockedMenu" class="locked ui-widget-header ui-corner-all" style="background-image: none;">
 						<tr>
 							<td style="text-align: center; padding-left: 20px;">
 								<span id="themeSwitcher"></span>
@@ -217,7 +220,7 @@
 									<li><a href="#jQuerySheet0" onclick="return goToObj('#jQuerySheet1');">Enduser Documentation</a></li>
 									<li><a href="#jQuerySheet1" onclick="return goToObj('#jQuerySheet2');">Developer Documentation</a></li>
 									<li><a href="#jQuerySheet2" onclick="return goToObj('#jQuerySheet3');">About</a></li>
-									<li><a href="#structures" onclick="return goToObj('#structures');">XML & JSON Structures</a></li>
+									<li><a href="#structures" onclick="return goToObj('#structures');">XML &amp; JSON Structures</a></li>
 								</ul>
 							</td>
 						</tr>
@@ -234,28 +237,6 @@
 							</td>
 						</tr>
 					</table>
-					<!--
-					<b>Did you know?</b>
-					<ul>
-						<li>jQuery.sheet supports multi spreadsheets</li>
-						<li>Within a single sheet, you can reference cell values by using the syntax like "A1" or a group of cells like this "A1:B4"</li>
-						<li>Within multi sheets, you can reference cell values from other sheets by using the syntax like "SHEET2:A1" or a group of cells like this "SHEET2:A1:B4"</li>
-						<li>jQuery.sheet is licensed under Dual licensed under the LGPL and GPL licenses (http://www.gnu.org/licenses)</li>
-						<li>
-							jQuery.sheet uses <a href="http://jqueryui.com/themeroller/">jQuery UI Themeroller</a>, which lets you change your theme
-						</li>
-						<li>jQuery.sheet has built in methods to export the sheet as
-							<ul>
-								<li>HTML: jQuery.sheet.export.html()</li>
-								<li>XML: jQuery.sheet.export.xml()</li>
-								<li>jSON: jQuery.sheet.export.json()</li>
-							</ul>
-						</li>
-						<li>When coding with jQuery.sheet, you can use it's shorthand "jS", example: jS.openSheet(tableObjects)</li>
-						<li>jQuery.sheet won't effect html around it</li>
-						<li>jQuery.sheet and it's spreadsheet cell location bars are resizable (dependant on jQuery UI)</li>
-					</ul>
-					-->
 				</td>
 			</tr>
 			<tr>
@@ -938,8 +919,6 @@
 							</tr>
 						</table>
 					</div>
-					<br /><br />
-					<div id="jQuerySheet3"></div>
 				</td>
 			</tr>
 		</table>
@@ -948,37 +927,6 @@
 	<h2 id="structures" class="ui-state-default">Structures</h2>
 	
 	<div class="wrapper ui-corner-all">
-		<table>
-			<tr>
-				<td style="vertical-align: top;">
-					For use with export methods: 
-					<ul>
-						<li>jQuery().sheetInstance.export.html()</li>
-						<li>jQuery().sheetInstance.export.xml()</li>
-						<li>jQuery().sheetInstance.export.json()</li>
-					</ul>
-				</td>
-				<td style="vertical-align: top;">
-					For use with makeTable methods: 
-					<ul>
-						<li>jQuery.sheet.makeTable.fromSize('10x100')</li>
-						<li>jQuery.sheet.makeTable.xml()</li>
-						<li>jQuery.sheet.makeTable.json()</li>
-					</ul>
-					
-					Use these like this:<br />
-					$(function() {<br />
-					&nbsp;&nbsp;$('#div').sheet({<br />
-					&nbsp;&nbsp;&nbsp;&nbsp;buildSheet: jQuery.sheet.makeTable.xml(myXmlVariable)<br/>
-					&nbsp;&nbsp;});<br/>
-					});<br/>
-				</td>
-			</tr>
-		</table>
-		
-		<br /><br />
-		<span style="font-size: .8em;">(*NOTE: jQuery.sheet.instance[instanceIndex] == jQuery().sheetInstance)</span>
-		<br /><br />
 		<table style="width: 100%;">
 			<tr>
 				<td class="ui-widget-header ui-corner-tl">HTML</td>
@@ -994,6 +942,40 @@
 				</td>
 				<td style="width: 33%; vertical-align: top;">
 					[<br />&nbsp;&nbsp; &nbsp;{ //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; metadata: {<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; columns: Column_Count,<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; rows: Row_Count,<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; title: ''<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; },<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; data: {<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; r{Row_Index}: { //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; c{Column_Index}: { //repeats<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; value: '',<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; style: '',<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; width: 0,<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; cl: {Classes used for styling}<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; }<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; }<br />&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; }<br />&nbsp;&nbsp; &nbsp;}<br />];
+				</td>
+			</tr>
+		</table>
+		<table style="width: 100%">
+			<tr>
+				<td class="ui-widget-header ui-corner-tl" style="width: 50%;">Export Methods</td>
+				<td class="ui-widget-header ui-corner-tr" style="width: 50%;">Import (makeTable) Methods</td>
+			</tr>
+			<tr>
+				<td style="vertical-align: top;">
+					<ul>
+						<li>jQuery().sheetInstance.export.html()</li>
+						<li>jQuery().sheetInstance.export.xml()</li>
+						<li>jQuery().sheetInstance.export.json()</li>
+					</ul>
+				</td>
+				<td style="vertical-align: top;">
+					<ul>
+						<li>jQuery.sheet.makeTable.fromSize('10x100')</li>
+						<li>jQuery.sheet.makeTable.xml()</li>
+						<li>jQuery.sheet.makeTable.json()</li>
+					</ul>
+					
+					Use these like this:<br />
+					$(function() {<br />
+					&nbsp;&nbsp;$('#div').sheet({<br />
+					&nbsp;&nbsp;&nbsp;&nbsp;buildSheet: jQuery.sheet.makeTable.xml(myXmlVariable)<br/>
+					&nbsp;&nbsp;});<br/>
+					});<br/>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" style="text-align: center;">
+					<span style="font-size: 0.9em;">(*NOTE: jQuery.sheet.instance[instanceIndex] == jQuery().sheetInstance)</span>
 				</td>
 			</tr>
 		</table>
@@ -1041,7 +1023,7 @@
 		<a href="http://plugins.jquery.com/project/sheet">Project</a>  | 
 		<a href="http://code.google.com/p/jquerysheet">Code</a><br />
 		<a href="mailto:rplummer@visop-dev.com">Copyright (C) 2010 Robert Plummer</a> | 
-		<a href="http://www.gnu.org/licenses/">Dual licensed under the LGPL v2 and GPL v2 licenses<a/>
+		<a href="http://www.gnu.org/licenses/">Dual licensed under the LGPL v2 and GPL v2 licenses</a>
 	</div>
 </body>
 </html>
