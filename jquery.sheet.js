@@ -570,7 +570,7 @@ jQuery.sheet = {
 					var rowsCount = parseInt(size[1]);
 					
 					//Create elements before loop to make it faster.
-					var newSheet = jQuery('<table border="1px" class="' + jS.cl.sheet + '" id="' + jS.id.sheet + jS.i + '"></table>');
+					var newSheet = jQuery('<table  cellpadding="0" cellspacing="0" border="0" border="1px" class="' + jS.cl.sheet + '" id="' + jS.id.sheet + jS.i + '"></table>');
 					var standardTd = '<td> </td>';
 					var tds = '';
 					
@@ -604,7 +604,7 @@ jQuery.sheet = {
 					var objContainer = jS.controlFactory.table().appendTo(jS.obj.ui());
 					var pane = jS.obj.pane().html(o);
 							
-					jS.tuneTableForSheetUse(o);
+					o = jS.tuneTableForSheetUse(o);
 								
 					jS.sheetDecorate(o);
 					
