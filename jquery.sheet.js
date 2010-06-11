@@ -3331,7 +3331,7 @@ jQuery.sheet = {
 					},
 					SELECTVAL:	function(v) {
 						//v = cE.foldPrepare(v, arguments);
-						return (s.editable ? jQuery(v).val() : jQuery(v).text());
+						return (s.editable ? jQuery(v).val() : v);
 					},
 					RADIO: function(v) {
 						if (s.editable) {
@@ -3345,8 +3345,8 @@ jQuery.sheet = {
 						return o;
 					},
 					RADIOVAL: function(v) {
-						v = cE.foldPrepare(v, arguments);
-						return (s.editable ? jQuery(v).find('input:checked').val() : jQuery(v).text());
+						//v = cE.foldPrepare(v, arguments);
+						return (s.editable ? jQuery(v).find('input:checked').val() : v);
 					},
 					CHECKBOX: function(v) {
 						if (s.editable) {
@@ -3364,8 +3364,7 @@ jQuery.sheet = {
 						}
 					},
 					CHECKBOXVAL: function(v) {
-						v = cE.foldPrepare(v, arguments);
-						return (s.editable ? jQuery(v).val() : jQuery(v).text());
+						return (s.editable ? jQuery(cE.foldPrepare(v, arguments)).val() : v);
 					},
 					ISCHECKED:		function(v) {
 						var checked = jQuery(v).is(":checked");
