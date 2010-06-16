@@ -53,13 +53,16 @@
 				urlGet: 'sheets/numberstesting.html'
 			});
 			
+			
 			$('#jQuerySheet1').sheet({
-				title: 'Enduser Documentation',
+				title: 'Enduser Documentation <a href="#" onclick="jQuery.sheet.instance[1].toggleState(); return false;">EDIT</a>',
+				inlineMenu: inlineMenu($.sheet.instance),
 				editable: false
 			});
 
 			$('#jQuerySheet2').sheet({
-				title: 'Developer Documentation',
+				title: 'Developer Documentation <a href="#" onclick="jQuery.sheet.instance[2].toggleState(); return false;">EDIT</a>',
+				inlineMenu: inlineMenu($.sheet.instance),
 				urlGet: 'sheets/developer.documentation.html',
 				editable: false
 			});
@@ -1011,7 +1014,7 @@
 				<input title="Background Color" class="colorPickerCell" style="background-image: url('pics/icons/palette_bg.png') ! important; width: 16px; height: 16px;" />
 			</span>
 			<a href="#" onclick="sheetInstance.obj.formula().val('=HYPERLINK(\'' + prompt('Enter Web Address', 'http://www.visop-dev.com/') + '\')').keydown(); return false;" title="HyperLink"><img alt="Web Link" src="pics/icons/page_link.png"/></a>
-			<a href="#" onclick="sheetInstance.toggleFullScreen(); return false;" title="Toggle Full Screen"><img alt="Web Link" src="pics/icons/arrow_out.png"/></a>
+			<a href="#" onclick="sheetInstance.toggleFullScreen(); $('#lockedMenu').toggle(); return false;" title="Toggle Full Screen"><img alt="Web Link" src="pics/icons/arrow_out.png"/></a>
 			<!--<a href="#" onclick="insertAt('jSheetControls_formula', '~np~text~'+'/np~');return false;" title="Non-parsed"><img alt="Non-parsed" src="pics/icons/noparse.png"/></a>-->
 		</span>
 	</span>

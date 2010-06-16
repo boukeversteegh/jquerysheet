@@ -27,6 +27,7 @@ jQuery.fn.extend({
 			urlGet: 		"sheets/enduser.documentation.html", //local url, if you want to get a sheet from a url
 			urlSave: 		"save.html", 					//local url, for use only with the default save for sheet
 			editable: 		true, 							//bool, Makes the jSheetControls_formula & jSheetControls_fx appear
+			allowToggleState: true,							//allows the function that changes the spreadsheet's state from static to editable and back
 			urlMenu: 		"menu.html", 					//local url, for the menu to the right of title
 			newColumnWidth: 120, 							//int, the width of new columns or columns that have no width assigned
 			title: 			null, 							//html, general title of the sheet group
@@ -3059,6 +3060,15 @@ jQuery.sheet = {
 			},
 			sheetSize: function() {
 				return jS.getTdLocation(jS.obj.sheet().find('td:last'));
+			},
+			toggleState:  function(newS) {
+				if (s.allowToggleState) {
+					s.editable = !s.editable;
+					jS.obj.tabContainer().remove();
+					var sheets = jS.obj.sheetAll().clone();
+					origParent.children().remove();
+					jS.openSheet(sheets);
+				}
 			}
 		};
 
@@ -3340,7 +3350,7 @@ jQuery.sheet = {
 							
 							o.find('input[value="' + jS.controlFactory.input.getValue(cE.thisCell) + '"]').attr('CHECKED', 'true');
 						} else {
-							return jS.controlFactory.input.getValue(cE.thisCell)
+							return jS.controlFactory.input.getValue(cE.thisCell);
 						}
 						return o;
 					},
@@ -3818,9 +3828,6 @@ jQuery.sheet = {
 		}
 		
 		jS.log('Startup');
-		
-
-		
 		
 		$window.resize(function() {
 			s.width = s.parent.width();
