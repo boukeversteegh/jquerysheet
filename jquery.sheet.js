@@ -3835,6 +3835,46 @@ jQuery.sheet = {
 			jS.sheetSyncSize();
 		});
 		
+		//Add jsAnalysis if available to calculation engine
+		if (jQuery.factorial) {
+			s.calculations = jQuery.extend({
+				FACTORIAL: jQuery.factorial,
+				COMBINATION: jQuery.combination,
+				PERMUTATION: jQuery.permutation,
+				GAMMA: jQuery.gamma,
+				PRECISION: jQuery.precision,
+				MINIMUM: jQuery.minimum,
+				MAXIMUM: jQuery.maximum,
+				MEAN: jQuery.mean,
+				SUM: jQuery.sum,
+				MODE: jQuery.mode,
+				MEDIAN: jQuery.median,
+				QUARTILES: jQuery.quartiles,
+				VARIANCE: jQuery.variance,
+				MEANDEV: jQuery.meandev,
+				STDEV: jQuery.stdev,
+				COVARIANCE: jQuery.covariance,
+				CORR_COEFF: jQuery.corr_coeff,
+				UNIFORM: jQuery.uniform,
+				BINOMIAL: jQuery.binomial,
+				BINOMIALCDF: jQuery.binomialcdf,
+				NEGBIN: jQuery.negbin,
+				NEGBINCDF: jQuery.negbincdf,
+				HYPGEOM: jQuery.hypgeom,
+				HYPGEOMCDF: jQuery.hypgeomcdf,
+				EXPONENTIALCDF: jQuery.exponentialcdf,
+				POISSON: jQuery.poisson,
+				POISSONCDF: jQuery.poissoncdf,
+				NORMCDF: jQuery.normcdf,
+				LINEAR_REG_EQ: jQuery.linear_reg_eq,
+				SECANTMETHOD: jQuery.secantmethod,
+				FIVEPT: jQuery.fivept,
+				FCRIT: jQuery.fcrit,
+				ASR: jQuery.asr
+			},s.calculations);
+		}
+		
+		//Extend the calculation engine plugins
 		cE.fn = jQuery.extend(cE.fn, s.calculations);
 		
 		//this makes cells and functions case insensitive
