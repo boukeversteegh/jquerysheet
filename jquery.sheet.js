@@ -1,6 +1,6 @@
 /*
 jQuery.sheet() The Web Based Spreadsheet
-Version: 1.1.0 RC 3
+Version: 1.1.0
 http://code.google.com/p/jquerysheet/
 		
 Copyright (C) 2010 Robert Plummer
@@ -78,7 +78,7 @@ jQuery.fn.extend({
 jQuery.sheet = {
 	createInstance: function(s, I, origParent) { //s = jQuery.sheet settings, I = jQuery.sheet Instance Integer
 		var jS = {
-			version: '1.1.0 RC3',
+			version: '1.1.0',
 			i: 0,
 			I: I,
 			sheetCount: 0,
