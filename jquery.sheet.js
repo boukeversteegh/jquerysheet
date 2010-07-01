@@ -3194,6 +3194,16 @@ jQuery.sheet = {
 					return cE.fn.AVERAGE(values);
 				},
 				COUNT: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.count, 0); },
+				COUNTA:		function(v) {
+					var values = cE.foldPrepare(v, arguments);
+					var count = 0;
+					for (var i = 0; i < values.length; i++) {
+						if (values[i]) {
+							count++;
+						}
+					}
+					return count;
+				},
 				SUM: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.sum, 0, true); },
 				MAX: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.max, Number.MIN_VALUE, true); },
 				MIN: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.min, Number.MAX_VALUE, true); },
