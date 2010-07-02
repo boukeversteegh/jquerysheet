@@ -3420,6 +3420,16 @@ jQuery.sheet = {
 					CUSTOM:	function(type, v, legend, axisLabels, w, h) {
 						return jS.controlFactory.chart(type, cE.foldPrepare(v, arguments), legend, axisLabels,  w, h, cE.calcState.row - 1);
 					}
+				},
+				NPV: function(i, v) {
+					var values = cE.foldPrepare(v, arguments);
+					var result = 0;
+					
+					for (var t = 0; t < values.length; t++) {
+						result += values[t] / Math.pow((i / 100) + 1, t);
+					}
+					
+					return result;
 				}
 			},
 			calcState: {},
