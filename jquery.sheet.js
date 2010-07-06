@@ -3426,7 +3426,7 @@ jQuery.sheet = {
 					var result = 0;
 					
 					for (var t = 0; t < values.length; t++) {
-						result += values[t] / Math.pow((i / 100) + 1, t);
+						result += values[t] / Math.pow((i / 100) + 1, t + 1);
 					}
 					
 					return result;
