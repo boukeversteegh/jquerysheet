@@ -3223,6 +3223,16 @@ jQuery.sheet = {
 				DAYSFROM: 	function(year, month, day) { 
 					return Math.floor( (new Date() - new Date (year, (month - 1), day)) / 86400000);
 				},
+				DAYS: function(v1, v2) {
+					var date1 = new Date(v1);
+					var date2 = new Date(v2);
+					var ONE_DAY = 1000 * 60 * 60 * 24;
+					return Math.round(Math.abs(date1.getTime() - date2.getTime()) / ONE_DAY);
+				},
+				DATEVALUE: function(v) {
+					var d = new Date(v);
+					return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
+				},
 				IF:			function(v, t, f){
 					t = cE.cFN.clean(t);
 					f = cE.cFN.clean(f);
