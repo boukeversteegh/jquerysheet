@@ -794,6 +794,8 @@ jQuery.sheet = {
 							var formula = jS.obj.formula(); //so we don't have to keep calling the function and wasting memory
 							var oldVal = formula.val();
 							formula.val('');  //we use formula to catch the pasted data
+							var newValCount = 0;
+							
 							jQuery(document).one('keyup', function() {
 								var loc = jS.getTdLocation(jS.cellLast.td); //save the currrent cell
 								var val = formula.val(); //once ctrl+v is hit formula now has the data we need
@@ -803,9 +805,11 @@ jQuery.sheet = {
 								var tdsAfter = jQuery('<div />');
 								
 								var row = val.split(/\n/g); //break at rows
+								
 								for (var i = 0; i < row.length; i++) {
 									var col = row[i].split(/\t/g); //break at columns
 									for (var j = 0; j < col.length; j++) {
+										newValCount++;
 										if (col[j]) {
 											var td = jQuery(jS.getTd(jS.i, i + loc[0], j + loc[1]));
 											
@@ -833,10 +837,16 @@ jQuery.sheet = {
 								jS.cellUndoable.add(tdsAfter.children());
 								
 								formula.val(firstValue);
+								
+								if (newValCount == 1) {//minimum is 2 for index of 1x1
+									jS.fillUpOrDown(false, false, firstValue);
+								}
+								
 								jS.setDirty(true);
 								jS.evt.cellEditDone(true);
 							});
 						}
+						jS.calc(jS.i);
 						return true;
 					},
 					findCell: function(e) {
@@ -1607,7 +1617,7 @@ jQuery.sheet = {
 				jS.setDirty(true);
 				jS.calc(jS.i);
 			},
-			fillUpOrDown: function(goUp, skipOffsetForumals) { //default behavior is to go down var goUp changes it
+			fillUpOrDown: function(goUp, skipOffsetForumals, v) { //default behavior is to go down var goUp changes it
 				var cells = jS.obj.cellHighlighted();
 				var cellActive = jS.obj.cellActive();
 				//Make it undoable
@@ -1617,7 +1627,8 @@ jQuery.sheet = {
 				var locFirst = jS.getTdLocation(cells.first());
 				var locLast = jS.getTdLocation(cells.last());
 				
-				var v = jS.obj.formula().val();
+				v = (v ? v : jS.obj.formula().val()); //allow value to be overridden
+				
 				var fn;
 				
 				var formulaOffset = (startFromActiveCell ? 0 : 1);
