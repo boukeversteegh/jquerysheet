@@ -3080,6 +3080,19 @@ jQuery.sheet = {
 					origParent.children().remove();
 					jS.openSheet(sheets);
 				}
+			},
+			setCellRef: function(ref) {
+				var td = jS.obj.cellActive();
+				var cellRef = td.attr('cellRef');
+				td.removeClass(cellRef);
+				
+				cellRef = (ref ? ref : prompt('Enter the name you would like to reference the cell by.'));
+				
+				if (cellRef) {
+					td
+						.addClass(cellRef)
+						.attr('cellRef', cellRef);
+				}
 			}
 		};
 
@@ -3451,6 +3464,13 @@ jQuery.sheet = {
 					}
 					
 					return result;
+				},
+				CELLREF: function(v, i) {
+					if (i) {
+						return jS.obj.sheetAll().eq(i).find('td.' + v).html();
+					} else {
+						return jS.obj.sheet().find('td.' + v).html();
+					}
 				}
 			},
 			calcState: {},
