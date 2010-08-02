@@ -3093,6 +3093,8 @@ jQuery.sheet = {
 						.addClass(cellRef)
 						.attr('cellRef', cellRef);
 				}
+				
+				jS.calc(jS.i);
 			}
 		};
 
@@ -3466,11 +3468,14 @@ jQuery.sheet = {
 					return result;
 				},
 				CELLREF: function(v, i) {
+					var td;
 					if (i) {
-						return jS.obj.sheetAll().eq(i).find('td.' + v).html();
+						td = jS.obj.sheetAll().eq(i).find('td.' + v);
 					} else {
-						return jS.obj.sheet().find('td.' + v).html();
+						td = jS.obj.sheet().find('td.' + v);
 					}
+					
+					return td.html();
 				}
 			},
 			calcState: {},
@@ -3782,7 +3787,7 @@ jQuery.sheet = {
 					
 					try {
 						v = formulaFunc();
-
+						/*
 						switch(typeof(v)) {
 							case "string":
 								v = v
@@ -3791,7 +3796,7 @@ jQuery.sheet = {
 									.replace(cE.regEx.gt, cE.str.gt)
 									.replace(cE.regEx.nbsp, cE.str.nbsp);
 						}
-
+						*/
 						cell.setValue(v);
 						
 					} catch (e) {
