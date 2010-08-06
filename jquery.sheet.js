@@ -59,7 +59,8 @@ jQuery.fn.extend({
 			calculations:	{},								//object, used to extend the standard functions that come with sheet
 			cellSelectModel: 'excel',						//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
 			autoAddCells:	true,
-			caseInsensitive: false
+			caseInsensitive: false,
+			resizable: true
 		}, settings);
 		
 		
@@ -1959,7 +1960,7 @@ jQuery.sheet = {
 				},
 				resize: function() {
 					// add resizable jquery.ui if available
-					if (jQuery.ui) {
+					if (jQuery.ui && s.resizable) {
 						// resizable container div
 						var o;
 						var barTop;
