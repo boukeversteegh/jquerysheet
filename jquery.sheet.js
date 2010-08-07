@@ -60,7 +60,8 @@ jQuery.fn.extend({
 			cellSelectModel: 'excel',						//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
 			autoAddCells:	true,
 			caseInsensitive: false,
-			resizable: true
+			resizable: true,
+			autoFiller: false
 		}, settings);
 		
 		
@@ -86,6 +87,7 @@ jQuery.sheet = {
 			s: {},//s = settings object, used for shorthand, populated from jQuery.sheet
 			obj: {//obj = object references
 				//Please note, class references use the tag name because it's about 4 times faster
+				autoFiller:			function() { return jQuery('#' + jS.id.autoFiller + jS.i); },
 				barCorner:			function() { return jQuery('#' + jS.id.barCorner + jS.i); },
 				barCornerAll:		function() { return s.parent.find('div.' + jS.cl.barCorner); },
 				barCornerParent:	function() { return jQuery('#' + jS.id.barCornerParent + jS.i); },
@@ -122,6 +124,7 @@ jQuery.sheet = {
 				uiActive:			function() { return s.parent.find('div.' + jS.cl.uiActive); }
 			},
 			id: {//id = id's references
+				autoFiller:			'jSheetAutoFiller_' + I + '_',
 				barCorner:			'jSheetBarCorner_' + I + '_',
 				barCornerParent:	'jSheetBarCornerParent_' + I + '_',
 				barTop: 			'jSheetBarTop_' + I + '_',
@@ -142,6 +145,9 @@ jQuery.sheet = {
 				ui:					'jSheetUI_' + I
 			},
 			cl: {//cl = class references
+				autoFiller:			'jSheetAutoFiller',
+				autoFillerHandle:	'jSheetAutoFillerHandle',
+				autoFillerConver:	'jSheetAutoFillerCover',
 				barCorner:			'jSheetBarCorner',
 				barCornerParent:	'jSheetBarCornerParent',
 				barLeftTd:			'barLeft',
@@ -605,7 +611,11 @@ jQuery.sheet = {
 					
 					var objContainer = jS.controlFactory.table().appendTo(jS.obj.ui());
 					var pane = jS.obj.pane().html(o);
-							
+					
+					if (s.autoFiller) {
+						pane.append(jS.controlFactory.autoFiller());
+					}
+					
 					o = jS.tuneTableForSheetUse(o);
 								
 					jS.sheetDecorate(o);
@@ -765,6 +775,40 @@ jQuery.sheet = {
 					getValue: function(cell) {
 						return jQuery(jS.getTd(cell.tableI, cell.row - 1, cell.col - 1)).attr('selectedvalue');
 					}
+				},
+				autoFiller: function() {
+					var autoFiller = jQuery('<div id="' + (jS.id.autoFiller + jS.i) + '" class="' + jS.cl.autoFiller + '">' +
+									'<div class="' + jS.cl.autoFillerHandle + '" />' +
+									'<div class="' + jS.cl.autoFillerCover + '" />' +
+							'</div>')
+							.mousedown(function(e) {
+								var td = jS.cellLast.td;
+								if (td) {
+									var loc = jS.getTdLocation(td);
+									jS.cellSetActive(td, loc, true, 'ns', function() {
+										var active = jS.obj.cellActive();
+										var highlighted = jS.obj.cellHighlighted();
+										var formula = active.attr('formula');
+										var html = (formula ? '' : active.html());
+										
+										jS.cellUndoable.add(highlighted);
+										
+										if (formula) {
+											highlighted.attr('formula', formula);
+										} else {
+											highlighted
+												.html(html)
+												.attr('formula', '');
+										}
+										jS.cellUndoable.add(highlighted);
+										
+										jS.calc(jS.i);
+										
+									});
+								}
+							});
+					
+					return autoFiller;
 				}
 			},
 			sizeSync: {
@@ -885,7 +929,7 @@ jQuery.sheet = {
 							pane.scrollTop(pane.scrollTop() + top);
 						}
 						
-						return jS.evt.cellSetFocusFromCoordinates(left, top);
+						return jS.evt.cellSetFocusFromXY(left, top);
 					},
 					formulaOnKeyDown: function(e) {
 						switch (e.keyCode) {
@@ -1020,35 +1064,16 @@ jQuery.sheet = {
 						.val('');
 					return false;
 				},
-				cellSetFocusFromCoordinates: function(left, top, skipOffset) {
-					var pane = jS.obj.pane();
-					var paneOffset = (skipOffset ? {left: 0, top: 0} : pane.offset());
+				cellSetFocusFromXY: function(left, top, skipOffset) {
+					var td = jS.getTdFromXY(left, top, skipOffset);
 					
-					top += paneOffset.top + 2;
-					left += paneOffset.left + 2;
-					
-					//here we double check that the coordinates are inside that of the pane, if so then we can continue
-					if ((top >= paneOffset.top && top <= paneOffset.top + pane.height()) &&
-						(left >= paneOffset.left && left <= paneOffset.left + pane.width())) {
-						var td = jQuery(document.elementFromPoint(left - $window.scrollLeft(), top - $window.scrollTop()));
+					if (jS.isTd(td)) {
+						jS.themeRoller.cell.clearHighlighted();
 						
-						
-						//I use this snippet to help me know where the point was positioned
-						/*jQuery('<div class="ui-widget-content" style="position: absolute;">TESTING TESTING</div>')
-							.css('top', top + 'px')
-							.css('left', left + 'px')
-							.appendTo('body');
-						*/
-						
-						if (jS.isTd(td)) {
-							jS.themeRoller.cell.clearHighlighted();
-							jS.cellEdit(td);
-							return false;
-						} else {
-							return true;
-						}
-					} else {
+						jS.cellEdit(td);
 						return false;
+					} else {
+						return true;
 					}
 				},
 				cellSetFocusFromKeyCode: function(e) { //invoces a click on next/prev cell
@@ -2070,7 +2095,7 @@ jQuery.sheet = {
 					.select();
 				jS.cellSetActive(td, loc, isDrag);
 			},
-			cellSetActive: function(td, loc, isDrag) {
+			cellSetActive: function(td, loc, isDrag, directionOnly, fnDone) {
 				if (typeof(loc[1]) != 'undefined') {
 					jS.cellLast.td = td; //save the current cell/td
 					
@@ -2112,11 +2137,26 @@ jQuery.sheet = {
 					}
 					
 					if (isDrag) {
+						var lastLoc = loc;
 						jS.obj.pane()
 							.mousemove(function(e) {
 								var endLoc = jS.getTdLocation([e.target]);
+								var ok = true;
 								
-								if (loc[1] != endLoc[1] || loc[0] != endLoc[0]) { //this prevents this method from firing too much
+								switch (directionOnly) {
+									case 'ns':
+										if (loc[1] != endLoc[1]) {
+											ok = false;
+										}
+										break;
+									case 'ew':
+										if (loc[0] != endLoc[0]) {
+											ok = false;
+										}
+										break;
+								}
+								
+								if ((lastLoc[1] != endLoc[1] || lastLoc[0] != endLoc[0]) && ok) { //this prevents this method from firing too much
 									//clear highlighted cells if needed
 									clearHighlightedModel();
 									
@@ -2130,6 +2170,8 @@ jQuery.sheet = {
 									//highlight the cells
 									jS.highlightedLast.td = jS.cycleCellsAndMaintainPoint(jS.themeRoller.cell.setHighlighted, loc, endLoc);
 								}
+								
+								lastLoc = endLoc;
 							});
 						
 						jQuery(document)
@@ -2138,6 +2180,10 @@ jQuery.sheet = {
 								jS.obj.pane()
 									.unbind('mousemove')
 									.unbind('mouseup');
+								
+								if (jQuery.isFunction(fnDone)) {
+									fnDone();
+								}
 							});
 					}
 				}
@@ -2446,6 +2492,13 @@ jQuery.sheet = {
 						axis: 'y',
 						duration: 50
 					});
+				}
+				
+				if (s.autoFiller) {
+					tdPos = td.position();
+					jS.obj.autoFiller()
+						.css('top', ((tdPos.top + tdHeight) - 3) + 'px')
+						.css('left', ((tdPos.left + tdWidth) - 3) + 'px');
 				}
 			},
 			count: {
@@ -2957,6 +3010,32 @@ jQuery.sheet = {
 				var row = parseInt(td[0].parentNode.rowIndex);
 				return [row, col];
 				// The row and col are 1-based.
+			},
+			getTdFromXY: function(left, top, skipOffset) {
+				var pane = jS.obj.pane();
+				var paneOffset = (skipOffset ? {left: 0, top: 0} : pane.offset());
+				
+				top += paneOffset.top + 2;
+				left += paneOffset.left + 2;
+				
+				//here we double check that the coordinates are inside that of the pane, if so then we can continue
+				if ((top >= paneOffset.top && top <= paneOffset.top + pane.height()) &&
+					(left >= paneOffset.left && left <= paneOffset.left + pane.width())) {
+					var td = jQuery(document.elementFromPoint(left - $window.scrollLeft(), top - $window.scrollTop()));
+					
+					
+					//I use this snippet to help me know where the point was positioned
+					/*jQuery('<div class="ui-widget-content" style="position: absolute;">TESTING TESTING</div>')
+						.css('top', top + 'px')
+						.css('left', left + 'px')
+						.appendTo('body');
+					*/
+					
+					if (jS.isTd(td)) {
+						return td;
+					}
+					return false;
+				}
 			},
 			getBarLeftIndex: function(o) {
 				var i = jQuery.trim(jQuery(o).text());

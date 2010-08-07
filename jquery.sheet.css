@@ -254,6 +254,17 @@
 	left: expression(eval(document.body.scrollLeft) + "px");
 }
 
+.jSheetAutoFiller
+{
+	position: absolute;
+	height: 8px;
+	width: 8px;
+	top: 0px;
+	left: 0px;
+	background-color: black;
+	cursor: crosshair;
+}
+
 /* Cell styler classes */
 .styleBold
 { font-weight: bold; }
