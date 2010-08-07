@@ -261,8 +261,8 @@
 	width: 8px;
 	top: 0px;
 	left: 0px;
-	background-color: black;
 	cursor: crosshair;
+	display: none;
 }
 
 /* Cell styler classes */

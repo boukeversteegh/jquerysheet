@@ -174,6 +174,7 @@ jQuery.sheet = {
 				tableControl:		'tableControl',
 				toggle:				'cellStyleToggle',
 				ui:					'jSheetUI',
+				uiAutoFiller:		'ui-state-active',
 				uiActive:			'ui-state-active',
 				uiBar: 				'ui-widget-header',
 				uiCellActive:		'ui-state-active',
@@ -777,7 +778,7 @@ jQuery.sheet = {
 					}
 				},
 				autoFiller: function() {
-					var autoFiller = jQuery('<div id="' + (jS.id.autoFiller + jS.i) + '" class="' + jS.cl.autoFiller + '">' +
+					return jQuery('<div id="' + (jS.id.autoFiller + jS.i) + '" class="' + jS.cl.autoFiller + ' ' + jS.cl.uiAutoFiller + '">' +
 									'<div class="' + jS.cl.autoFillerHandle + '" />' +
 									'<div class="' + jS.cl.autoFillerCover + '" />' +
 							'</div>')
@@ -786,29 +787,10 @@ jQuery.sheet = {
 								if (td) {
 									var loc = jS.getTdLocation(td);
 									jS.cellSetActive(td, loc, true, 'ns', function() {
-										var active = jS.obj.cellActive();
-										var highlighted = jS.obj.cellHighlighted();
-										var formula = active.attr('formula');
-										var html = (formula ? '' : active.html());
-										
-										jS.cellUndoable.add(highlighted);
-										
-										if (formula) {
-											highlighted.attr('formula', formula);
-										} else {
-											highlighted
-												.html(html)
-												.attr('formula', '');
-										}
-										jS.cellUndoable.add(highlighted);
-										
-										jS.calc(jS.i);
-										
+										jS.fillUpOrDown();
 									});
 								}
 							});
-					
-					return autoFiller;
 				}
 			},
 			sizeSync: {
@@ -1062,6 +1044,11 @@ jQuery.sheet = {
 					jS.labelUpdate('', true);
 					jS.obj.formula()
 						.val('');
+					
+					if (s.autoFiller) {
+						jS.obj.autoFiller().hide();
+					}
+					
 					return false;
 				},
 				cellSetFocusFromXY: function(left, top, skipOffset) {
@@ -1225,6 +1212,8 @@ jQuery.sheet = {
 								.select();
 							
 							target.parent().css('cursor', 'pointer');
+							
+							jS.followMe();
 							
 							jS.log('stop resizing');
 						}
@@ -2454,6 +2443,7 @@ jQuery.sheet = {
 				return result;
 			},
 			followMe: function(td) {
+				td = (td ? td : jQuery(jS.cellLast.td));
 				var pane = jS.obj.pane();
 				var panePos = pane.offset();
 				var paneWidth = pane.width();
@@ -2497,6 +2487,7 @@ jQuery.sheet = {
 				if (s.autoFiller) {
 					tdPos = td.position();
 					jS.obj.autoFiller()
+						.show('slow')
 						.css('top', ((tdPos.top + tdHeight) - 3) + 'px')
 						.css('left', ((tdPos.left + tdWidth) - 3) + 'px');
 				}
