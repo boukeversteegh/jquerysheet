@@ -786,13 +786,16 @@ jQuery.sheet = {
 								var td = jS.cellLast.td;
 								if (td) {
 									var loc = jS.getTdLocation(td);
-									jS.cellSetActive(td, loc, true, 'ns', function() {
+									jS.cellSetActive(td, loc, true, jS.autoFillerNotGroup, function() {										
 										jS.fillUpOrDown();
+										jS.autoFillerGoToTd(jS.obj.cellHighlighted().last());
+										jS.autoFillerNotGroup = false;
 									});
 								}
 							});
 				}
 			},
+			autoFillerNotGroup: true,
 			sizeSync: {
 			
 			},
@@ -2065,6 +2068,7 @@ jQuery.sheet = {
 				}
 			},
 			cellEdit: function(td, isDrag) {
+				jS.autoFillerNotGroup = true; //make autoFiller directional again.
 				//This finished up the edit of the last cell
 				jS.evt.cellEditDone();
 				jS.followMe(td);
@@ -2084,7 +2088,7 @@ jQuery.sheet = {
 					.select();
 				jS.cellSetActive(td, loc, isDrag);
 			},
-			cellSetActive: function(td, loc, isDrag, directionOnly, fnDone) {
+			cellSetActive: function(td, loc, isDrag, directional, fnDone) {
 				if (typeof(loc[1]) != 'undefined') {
 					jS.cellLast.td = td; //save the current cell/td
 					
@@ -2126,23 +2130,20 @@ jQuery.sheet = {
 					}
 					
 					if (isDrag) {
-						var lastLoc = loc;
+						var lastLoc = loc; //we keep track of the most recent location because we don't want tons of recursion here
 						jS.obj.pane()
 							.mousemove(function(e) {
 								var endLoc = jS.getTdLocation([e.target]);
 								var ok = true;
 								
-								switch (directionOnly) {
-									case 'ns':
-										if (loc[1] != endLoc[1]) {
-											ok = false;
-										}
-										break;
-									case 'ew':
-										if (loc[0] != endLoc[0]) {
-											ok = false;
-										}
-										break;
+								if (directional) {
+									ok = false;
+									if (
+											(loc[0] != endLoc[0] && loc[1] == endLoc[1]) ||
+											(loc[0] == endLoc[0] && loc[1] != endLoc[1])
+									) {
+										ok = true;
+									}
 								}
 								
 								if ((lastLoc[1] != endLoc[1] || lastLoc[0] != endLoc[0]) && ok) { //this prevents this method from firing too much
@@ -2484,12 +2485,15 @@ jQuery.sheet = {
 					});
 				}
 				
+				jS.autoFillerGoToTd(td, tdHeight, tdWidth);
+			},
+			autoFillerGoToTd: function(td, tdHeight, tdWidth) {
 				if (s.autoFiller) {
 					tdPos = td.position();
 					jS.obj.autoFiller()
 						.show('slow')
-						.css('top', ((tdPos.top + tdHeight) - 3) + 'px')
-						.css('left', ((tdPos.left + tdWidth) - 3) + 'px');
+						.css('top', ((tdPos.top + (tdHeight ? tdHeight : td.height()) - 3) + 'px'))
+						.css('left', ((tdPos.left + (tdWidth ? tdWidth : td.width()) - 3) + 'px'));
 				}
 			},
 			count: {
@@ -3091,6 +3095,11 @@ jQuery.sheet = {
 			},
 			cellUndoable: {
 				undoOrRedo: function(undo) {
+					//hide the autoFiller, it can get confused
+					if (s.autoFiller) {
+						jS.obj.autoFiller().hide();
+					}
+					
 					if (!undo && this.i > 0) {
 						this.i--;
 					} else if (undo && this.i < this.stack.length) {
