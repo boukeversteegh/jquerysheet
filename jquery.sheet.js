@@ -1897,10 +1897,13 @@ jQuery.sheet = {
 						tableWidth += w;
 					});
 					o.find('tr').each(function() {
-						jQuery(this)
-							.height(s.colMargin)
-							.css('height', s.colMargin + 'px')
-							.attr('height', s.colMargin + 'px');
+						var tr = jQuery(this);
+						var h = tr.attr('height'); //we can't use .height() here because it may not be visible
+						h = (h ? h : s.colMargin + 'px');
+						tr
+							.height(h)
+							.css('height', h)
+							.attr('height', h);
 					});
 					colgroup.prependTo(o);
 				}
