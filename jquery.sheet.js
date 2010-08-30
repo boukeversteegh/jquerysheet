@@ -61,7 +61,8 @@ jQuery.fn.extend({
 			autoAddCells:	true,
 			caseInsensitive: false,
 			resizable: true,
-			autoFiller: false
+			autoFiller: false,
+			minSize: {rows: 15, cols: 5}
 		}, settings);
 		
 		
@@ -613,7 +614,7 @@ jQuery.sheet = {
 					var objContainer = jS.controlFactory.table().appendTo(jS.obj.ui());
 					var pane = jS.obj.pane().html(o);
 					
-					if (s.autoFiller) {
+					if (s.autoFiller && s.editable) {
 						pane.append(jS.controlFactory.autoFiller());
 					}
 					
@@ -639,6 +640,8 @@ jQuery.sheet = {
 					jS.themeRoller.start(i);
 
 					jS.setTdIds(o);
+					
+					jS.checkMinSize(o);
 					
 					jS.evt.scrollBars();
 					
@@ -1906,6 +1909,29 @@ jQuery.sheet = {
 					.removeAttr('width')
 					.css('width', '')
 					.width(tableWidth);
+			},
+			checkMinSize: function(o) {
+				//ensure sheet minimums have been met, if not add columns and rows
+				var tr = o.find('tr');
+				var td = tr.first().find('td');
+				var addRows = 0;
+				var addCols = 0;
+				
+				if ((tr.length) + 1 < s.minSize.rows) {
+					addRows = s.minSize.rows - tr.length;
+				}
+				
+				if ((td.length) + 1 < s.minSize.cols) {
+					addCols = s.minSize.cols - td.length;
+				}
+				
+				if (addRows) {
+					jS.controlFactory.addRowMulti(addRows);
+				}
+				
+				if (addCols) {
+					jS.controlFactory.addColumnMulti(addCols);
+				}
 			},
 			themeRoller: {
 				start: function() {
