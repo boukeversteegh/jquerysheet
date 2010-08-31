@@ -1412,7 +1412,10 @@ jQuery.sheet = {
 							h = jS.attrH.height(jQuery(jS.getTd(jS.i, i, 0)).parent().andSelf(), skipCorrection);
 							break;
 						case 'bar':
-							o = (o ? o : jQuery(jS.getTd(jS.i, i, 0)).parent().andSelf());
+							if (!o) {
+								var td = jQuery(jS.getTd(jS.i, i, 0));
+								o = td.nextAll().andSelf().add(td.parent());
+							} 
 							h = jS.attrH.heightReverse(jS.obj.barLeft().find('div').eq(i), skipCorrection);
 							break;
 					}
@@ -1897,13 +1900,10 @@ jQuery.sheet = {
 						tableWidth += w;
 					});
 					o.find('tr').each(function() {
-						var tr = jQuery(this);
-						var h = tr.attr('height'); //we can't use .height() here because it may not be visible
-						h = (h ? h : s.colMargin + 'px');
-						tr
-							.height(h)
-							.css('height', h)
-							.attr('height', h);
+						jQuery(this)
+							.height(s.colMargin)
+							.css('height', s.colMargin + 'px')
+							.attr('height', s.colMargin + 'px');
 					});
 					colgroup.prependTo(o);
 				}
