@@ -132,17 +132,13 @@
 			menu.find('.colorPickerCell')
 				.colorPicker()
 				.change(function() {
-					$.sheet.instance[I].cellUndoable.add($.sheet.instance[I].obj.cellHighlighted()); //save state, make it undoable
-					$.sheet.instance[I].obj.cellHighlighted().css('background-color', $(this).val());
-					$.sheet.instance[I].cellUndoable.add($.sheet.instance[I].obj.cellHighlighted()); //save state, make it redoable
+					$.sheet.instance[I].cellChangeStyle('background-color', $(this).val());
 				});
 			
 			menu.find('.colorPickerFont')
 				.colorPicker()
 				.change(function() {
-					$.sheet.instance[I].cellUndoable.add($.sheet.instance[I].obj.cellHighlighted()); //save state, make it undoable
-					$.sheet.instance[I].obj.cellHighlighted().css('color', $(this).val());
-					$.sheet.instance[I].cellUndoable.add($.sheet.instance[I].obj.cellHighlighted()); //save state, make it redoable
+					$.sheet.instance[I].cellChangeStyle('color', $(this).val());
 				});
 			
 			menu.find('.colorPickers')

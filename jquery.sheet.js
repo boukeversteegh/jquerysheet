@@ -2837,6 +2837,12 @@ jQuery.sheet = {
 					.parent()
 						.width(w);
 			},
+			cellChangeStyle: function(style, value) {
+				jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it undoable
+				jS.obj.cellHighlighted().css(style, value);
+				jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it redoable
+
+			},
 			cellFind: function(v) {
 				if(!v) {
 					v = prompt("What are you looking for in this spreadsheet?");
