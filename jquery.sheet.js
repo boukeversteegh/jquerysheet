@@ -2518,11 +2518,13 @@ jQuery.sheet = {
 			},
 			autoFillerGoToTd: function(td, tdHeight, tdWidth) {
 				if (s.autoFiller) {
-					tdPos = td.position();
-					jS.obj.autoFiller()
-						.show('slow')
-						.css('top', ((tdPos.top + (tdHeight ? tdHeight : td.height()) - 3) + 'px'))
-						.css('left', ((tdPos.left + (tdWidth ? tdWidth : td.width()) - 3) + 'px'));
+					if (tdHeight > 0 && tdWidth > 0) {
+						tdPos = td.position();
+						jS.obj.autoFiller()
+							.show('slow')
+							.css('top', ((tdPos.top + (tdHeight ? tdHeight : td.height()) - 3) + 'px'))
+							.css('left', ((tdPos.left + (tdWidth ? tdWidth : td.width()) - 3) + 'px'));
+					}
 				}
 			},
 			count: {
