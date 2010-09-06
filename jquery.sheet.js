@@ -224,6 +224,11 @@ jQuery.sheet = {
 					}
 				},
 				addCells: function(eq, isBefore, eqO, qty, type) {
+					//hide the autoFiller, it can get confused
+					if (s.autoFiller) {
+						jS.obj.autoFiller().hide();
+					}
+					
 					jS.setDirty(true);
 					
 					var sheet = jS.obj.sheet();
