@@ -2167,10 +2167,7 @@ jQuery.sheet = {
 								
 								if (directional) {
 									ok = false;
-									if (
-											(loc[0] != endLoc[0] && loc[1] == endLoc[1]) ||
-											(loc[0] == endLoc[0] && loc[1] != endLoc[1])
-									) {
+									if (loc[1] == endLoc[1] || loc[0] == endLoc[0]) {
 										ok = true;
 									}
 								}
@@ -2518,7 +2515,7 @@ jQuery.sheet = {
 			},
 			autoFillerGoToTd: function(td, tdHeight, tdWidth) {
 				if (s.autoFiller) {
-					if (tdHeight > 0 && tdWidth > 0) {
+					if (td.attr('id')) { //ensure that it is a usable cell
 						tdPos = td.position();
 						jS.obj.autoFiller()
 							.show('slow')
