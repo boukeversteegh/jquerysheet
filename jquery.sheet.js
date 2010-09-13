@@ -53,6 +53,8 @@ jQuery.fn.extend({
 			},
 			fnClose: 		function() {}, 					//fn, default clase function, more of a proof of concept
 			fnAfterCellEdit:function() {},					//fn, fires just after someone edits a cell
+			fnSwitchSheet: function() {},
+			fnPaneScroll: function() {},
 			joinedResizing: false, 							//bool, this joins the column/row with the resize bar
 			boxModelCorrection: 2, 							//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
 			showErrors:		true,							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
@@ -611,7 +613,7 @@ jQuery.sheet = {
 						jS.sheetCount = 0;
 						jS.i = 0;
 					} else {
-						jS.sheetCount++;
+						jS.sheetCount = parseInt(i);
 						jS.i = jS.sheetCount;
 						i = jS.i;
 					}
@@ -653,7 +655,7 @@ jQuery.sheet = {
 					jS.addTab();
 					
 					if (fn) {
-						fn();
+						fn(objContainer, pane);
 					}
 					
 					jS.log('Sheet Initialized');
@@ -1150,12 +1152,15 @@ jQuery.sheet = {
 					var i = jQuery(e.target).attr('i');
 					
 					if (i != '-1' && i != jS.i) {
-						jS.setActiveSheet(jQuery('#' + jS.id.tableControl + i), i); jS.calc(i);
+						jS.setActiveSheet(i);
+						jS.calc(i);
 					} else if (i != '-1' && jS.i == i) {
 						jS.sheetTab();
 					} else {
 						jS.addSheet('5x10');
 					}
+					
+					s.fnSwitchSheet(i);
 					return false;
 				},
 				resizeBar: function(e, o) {
@@ -1242,6 +1247,7 @@ jQuery.sheet = {
 					jS.obj.pane().scroll(function() {
 						o.barTop.scrollLeft(o.pane.scrollLeft());//2 lines of beautiful jQuery js
 						o.barLeft.scrollTop(o.pane.scrollTop());
+						s.fnPaneScroll(jS.obj.pane(), jS.i);
 					});
 				},
 				barMouseDown: {
@@ -2274,8 +2280,8 @@ jQuery.sheet = {
 				if (size) {
 					jS.evt.cellEditAbandon();
 					jS.setDirty(true);
-					var newSheetControl = jS.controlFactory.sheetUI(jS.controlFactory.sheet(size), jS.sheetCount + 1, function() { 
-						jS.setActiveSheet(newSheetControl, jS.sheetCount + 1);
+					var newSheetControl = jS.controlFactory.sheetUI(jS.controlFactory.sheet(size), jS.sheetCount + 1, function(o) { 
+						jS.setActiveSheet(jS.sheetCount);
 					}, true);
 				}
 			},
@@ -2287,7 +2293,7 @@ jQuery.sheet = {
 				
 				jS.setControlIds();
 				
-				jS.setActiveSheet(jS.obj.tableControl(), jS.i);
+				jS.setActiveSheet(jS.i);
 			},
 			deleteRow: function() {
 				var v = confirm("Are you sure that you want to delete that row?");
@@ -2538,16 +2544,11 @@ jQuery.sheet = {
 				}
 			},
 			isRowHeightSync: [],
-			setActiveSheet: function(o, i) {
-				
-				
-				if (o) {
-					o.show().siblings().hide();
-					jS.i = i;			
-				} else {
-					jS.obj.tableControl().siblings().not('div').hide();
-					i = 0;
-				}
+			setActiveSheet: function(i) {
+				i = (i ? i : 0);
+
+				jS.obj.tableControlAll().hide().eq(i).show();
+				jS.i = i;			
 				
 				jS.themeRoller.tab.setActive();
 				
