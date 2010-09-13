@@ -4015,7 +4015,9 @@ jQuery.sheet = {
 		
 		jS.log('Startup');
 		
-		$window.resize(function() {
+		$window
+		.resizable("destroy")
+		.resize(function() {
 			s.width = s.parent.width();
 			s.height = s.parent.height();
 			jS.sheetSyncSize();
