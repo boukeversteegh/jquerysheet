@@ -141,8 +141,8 @@ jQuery.sheet = {
 				pane: 				'jSheetEditPane_' + I + '_',
 				sheet: 				'jSheet_' + I + '_',
 				tableControl:		'tableControl_' + I + '_',
-				tab:				'jSheetTab_' + I,
-				tabContainer:		'jSheetTabContainer_' + I + '_',
+				tab:				'jSheetTab_' + I + '_',
+				tabContainer:		'jSheetTabContainer_' + I,
 				ui:					'jSheetUI_' + I
 			},
 			cl: {//cl = class references
@@ -3352,6 +3352,7 @@ jQuery.sheet = {
 				SUM: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.sum, 0, true); },
 				MAX: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.max, Number.MIN_VALUE, true); },
 				MIN: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.min, Number.MAX_VALUE, true); },
+				MEAN:		function(values) { return this.SUM(values) / values.length; },
 				ABS	: 		function(v) { return Math.abs(cE.fn.N(v)); },
 				CEILING: 	function(v) { return Math.ceil(cE.fn.N(v)); },
 				FLOOR: 		function(v) { return Math.floor(cE.fn.N(v)); },
@@ -4020,47 +4021,13 @@ jQuery.sheet = {
 			jS.sheetSyncSize();
 		});
 		
-		//Add jsAnalysis if available to calculation engine
-		if (jQuery.factorial) {
-			s.calculations = jQuery.extend({
-				FACTORIAL: jQuery.factorial,
-				COMBINATION: jQuery.combination,
-				PERMUTATION: jQuery.permutation,
-				GAMMA: jQuery.gamma,
-				PRECISION: jQuery.precision,
-				MINIMUM: jQuery.minimum,
-				MAXIMUM: jQuery.maximum,
-				MEAN: jQuery.mean,
-				SUM: jQuery.sum,
-				MODE: jQuery.mode,
-				MEDIAN: jQuery.median,
-				QUARTILES: jQuery.quartiles,
-				VARIANCE: jQuery.variance,
-				MEANDEV: jQuery.meandev,
-				STDEV: jQuery.stdev,
-				COVARIANCE: jQuery.covariance,
-				CORR_COEFF: jQuery.corr_coeff,
-				UNIFORM: jQuery.uniform,
-				BINOMIAL: jQuery.binomial,
-				BINOMIALCDF: jQuery.binomialcdf,
-				NEGBIN: jQuery.negbin,
-				NEGBINCDF: jQuery.negbincdf,
-				HYPGEOM: jQuery.hypgeom,
-				HYPGEOMCDF: jQuery.hypgeomcdf,
-				EXPONENTIALCDF: jQuery.exponentialcdf,
-				POISSON: jQuery.poisson,
-				POISSONCDF: jQuery.poissoncdf,
-				NORMCDF: jQuery.normcdf,
-				LINEAR_REG_EQ: jQuery.linear_reg_eq,
-				SECANTMETHOD: jQuery.secantmethod,
-				FIVEPT: jQuery.fivept,
-				FCRIT: jQuery.fcrit,
-				ASR: jQuery.asr
-			},s.calculations);
-		}
-		
 		//Extend the calculation engine plugins
 		cE.fn = jQuery.extend(cE.fn, s.calculations);
+		
+		//Extend the calculation engine with advanced functions
+		if (jQuery.sheet.advancedfn) {
+			cE.fn = jQuery.extend(cE.fn, jQuery.sheet.advancedfn);
+		}
 		
 		//this makes cells and functions case insensitive
 		if (s.caseInsensitive) {
