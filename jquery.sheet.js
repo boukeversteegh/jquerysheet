@@ -4018,9 +4018,11 @@ jQuery.sheet = {
 		$window
 		.resizable("destroy")
 		.resize(function() {
-			s.width = s.parent.width();
-			s.height = s.parent.height();
-			jS.sheetSyncSize();
+			if (jS) { //We check because jS might have been killed
+				s.width = s.parent.width();
+				s.height = s.parent.height();
+				jS.sheetSyncSize();
+			}
 		});
 		
 		//Extend the calculation engine plugins
