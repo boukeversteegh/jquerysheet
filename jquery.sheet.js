@@ -4247,6 +4247,18 @@ jQuery.sheet = {
 				}
 			}
 		}
+	},
+	paneScrollLocker: function(obj, I) { //This can be used with setting fnPaneScroll to lock all loaded sheets together when scrolling, useful in history viewing
+		$($.sheet.instance).each(function(i) {
+			this.obj.pane()
+				.scrollLeft(obj.scrollLeft())
+				.scrollTop(obj.scrollTop());
+		});
+	},
+	switchSheetLocker: function(I) { //This can be used with setting fnSwitchSheet to locks sheets together when switching, useful in history viewing
+		$($.sheet.instance).each(function(i) {
+			this.setActiveSheet(I);
+		});
 	}
 };
 
