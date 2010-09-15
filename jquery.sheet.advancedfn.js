@@ -221,7 +221,7 @@ jQuery.sheet.advancedfn = {
 		return sum;
 	},
 	EXPONENTIALCDF: function(l, x){
-		return 1 - Math.exp(-1 * x);
+		return 1 - Math.exp(-l * x);
 	},
 	POISSON: function(l, x){
 		return Math.pow(l, x) * Math.exp(-l) / this.FACTORIAL(x)
@@ -235,7 +235,7 @@ jQuery.sheet.advancedfn = {
 			sum += jQuery.poisson(l, k);
 		return sum;
 	},
-	NORMCFD: function(u, s, t){
+	NORMCDF: function(u, s, t){
 		return jQuery.asr(Function("x", "return Math.exp(-Math.pow(x-" + u + ",2)/Math.pow(" + s + ",2)/2)/" + s + "/Math.sqrt(2*Math.PI)"), 0, t, 1e-14);
 	},
 	LINEAR_REQ_EQ: function(arrf, arrx){
