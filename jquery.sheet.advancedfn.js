@@ -14,31 +14,29 @@ jQuery.sheet.advancedfn = {
 	GAMMA: function(x){
 		if (x > 0) {
 			if (x != Math.floor(x)) {
-				with (Math) {
-					var v = 1;
-					while (x < 8) {
-						v *= x;
-						x++
-					}
-					var w = 1 / (x * x);
-					return exp(((((((((-3617 / 122400) * w + 7 / 1092) * w -
-					691 / 360360) *
-					w +
-					5 / 5940) *
-					w -
-					1 / 1680) *
-					w +
-					1 / 1260) *
-					w -
-					1 / 360) *
-					w +
-					1 / 12) /
-					x +
-					0.5 * log(2 * PI) -
-					log(v) -
-					x +
-					(x - 0.5) * log(x));
+				var v = 1;
+				while (x < 8) {
+					v *= x;
+					x++
 				}
+				var w = 1 / (x * x);
+				return exp(((((((((-3617 / 122400) * w + 7 / 1092) * w -
+				691 / 360360) *
+				w +
+				5 / 5940) *
+				w -
+				1 / 1680) *
+				w +
+				1 / 1260) *
+				w -
+				1 / 360) *
+				w +
+				1 / 12) /
+				x +
+				0.5 * Math.log(2 * Math.PI) -
+				Math.log(v) -
+				x +
+				(x - 0.5) * Math.log(x));
 			}
 			else {
 				return this.FACTORIAL(x - 1);
