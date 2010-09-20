@@ -313,6 +313,9 @@ jQuery.sheet = {
 								barParent: jS.obj.barTop(),
 								cells: function() {
 									var cellStart = sheet.find('tr:first td' + eq);
+									if (!cellStart[0]) {
+										cellStart = sheet.find('tr:first th' + eq);
+									}
 									var cellEnd = sheet.find('td:last');
 									var loc1 = jS.getTdLocation(cellStart);
 									var loc2 = jS.getTdLocation(cellEnd);
@@ -454,6 +457,7 @@ jQuery.sheet = {
 					
 					if (reload) {
 						parents = o.find('tr:first td');
+						parents.add(o.find('tr:first th'));
 						widthFn = function(obj) {
 							return jS.attrH.width(obj);
 						};
@@ -617,7 +621,7 @@ jQuery.sheet = {
 						jS.i = jS.sheetCount;
 						i = jS.i;
 					}
-					
+
 					var objContainer = jS.controlFactory.table().appendTo(jS.obj.ui());
 					var pane = jS.obj.pane().html(o);
 					
@@ -650,7 +654,7 @@ jQuery.sheet = {
 					
 					jS.checkMinSize(o);
 					
-					jS.evt.scrollBars();
+					jS.evt.scrollBars(pane);
 					
 					jS.addTab();
 					
@@ -1237,17 +1241,20 @@ jQuery.sheet = {
 					
 					return resizeBar.start(e);
 				},
-				scrollBars: function() {
-					var o = { //cut down on recursion, grabe them once
-						pane: jS.obj.pane(), 
+				scrollBars: function(pane) {
+					var o = { //cut down on recursion, grab them once
 						barLeft: jS.obj.barLeftParent(), 
 						barTop: jS.obj.barTopParent()
 					};
 					
-					jS.obj.pane().scroll(function() {
-						o.barTop.scrollLeft(o.pane.scrollLeft());//2 lines of beautiful jQuery js
-						o.barLeft.scrollTop(o.pane.scrollTop());
-						s.fnPaneScroll(jS.obj.pane(), jS.i);
+					pane.scroll(function() {
+						o.barTop.scrollLeft(pane.scrollLeft());//2 lines of beautiful jQuery js
+						o.barLeft.scrollTop(pane.scrollTop());
+						
+						jS.log('bar:' + o.barLeft.scrollTop());
+						jS.log('pane:' + pane.scrollTop());
+						
+						s.fnPaneScroll(pane, jS.i);
 					});
 				},
 				barMouseDown: {
@@ -1444,7 +1451,7 @@ jQuery.sheet = {
 			setTdIds: function(o) {
 				o = (o ? o : jS.obj.sheet());
 				o.find('tr').each(function(row) {
-					jQuery(this).find('td').each(function(col) {
+					jQuery(this).find('td,th').each(function(col) {
 						jQuery(this).attr('id', jS.getTdId(jS.i, row, col));
 					});
 				});
@@ -1555,7 +1562,7 @@ jQuery.sheet = {
 						var o = jS.obj.barTop().find('div').eq(i);
 						if (o.is(':visible')) {
 							jS.obj.sheet().find('tbody tr').each(function() {
-								jQuery(this).find('td').eq(i).hide();
+								jQuery(this).find('td,th').eq(i).hide();
 							});
 							o.hide();
 							jS.obj.sheet().find('colgroup col').eq(i).hide();
@@ -1900,7 +1907,7 @@ jQuery.sheet = {
 				if (o.find('colgroup').length < 1 || o.find('col').length < 1) {
 					o.remove('colgroup');
 					var colgroup = jQuery('<colgroup />');
-					o.find('tr:first').find('td').each(function() {
+					o.find('tr:first').find('td,th').each(function() {
 						var w = s.newColumnWidth;
 						jQuery('<col />')
 							.width(w)
@@ -1926,25 +1933,25 @@ jQuery.sheet = {
 			},
 			checkMinSize: function(o) {
 				//ensure sheet minimums have been met, if not add columns and rows
-				var tr = o.find('tr');
-				var td = tr.first().find('td');
+				var loc = jS.sheetSize();
+				
 				var addRows = 0;
 				var addCols = 0;
 				
-				if ((tr.length) + 1 < s.minSize.rows) {
-					addRows = s.minSize.rows - tr.length;
-				}
-				
-				if ((td.length) + 1 < s.minSize.cols) {
-					addCols = s.minSize.cols - td.length;
-				}
-				
-				if (addRows) {
-					jS.controlFactory.addRowMulti(addRows);
+				if ((loc[0]) + 1 < s.minSize.cols) {
+					addCols = s.minSize.cols - loc[0];
 				}
 				
 				if (addCols) {
 					jS.controlFactory.addColumnMulti(addCols);
+				}
+				
+				if ((loc[1]) + 1 < s.minSize.rows) {
+					addRows = s.minSize.rows - loc[1];
+				}
+				
+				if (addRows) {
+					jS.controlFactory.addRowMulti(addRows);
 				}
 			},
 			themeRoller: {
@@ -2599,7 +2606,7 @@ jQuery.sheet = {
 							});
 						});
 					} else {
-						var sheets = jQuery('<div />').html(o).find('table');
+						var sheets = jQuery('<div />').html(o).children('table');
 						sheets.show().each(function(i) {
 							jS.controlFactory.sheetUI(jQuery(this), i,  function() { 
 								fnAfter(i, sheets.length);

@@ -111,7 +111,7 @@
 	color:  inherit ! important;
 	border-width: 0px ! important;
 }
-.jSheet td {
+.jSheet td, .jSheet th {
 	border-width: 1px ! important;
 	border-color: inherit;
 	padding: 0px ! important;
