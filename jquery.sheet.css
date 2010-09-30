@@ -243,6 +243,7 @@
 	position: fixed;
 	top: expression(eval(document.body.scrollTop + 15) + "px");
 	left: expression(eval(document.body.scrollLeft) + "px");
+	z-index: 9999;
 }
 
 .jSheetFullScreenTabContainer
@@ -263,6 +264,11 @@
 	left: 0px;
 	cursor: crosshair;
 	display: none;
+}
+
+.bodyNoScroll
+{
+	overflow: hidden ! important;
 }
 
 /* Cell styler classes */

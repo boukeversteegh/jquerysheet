@@ -1353,6 +1353,7 @@ jQuery.sheet = {
 			},
 			toggleFullScreen: function() {
 				if (jS.obj.fullScreen().is(':visible')) { //here we remove full screen
+					jQuery('body').removeClass('bodyNoScroll');
 					s.parent = origParent;
 					
 					var w = s.parent.width();
@@ -1368,8 +1369,12 @@ jQuery.sheet = {
 					
 					jS.sheetSyncSize();
 				} else { //here we make a full screen
+					jQuery('body').addClass('bodyNoScroll');
+					
 					var w = $window.width() - 15;
 					var h = $window.height() - 35;
+					
+					
 					s.width = w;
 					s.height = h;
 					
