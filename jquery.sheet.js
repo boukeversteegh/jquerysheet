@@ -1939,16 +1939,16 @@ jQuery.sheet = {
 				var addRows = 0;
 				var addCols = 0;
 				
-				if ((loc[0]) + 1 < s.minSize.cols) {
-					addCols = s.minSize.cols - loc[0];
+				if ((loc[1]) < s.minSize.cols) {
+					addCols = s.minSize.cols - loc[1] - 1;
 				}
 				
 				if (addCols) {
 					jS.controlFactory.addColumnMulti(addCols);
 				}
 				
-				if ((loc[1]) + 1 < s.minSize.rows) {
-					addRows = s.minSize.rows - loc[1];
+				if ((loc[0]) < s.minSize.rows) {
+					addRows = s.minSize.rows - loc[0] - 1;
 				}
 				
 				if (addRows) {
@@ -2033,7 +2033,7 @@ jQuery.sheet = {
 						var controlsHeight;
 						var parent = s.parent;
 						
-						parent.resizable('destroy').resizable({
+						parent.resizable({
 							minWidth: s.width * 0.5,
 							minHeight: s.height * 0.5,
 							start: function() {
@@ -3225,11 +3225,16 @@ jQuery.sheet = {
 			sheetSize: function() {
 				return jS.getTdLocation(jS.obj.sheet().find('td:last'));
 			},
-			toggleState:  function(newS) {
+			toggleState:  function(replacementSheets) {
 				if (s.allowToggleState) {
+					if (s.editable) {
+						jS.evt.cellEditAbandon();
+						jS.saveSheet();
+					}
+					jS.setDirty(false);
 					s.editable = !s.editable;
 					jS.obj.tabContainer().remove();
-					var sheets = jS.obj.sheetAll().clone();
+					var sheets = (replacementSheets ? replacementSheets : jS.obj.sheetAll().clone());
 					origParent.children().remove();
 					jS.openSheet(sheets);
 				}
@@ -4050,7 +4055,6 @@ jQuery.sheet = {
 		jS.log('Startup');
 		
 		$window
-		.resizable("destroy")
 		.resize(function() {
 			if (jS) { //We check because jS might have been killed
 				s.width = s.parent.width();
