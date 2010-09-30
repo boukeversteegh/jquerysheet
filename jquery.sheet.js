@@ -1,6 +1,6 @@
 /*
 jQuery.sheet() The Web Based Spreadsheet
-Version: 1.1.0
+$Rev$
 http://code.google.com/p/jquerysheet/
 		
 Copyright (C) 2010 Robert Plummer
@@ -23,6 +23,7 @@ http://www.gnu.org/licenses/
 */
 jQuery.fn.extend({
 	sheet: function(settings) {
+		var o;
 		settings = jQuery.extend({
 			urlGet: 		"sheets/enduser.documentation.html", //local url, if you want to get a sheet from a url
 			urlSave: 		"save.html", 					//local url, for use only with the default save for sheet
@@ -44,11 +45,11 @@ jQuery.fn.extend({
 			colMargin: 		18, 							//int, the height and the width of all bar items, and new rows
 			fnBefore: 		function() {}, 					//fn, fires just before jQuery.sheet loads
 			fnAfter: 		function() {},	 				//fn, fires just after all sheets load
-			fnSave: 		function() { jS.saveSheet(); }, //fn, default save function, more of a proof of concept
+			fnSave: 		function() { o.sheetInstance.saveSheet(); }, //fn, default save function, more of a proof of concept
 			fnOpen: 		function() { 					//fn, by default allows you to paste table html into a javascript prompt for you to see what it looks likes if you where to use sheet
 				var t = prompt('Paste your table html here');
 				if (t) {
-					jS.openSheet(t);
+					o.sheetInstance.openSheet(t);
 				}
 			},
 			fnClose: 		function() {}, 					//fn, default clase function, more of a proof of concept
@@ -68,7 +69,7 @@ jQuery.fn.extend({
 		}, settings);
 		
 		
-		var o = settings.parent;
+		o = settings.parent;
 		if (jQuery.sheet.instance) {
 			o.sheetInstance = jQuery.sheet.createInstance(settings, jQuery.sheet.instance.length, o);
 			jQuery.sheet.instance.push(o.sheetInstance);
