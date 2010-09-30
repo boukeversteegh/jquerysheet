@@ -1,6 +1,6 @@
 /*
 jQuery.sheet() The Web Based Spreadsheet
-$Id $
+$Id$
 http://code.google.com/p/jquerysheet/
 		
 Copyright (C) 2010 Robert Plummer
