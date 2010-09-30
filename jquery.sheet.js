@@ -2261,6 +2261,31 @@ jQuery.sheet = {
 					.select();
 				return false;
 			},
+			fontReSize: function (direction) {
+				var resize=0;
+				switch (direction) {
+					case 'up':
+						resize=1;
+						break;
+					case 'down':
+						resize=-1;
+						break;    
+				}
+				
+				//Lets check to remove any style classes
+				var uiCell = jS.obj.cellHighlighted();
+				
+				jS.cellUndoable.add(uiCell);
+				
+				uiCell.each(function(i) {
+					cell = jQuery(this);
+					var curr_size = (cell.css("font-size") + '').replace("px","")
+					var new_size = parseInt(curr_size ? curr_size : 10) + resize;
+					cell.css("font-size", new_size + "px");
+				});
+				
+				jS.cellUndoable.add(uiCell);
+			},
 			context: {},
 			calc: function(tableI, fuel) {
 				jS.log('Calculation Started');
