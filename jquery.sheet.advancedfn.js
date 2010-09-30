@@ -17,7 +17,7 @@ jQuery.sheet.advancedfn = {
 				var v = 1;
 				while (x < 8) {
 					v *= x;
-					x++
+					x++;
 				}
 				var w = 1 / (x * x);
 				return exp(((((((((-3617 / 122400) * w + 7 / 1092) * w -
@@ -67,7 +67,7 @@ jQuery.sheet.advancedfn = {
 		var values = [];
 		for (i = 0; i < arrsort.length; i++) {
 			if (arrsort[i] == arrsort[i + 1]) {
-				count++
+				count++;
 			}
 			else {
 				frequencies[position] = count;
@@ -100,14 +100,14 @@ jQuery.sheet.advancedfn = {
 	SUM: function(arr){
 		var sum = 0;
 		for (i = 0; i < arr.length; i++) {
-			sum += arr[i]
+			sum += arr[i];
 		}
 		return sum;
 	},
 	MEDIAN: function(arr){
 		var arrsort = arr.sort(function(a, b){
 			return a - b;
-		})
+		});
 		return arrsort[Math.round((arr.length) / 2) - 1];
 	},
 	QUARTILES: function(arr){
@@ -222,7 +222,7 @@ jQuery.sheet.advancedfn = {
 		return 1 - Math.exp(-l * x);
 	},
 	POISSON: function(l, x){
-		return Math.pow(l, x) * Math.exp(-l) / this.FACTORIAL(x)
+		return Math.pow(l, x) * Math.exp(-l) / this.FACTORIAL(x);
 	},
 	POISSONCDF: function(l, x){
 		if (x < 0) {
@@ -283,7 +283,7 @@ jQuery.sheet.advancedfn = {
 		return (-func(x + h * 2) + 8 * func(x + h) - 8 * func(x - h) + func(x - h * 2)) / h / 12;
 	},
 	FCRIT: function(f, a, b){
-		return this.PRECISION(this.SECANTMETHOD(Function("t", "return jQuery.fivept(" + f + ",t,1e-3)"), a, b, 1e-13, 99999), 1e-12)
+		return this.PRECISION(this.SECANTMETHOD(Function("t", "return jQuery.fivept(" + f + ",t,1e-3)"), a, b, 1e-13, 99999), 1e-12);
 	},
 	ASR: function(f, a, b, eps){
 		var c = (a + b) / 2;
@@ -303,7 +303,7 @@ jQuery.sheet.advancedfn = {
 				return left + right + (left + right - sum) / 15;
 			}
 			return recursive_asr(f, a, c, cl, eps / 2, left, fa, fc, fcl) + recursive_asr(f, c, b, cr, eps / 2, right, fc, fb, fcr);
-		}
+		};
 		return this.PRECISION(recursive_asr(f, a, b, c, eps, h * (fa + fb + 4 * fc), fa, fb, fc), eps);
 	}
-}
+};
