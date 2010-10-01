@@ -2294,8 +2294,12 @@ jQuery.sheet = {
 			context: {},
 			calc: function(tableI, fuel) {
 				jS.log('Calculation Started');
+				if (!jS.tableCellProviders[tableI]) {
+					jS.tableCellProviders[tableI] = new jS.tableCellProvider(tableI);
+				}
 				if (!s.calcOff) {
-					cE.calc(new jS.tableCellProvider(tableI), jS.context, fuel);
+					jS.tableCellProviders[tableI].cells = {};
+					cE.calc(jS.tableCellProviders[tableI], jS.context, fuel);
 					jS.isSheetEdit = false;
 				}
 				jS.log('Calculation Ended');
@@ -2610,7 +2614,7 @@ jQuery.sheet = {
 				s.urlGet = url;
 				return jS.openSheet();
 			},
-			openSheet: function(o) {
+			openSheet: function(o, reloadBarsOverride) {
 				if (!jS.isDirty ? true : confirm("Are you sure you want to open a different sheet?  All unsaved changes will be lost.")) {
 					jS.controlFactory.header();
 					
@@ -2641,7 +2645,7 @@ jQuery.sheet = {
 						sheets.show().each(function(i) {
 							jS.controlFactory.sheetUI(jQuery(this), i,  function() { 
 								fnAfter(i, sheets.length);
-							}, false);
+							}, (reloadBarsOverride ? true : false));
 						});
 					}
 					
@@ -3123,6 +3127,7 @@ jQuery.sheet = {
 				this.tableI = tableI;
 				this.cells = {};
 			},
+			tableCellProviders: [],
 			tableCell: function(tableI, row, col) {
 				this.tableBodyId = jS.id.sheet + tableI;
 				this.tableI = tableI;
@@ -3241,7 +3246,7 @@ jQuery.sheet = {
 					jS.obj.tabContainer().remove();
 					var sheets = (replacementSheets ? replacementSheets : jS.obj.sheetAll().clone());
 					origParent.children().remove();
-					jS.openSheet(sheets);
+					jS.openSheet(sheets, true);
 				}
 			},
 			setCellRef: function(ref) {
@@ -3652,7 +3657,7 @@ jQuery.sheet = {
 				// is roughly matches the number of cells to visit per calc() run.
 				cE.calcState = { 
 					cellProvider:	cellProvider, 
-					context: 		(context != null ? context: {}),
+					context: 		(context != null ? context : {}),
 					row: 			1, 
 					col: 			1,
 					i:				cellProvider.tableI,
@@ -3664,6 +3669,111 @@ jQuery.sheet = {
 									}
 				};
 				return cE.calcState.calcMore(startFuel);
+			},
+			calcLoop: function() {
+				if (cE.calcState.done == true) {
+					return null;
+				} else {
+					while (cE.calcState.fuel == null || cE.calcState.fuel > 0) {
+						if (cE.calcState.stack.length > 0) {
+							var workFunc = cE.calcState.stack.pop();
+							if (workFunc != null) {
+								workFunc(cE.calcState);
+							}
+						} else if (cE.calcState.cellProvider.formulaCells != null) {
+							if (cE.calcState.cellProvider.formulaCells.length > 0) {
+								var loc = cE.calcState.cellProvider.formulaCells.shift();
+								cE.visitCell(cE.calcState.i, loc[0], loc[1]);
+							} else {
+								cE.calcState.done = true;
+								return null;
+							}
+						} else {
+							if (cE.visitCell(cE.calcState.i, cE.calcState.row, cE.calcState.col) == true) {
+								cE.calcState.done = true;
+								return null;
+							}
+
+							if (cE.calcState.col >= cE.calcState.cellProvider.getNumberOfColumns(cE.calcState.row - 1)) {
+								cE.calcState.row++;
+								cE.calcState.col =  1;
+							} else {
+								cE.calcState.col++; // Sweep through columns first.
+							}
+						}
+						
+						if (cE.calcState.fuel != null) {
+							cE.calcState.fuel -= 1;
+						}
+					}
+					return cE.calcState.calcMore;
+				}
+			},
+			visitCell: function(tableI, r, c) { // Returns true if done with all cells.
+				var cell = cE.calcState.cellProvider.getCell(tableI, r, c);
+				if (cell == null) {
+					return true;
+				} else {
+					var value = cell.getValue();
+					if (value == null) {
+						this.formula = cell.getFormula();
+						if (this.formula) {
+							if (this.formula.charAt(0) == '=') {
+								this.formulaFunc = cell.getFormulaFunc();
+								if (this.formulaFunc == null ||
+									this.formulaFunc.formula != this.formula) {
+									this.formulaFunc = null;
+									try {
+										var dependencies = {};
+										var body = cE.parseFormula(this.formula.substring(1), dependencies, tableI);
+										this.formulaFunc = function() {
+											with (cE.fn) {
+												return eval(body);
+											}
+										};
+										
+										this.formulaFunc.formula = this.formula;
+										this.formulaFunc.dependencies = dependencies;
+										cell.setFormulaFunc(this.formulaFunc);
+									} catch (e) {
+										cell.setValue(cE.ERROR + ': ' + e);
+									}
+								}
+								if (this.formulaFunc) {
+									cE.calcState.stack.push(cE.makeFormulaEval(cell, r, c, this.formulaFunc));
+
+									// Push the cell's dependencies, first checking for any cycles. 
+									var dependencies = this.formulaFunc.dependencies;
+									for (var k in dependencies) {
+										if (dependencies[k] instanceof Array &&
+											(cE.checkCycles(dependencies[k][0], dependencies[k][1], dependencies[k][2]) == true) //same cell on same sheet
+										) {
+											cell.setValue(cE.ERROR + ': cycle detected');
+											cE.calcState.stack.pop();
+											return false;
+										}
+									}
+									for (var k in dependencies) {
+										if (dependencies[k] instanceof Array) {
+											cE.calcState.stack.push(cE.makeCellVisit(dependencies[k][2], dependencies[k][0], dependencies[k][1]));
+										}
+									}
+								}
+							} else {
+								cell.setValue(cE.parseFormulaStatic(this.formula));
+							}
+						}
+					}
+					return false;
+				}
+			},
+			makeCellVisit: function(tableI, row, col) {
+				var fn = function() { 
+					return cE.visitCell(tableI, row, col);
+				};
+				fn.row = row;
+				fn.col = col;
+				return fn;
 			},
 			cell: function() {
 				prototype: {// Cells don't know their coordinates, to make shifting easier.
@@ -3836,113 +3946,8 @@ jQuery.sheet = {
 					return value;
 				}
 			},
-			calcLoop: function() {
-				if (cE.calcState.done == true) {
-					return null;
-				} else {
-					while (cE.calcState.fuel == null || cE.calcState.fuel > 0) {
-						if (cE.calcState.stack.length > 0) {
-							var workFunc = cE.calcState.stack.pop();
-							if (workFunc != null) {
-								workFunc(cE.calcState);
-							}
-						} else if (cE.calcState.cellProvider.formulaCells != null) {
-							if (cE.calcState.cellProvider.formulaCells.length > 0) {
-								var loc = cE.calcState.cellProvider.formulaCells.shift();
-								cE.visitCell(cE.calcState.i, loc[0], loc[1]);
-							} else {
-								cE.calcState.done = true;
-								return null;
-							}
-						} else {
-							if (cE.visitCell(cE.calcState.i, cE.calcState.row, cE.calcState.col) == true) {
-								cE.calcState.done = true;
-								return null;
-							}
-
-							if (cE.calcState.col >= cE.calcState.cellProvider.getNumberOfColumns(cE.calcState.row - 1)) {
-								cE.calcState.row++;
-								cE.calcState.col =  1;
-							} else {
-								cE.calcState.col++; // Sweep through columns first.
-							}
-						}
-						
-						if (cE.calcState.fuel != null) {
-							cE.calcState.fuel -= 1;
-						}
-					}
-					return cE.calcState.calcMore;
-				}
-			},
 			formula: null,
 			formulaFunc: null,
-			visitCell: function(tableI, r, c) { // Returns true if done with all cells.
-				var cell = cE.calcState.cellProvider.getCell(tableI, r, c);
-				if (cell == null) {
-					return true;
-				} else {
-					var value = cell.getValue();
-					if (value == null) {
-						this.formula = cell.getFormula();
-						if (this.formula) {
-							if (this.formula.charAt(0) == '=') {
-								this.formulaFunc = cell.getFormulaFunc();
-								if (this.formulaFunc == null ||
-									this.formulaFunc.formula != this.formula) {
-									this.formulaFunc = null;
-									try {
-										var dependencies = {};
-										var body = cE.parseFormula(this.formula.substring(1), dependencies, tableI);
-										this.formulaFunc = function() {
-											with (cE.fn) {
-												return eval(body);
-											}
-										};
-										
-										this.formulaFunc.formula = this.formula;
-										this.formulaFunc.dependencies = dependencies;
-										cell.setFormulaFunc(this.formulaFunc);
-									} catch (e) {
-										cell.setValue(cE.ERROR + ': ' + e);
-									}
-								}
-								if (this.formulaFunc) {
-									cE.calcState.stack.push(cE.makeFormulaEval(cell, r, c, this.formulaFunc));
-
-									// Push the cell's dependencies, first checking for any cycles. 
-									var dependencies = this.formulaFunc.dependencies;
-									for (var k in dependencies) {
-										if (dependencies[k] instanceof Array &&
-											(cE.checkCycles(dependencies[k][0], dependencies[k][1], dependencies[k][2]) == true) //same cell on same sheet
-										) {
-											cell.setValue(cE.ERROR + ': cycle detected');
-											cE.calcState.stack.pop();
-											return false;
-										}
-									}
-									for (var k in dependencies) {
-										if (dependencies[k] instanceof Array) {
-											cE.calcState.stack.push(cE.makeCellVisit(dependencies[k][2], dependencies[k][0], dependencies[k][1]));
-										}
-									}
-								}
-							} else {
-								cell.setValue(cE.parseFormulaStatic(this.formula));
-							}
-						}
-					}
-					return false;
-				}
-			},
-			makeCellVisit: function(tableI, row, col) {
-				var fn = function() { 
-					return cE.visitCell(tableI, row, col);
-				};
-				fn.row = row;
-				fn.col = col;
-				return fn;
-			},
 			thisCell: null,
 			makeFormulaEval: function(cell, row, col, formulaFunc) {
 				cE.thisCell = cell;
