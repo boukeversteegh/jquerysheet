@@ -25,49 +25,48 @@ jQuery.fn.extend({
 	sheet: function(settings) {
 		var o;
 		settings = jQuery.extend({
-			urlGet: 		"sheets/enduser.documentation.html", //local url, if you want to get a sheet from a url
-			urlSave: 		"save.html", 					//local url, for use only with the default save for sheet
-			editable: 		true, 							//bool, Makes the jSheetControls_formula & jSheetControls_fx appear
-			allowToggleState: true,							//allows the function that changes the spreadsheet's state from static to editable and back
-			urlMenu: 		"menu.html", 					//local url, for the menu to the right of title
-			newColumnWidth: 120, 							//int, the width of new columns or columns that have no width assigned
-			title: 			null, 							//html, general title of the sheet group
-			inlineMenu:		null, 							//html, menu for editing sheet
-			buildSheet: 	false,							//bool, string, or object
-																//bool true - build sheet inside of parent
-																//bool false - use urlGet from local url
-																//string  - '{number_of_cols}x{number_of_rows} (5x100)
-																//object - table
-			calcOff: 		false, 							//bool, turns calculationEngine off (no spreadsheet, just grid)
-			log: 			false, 							//bool, turns some debugging logs on (jS.log('msg'))
-			lockFormulas: 	false, 							//bool, turns the ability to edit any formula off
-			parent: 		jQuery(this), 					//object, sheet's parent, DON'T CHANGE
-			colMargin: 		18, 							//int, the height and the width of all bar items, and new rows
-			fnBefore: 		function() {}, 					//fn, fires just before jQuery.sheet loads
-			fnAfter: 		function() {},	 				//fn, fires just after all sheets load
-			fnSave: 		function() { o.sheetInstance.saveSheet(); }, //fn, default save function, more of a proof of concept
-			fnOpen: 		function() { 					//fn, by default allows you to paste table html into a javascript prompt for you to see what it looks likes if you where to use sheet
-				var t = prompt('Paste your table html here');
-				if (t) {
-					o.sheetInstance.openSheet(t);
-				}
+			urlGet: 			"sheets/enduser.documentation.html", //local url, if you want to get a sheet from a url
+			urlSave: 			"save.html", 					//local url, for use only with the default save for sheet
+			editable: 			true, 							//bool, Makes the jSheetControls_formula & jSheetControls_fx appear
+			allowToggleState: 	true,							//allows the function that changes the spreadsheet's state from static to editable and back
+			urlMenu: 			"menu.html", 					//local url, for the menu to the right of title
+			newColumnWidth: 	120, 							//int, the width of new columns or columns that have no width assigned
+			title: 				null, 							//html, general title of the sheet group
+			inlineMenu:			null, 							//html, menu for editing sheet
+			buildSheet: 		false,							//bool, string, or object
+																	//bool true - build sheet inside of parent
+																	//bool false - use urlGet from local url
+																	//string  - '{number_of_cols}x{number_of_rows} (5x100)
+																	//object - table
+			calcOff: 			false, 							//bool, turns calculationEngine off (no spreadsheet, just grid)
+			log: 				false, 							//bool, turns some debugging logs on (jS.log('msg'))
+			lockFormulas: 		false, 							//bool, turns the ability to edit any formula off
+			parent: 			jQuery(this), 					//object, sheet's parent, DON'T CHANGE
+			colMargin: 			18, 							//int, the height and the width of all bar items, and new rows
+			fnBefore: 			function() {}, 					//fn, called just before jQuery.sheet loads
+			fnAfter: 			function() {},	 				//fn, called just after all sheets load
+			fnSave: 			function() { o.sheetInstance.saveSheet(); }, //fn, default save function, more of a proof of concept
+			fnOpen: 			function() { 					//fn, by default allows you to paste table html into a javascript prompt for you to see what it looks likes if you where to use sheet
+									var t = prompt('Paste your table html here');
+									if (t) {
+										o.sheetInstance.openSheet(t);
+									}
 			},
-			fnClose: 		function() {}, 					//fn, default clase function, more of a proof of concept
-			fnAfterCellEdit:function() {},					//fn, fires just after someone edits a cell
-			fnSwitchSheet: function() {},
-			fnPaneScroll: function() {},
-			joinedResizing: false, 							//bool, this joins the column/row with the resize bar
-			boxModelCorrection: 2, 							//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
-			showErrors:		true,							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
-			calculations:	{},								//object, used to extend the standard functions that come with sheet
-			cellSelectModel: 'excel',						//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
-			autoAddCells:	true,
-			caseInsensitive: false,
-			resizable: true,
-			autoFiller: false,
-			minSize: {rows: 15, cols: 5}
+			fnClose: 			function() {}, 					//fn, default clase function, more of a proof of concept
+			fnAfterCellEdit:	function() {},					//fn, called just after someone edits a cell
+			fnSwitchSheet:		function() {},					//fn, called when a spreadsheet is switched inside of an instance of sheet
+			fnPaneScroll:		function() {},					//fn, called when a spreadsheet is scrolled
+			joinedResizing: 	false, 							//bool, this joins the column/row with the resize bar
+			boxModelCorrection: 2, 								//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
+			showErrors:			true,							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
+			calculations:		{},								//object, used to extend the standard functions that come with sheet
+			cellSelectModel: 	'excel',						//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
+			autoAddCells:		true,							//bool, when user presses enter on the last row, this will allow them to add another cell, thus improving performance and optimizing modification speed
+			caseInsensitive: 	false,							//bool, this makes all the calculations engine user functions case sensitive/insensitive
+			resizable: 			true,							//bool, makes the $(obj).sheet(); object resizeable, also adds a resizable formula textarea at top of sheet
+			autoFiller: 		false,							//bool, the little guy that hangs out to the bottom right of a selected cell, users can click and drag the value to other cells
+			minSize: 			{rows: 15, cols: 5}				//object - {rows: int, cols: int}, Makes the sheet stay at a certain size when loaded in edit mode, to make modification more productive
 		}, settings);
-		
 		
 		o = settings.parent;
 		if (jQuery.sheet.instance) {
@@ -84,7 +83,7 @@ jQuery.fn.extend({
 jQuery.sheet = {
 	createInstance: function(s, I, origParent) { //s = jQuery.sheet settings, I = jQuery.sheet Instance Integer
 		var jS = {
-			version: '1.1.0',
+			version: '1.1.5 rc1',
 			i: 0,
 			I: I,
 			sheetCount: 0,
@@ -109,6 +108,7 @@ jQuery.sheet = {
 				controls:			function() { return jQuery('#' + jS.id.controls); },
 				formula: 			function() { return jQuery('#' + jS.id.formula); },
 				fullScreen:			function() { return jQuery('div.' + jS.cl.fullScreen); },
+				inlineMenu:			function() { return jQuery('#' + jS.id.inlineMenu); },
 				inPlaceEdit:		function() { return jQuery('#' + jS.id.inPlaceEdit); },
 				label: 				function() { return jQuery('#' + jS.id.label); },
 				log: 				function() { return jQuery('#' + jS.id.log); },
@@ -124,10 +124,15 @@ jQuery.sheet = {
 				tableBody: 			function() { return document.getElementById(jS.id.sheet + jS.i); },
 				tableControl:		function() { return jQuery('#' + jS.id.tableControl + jS.i); },
 				tableControlAll:	function() { return s.parent.find('table.' + jS.cl.tableControl); },
+				title:				function() { return jQuery('#' + jS.id.title); },
 				ui:					function() { return jQuery('#' + jS.id.ui); },
 				uiActive:			function() { return s.parent.find('div.' + jS.cl.uiActive); }
 			},
-			id: {//id = id's references
+			id: {
+				/*
+					id = id's references
+					Note that these are all dynamically set
+				*/
 				autoFiller:			'jSheetAutoFiller_' + I + '_',
 				barCorner:			'jSheetBarCorner_' + I + '_',
 				barCornerParent:	'jSheetBarCornerParent_' + I + '_',
@@ -137,6 +142,7 @@ jQuery.sheet = {
 				barLeftParent: 		'jSheetBarLeftParent_' + I + '_',
 				controls:			'jSheetControls_' + I,
 				formula: 			'jSheetControls_formula_' + I,
+				inlineMenu:			'jSheetInlineMenu_' + I,
 				inPlaceEdit:		'jSheetInPlaceEdit_' + I,
 				label: 				'jSheetControls_loc_' + I,
 				log: 				'jSheetLog_' + I,
@@ -146,58 +152,76 @@ jQuery.sheet = {
 				tableControl:		'tableControl_' + I + '_',
 				tab:				'jSheetTab_' + I + '_',
 				tabContainer:		'jSheetTabContainer_' + I,
+				title:				'jSheetTitle_' + I,
 				ui:					'jSheetUI_' + I
 			},
-			cl: {//cl = class references
-				autoFiller:			'jSheetAutoFiller',
-				autoFillerHandle:	'jSheetAutoFillerHandle',
-				autoFillerConver:	'jSheetAutoFillerCover',
-				barCorner:			'jSheetBarCorner',
-				barCornerParent:	'jSheetBarCornerParent',
-				barLeftTd:			'barLeft',
-				barLeft: 			'jSheetBarLeft',
-				barLeftParent: 		'jSheetBarLeftParent',
-				barTop: 			'jSheetBarTop',
-				barTopParent: 		'jSheetBarTopParent',
-				barTopTd:			'barTop',
-				cellActive:			'jSheetCellActive',
-				cellHighlighted: 	'jSheetCellHighighted',
-				controls:			'jSheetControls',
-				formula: 			'jSheetControls_formula',
-				fullScreen:			'jSheetFullScreen',
-				inPlaceEdit:		'jSheetInPlaceEdit',
-				menu:				'jSheetMenu',
-				sheet: 				'jSheet',
-				sheetPaneTd:		'sheetPane',
-				label: 				'jSheetControls_loc',
-				log: 				'jSheetLog',
-				pane: 				'jSheetEditPane',
-				tab:				'jSheetTab',
-				tabContainer:		'jSheetTabContainer',
+			cl: {
+				/*
+					cl = class references
+				*/
+				autoFiller:				'jSheetAutoFiller',
+				autoFillerHandle:		'jSheetAutoFillerHandle',
+				autoFillerConver:		'jSheetAutoFillerCover',
+				barCorner:				'jSheetBarCorner',
+				barCornerParent:		'jSheetBarCornerParent',
+				barLeftTd:				'barLeft',
+				barLeft: 				'jSheetBarLeft',
+				barLeftParent: 			'jSheetBarLeftParent',
+				barTop: 				'jSheetBarTop',
+				barTopParent: 			'jSheetBarTopParent',
+				barTopTd:				'barTop',
+				cellActive:				'jSheetCellActive',
+				cellHighlighted: 		'jSheetCellHighighted',
+				controls:				'jSheetControls',
+				formula: 				'jSheetControls_formula',
+				inlineMenu:				'jSheetInlineMenu',
+				fullScreen:				'jSheetFullScreen',
+				inPlaceEdit:			'jSheetInPlaceEdit',
+				menu:					'jSheetMenu',
+				sheet: 					'jSheet',
+				sheetPaneTd:			'sheetPane',
+				label: 					'jSheetControls_loc',
+				log: 					'jSheetLog',
+				pane: 					'jSheetEditPane',
+				tab:					'jSheetTab',
+				tabContainer:			'jSheetTabContainer',
 				tabContainerFullScreen: 'jSheetFullScreenTabContainer',
-				tableControl:		'tableControl',
-				toggle:				'cellStyleToggle',
-				ui:					'jSheetUI',
-				uiAutoFiller:		'ui-state-active',
-				uiActive:			'ui-state-active',
-				uiBar: 				'ui-widget-header',
-				uiCellActive:		'ui-state-active',
-				uiCellHighlighted: 	'ui-state-highlight',
-				uiControl: 			'ui-widget-header ui-corner-top',
-				uiControlTextBox:	'ui-widget-content',
-				uiFullScreen:		'ui-widget-content ui-corner-all',
-				uiInPlaceEdit:		'ui-state-active',
-				uiMenu:				'ui-state-highlight',
-				uiMenuUl: 			'ui-widget-header',
-				uiMenuLi: 			'ui-widget-header',
-				uiMenuHighlighted: 	'ui-state-highlight',
-				uiPane: 			'ui-widget-content',
-				uiParent: 			'ui-widget-content ui-corner-all',
-				uiSheet:			'ui-widget-content',
-				uiTab:				'ui-widget-header',
-				uiTabActive:		'ui-state-highlight'
+				tableControl:			'tableControl',
+				title:					'jSheetTitle',
+				toggle:					'cellStyleToggle',
+				ui:						'jSheetUI',
+				uiAutoFiller:			'ui-state-active',
+				uiActive:				'ui-state-active',
+				uiBar: 					'ui-widget-header',
+				uiCellActive:			'ui-state-active',
+				uiCellHighlighted: 		'ui-state-highlight',
+				uiControl: 				'ui-widget-header ui-corner-top',
+				uiControlTextBox:		'ui-widget-content',
+				uiFullScreen:			'ui-widget-content ui-corner-all',
+				uiInPlaceEdit:			'ui-state-active',
+				uiMenu:					'ui-state-highlight',
+				uiMenuUl: 				'ui-widget-header',
+				uiMenuLi: 				'ui-widget-header',
+				uiMenuHighlighted: 		'ui-state-highlight',
+				uiPane: 				'ui-widget-content',
+				uiParent: 				'ui-widget-content ui-corner-all',
+				uiSheet:				'ui-widget-content',
+				uiTab:					'ui-widget-header',
+				uiTabActive:			'ui-state-highlight'
 			},
-			kill: function() {
+			msg: {
+				addRowMulti: 		"How many rows would you like to add?",
+				addColumnMulti: 	"How many columns would you like to add?",
+				newSheet: 			"What size would you like to make your spreadsheet? Example: '5x10' creates a sheet that is 5 columns by 10 rows.",
+				deleteRow: 			"Are you sure that you want to delete that row?",
+				deleteColumn: 		"Are you sure that you want to delete that column?",
+				openSheet: 			"Are you sure you want to open a different sheet?  All unsaved changes will be lost.",
+				cellFind: 			"No results found.",
+				toggleHideRow:		"No row selected.",
+				toggleHideColumn: 	"Now column selected.",
+				merge:				"Merging is not allowed on the first row."
+			},
+			kill: function() { /* For ajax manipulation, kills this instance of sheet entirley */
 				jS.obj.tabContainer().remove();
 				jS.obj.fullScreen().remove();
 				jS.obj.inPlaceEdit().remove();
@@ -209,24 +233,36 @@ jQuery.sheet = {
 				delete jS;
 				delete origParent.sheetInstance;
 			},
-			controlFactory: {
-				addRowMulti: function(qty, isBefore) {
+			controlFactory: { /* controlFactory creates the different objects requied by sheet */
+				addRowMulti: function(qty, isBefore) { /* creates multi rows
+															qty: int, the number of cells you'd like to add, if not specified, a dialog will ask; 
+															isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end
+														*/
 					if (!qty) {
-						qty = prompt('How many rows would you like to add?');
+						qty = prompt(jS.msg.addRowMulti);
 					}
 					if (qty) {
 						jS.controlFactory.addCells(null, isBefore, null, qty, 'row');
 					}
 				},
-				addColumnMulti: function(qty, isBefore) {
+				addColumnMulti: function(qty, isBefore) { /* creates multi columns
+															qty: int, the number of cells you'd like to add, if not specified, a dialog will ask; 
+															isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end
+														*/
 					if (!qty) {
-						qty = prompt('How many columns would you like to add?');
+						qty = prompt(jS.msg.addColumnMulti);
 					}
 					if (qty) {
 						jS.controlFactory.addCells(null, isBefore, null, qty, 'col');
 					}
 				},
-				addCells: function(eq, isBefore, eqO, qty, type) {
+				addCells: function(eq, isBefore, eqO, qty, type) { /*creates cells for sheet and the bars that go along with them
+																		eq: int, position where cells should be added;
+																		isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end;
+																		eq0: no longer used, kept for legacy;
+																		qty: int, how many rows/columsn to add;
+																		type: string - "col" || "row", determans the type of cells to add;
+																*/
 					//hide the autoFiller, it can get confused
 					if (s.autoFiller) {
 						jS.obj.autoFiller().hide();
@@ -254,23 +290,6 @@ jQuery.sheet = {
 					} else if (!isNaN(eq)){
 						eq = ':eq(' + (eq - 1) + ')';
 					}
-					
-					/*
-					if (!eqO) {
-						if (!eq && barLast > -1) {
-							eqO = ':eq(' + barLast + ')';
-						} else if (!eq || barLast < 1) {
-							//if eq has no value, lets just add it to the end.
-							eqO = ':last';
-							eq = false;
-						} else if (eq === true) {//if eq is boolean, then lets add it just after the currently selected row.
-							eqO = ':eq(' + (cellLastBar - 1) + ')';
-						} else {
-							//If eq is a number, lets add it at that row
-							eqO = ':eq(' + (eq - 1) + ')';
-						}
-					}
-					*/
 					
 					var o;
 					switch (type) {
@@ -415,17 +434,26 @@ jQuery.sheet = {
 					//Let's make it redoable
 					jS.cellUndoable.add(jQuery(sheet).add(o.barParent));
 				},
-				addRow: function(atRow, isBefore, atRowQ) {
+				addRow: function(atRow, isBefore, atRowQ) {/* creates single row
+															qty: int, the number of cells you'd like to add, if not specified, a dialog will ask; 
+															isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end
+														*/
 					jS.controlFactory.addCells(atRow, isBefore, atRowQ, 1, 'row');
 				},
-				addColumn: function(atColumn, isBefore, atColumnQ) {
+				addColumn: function(atColumn, isBefore, atColumnQ) {/* creates single column
+															qty: int, the number of cells you'd like to add, if not specified, a dialog will ask; 
+															isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end
+														*/
 					jS.controlFactory.addCells(atColumn, isBefore, atColumnQ, 1, 'col');
 				},
-				barLeft: function(reload, o) {//Works great!
+				barLeft: function(reloadHeights, o) { /* creates all the bars to the left of the spreadsheet
+															reloadHeights: bool, reloads all the heights of each bar from the cells of the sheet;
+															o: object, the table/spreadsheeet object
+													*/
 					jS.obj.barLeft().remove();
 					var barLeft = jQuery('<div border="1px" id="' + jS.id.barLeft + jS.i + '" class="' + jS.cl.barLeft + '" />');
 					var heightFn;
-					if (reload) { //This is our standard way of detecting height when a sheet loads from a url
+					if (reloadHeights) { //This is our standard way of detecting height when a sheet loads from a url
 						heightFn = function(i, objSource, objBar) {
 							objBar.height(parseInt(objSource.outerHeight()) - s.boxModelCorrection);
 						};
@@ -448,7 +476,10 @@ jQuery.sheet = {
 						jS.obj.barLeftParent().append(barLeft)
 					);
 				},
-				barTop: function(reload, o) { //Works great!
+				barTop: function(reloadWidths, o) { /* creates all the bars to the top of the spreadsheet
+															reloadWidths: bool, reloads all the widths of each bar from the cells of the sheet;
+															o: object, the table/spreadsheeet object
+													*/
 					jS.obj.barTop().remove();
 					var barTop = jQuery('<div id="' + jS.id.barTop + jS.i + '" class="' + jS.cl.barTop + '" />');
 					barTop.height(s.colMargin);
@@ -456,7 +487,7 @@ jQuery.sheet = {
 					var parents;
 					var widthFn;
 					
-					if (reload) {
+					if (reloadWidths) {
 						parents = o.find('tr:first td');
 						parents.add(o.find('tr:first th'));
 						widthFn = function(obj) {
@@ -483,7 +514,7 @@ jQuery.sheet = {
 						jS.obj.barTopParent().append(barTop)
 					);
 				},
-				header: function() {
+				header: function() { /* creates the control/container for everything above the spreadsheet */
 					jS.obj.controls().remove();
 					jS.obj.tabContainer().remove();
 					
@@ -499,7 +530,7 @@ jQuery.sheet = {
 						} else {
 							title = s.title;
 						}
-						firstRowTr.append(jQuery('<td style="width: auto;text-align: center;" />').html(title));
+						firstRowTr.append(jQuery('<td id="' + jS.id.title + '" class="' + jS.cl.title + '" />').html(title));
 					}
 					
 					if (s.inlineMenu && s.editable) {
@@ -509,7 +540,7 @@ jQuery.sheet = {
 						} else {
 							inlineMenu = s.inlineMenu;
 						}
-						firstRowTr.append(jQuery('<td style="text-align: center;" />').html(inlineMenu));
+						firstRowTr.append(jQuery('<td id="' + jS.id.inlineMenu + '" class="' + jS.cl.inlineMenu + '" />').html(inlineMenu));
 					}
 					
 					if (s.editable) {
@@ -553,7 +584,7 @@ jQuery.sheet = {
 						//Edit box menu
 						var secondRow = jQuery('<table cellpadding="0" cellspacing="0" border="0">' +
 								'<tr>' +
-									'<td style="width: 35px; text-align: right;" id="' + jS.id.label + '" class="' + jS.cl.label + '"></td>' +
+									'<td id="' + jS.id.label + '" class="' + jS.cl.label + '"></td>' +
 									'<td>' +
 										'<textarea id="' + jS.id.formula + '" class="' + jS.cl.formula + '"></textarea>' +
 									'</td>' +
@@ -582,38 +613,12 @@ jQuery.sheet = {
 						.append('<div id="' + jS.id.ui + '" class="' + jS.cl.ui + '">') //add spreadsheet control
 						.after(tabParent);
 				},
-				sheet: function(size) {
-					if (!size) {
-						size = s.buildSheet;
-					}
-					size = size.toLowerCase().split('x');
-
-					var columnsCount = parseInt(size[0]);
-					var rowsCount = parseInt(size[1]);
-					
-					//Create elements before loop to make it faster.
-					var newSheet = jQuery('<table  cellpadding="0" cellspacing="0" border="0" border="1px" class="' + jS.cl.sheet + '" id="' + jS.id.sheet + jS.i + '"></table>');
-					var standardTd = '<td> </td>';
-					var tds = '';
-					
-					//Using -- is many times faster than ++
-					for (var i = columnsCount; i >= 1; i--) {
-						tds += standardTd;
-					}
-
-					var standardTr = '<tr height="' + s.colMargin + '" style="height: ' + s.colMarg + ';">' + tds + '</tr>';
-					var trs = '';
-					for (var i = rowsCount; i >= 1; i--) {
-						trs += standardTr;
-					}
-					
-					newSheet.html('<tbody>' + trs + '</tbody>');
-					
-					newSheet.width(columnsCount * s.newColumnWidth);
-					
-					return newSheet;
-				},
-				sheetUI: function(o, i, fn, reloadBars) {
+				sheetUI: function(o, i, fn, reloadBars) { /* creates the spreadsheet user interface
+															o: object, table object to be used as a spreadsheet;
+															i: int, the new count for spreadsheets in this instance;
+															fn: function, called after the spreadsheet is created and tuned for use;
+															reloadBars: bool, if set to true reloads id bars on top and left;
+														*/
 					if (!i) {
 						jS.sheetCount = 0;
 						jS.i = 0;
@@ -667,7 +672,7 @@ jQuery.sheet = {
 					
 					return objContainer;
 				},
-				table: function() {
+				table: function() { /* creates the table control the will contain all the other controls for this instance */
 					return jQuery('<table cellpadding="0" cellspacing="0" border="0" id="' + jS.id.tableControl + jS.i + '" class="' + jS.cl.tableControl + '">' +
 						'<tbody>' +
 							'<tr>' + 
@@ -689,7 +694,9 @@ jQuery.sheet = {
 						'</tbody>' +
 					'</table>');
 				},
-				chart: function(type, data, legend, axisLabels, w, h, row) {
+				chart: function(type, data, legend, axisLabels, w, h, row) { /* creates a chart for use inside of a cell
+																				piggybacks jGCharts
+																			*/
 					if (jGCharts) {
 						var api = new jGCharts.Api();
 						function refine(v) {
@@ -727,7 +734,10 @@ jQuery.sheet = {
 						return jQuery('<div>Charts are not enabled</div>');
 					}
 				},
-				safeImg: function(src, row) {
+				safeImg: function(src, row) { /* creates and image and then resizes the cell's row for viewing
+												src: string, location of image;
+												row: int, the row number where the image is located;
+											*/
 					return jQuery('<img />')
 						.hide()
 						.load(function() { //prevent the image from being too big for the row
@@ -738,7 +748,9 @@ jQuery.sheet = {
 						})
 						.attr('src', src);
 				},
-				inPlaceEdit: function(td) {
+				inPlaceEdit: function(td) { /* creates a teaxtarea for a user to put a value in that floats on top of the current selected cell
+												td: object, the cell to be edited
+											*/
 					jS.obj.inPlaceEdit().remove();
 					var formula = jS.obj.formula();					
 					var offset = td.offset();
@@ -762,12 +774,12 @@ jQuery.sheet = {
 						.focus()
 						.select();
 					
-					//Make the textarrea resizeable automatically
+					//Make the textarrea resizable automatically
 					if (jQuery.fn.elastic) {
 						textarea.elastic();
 					}
 				},
-				input: {
+				input: { /* inputs for use from the calculations engine	*/
 					select: function() {
 						return jQuery('<select style="width: 100%;" onchange="jQuery.sheet.instance[' + I + '].controlFactory.input.setValue(jQuery(this).val(), jQuery(this).parent());" class="clickable" />');
 					},
@@ -792,7 +804,7 @@ jQuery.sheet = {
 						return jQuery(jS.getTd(cell.tableI, cell.row - 1, cell.col - 1)).attr('selectedvalue');
 					}
 				},
-				autoFiller: function() {
+				autoFiller: function() { /* created the autofiller object */
 					return jQuery('<div id="' + (jS.id.autoFiller + jS.i) + '" class="' + jS.cl.autoFiller + ' ' + jS.cl.uiAutoFiller + '">' +
 									'<div class="' + jS.cl.autoFillerHandle + '" />' +
 									'<div class="' + jS.cl.autoFillerCover + '" />' +
@@ -811,10 +823,10 @@ jQuery.sheet = {
 				}
 			},
 			autoFillerNotGroup: true,
-			sizeSync: {
+			sizeSync: { /* future location of all deminsion sync/mods */
 			
 			},
-			evt: {
+			evt: { /* event handelers for sheet; e = event */
 				keyDownHandler: {
 					enterOnInPlaceEdit: function(e) {
 						if (!e.shiftKey) {
@@ -987,7 +999,9 @@ jQuery.sheet = {
 				inPlaceEditChange: function(e) {
 					jS.obj.formula().val(jS.obj.inPlaceEdit().val());
 				},
-				cellEditDone: function(forceCalc) {
+				cellEditDone: function(forceCalc) { /* called to edit a cells value from jS.obj.formula(), afterward setting "fnAfterCellEdit" is called w/ params (td, row, col, spreadsheetIndex, sheetIndex)
+														forceCalc: bool, if set to true forces a calculation of the selected sheet
+													*/
 					switch (jS.cellLast.isEdit) {
 						case true:
 							jS.obj.inPlaceEdit().remove();
@@ -1045,7 +1059,9 @@ jQuery.sheet = {
 							jS.attrH.setHeight(jS.cellLast.row, 'cell', false);
 					}
 				},
-				cellEditAbandon: function(skipCalc) {
+				cellEditAbandon: function(skipCalc) { /* removes focus of a selected cell and doesn't change it's value
+															skipCalc: bool, if set to true will skip sheet calculation;
+														*/
 					jS.obj.inPlaceEdit().remove();
 					jS.themeRoller.cell.clearActive();
 					jS.themeRoller.bar.clearActive();
@@ -1069,7 +1085,11 @@ jQuery.sheet = {
 					
 					return false;
 				},
-				cellSetFocusFromXY: function(left, top, skipOffset) {
+				cellSetFocusFromXY: function(left, top, skipOffset) { /* a handy function the will set a cell active by it's location on the browser;
+																		left: int, pixels left;
+																		top: int, pixels top;
+																		skipOffset: bool, skips offset;
+																	*/
 					var td = jS.getTdFromXY(left, top, skipOffset);
 					
 					if (jS.isTd(td)) {
@@ -1081,7 +1101,7 @@ jQuery.sheet = {
 						return true;
 					}
 				},
-				cellSetFocusFromKeyCode: function(e) { //invoces a click on next/prev cell
+				cellSetFocusFromKeyCode: function(e) { /* invoke a click on next/prev cell */
 					var c = jS.cellLast.col; //we don't set the cellLast.col here so that we never go into indexes that don't exist
 					var r = jS.cellLast.row;
 					var overrideIsEdit = false;
@@ -1242,7 +1262,9 @@ jQuery.sheet = {
 					
 					return resizeBar.start(e);
 				},
-				scrollBars: function(pane) {
+				scrollBars: function(pane) { /* makes the bars scroll as the sheet is scrolled
+												pane: object, the sheet's pane;
+											*/
 					var o = { //cut down on recursion, grab them once
 						barLeft: jS.obj.barLeftParent(), 
 						barTop: jS.obj.barTopParent()
@@ -1258,7 +1280,7 @@ jQuery.sheet = {
 						s.fnPaneScroll(pane, jS.i);
 					});
 				},
-				barMouseDown: {
+				barMouseDown: { /* handles bar events, including resizing */
 					select: function(o, e, selectFn, resizeFn) {
 						var isResizing = jS.evt.resizeBar(e, resizeFn);
 								
@@ -1335,7 +1357,9 @@ jQuery.sheet = {
 					}
 				}
 			},
-			isTd: function(o) {
+			isTd: function(o) { /* ensures the the object selected is actually a td that is in a sheet
+									o: object, cell object;
+								*/
 				if (o[0]) {
 					if (!isNaN(o[0].cellIndex)) { 
 						return true;
@@ -1343,7 +1367,9 @@ jQuery.sheet = {
 				}
 				return false;
 			},
-			isFormulaEditable: function(o) {
+			isFormulaEditable: function(o) { /* ensures that formula attribute of an object is editable
+													o: object, td object being used as cell
+											*/
 				if (s.lockFormulas) {
 					if(o.attr('formula') !== undefined) {
 						return false;
@@ -1351,7 +1377,7 @@ jQuery.sheet = {
 				}
 				return true;
 			},
-			toggleFullScreen: function() {
+			toggleFullScreen: function() { /* toggles full screen mode */
 				if (jS.obj.fullScreen().is(':visible')) { //here we remove full screen
 					jQuery('body').removeClass('bodyNoScroll');
 					s.parent = origParent;
@@ -1389,7 +1415,9 @@ jQuery.sheet = {
 					jS.sheetSyncSize();
 				}
 			},
-			tuneTableForSheetUse: function(o) {
+			tuneTableForSheetUse: function(o) { /* makes table object usable by sheet
+													o: object, table object;
+												*/
 				o
 					.addClass(jS.cl.sheet)
 					.attr('id', jS.id.sheet + jS.i)
@@ -1401,9 +1429,10 @@ jQuery.sheet = {
 				
 				return o;
 			},
-			attrH: {//Attribute Helpers
-			//I created this object so I could see, quickly, which attribute was most stable.
-			//As it turns out, all browsers are different, thus this has evolved to a much uglier beast
+			attrH: {/* Attribute Helpers
+						I created this object so I could see, quickly, which attribute was most stable.
+						As it turns out, all browsers are different, thus this has evolved to a much uglier beast
+					*/
 				width: function(o, skipCorrection) {
 					return jQuery(o).outerWidth() - (skipCorrection ? 0 : s.boxModelCorrection);
 				},
@@ -1454,7 +1483,9 @@ jQuery.sheet = {
 					return o;
 				}
 			},
-			setTdIds: function(o) {
+			setTdIds: function(o) { /* cycles through all the td in a sheet and sets their id so it can be quickly referenced later
+										o: object, cell object;
+									*/
 				o = (o ? o : jS.obj.sheet());
 				o.find('tr').each(function(row) {
 					jQuery(this).find('td,th').each(function(col) {
@@ -1462,7 +1493,7 @@ jQuery.sheet = {
 					});
 				});
 			},
-			setControlIds: function() {
+			setControlIds: function() { /* resets the control ids, useful for when adding new sheets/controls between sheets/controls :) */
 				var resetIds = function(o, id) {
 					o.each(function(i) {
 						jQuery(this).attr('id', id + i);
@@ -1485,7 +1516,7 @@ jQuery.sheet = {
 					jQuery(this).attr('i', j);
 				}), jS.id.tab);
 			},
-			columnResizer: {
+			columnResizer: { /* used for resizing columns */
 				xyDimension: 0,
 				getIndex: function(o) {
 					return jS.getBarTopIndex(o);
@@ -1508,7 +1539,7 @@ jQuery.sheet = {
 				},
 				cursor: 'w-resize'
 			},
-			rowResizer: {
+			rowResizer: { /* used for resizing rows */
 				xyDimension: 1,
 					getIndex: function(o) {
 						return jS.getBarLeftIndex(o);
@@ -1552,7 +1583,7 @@ jQuery.sheet = {
 							jS.obj.sheet().find('tr').eq(i).show();
 						}
 					} else {
-						alert('No row selected.');
+						alert(jS.msg.toggleHideRow);
 					}
 				},
 				rowAll: function() {
@@ -1575,7 +1606,7 @@ jQuery.sheet = {
 							jS.toggleHide.columnSizeManage();
 						}
 					} else {
-						alert('Now column selected.');
+						alert(jS.msg.toggleHideColumn);
 					}
 				},
 				columnAll: function() {
@@ -1595,7 +1626,7 @@ jQuery.sheet = {
 					jS.obj.sheet().width(w);
 				}
 			},
-			merge: function() {
+			merge: function() { /* merges cells */
 				var cellsValue = "";
 				var cellValue = "";
 				var cells = jS.obj.cellHighlighted();
@@ -1630,10 +1661,10 @@ jQuery.sheet = {
 					jS.setDirty(true);
 					jS.calc(jS.i);
 				} else if (!cellFirstLoc[0]) {
-					alert('Merging is not allowed on the first row.');
+					alert(jS.msg.merge);
 				}
 			},
-			unmerge: function() {
+			unmerge: function() { /* unmerges cells */
 				var cell = jS.obj.cellHighlighted().first();
 				var loc = jS.getTdLocation(cell);
 				var formula = cell.attr('formula');
@@ -1665,7 +1696,11 @@ jQuery.sheet = {
 				jS.setDirty(true);
 				jS.calc(jS.i);
 			},
-			fillUpOrDown: function(goUp, skipOffsetForumals, v) { //default behavior is to go down var goUp changes it
+			fillUpOrDown: function(goUp, skipOffsetForumals, v) { /* fills values down or up to highlighted cells from active cell;
+																	goUp: bool, default is down, when set to true value are filled from bottom, up;
+																	skipOffsetForumals: bool, default is formulas will offest, when set to true formulas will stay static;
+																	v: string, the value to set cells to, if not set, formula will be used;
+																*/
 				var cells = jS.obj.cellHighlighted();
 				var cellActive = jS.obj.cellActive();
 				//Make it undoable
@@ -1727,7 +1762,13 @@ jQuery.sheet = {
 				//Make it redoable
 				jS.cellUndoable.add(cells);
 			},
-			offsetFormulaRange: function(row, col, rowOffset, colOffset, isBefore) {//col = int; offset = int
+			offsetFormulaRange: function(row, col, rowOffset, colOffset, isBefore) {/* makes cell formulas increment in a range
+																						row: int;
+																						col: int;
+																						rowOffset: int, offsets row increment;
+																						colOffset: int, offsets col increment;
+																						isBefore: bool, makes increment backward;
+																					*/
 				var shiftedRange = {
 					first: [(row ? row : 0), (col ? col : 0)],
 					last: jS.sheetSize()
@@ -1844,14 +1885,22 @@ jQuery.sheet = {
 				
 				jS.calc(jS.i);
 			},
-			cylceCells: function(fn, firstLoc, lastLoc) {
+			cylceCells: function(fn, firstLoc, lastLoc) { /* cylces through a certain group of cells in a spreadsheet and applies a function to them
+															fn: function, the function to apply to a cell;
+															firstLoc: array of int - [col, row], the group to start;
+															lastLoc: array of int - [col, row], the group to end;
+														*/
 				for (var i = firstLoc[0]; i < lastLoc[0]; i++) {
 					for (var j = firstLoc[1]; j < lastLoc[1]; j++) {
 						fn(jQuery(jS.getTd(jS.i, i, j)));
 					}
 				}
 			},
-			cycleCellsAndMaintainPoint: function(fn, firstLoc, lastLoc) {
+			cycleCellsAndMaintainPoint: function(fn, firstLoc, lastLoc) { /* cylces through a certain group of cells in a spreadsheet and applies a function to them, firstLoc can be bigger then lastLoc, this is more dynamic
+																			fn: function, the function to apply to a cell;
+																			firstLoc: array of int - [col, row], the group to start;
+																			lastLoc: array of int - [col, row], the group to end;
+																		*/
 				var o = [];
 				for (var i = (firstLoc[0] < lastLoc[0] ? firstLoc[0] : lastLoc[0]) ; i <= (firstLoc[0] > lastLoc[0] ? firstLoc[0] : lastLoc[0]); i++) {
 					for (var j = (firstLoc[1] < lastLoc[1] ? firstLoc[1] : lastLoc[1]); j <= (firstLoc[1] > lastLoc[1] ? firstLoc[1] : lastLoc[[1]]); j++) {
@@ -1861,7 +1910,11 @@ jQuery.sheet = {
 				}
 				return o;
 			},
-			offsetFormula: function(formula, rowOffset, colOffset, includeRanges) {		
+			offsetFormula: function(formula, rowOffset, colOffset) { /* makes cell formulas increment
+																			formula: string, a cell's formula;
+																			rowOffset: int, offsets row increment;
+																			colOffset: int, offsets col increment;
+																	*/
 				//Cell References Fixed
 				var charAt = [];
 				var col = '';
@@ -1891,7 +1944,7 @@ jQuery.sheet = {
 				);
 				return formula;
 			},
-			addTab: function() {
+			addTab: function() { /* Adds a tab for navigation to a spreadsheet */
 				jQuery('<span class="' + jS.cl.uiTab + ' ui-corner-bottom">' + 
 						'<a class="' + jS.cl.tab + '" id="' + jS.id.tab + jS.i + '" i="' + jS.i + '">' + jS.sheetTab(true) + '</a>' + 
 					'</span>')
@@ -1899,12 +1952,16 @@ jQuery.sheet = {
 							jS.obj.tabContainer().find('span:last')
 						);
 			},
-			sheetDecorate: function(o) {	
+			sheetDecorate: function(o) { /* preps a table for use as a sheet;
+											o: object, table object;
+										*/
 				jS.formatSheet(o);
 				jS.sheetSyncSizeToCols(o);
 				jS.sheetDecorateRemove();
 			},
-			formatSheet: function(o) {
+			formatSheet: function(o) { /* adds tbody, colgroup, heights and widths to different parts of a spreadsheet
+											o: object, table object;
+										*/
 				var tableWidth = 0;
 				if (o.find('tbody').length < 1) {
 					o.wrapInner('<tbody />');
@@ -1937,8 +1994,9 @@ jQuery.sheet = {
 					.css('width', '')
 					.width(tableWidth);
 			},
-			checkMinSize: function(o) {
-				//ensure sheet minimums have been met, if not add columns and rows
+			checkMinSize: function(o) { /* ensure sheet minimums have been met, if not add columns and rows
+											o: object, table object;
+										*/
 				var loc = jS.sheetSize();
 				
 				var addRows = 0;
@@ -1960,7 +2018,7 @@ jQuery.sheet = {
 					jS.controlFactory.addRowMulti(addRows);
 				}
 			},
-			themeRoller: {
+			themeRoller: { /* jQuery ui Themeroller integration	*/
 				start: function() {
 					//Style sheet			
 					s.parent.addClass(jS.cl.uiParent);
@@ -2028,44 +2086,51 @@ jQuery.sheet = {
 							.removeClass(jS.cl.uiTabActive);
 					}
 				},
-				resize: function() {
-					// add resizable jquery.ui if available
-					if (jQuery.ui && s.resizable) {
-						// resizable container div
-						var o;
-						var barTop;
-						var barLeft;
-						var controlsHeight;
-						var parent = s.parent;
-						
-						parent.resizable({
-							minWidth: s.width * 0.5,
-							minHeight: s.height * 0.5,
-							start: function() {
-								jS.obj.ui().hide();
-							},
-							stop: function() {
-								jS.obj.ui().show();
-								s.width = parent.width();
-								s.height = parent.height();
-								jS.sheetSyncSize();
-							}
-						});
-						// resizable formula area - a bit hard to grab the handle but is there!
-						var formulaResizeParent = jQuery('<span />');
-						jS.obj.formula().wrap(formulaResizeParent).parent().resizable({
-							minHeight: jS.obj.formula().height(), 
-							maxHeight: 78,
-							handles: 's',
-							resize: function(e, ui) {
-								jS.obj.formula().height(ui.size.height);
-								jS.sheetSyncSize();
-							}
-						});
-					}
+				resize: function() {// add resizable jquery.ui if available
+					// resizable container div
+					jS.resizable(s.parent, {
+						minWidth: s.width * 0.5,
+						minHeight: s.height * 0.5,
+						start: function() {
+							jS.obj.ui().hide();
+						},
+						stop: function() {
+							jS.obj.ui().show();
+							s.width = s.parent.width();
+							s.height = s.parent.height();
+							jS.sheetSyncSize();
+						}
+					});
+					// resizable formula area - a bit hard to grab the handle but is there!
+					var formulaResizeParent = jQuery('<span />');
+					jS.resizable(jS.obj.formula().wrap(formulaResizeParent).parent(), {
+						minHeight: jS.obj.formula().height(), 
+						maxHeight: 78,
+						handles: 's',
+						resize: function(e, ui) {
+							jS.obj.formula().height(ui.size.height);
+							jS.sheetSyncSize();
+						}
+					});
 				}
 			},
-			manageHtmlToText: function(v) {
+			resizable: function(o, settings) { /* jQuery ui resizeable integration
+													o: object, any object that neds resizing;
+													settings: object, the settings used with jQuery ui resizable;
+												*/
+				if (jQuery.ui && s.resizable) {
+					if (o.attr('resizable')) {
+						o.resizable("destroy");
+					}
+					
+					o
+						.resizable(settings)
+						.attr('resizable', true);
+				}
+			},
+			manageHtmlToText: function(v) { /* converts html to text for use in textareas
+												v: string, value to convert;
+											*/
 				v = jQuery.trim(v);
 				if (v.charAt(0) != "=") {
 					v = v.replace(/&nbsp;/g, ' ')
@@ -2080,7 +2145,9 @@ jQuery.sheet = {
 				}
 				return v;
 			},
-			manageTextToHtml: function(v) {	
+			manageTextToHtml: function(v) {	/* converts text to html for use in any object, probably a td/cell
+												v: string, value to convert;
+											*/
 				v = jQuery.trim(v);
 				if (v.charAt(0) != "=") {
 					v = v.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;')
@@ -2094,7 +2161,9 @@ jQuery.sheet = {
 				}
 				return v;
 			},
-			sheetDecorateRemove: function(makeClone) {
+			sheetDecorateRemove: function(makeClone) { /* removes sheet decorations
+															makesClone: bool, creates a clone rather than the actual object;
+														*/
 				var o = (makeClone ? jS.obj.sheetAll().clone() : jS.obj.sheetAll());
 				
 				//Get rid of highlighted cells and active cells
@@ -2113,14 +2182,20 @@ jQuery.sheet = {
 				*/
 				return o;
 			},
-			labelUpdate: function(v, setDirect) {
+			labelUpdate: function(v, setDirect) { /* updates the label so that the user knows where they are currently positioned
+													v: string or array of ints, new location value;
+													setDirect: bool, converts the array of a1 or [0,0] to "A1";
+												*/
 				if (!setDirect) {
 					jS.obj.label().html(cE.columnLabelString(v[1] + 1) + (v[0] + 1));
 				} else {
 					jS.obj.label().html(v);
 				}
 			},
-			cellEdit: function(td, isDrag) {
+			cellEdit: function(td, isDrag) { /* starts cell to be edited
+												td: object, td object;
+												isDrag: bool, should be determained by if the user is dragging their mouse around setting cells;
+												*/
 				jS.autoFillerNotGroup = true; //make autoFiller directional again.
 				//This finished up the edit of the last cell
 				jS.evt.cellEditDone();
@@ -2141,7 +2216,13 @@ jQuery.sheet = {
 					.select();
 				jS.cellSetActive(td, loc, isDrag);
 			},
-			cellSetActive: function(td, loc, isDrag, directional, fnDone) {
+			cellSetActive: function(td, loc, isDrag, directional, fnDone) { /* cell cell active to sheet, and highlights it for the user
+																				td: object, td object;
+																				loc: array of ints - [col, row];
+																				isDrag: bool, should be determained by if the user is dragging their mouse around setting cells;
+																				directional: bool, makes highlighting directional, only left/right or only up/down;
+																				fnDone: function, called after the cells are set active;
+																			*/
 				if (typeof(loc[1]) != 'undefined') {
 					jS.cellLast.td = td; //save the current cell/td
 					
@@ -2228,14 +2309,14 @@ jQuery.sheet = {
 					}
 				}
 			},
-			colLast: 0,
-			rowLast: 0,
-			cellLast: {
+			colLast: 0, /* the most recent used column */
+			rowLast: 0, /* the most recent used row */
+			cellLast: { /* the most recent used cell */
 				td: jQuery('<td />'), //this is a dud td, so that we don't get errors
 				row: -1,
 				col: -1,
 				isEdit: false
-			},
+			}, /* the most recent highlighted cells */
 			highlightedLast: {
 				td: jQuery('<td />'),
 				rowStart: -1,
@@ -2243,7 +2324,10 @@ jQuery.sheet = {
 				rowEnd: -1,
 				colEnd: -1
 			},
-			cellStyleToggle: function(setClass, removeClass) {
+			cellStyleToggle: function(setClass, removeClass) { /* sets a cells class for styling
+																	setClass: string, class(es) to set cells to;
+																	removeClass: string, class(es) to remove from cell if the setClass would conflict with;
+																*/
 				//Lets check to remove any style classes
 				var uiCell = jS.obj.cellHighlighted();
 				
@@ -2266,7 +2350,9 @@ jQuery.sheet = {
 					.select();
 				return false;
 			},
-			fontReSize: function (direction) {
+			fontReSize: function (direction) { /* resizes fonts in a cell by 1 pixel
+													direction: string, "up" || "down"
+												*/
 				var resize=0;
 				switch (direction) {
 					case 'up':
@@ -2292,7 +2378,10 @@ jQuery.sheet = {
 				jS.cellUndoable.add(uiCell);
 			},
 			context: {},
-			calc: function(tableI, fuel) {
+			calc: function(tableI, fuel) { /* harnesses calculations engine's calculation function
+												tableI: int, the current table integer;
+												fuel: variable holder, used to prevent memory leaks, and for calculations;
+											*/
 				jS.log('Calculation Started');
 				if (!jS.tableCellProviders[tableI]) {
 					jS.tableCellProviders[tableI] = new jS.tableCellProvider(tableI);
@@ -2304,7 +2393,7 @@ jQuery.sheet = {
 				}
 				jS.log('Calculation Ended');
 			},
-			refreshLabelsColumns: function(){
+			refreshLabelsColumns: function(){ /* reset values inside bars for columns */
 				var w = 0;
 				jS.obj.barTop().find('div').each(function(i) {
 					jQuery(this).text(cE.columnLabelString(i+1));
@@ -2312,22 +2401,24 @@ jQuery.sheet = {
 				});
 				return w;
 			},
-			refreshLabelsRows: function(){
+			refreshLabelsRows: function(){ /* resets values inside bars for rows */
 				jS.obj.barLeft().find('div').each(function(i) {
 					jQuery(this).text((i + 1));
 				});
 			},
-			addSheet: function(size) {
-				size = (size ? size : prompt(jS.newSheetDialog));
+			addSheet: function(size) { /* adds a spreadsheet
+											size: string example "10x100" which means 10 columns by 100 rows;
+										*/
+				size = (size ? size : prompt(jS.msg.newSheet));
 				if (size) {
 					jS.evt.cellEditAbandon();
 					jS.setDirty(true);
-					var newSheetControl = jS.controlFactory.sheetUI(jS.controlFactory.sheet(size), jS.sheetCount + 1, function(o) { 
+					var newSheetControl = jS.controlFactory.sheetUI(jQuery.sheet.makeTable.fromSize(size), jS.sheetCount + 1, function(o) { 
 						jS.setActiveSheet(jS.sheetCount);
 					}, true);
 				}
 			},
-			deleteSheet: function() {
+			deleteSheet: function() { /* removes the currently selected sheet */
 				jS.obj.tableControl().remove();
 				jS.obj.tabContainer().children().eq(jS.i).remove();
 				jS.i = 0;
@@ -2337,8 +2428,8 @@ jQuery.sheet = {
 				
 				jS.setActiveSheet(jS.i);
 			},
-			deleteRow: function() {
-				var v = confirm("Are you sure that you want to delete that row?");
+			deleteRow: function() { /* removes the currently selected row */
+				var v = confirm(jS.msg.deleteRow);
 				if (v) {
 					jS.obj.barLeft().find('div').eq(jS.rowLast).remove();
 					jS.obj.sheet().find('tr').eq(jS.rowLast).remove();
@@ -2354,8 +2445,8 @@ jQuery.sheet = {
 					jS.offsetFormulaRange(jS.rowLast, 0, -1, 0);
 				}		
 			},
-			deleteColumn: function() {
-				var v = confirm("Are you sure that you want to delete that column?");
+			deleteColumn: function() { /* removes the currently selected column */
+				var v = confirm(jS.msg.deleteColumn);
 				if (v) {
 					jS.obj.barTop().find('div').eq(jS.colLast).remove();
 					jS.obj.sheet().find('colgroup col').eq(jS.colLast).remove();
@@ -2375,7 +2466,9 @@ jQuery.sheet = {
 					jS.offsetFormulaRange(0, jS.colLast, 0, -1);
 				}		
 			},
-			sheetTab: function(get) {
+			sheetTab: function(get) { /* manages a tabs inner value
+											get: bool, makes return the current value of the tab;
+										*/
 				var sheetTab = '';
 				if (get) {
 					sheetTab = jS.obj.sheet().attr('title');
@@ -2395,12 +2488,16 @@ jQuery.sheet = {
 				}
 				return sheetTab;
 			},
-			print: function(o) {
+			print: function(o) { /* prints a value in a new window
+									o: string, any string;
+								*/
 				var w = window.open();
 				w.document.write("<html><body><xmp>" + o + "\n</xmp></body></html>");
 				w.document.close();
 			},
-			viewSource: function(pretty) {
+			viewSource: function(pretty) { /* prints the source of a sheet for a user to see
+												pretty: bool, makes html a bit easier for the user to see;
+											*/
 				var sheetClone = jS.sheetDecorateRemove(true);
 				
 				var s = "";
@@ -2416,7 +2513,7 @@ jQuery.sheet = {
 				
 				return false;
 			},
-			saveSheet: function() {
+			saveSheet: function() { /* saves the sheet */
 				var v = jS.sheetDecorateRemove(true);
 				var d = jQuery('<div />').html(v).html();
 
@@ -2431,7 +2528,9 @@ jQuery.sheet = {
 					}
 				});
 			},
-			HTMLtoCompactSource: function(node) {
+			HTMLtoCompactSource: function(node) { /* prints html to 1 line
+													node: object;
+												*/
 				var result = "";
 				if (node.nodeType == 1) {
 					// ELEMENT_NODE
@@ -2478,7 +2577,10 @@ jQuery.sheet = {
 				}
 				return result;
 			},
-			HTMLtoPrettySource: function(node, prefix) {
+			HTMLtoPrettySource: function(node, prefix) {/* prints html to manu lines, formatted for easy viewing
+															node: object;
+															prefix: string;
+														*/
 				if (!prefix) {
 					prefix = "";
 				}
@@ -2522,7 +2624,9 @@ jQuery.sheet = {
 				}
 				return result;
 			},
-			followMe: function(td) {
+			followMe: function(td) { /* scrolls the sheet to the selected cell
+										td: object, td object;
+									*/
 				td = (td ? td : jQuery(jS.cellLast.td));
 				var pane = jS.obj.pane();
 				var panePos = pane.offset();
@@ -2566,7 +2670,11 @@ jQuery.sheet = {
 				
 				jS.autoFillerGoToTd(td, tdHeight, tdWidth);
 			},
-			autoFillerGoToTd: function(td, tdHeight, tdWidth) {
+			autoFillerGoToTd: function(td, tdHeight, tdWidth) { /* moves autoFiller to a selected cell
+																	td: object, td object;
+																	tdHeight: height of a td object;
+																	tdWidth: width of a td object;
+																*/
 				if (s.autoFiller) {
 					if (td.attr('id')) { //ensure that it is a usable cell
 						tdPos = td.position();
@@ -2577,16 +2685,10 @@ jQuery.sheet = {
 					}
 				}
 			},
-			count: {
-				rows: function() {
-					return jS.getBarLeftIndex(jS.obj.barLeft().find('div:last').text());
-				},
-				columns: function() {
-					return jS.getBarTopLocatoin(jS.obj.barTop().find('div:last').text());
-				}
-			},
 			isRowHeightSync: [],
-			setActiveSheet: function(i) {
+			setActiveSheet: function(i) { /* sets active a spreadsheet inside of a sheet instance 
+											i: int, a sheet integer desired to show;
+											*/
 				i = (i ? i : 0);
 
 				jS.obj.tableControlAll().hide().eq(i).show();
@@ -2610,12 +2712,17 @@ jQuery.sheet = {
 				jS.sheetSyncSize();
 				jS.replaceWithSafeImg(jS.obj.sheet().find('img'));
 			},
-			openSheetURL: function ( url ) {
+			openSheetURL: function ( url ) { /* opens a table object from a url, then opens it
+												url: string, location;
+											*/
 				s.urlGet = url;
 				return jS.openSheet();
 			},
-			openSheet: function(o, reloadBarsOverride) {
-				if (!jS.isDirty ? true : confirm("Are you sure you want to open a different sheet?  All unsaved changes will be lost.")) {
+			openSheet: function(o, reloadBarsOverride) { /* opens a spreadsheet into the active sheet instance \
+															o: object, a table object;
+															reloadBarsOverride: if set to true, foces bars on left and top not be reloaded;
+														*/
+				if (!jS.isDirty ? true : confirm(jS.msg.openSheet)) {
 					jS.controlFactory.header();
 					
 					var fnAfter = function(i, l) {
@@ -2656,14 +2763,15 @@ jQuery.sheet = {
 					return false;
 				}
 			},
-			newSheetDialog: "What size would you like to make your spreadsheet? Example: '5x10' creates a sheet that is 5 columns by 10 rows.",
-			newSheet: function() {
-				var size = prompt(jS.newSheetDialog);
+			newSheet: function() { /* creates a new shet from size */
+				var size = prompt(jS.msg.newSheet);
 				if (size) {
-					jS.openSheet(jS.controlFactory.sheet(size));
+					jS.openSheet(jQuery.sheet.makeTable.fromSize(size));
 				}
 			},
-			importRow: function(rowArray) {
+			importRow: function(rowArray) { /* creates a new row and then applies an array's values to each of it's new values
+												rowArray: array;
+											*/
 				jS.controlFactory.addRow(null, null, ':last');
 
 				var error = "";
@@ -2689,7 +2797,9 @@ jQuery.sheet = {
 				jS.setTdIds();
 				jS.calc(jS.i);
 			},
-			importColumn: function(columnArray) {
+			importColumn: function(columnArray) { /* creates a new column and then applies an array's values to each of it's new values
+													columnArray: array;
+												*/
 				jS.controlFactory.addColumn();
 
 				var error = "";
@@ -2715,7 +2825,7 @@ jQuery.sheet = {
 				jS.setTdIds();
 				jS.calc(jS.i);
 			},
-			exportSheet: {
+			exportSheet: { /* exports sheets into xml, json, or html formats */
 				xml: function (skipCData) {
 					var sheetClone = jS.sheetDecorateRemove(true);			
 					var document = "";
@@ -2838,21 +2948,24 @@ jQuery.sheet = {
 					return jS.sheetDecorateRemove(true);
 				}
 			},
-			sheetSyncSizeToDivs: function() {
+			sheetSyncSizeToDivs: function() { /* syncs a sheet's size from bars/divs */
 				var newSheetWidth = 0;
 				jS.obj.barTop().find('div').each(function() {
 					newSheetWidth += parseInt(jQuery(this).outerWidth());
 				});
 				jS.obj.sheet().width(newSheetWidth);
 			},
-			sheetSyncSizeToCols: function(o) {
+			sheetSyncSizeToCols: function(o) { /* syncs a sheet's size from it's col objects
+													o: object, sheet object;
+												*/
 				var newSheetWidth = 0;
+				o = (o ? o : jS.obj.sheet());
 				o.find('colgroup col').each(function() {
 					newSheetWidth += jQuery(this).width();
 				});
 				o.width(newSheetWidth);
 			},
-			sheetSyncSize: function() {
+			sheetSyncSize: function() { /* syncs a sheet's size to that of the jQuery().sheet() caller object */
 				var h = s.height;
 				if (!h) {
 					h = 400; //Height really needs to be set by the parent
@@ -2884,13 +2997,18 @@ jQuery.sheet = {
 					.parent()
 						.width(w);
 			},
-			cellChangeStyle: function(style, value) {
+			cellChangeStyle: function(style, value) { /* changes a cell's style and makes it undoable/redoable
+														style: string, css style name;
+														value: string, css setting;
+													*/
 				jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it undoable
 				jS.obj.cellHighlighted().css(style, value);
 				jS.cellUndoable.add(jS.obj.cellHighlighted()); //save state, make it redoable
 
 			},
-			cellFind: function(v) {
+			cellFind: function(v) { /* finds a cell in a sheet from a value
+										v: string, value in a cell to find;
+									*/
 				if(!v) {
 					v = prompt("What are you looking for in this spreadsheet?");
 				}
@@ -2909,11 +3027,15 @@ jQuery.sheet = {
 					if (o.length > 0) {
 						jS.cellEdit(o);
 					} else {
-						alert('No results found.');
+						alert(jS.msg.cellFind);
 					}
 				}
 			},
-			cellSetActiveBar: function(type, start, end) {
+			cellSetActiveBar: function(type, start, end) { /* sets a bar active
+																type: string, "col" || "row" || "all";
+																start: int, int to start highlighting from;
+																start: int, int to end highlighting to;
+															*/
 				var loc = jS.sheetSize();
 				var first = (start < end ? start : end);
 				var last = (start < end ? end : start);
@@ -2987,11 +3109,11 @@ jQuery.sheet = {
 				jS.highlightedLast.rowEnd = last[0];
 				jS.highlightedLast.colEnd = last[1];
 			},
-			sheetClearActive: function() {
+			sheetClearActive: function() { /* clears formula and bars from being highlighted */
 				jS.obj.formula().val('');
 				jS.obj.barSelected().removeClass(jS.cl.barSelected);
 			},
-			getTdRange: function(e, v, newFn, notSetFormula) {
+			getTdRange: function(e, v, newFn, notSetFormula) { /* gets a range of selected cells, then returns it */
 				jS.cellLast.isEdit = true;
 				
 				var range = function(loc) {
@@ -3076,19 +3198,33 @@ jQuery.sheet = {
 					}
 				}
 			},
-			getTdId: function(tableI, row, col) {
+			getTdId: function(tableI, row, col) { /* makes a td if from values given
+													tableI: int, table integer;
+													row: int, row integer;
+													col: int, col integer;
+												*/
 				return I + '_table' + tableI + '_cell_c' + col + '_r' + row;
 			},
-			getTd: function(tableI, row, col) {
+			getTd: function(tableI, row, col) { /* gets a td
+													tableI: int, table integer;
+													row: int, row integer;
+													col: int, col integer;
+												*/
 				return document.getElementById(jS.getTdId(tableI, row, col));
 			},
-			getTdLocation: function(td) {
+			getTdLocation: function(td) { /* gets td column and row int
+												td: object, td object;
+											*/
 				var col = parseInt(td[0].cellIndex);
 				var row = parseInt(td[0].parentNode.rowIndex);
 				return [row, col];
 				// The row and col are 1-based.
 			},
-			getTdFromXY: function(left, top, skipOffset) {
+			getTdFromXY: function(left, top, skipOffset) { /* gets cell from point
+																left: int, pixels left;
+																top: int, pixels top;
+																skipOffset: bool, skips pane offset;
+															*/
 				var pane = jS.obj.pane();
 				var paneOffset = (skipOffset ? {left: 0, top: 0} : pane.offset());
 				
@@ -3114,21 +3250,21 @@ jQuery.sheet = {
 					return false;
 				}
 			},
-			getBarLeftIndex: function(o) {
+			getBarLeftIndex: function(o) { /* get's index from object */
 				var i = jQuery.trim(jQuery(o).text());
 				return parseInt(i) - 1;
 			},
-			getBarTopIndex: function(o) {
+			getBarTopIndex: function(o) { /* get's index from object */
 				var i = cE.columnLabelIndex(jQuery.trim(jQuery(o).text()));
 				return parseInt(i) - 1;
 			},
-			tableCellProvider: function(tableI) {
+			tableCellProvider: function(tableI) { /* provider for calculations engine */
 				this.tableBodyId = jS.id.sheet + tableI;
 				this.tableI = tableI;
 				this.cells = {};
 			},
 			tableCellProviders: [],
-			tableCell: function(tableI, row, col) {
+			tableCell: function(tableI, row, col) { /* provider for calculations engine */
 				this.tableBodyId = jS.id.sheet + tableI;
 				this.tableI = tableI;
 				this.row = row;
@@ -3138,7 +3274,7 @@ jQuery.sheet = {
 				//this.prototype = new cE.cell();
 			},
 			EMPTY_VALUE: {},
-			time: {
+			time: { /* time loggin used with jS.log, useful for finding out if new methods are faster */
 				now: new Date(),
 				last: new Date(),
 				diff: function() {
@@ -3176,7 +3312,7 @@ jQuery.sheet = {
 				
 				formula.val(fV + v);
 			},
-			cellUndoable: {
+			cellUndoable: { /* makes cell editing undoable and redoable */
 				undoOrRedo: function(undo) {
 					//hide the autoFiller, it can get confused
 					if (s.autoFiller) {
@@ -4031,7 +4167,7 @@ jQuery.sheet = {
 			} else if (s.buildSheet == true || s.buildSheet == 'true') {
 				o = jQuery(s.parent.html());
 			} else if (s.buildSheet.match(/x/i)) {
-				o = jS.controlFactory.sheet(s.buildSheet);
+				o = jQuery.sheet.makeTable.fromSize(s.buildSheet);
 			}
 		}
 		
@@ -4103,7 +4239,9 @@ jQuery.sheet = {
 		return jS;
 	},
 	makeTable : {
-		xml: function (data) { //Will not accept CDATA tags
+		xml: function (data) { /* creates a table from xml, note: will not accept CDATA tags
+								data: object, xml object;
+								*/
 			var tables = jQuery('<div />');
 		
 			jQuery(data).find('document').each(function(i) { //document
@@ -4171,7 +4309,10 @@ jQuery.sheet = {
 			
 			return tables.children();
 		},
-		json: function(data, makeEval) {
+		json: function(data, makeEval) { /* creates a sheet from json data, for format see top
+											data: json;
+											makeEval: bool, if true evals json;
+										*/
 			sheet = (makeEval == true ? eval('(' + data + ')') : data);
 			
 			var tables = jQuery('<div />');
@@ -4248,7 +4389,11 @@ jQuery.sheet = {
 			}
 			return tables.children();
 		},
-		fromSize: function(size, h, w) {
+		fromSize: function(size, h, w) { /* creates a spreadsheet object from a size given 
+											size: string, example "10x100" which means 10 columns by 100 rows;
+											h: int, height for each new row;
+											w: int, width of each new column;
+										*/
 			if (!size) {
 				size = "5x10";
 			}
@@ -4282,7 +4427,7 @@ jQuery.sheet = {
 			return newSheet;
 		}
 	},
-	killAll: function() {
+	killAll: function() { /* removes all sheets */
 		if (jQuery.sheet) {
 			if (jQuery.sheet.instance) {
 				for (var i = 0; i < jQuery.sheet.instance.length; i++) {
@@ -4309,7 +4454,7 @@ jQuery.sheet = {
 	}
 };
 
-var key = {
+var key = { /* key objects, makes it easier to develop */
 	BACKSPACE: 			8,
 	CAPS_LOCK: 			20,
 	COMMA: 				188,

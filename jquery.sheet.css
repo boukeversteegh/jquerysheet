@@ -1,8 +1,10 @@
 /* Controls styling */
-.jSheetControls_loc, .jSheetControls_fx
+.jSheetControls_loc
 {
 	border-width: 0px ! important;
 	background: none ! important;
+	width: 35px;
+	text-align: right;
 }
 
 .jSheetControls_formula
@@ -264,6 +266,11 @@
 	left: 0px;
 	cursor: crosshair;
 	display: none;
+}
+
+.jSheetTitle, .jSheetInlineMenu
+{
+	width: auto;text-align: center;
 }
 
 .bodyNoScroll
