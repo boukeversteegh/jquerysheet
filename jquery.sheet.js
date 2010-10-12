@@ -219,7 +219,8 @@ jQuery.sheet = {
 				cellFind: 			"No results found.",
 				toggleHideRow:		"No row selected.",
 				toggleHideColumn: 	"Now column selected.",
-				merge:				"Merging is not allowed on the first row."
+				merge:				"Merging is not allowed on the first row.",
+				evalError:			"Error, functions as formulas not supported."
 			},
 			kill: function() { /* For ajax manipulation, kills this instance of sheet entirley */
 				jS.obj.tabContainer().remove();
@@ -3863,8 +3864,12 @@ jQuery.sheet = {
 										var dependencies = {};
 										var body = cE.parseFormula(this.formula.substring(1), dependencies, tableI);
 										this.formulaFunc = function() {
-											with (cE.fn) {
-												return eval(body);
+											if (!body.match(/function/gi)) {
+												with (cE.fn) {
+													return eval(body);
+												}
+											} else {
+												return jS.msg.evalError;
 											}
 										};
 										
