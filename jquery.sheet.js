@@ -209,7 +209,7 @@ jQuery.sheet = {
 				uiTab:					'ui-widget-header',
 				uiTabActive:			'ui-state-highlight'
 			},
-			msg: {
+			msg: { /*msg = messages used throught sheet, for easy access to change them for other languages*/
 				addRowMulti: 		"How many rows would you like to add?",
 				addColumnMulti: 	"How many columns would you like to add?",
 				newSheet: 			"What size would you like to make your spreadsheet? Example: '5x10' creates a sheet that is 5 columns by 10 rows.",
@@ -3518,15 +3518,15 @@ jQuery.sheet = {
 					return jS.controlFactory.safeImg(v, cE.calcState.row, cE.calcState.col);
 				},
 				AVERAGE:	function(values) { 
-					var arr = cE.foldPrepare(values, arguments);
+					var arr =arrHelpers.foldPrepare(values, arguments);
 					return cE.fn.SUM(arr) / cE.fn.COUNT(arr); 
 				},
 				AVG: 		function(values) { 
 					return cE.fn.AVERAGE(values);
 				},
-				COUNT: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.count, 0); },
+				COUNT: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), cE.cFN.count, 0); },
 				COUNTA:		function(v) {
-					var values = cE.foldPrepare(v, arguments);
+					var values =arrHelpers.foldPrepare(v, arguments);
 					var count = 0;
 					for (var i = 0; i < values.length; i++) {
 						if (values[i]) {
@@ -3535,9 +3535,9 @@ jQuery.sheet = {
 					}
 					return count;
 				},
-				SUM: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.sum, 0, true); },
-				MAX: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.max, Number.MIN_VALUE, true); },
-				MIN: 		function(values) { return cE.fold(cE.foldPrepare(values, arguments), cE.cFN.min, Number.MAX_VALUE, true); },
+				SUM: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), cE.cFN.sum, 0, true, cE.fn.N); },
+				MAX: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), cE.cFN.max, Number.MIN_VALUE, true, cE.fn.N); },
+				MIN: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), cE.cFN.min, Number.MAX_VALUE, true, cE.fn.N); },
 				MEAN:		function(values) { return this.SUM(values) / values.length; },
 				ABS	: 		function(v) { return Math.abs(cE.fn.N(v)); },
 				CEILING: 	function(v) { return Math.ceil(cE.fn.N(v)); },
@@ -3669,7 +3669,7 @@ jQuery.sheet = {
 				INPUT: {
 					SELECT:	function(v, noBlank) {
 						if (s.editable) {
-							v = cE.foldPrepare(v, arguments);
+							v =arrHelpers.foldPrepare(v, arguments);
 							
 							var selectObj = jS.controlFactory.input.select();
 							
@@ -3692,12 +3692,12 @@ jQuery.sheet = {
 						
 					},
 					SELECTVAL:	function(v) {
-						//v = cE.foldPrepare(v, arguments);
+						//v =arrHelpers.foldPrepare(v, arguments);
 						return (s.editable ? jQuery(v).val() : v);
 					},
 					RADIO: function(v) {
 						if (s.editable) {
-							v = cE.foldPrepare(v, arguments);
+							v =arrHelpers.foldPrepare(v, arguments);
 							var o = jS.controlFactory.input.radio(v, cE.thisCell);
 							
 							o.find('input[value="' + jS.controlFactory.input.getValue(cE.thisCell) + '"]').attr('CHECKED', 'true');
@@ -3707,12 +3707,12 @@ jQuery.sheet = {
 						return o;
 					},
 					RADIOVAL: function(v) {
-						//v = cE.foldPrepare(v, arguments);
+						//v =arrHelpers.foldPrepare(v, arguments);
 						return (s.editable ? jQuery(v).find('input:checked').val() : v);
 					},
 					CHECKBOX: function(v) {
 						if (s.editable) {
-							v = cE.foldPrepare(v, arguments)[0];
+							v =arrHelpers.foldPrepare(v, arguments)[0];
 							var o = jS.controlFactory.input.checkbox(v, cE.thisCell);
 							var checked = jS.controlFactory.input.getValue(cE.thisCell);
 							if (checked == 'true' || checked == true) {
@@ -3739,32 +3739,32 @@ jQuery.sheet = {
 				},
 				CHART: {
 					BAR:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart(null, cE.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
+						return jS.controlFactory.chart(null,arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
 					},
 					BARH:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart('bhg', cE.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
+						return jS.controlFactory.chart('bhg',arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
 					},
 					SBAR:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart('bvs', cE.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
+						return jS.controlFactory.chart('bvs',arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
 					},
 					SBARH:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart('bhs', cE.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
+						return jS.controlFactory.chart('bhs',arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
 					},
 					LINE:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart('lc', cE.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
+						return jS.controlFactory.chart('lc',arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
 					},
 					PIE:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart('p', cE.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
+						return jS.controlFactory.chart('p',arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
 					},
 					PIETHREED:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart('p3', cE.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
+						return jS.controlFactory.chart('p3',arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
 					},
 					CUSTOM:	function(type, v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart(type, cE.foldPrepare(v, arguments), legend, axisLabels,  w, h, cE.calcState.row - 1);
+						return jS.controlFactory.chart(type,arrHelpers.foldPrepare(v, arguments), legend, axisLabels,  w, h, cE.calcState.row - 1);
 					}
 				},
 				NPV: function(i, v) {
-					var values = cE.foldPrepare(v, arguments);
+					var values =arrHelpers.foldPrepare(v, arguments);
 					var result = 0;
 					
 					for (var t = 0; t < values.length; t++) {
@@ -4140,21 +4140,6 @@ jQuery.sheet = {
 					}
 				}
 				return false;
-			},
-			foldPrepare: function(firstArg, theArguments) { // Computes the best array-like arguments for calling fold().
-				if (firstArg != null &&
-					firstArg instanceof Object &&
-					firstArg["length"] != null) {
-					return firstArg;
-				} else {
-					return theArguments;
-				}
-			},
-			fold: function(arr, funcOfTwoArgs, result, castToN) {
-				for (var i = 0; i < arr.length; i++) {
-					result = funcOfTwoArgs(result, (castToN == true ? cE.fn.N(arr[i]): arr[i]));
-				}
-				return result;
 			}
 		};
 		
@@ -4492,4 +4477,32 @@ var key = { /* key objects, makes it easier to develop */
 	V:					86,
 	Y:					89,
 	Z:					90
+};
+
+var arrHelpers = {
+	foldPrepare: function(firstArg, theArguments) { // Computes the best array-like arguments for calling fold().
+		if (firstArg != null &&
+			firstArg instanceof Object &&
+			firstArg["length"] != null) {
+			return firstArg;
+		} else {
+			return theArguments;
+		}
+	},
+	fold: function(arr, funcOfTwoArgs, result, castToN, N) {
+		for (var i = 0; i < arr.length; i++) {
+			result = funcOfTwoArgs(result, (castToN == true ? N(arr[i]): arr[i]));
+		}
+		return result;
+	},
+	toNumbers: function(arr) {
+		for (var i = 0; i < arr.length; i++) {
+			arr[i] = parseInt(arr[i] ? arr[i] : 0);
+			if (isNaN(arr[i])) {
+				arr[i] = 0;
+			}
+		}
+		
+		return arr;
+	}
 };
