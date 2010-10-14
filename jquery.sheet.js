@@ -4180,8 +4180,9 @@ jQuery.sheet = {
 		//jQuery(this).html(s.loading);
 		s.parent.html('');
 		
-		s.width = s.parent.width();
-		s.height = s.parent.height();
+		//Use the setting height/width if they are there, otherwise use parent's
+		s.width = (s.width ? s.width : s.parent.width());
+		s.height = (s.height ? s.height : s.parent.height());
 		
 		
 		// Drop functions if they are not needed & save time in recursion
