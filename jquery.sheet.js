@@ -695,44 +695,74 @@ jQuery.sheet = {
 						'</tbody>' +
 					'</table>');
 				},
-				chart: function(type, data, legend, axisLabels, w, h, row) { /* creates a chart for use inside of a cell
-																				piggybacks jGCharts
+				chartCache: [],
+				chart: function(type, data, legend, title) { /* creates a chart for use inside of a cell
+																				piggybacks RaphealJS
 																			*/
-					if (jGCharts) {
-						var api = new jGCharts.Api();
-						function refine(v) {
-							var refinedV = new Array();
-							jQuery(v).each(function(i) {
-								refinedV[i] = jS.manageHtmlToText(v[i] + '');
-							});
-							return refinedV;
+					if (Raphael) {
+						var td = jQuery(cE.thisCell.td);
+						var width = td.width();
+						var height = td.height();
+						//Make the cell's value not over-write;
+						cE.thisCell.skipSetValue = true;
+						td.html('');
+						var id = td.attr('id');
+						var r = this.chartCache[id] = Raphael(id);
+						if (r.g) {
+							if (title) r.g.text(width / 2, 10, title).attr({"font-size": 20});
+							
+							legend = (legend ? {legend: legend} : null);
+							
+							switch (type) {
+								case "bar":
+								case "bar_h":
+								case "sbar":
+								case "sbar_h":
+									r.g.barchart(0, 0, width, height, data, legend)
+										.hover(function () {
+											this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
+										},function () {
+											this.flag.animate({opacity: 0}, 300, function () {this.remove();});
+										});
+									break;
+								case "line":
+									r.g.linechart(width * 0.05, height * 0.03, width * 0.9, height * 0.9, (data[0] ? data[0] : [0]) , (data[1] ? data[1] : [0]), {
+										nostroke: false, 
+										axis: "0 0 1 1", 
+										symbol: "o", 
+										smooth: true
+									})
+										.hoverColumn(function () {
+											this.tags = r.set();
+											for (var i = 0, ii = this.y.length; i < ii; i++) {
+												this.tags.push(r.g.tag(this.x, this.y[i], this.values[i], 160, 10).insertBefore(this).attr([{fill: "#fff"}, {fill: this.symbols[i].attr("fill")}]));
+											}
+										}, function () {
+											this.tags && this.tags.remove();
+										});
+
+									break;
+								case "pie":
+								case "pie_3d":
+									r.g.piechart(width / 2, height / 2, width / 5, data, (legend ? legend : {legend: data}))
+										.hover(function () {
+											this.sector.stop();
+											this.sector.scale(1.1, 1.1, this.cx, this.cy);
+											if (this.label) {
+												this.label[0].stop();
+												this.label[0].scale(1.5);
+												this.label[1].attr({"font-weight": 800});
+											}
+										}, function () {
+											this.sector.animate({scale: [1, 1, this.cx, this.cy]}, 500, "bounce");
+											if (this.label) {
+												this.label[0].animate({scale: 1}, 500, "bounce");
+												this.label[1].attr({"font-weight": 400});
+											}
+										});
+									break;
+							}
 						}
-						var o = {};
-						
-						if (type) {
-							o.type = type;
-						}
-						
-						if (data) {
-							data = data.filter(function(v) { return (v ? v : 0); }); //remove nulls
-							o.data = data;
-						}
-						
-						if (legend) {
-							o.legend = refine(legend);
-						}
-						
-						if (axisLabels) {
-							o.axis_labels = refine(axisLabels);
-						}
-						
-						if (w || h) {
-							o.size = w + 'x' + h;
-						}
-						
-						return jS.controlFactory.safeImg(api.make(o), row);
-					} else {
-						return jQuery('<div>Charts are not enabled</div>');
 					}
 				},
 				safeImg: function(src, row) { /* creates and image and then resizes the cell's row for viewing
@@ -827,7 +857,7 @@ jQuery.sheet = {
 			sizeSync: { /* future location of all deminsion sync/mods */
 			
 			},
-			evt: { /* event handelers for sheet; e = event */
+			evt: { /* event handlers for sheet; e = event */
 				keyDownHandler: {
 					enterOnInPlaceEdit: function(e) {
 						if (!e.shiftKey) {
@@ -1116,7 +1146,7 @@ jQuery.sheet = {
 							overrideIsEdit = true;
 							if (s.autoAddCells) {
 								if (jS.cellLast.row == jS.sheetSize()[0]) {
-									jS.controlFactory.addCells(':last', false, null, 1, 'row');
+									jS.controlFactory.addRow(':last');
 								}
 							}
 							break;
@@ -1129,7 +1159,7 @@ jQuery.sheet = {
 							}
 							if (s.autoAddCells) {
 								if (jS.cellLast.col == jS.sheetSize()[1]) {
-									jS.controlFactory.addCells(':last', false, null, 1, 'col');
+									jS.controlFactory.addColumn(':last');
 								}
 							}
 							break;
@@ -1255,7 +1285,7 @@ jQuery.sheet = {
 							
 							target.parent().css('cursor', 'pointer');
 							
-							jS.followMe();
+							//jS.followMe();
 							
 							jS.log('stop resizing');
 						}
@@ -1467,8 +1497,9 @@ jQuery.sheet = {
 							break;
 						case 'bar':
 							if (!o) {
-								var td = jQuery(jS.getTd(jS.i, i, 0));
-								o = td.nextAll().andSelf().add(td.parent());
+								var tr = jQuery(jS.getTd(jS.i, i, 0)).parent();
+								var td = tr.children();
+								o = tr.add(td);
 							} 
 							h = jS.attrH.heightReverse(jS.obj.barLeft().find('div').eq(i), skipCorrection);
 							break;
@@ -1477,8 +1508,8 @@ jQuery.sheet = {
 					if (h) {
 						jQuery(o)
 							.height(h)
-							.css('height', h)
-							.attr('height', h);
+							.css('height', h + 'px')
+							.attr('height', h + 'px');
 					}
 
 					return o;
@@ -2711,7 +2742,7 @@ jQuery.sheet = {
 				}
 				
 				jS.sheetSyncSize();
-				jS.replaceWithSafeImg(jS.obj.sheet().find('img'));
+				//jS.replaceWithSafeImg();
 			},
 			openSheetURL: function ( url ) { /* opens a table object from a url, then opens it
 												url: string, location;
@@ -3294,7 +3325,7 @@ jQuery.sheet = {
 				jS.obj.log().prepend(jS.time.get() + ', ' + jS.time.diff() + '; ' + msg + '<br />\n');
 			},
 			replaceWithSafeImg: function(o) {  //ensures all pictures will load and keep their respective bar the same size.
-				o.each(function() {			
+				(o ? o : jS.obj.sheet().find('img')).each(function() {			
 					var src = jQuery(this).attr('src');
 					jQuery(this).replaceWith(jS.controlFactory.safeImg(src, jS.getTdLocation(jQuery(this).parent())[0]));
 				});
@@ -3439,6 +3470,7 @@ jQuery.sheet = {
 
 		jS.tableCell.prototype = {
 			td: null,
+			skipSetValue: true,
 			getTd: function() {
 				if (!this.td) { //this attempts to check if the td is cached, then cache it if not, then return it
 					this.td = document.getElementById(jS.getTdId(this.tableI, this.row - 1, this.col - 1));	
@@ -3449,7 +3481,9 @@ jQuery.sheet = {
 			setValue: function(v, e) {
 				this.error = e;
 				this.value = v;
-				jQuery(this.getTd()).html(v ? v: ''); //I know this is slower than innerHTML = '', but sometimes stability just rules!
+				if (!this.skipSetValue) {
+					jQuery(this.getTd()).html(v ? v: ''); //I know this is slower than innerHTML = '', but sometimes stability just rules!
+				}
 			},
 			getValue: function() {
 				var v = this.value;
@@ -3738,29 +3772,26 @@ jQuery.sheet = {
 					}
 				},
 				CHART: {
-					BAR:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart(null,arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
+					BAR:	function(v, legend, title) {
+						return jS.controlFactory.chart('bar',arrHelpers.foldPrepare(v, arguments), legend, title);
 					},
-					BARH:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart('bhg',arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
+					BARH:	function(v, legend, title) {
+						return jS.controlFactory.chart('bar_h',arrHelpers.foldPrepare(v, arguments), legend, title);
 					},
-					SBAR:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart('bvs',arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
+					SBAR:	function(v, legend, title) {
+						return jS.controlFactory.chart('sbar',arrHelpers.foldPrepare(v, arguments), legend, title);
 					},
-					SBARH:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart('bhs',arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
+					SBARH:	function(v, legend, title) {
+						return jS.controlFactory.chart('sbar_h',arrHelpers.foldPrepare(v, arguments), legend, title);
 					},
-					LINE:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart('lc',arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
+					LINE:	function(v1, v2, legend, title) {
+						return jS.controlFactory.chart('line', [arrHelpers.foldPrepare(v1, arguments), arrHelpers.foldPrepare(v2, arguments)], legend, title);
 					},
-					PIE:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart('p',arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
+					PIE:	function(v, legend, title) {
+						return jS.controlFactory.chart('pie',arrHelpers.foldPrepare(v, arguments), legend, title);
 					},
-					PIETHREED:	function(v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart('p3',arrHelpers.foldPrepare(v, arguments), legend, axisLabels, w, h, cE.calcState.row - 1);
-					},
-					CUSTOM:	function(type, v, legend, axisLabels, w, h) {
-						return jS.controlFactory.chart(type,arrHelpers.foldPrepare(v, arguments), legend, axisLabels,  w, h, cE.calcState.row - 1);
+					PIETHREED:	function(v, legend, title) {
+						return jS.controlFactory.chart('pie_3d',arrHelpers.foldPrepare(v, arguments), legend, title);
 					}
 				},
 				NPV: function(i, v) {

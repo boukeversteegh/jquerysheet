@@ -223,6 +223,14 @@
 .safeImg
 {
 	display: inline;
+	height: inherit ! important;
+	width: inherit ! important;
+}
+
+.jSheet svg
+{
+	height: inherit ! important;
+	width: inherit ! important;
 }
 
 .jSheetInPlaceEdit
