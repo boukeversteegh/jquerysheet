@@ -1285,7 +1285,7 @@ jQuery.sheet = {
 							
 							target.parent().css('cursor', 'pointer');
 							
-							//jS.followMe();
+							jS.autoFillerGoToTd();
 							
 							jS.log('stop resizing');
 						}
@@ -2707,6 +2707,10 @@ jQuery.sheet = {
 																	tdHeight: height of a td object;
 																	tdWidth: width of a td object;
 																*/
+				td = (td ? td : jQuery(jS.cellLast.td));
+				tdHeight = (tdHeight ? tdHeight : td.height());
+				tdWidth = (tdWidth ? tdWidth : td.width());
+				
 				if (s.autoFiller) {
 					if (td.attr('id')) { //ensure that it is a usable cell
 						tdPos = td.position();
