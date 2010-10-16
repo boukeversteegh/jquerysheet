@@ -105,6 +105,7 @@ jQuery.sheet = {
 				barLeftParentAll:	function() { return s.parent.find('div.' + jS.cl.barLeftParent); },
 				cellActive:			function() { return jQuery(jS.cellLast.td); },
 				cellHighlighted:	function() { return jQuery(jS.highlightedLast.td); },
+				chart:				function() { return jQuery('div.' + jS.cl.chart); },
 				controls:			function() { return jQuery('#' + jS.id.controls); },
 				formula: 			function() { return jQuery('#' + jS.id.formula); },
 				fullScreen:			function() { return jQuery('div.' + jS.cl.fullScreen); },
@@ -172,6 +173,7 @@ jQuery.sheet = {
 				barTopTd:				'barTop',
 				cellActive:				'jSheetCellActive',
 				cellHighlighted: 		'jSheetCellHighighted',
+				chart:					'jSheetChart',
 				controls:				'jSheetControls',
 				formula: 				'jSheetControls_formula',
 				inlineMenu:				'jSheetInlineMenu',
@@ -697,32 +699,37 @@ jQuery.sheet = {
 				},
 				chartCache: [],
 				chart: function(type, data, legend, title) { /* creates a chart for use inside of a cell
-																				piggybacks RaphealJS
-																			*/
+																piggybacks RaphealJS
+															*/
+					var o = jQuery('<div class="' + jS.cl.chart + '" />');
 					if (Raphael) {
-						var td = jQuery(cE.thisCell.td);
-						var width = td.width();
-						var height = td.height();
-						//Make the cell's value not over-write;
-						cE.thisCell.skipSetValue = true;
-						td.html('');
-						var id = td.attr('id');
-						var r = this.chartCache[id] = Raphael(id);
-						if (r.g) {
-							if (title) r.g.text(width / 2, 10, title).attr({"font-size": 20});
-							
-							legend = (legend ? {legend: legend} : null);
-							
-							switch (type) {
+						jQuery(document).one('calculation', function() {
+							var width = o.width();
+							var height = o.height();
+							var r = Raphael(o[0]);
+							if (r.g) {
+								if (title) r.g.text(width / 2, 10, title).attr({"font-size": 20});
+								
+								legend = (legend ? {legend: legend} : null);
+								
+								switch (type) {
 								case "bar":
 								case "bar_h":
 								case "sbar":
 								case "sbar_h":
 									r.g.barchart(0, 0, width, height, data, legend)
-										.hover(function () {
-											this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
+									.hover(function () {
+										this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
 										},function () {
-											this.flag.animate({opacity: 0}, 300, function () {this.remove();});
+											this.flag.animate(
+													{
+														opacity: 0
+													}, 
+													300, 
+													function () {
+														this.remove();
+													}
+											);
 										});
 									break;
 								case "line":
@@ -732,15 +739,15 @@ jQuery.sheet = {
 										symbol: "o", 
 										smooth: true
 									})
-										.hoverColumn(function () {
-											this.tags = r.set();
-											for (var i = 0, ii = this.y.length; i < ii; i++) {
-												this.tags.push(r.g.tag(this.x, this.y[i], this.values[i], 160, 10).insertBefore(this).attr([{fill: "#fff"}, {fill: this.symbols[i].attr("fill")}]));
-											}
-										}, function () {
-											this.tags && this.tags.remove();
-										});
-
+									.hoverColumn(function () {
+										this.tags = r.set();
+										for (var i = 0, ii = this.y.length; i < ii; i++) {
+											this.tags.push(r.g.tag(this.x, this.y[i], this.values[i], 160, 10).insertBefore(this).attr([{fill: "#fff"}, {fill: this.symbols[i].attr("fill")}]));
+										}
+									}, function () {
+										this.tags && this.tags.remove();
+									});
+								
 									break;
 								case "pie":
 								case "pie_3d":
@@ -761,9 +768,12 @@ jQuery.sheet = {
 											}
 										});
 									break;
+								}
 							}
-						}
+						});
 					}
+						
+					return o;
 				},
 				safeImg: function(src, row) { /* creates and image and then resizes the cell's row for viewing
 												src: string, location of image;
@@ -2421,6 +2431,8 @@ jQuery.sheet = {
 				if (!s.calcOff) {
 					jS.tableCellProviders[tableI].cells = {};
 					cE.calc(jS.tableCellProviders[tableI], jS.context, fuel);
+					
+					jQuery(document).trigger('calculation');
 					jS.isSheetEdit = false;
 				}
 				jS.log('Calculation Ended');
@@ -3474,7 +3486,6 @@ jQuery.sheet = {
 
 		jS.tableCell.prototype = {
 			td: null,
-			skipSetValue: true,
 			getTd: function() {
 				if (!this.td) { //this attempts to check if the td is cached, then cache it if not, then return it
 					this.td = document.getElementById(jS.getTdId(this.tableI, this.row - 1, this.col - 1));	
@@ -3485,9 +3496,7 @@ jQuery.sheet = {
 			setValue: function(v, e) {
 				this.error = e;
 				this.value = v;
-				if (!this.skipSetValue) {
-					jQuery(this.getTd()).html(v ? v: ''); //I know this is slower than innerHTML = '', but sometimes stability just rules!
-				}
+				jQuery(this.getTd()).html(v ? v: ''); //I know this is slower than innerHTML = '', but sometimes stability just rules!
 			},
 			getValue: function() {
 				var v = this.value;

@@ -227,12 +227,6 @@
 	width: inherit ! important;
 }
 
-.jSheet svg
-{
-	height: inherit ! important;
-	width: inherit ! important;
-}
-
 .jSheetInPlaceEdit
 {
 	position: absolute;
@@ -278,7 +272,14 @@
 
 .jSheetTitle, .jSheetInlineMenu
 {
-	width: auto;text-align: center;
+	width: auto;
+	text-align: center;
+}
+
+.jSheetChart
+{
+	width: inherit;
+	height: inherit;
 }
 
 .bodyNoScroll
