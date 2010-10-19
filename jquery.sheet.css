@@ -287,6 +287,11 @@
 	overflow: hidden ! important;
 }
 
+.jSheetParent, .jSheetParent div
+{
+	padding: 0px ! important;
+}
+
 /* Cell styler classes */
 .styleBold
 { font-weight: bold; }

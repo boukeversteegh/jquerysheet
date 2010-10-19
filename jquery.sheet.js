@@ -180,6 +180,7 @@ jQuery.sheet = {
 				fullScreen:				'jSheetFullScreen',
 				inPlaceEdit:			'jSheetInPlaceEdit',
 				menu:					'jSheetMenu',
+				parent:					'jSheetParent',
 				sheet: 					'jSheet',
 				sheetPaneTd:			'sheetPane',
 				label: 					'jSheetControls_loc',
@@ -4207,7 +4208,9 @@ jQuery.sheet = {
 		
 		//We need to take the sheet out of the parent in order to get an accurate reading of it's height and width
 		//jQuery(this).html(s.loading);
-		s.parent.html('');
+		s.parent
+			.html('')
+			.addClass(jS.cl.parent);
 		
 		//Use the setting height/width if they are there, otherwise use parent's
 		s.width = (s.width ? s.width : s.parent.width());
