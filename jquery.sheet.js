@@ -238,34 +238,37 @@ jQuery.sheet = {
 				delete origParent.sheetInstance;
 			},
 			controlFactory: { /* controlFactory creates the different objects requied by sheet */
-				addRowMulti: function(qty, isBefore) { /* creates multi rows
+				addRowMulti: function(qty, isBefore, skipFormulaReparse) { /* creates multi rows
 															qty: int, the number of cells you'd like to add, if not specified, a dialog will ask; 
 															isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end
+															skipFormulaReparse: bool, re-parses formulas if needed
 														*/
 					if (!qty) {
 						qty = prompt(jS.msg.addRowMulti);
 					}
 					if (qty) {
-						jS.controlFactory.addCells(null, isBefore, null, qty, 'row');
+						jS.controlFactory.addCells(null, isBefore, null, qty, 'row', skipFormulaReparse);
 					}
 				},
-				addColumnMulti: function(qty, isBefore) { /* creates multi columns
+				addColumnMulti: function(qty, isBefore, skipFormulaReparse) { /* creates multi columns
 															qty: int, the number of cells you'd like to add, if not specified, a dialog will ask; 
 															isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end
+															skipFormulaReparse: bool, re-parses formulas if needed
 														*/
 					if (!qty) {
 						qty = prompt(jS.msg.addColumnMulti);
 					}
 					if (qty) {
-						jS.controlFactory.addCells(null, isBefore, null, qty, 'col');
+						jS.controlFactory.addCells(null, isBefore, null, qty, 'col', skipFormulaReparse);
 					}
 				},
-				addCells: function(eq, isBefore, eqO, qty, type) { /*creates cells for sheet and the bars that go along with them
+				addCells: function(eq, isBefore, eqO, qty, type, skipFormulaReparse) { /*creates cells for sheet and the bars that go along with them
 																		eq: int, position where cells should be added;
 																		isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end;
 																		eq0: no longer used, kept for legacy;
 																		qty: int, how many rows/columsn to add;
 																		type: string - "col" || "row", determans the type of cells to add;
+																		skipFormulaReparse: bool, re-parses formulas if needed
 																*/
 					//hide the autoFiller, it can get confused
 					if (s.autoFiller) {
@@ -429,8 +432,10 @@ jQuery.sheet = {
 
 					jS.obj.pane().scroll();
 					
-					//offset formulas
-					jS.offsetFormulaRange((isBefore ? loc[0] - qty : loc[0]) , (isBefore ? loc[1] - qty : loc[0]), o.offset[0], o.offset[1], isBefore);
+					if (!skipFormulaReparse && eq != ':last') {
+						//offset formulas
+						jS.offsetFormulaRange((isBefore ? loc[0] - qty : loc[0]) , (isBefore ? loc[1] - qty : loc[0]), o.offset[0], o.offset[1], isBefore);
+					}
 					
 					//Because the line numbers get bigger, it is possible that the bars have changed in size, lets sync them
 					jS.sheetSyncSize();
@@ -703,6 +708,12 @@ jQuery.sheet = {
 																piggybacks RaphealJS
 															*/
 					var o = jQuery('<div class="' + jS.cl.chart + '" />');
+					
+					legend = (legend ? legend : '');
+					title = (title ? title : '');
+					
+					data = arrHelpers.toNumbers(data);
+					
 					if (Raphael) {
 						jQuery(document).one('calculation', function() {
 							var width = o.width();
@@ -710,31 +721,26 @@ jQuery.sheet = {
 							var r = Raphael(o[0]);
 							if (r.g) {
 								if (title) r.g.text(width / 2, 10, title).attr({"font-size": 20});
-								
-								legend = (legend ? {legend: legend} : null);
-								
 								switch (type) {
 								case "bar":
 								case "bar_h":
 								case "sbar":
 								case "sbar_h":
 									r.g.barchart(0, 0, width, height, data, legend)
-									.hover(function () {
-										this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
+										.hover(function () {
+											this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
 										},function () {
-											this.flag.animate(
-													{
-														opacity: 0
-													}, 
-													300, 
-													function () {
-														this.remove();
+											this.flag.animate({
+												opacity: 0
+												},300, 
+												function () {
+													this.remove();
 													}
-											);
-										});
+												);
+											});
 									break;
 								case "line":
-									r.g.linechart(width * 0.05, height * 0.03, width * 0.9, height * 0.9, (data[0] ? data[0] : [0]) , (data[1] ? data[1] : [0]), {
+									r.g.linechart(width * 0.05, height * 0.03, width * 0.9, height * 0.9, [data[0]], [data[1]], {
 										nostroke: false, 
 										axis: "0 0 1 1", 
 										symbol: "o", 
@@ -945,7 +951,7 @@ jQuery.sheet = {
 								jS.evt.cellEditDone(true);
 							});
 						}
-						jS.calc(jS.i);
+						jS.calc();
 						return true;
 					},
 					findCell: function(e) {
@@ -1073,7 +1079,7 @@ jQuery.sheet = {
 										}
 										
 										if (v != prevVal || forceCalc) {
-											jS.calc(jS.i);
+											jS.calc();
 										}
 										
 										jS.attrH.setHeight(jS.cellLast.row, 'cell');
@@ -1110,7 +1116,7 @@ jQuery.sheet = {
 					jS.themeRoller.cell.clearHighlighted();
 					
 					if (!skipCalc) {
-						jS.calc(jS.i);
+						jS.calc();
 					}
 					
 					jS.cellLast.td = jQuery('<td />');
@@ -1315,9 +1321,6 @@ jQuery.sheet = {
 					pane.scroll(function() {
 						o.barTop.scrollLeft(pane.scrollLeft());//2 lines of beautiful jQuery js
 						o.barLeft.scrollTop(pane.scrollTop());
-						
-						jS.log('bar:' + o.barLeft.scrollTop());
-						jS.log('pane:' + pane.scrollTop());
 						
 						s.fnPaneScroll(pane, jS.i);
 					});
@@ -1702,7 +1705,7 @@ jQuery.sheet = {
 						.html(cellsValue);
 					
 					jS.setDirty(true);
-					jS.calc(jS.i);
+					jS.calc();
 				} else if (!cellFirstLoc[0]) {
 					alert(jS.msg.merge);
 				}
@@ -1737,7 +1740,7 @@ jQuery.sheet = {
 				cell.removeAttr('colspan');
 				
 				jS.setDirty(true);
-				jS.calc(jS.i);
+				jS.calc();
 			},
 			fillUpOrDown: function(goUp, skipOffsetForumals, v) { /* fills values down or up to highlighted cells from active cell;
 																	goUp: bool, default is down, when set to true value are filled from bottom, up;
@@ -1800,7 +1803,7 @@ jQuery.sheet = {
 				}
 				
 				jS.setDirty(true);
-				jS.calc(jS.i);
+				jS.calc();
 				
 				//Make it redoable
 				jS.cellUndoable.add(cells);
@@ -1874,7 +1877,7 @@ jQuery.sheet = {
 					);
 				}
 				
-				jS.cylceCells(function (td) {
+				jS.cycleCells(function (td) {
 					var formula = td.attr('formula');
 					
 					if (formula && jS.isFormulaEditable(td)) {
@@ -1926,16 +1929,19 @@ jQuery.sheet = {
 
 				}, [0, 0], shiftedRange.last);
 				
-				jS.calc(jS.i);
+				jS.calc();
 			},
-			cylceCells: function(fn, firstLoc, lastLoc) { /* cylces through a certain group of cells in a spreadsheet and applies a function to them
+			cycleCells: function(fn, firstLoc, lastLoc) { /* cylces through a certain group of cells in a spreadsheet and applies a function to them
 															fn: function, the function to apply to a cell;
 															firstLoc: array of int - [col, row], the group to start;
 															lastLoc: array of int - [col, row], the group to end;
 														*/
 				for (var i = firstLoc[0]; i < lastLoc[0]; i++) {
 					for (var j = firstLoc[1]; j < lastLoc[1]; j++) {
-						fn(jQuery(jS.getTd(jS.i, i, j)));
+						var td = jS.getTd(jS.i, i, j);
+						if (td) {
+							fn(jQuery(td));
+						}
 					}
 				}
 			},
@@ -2050,7 +2056,7 @@ jQuery.sheet = {
 				}
 				
 				if (addCols) {
-					jS.controlFactory.addColumnMulti(addCols);
+					jS.controlFactory.addColumnMulti(addCols, false, true);
 				}
 				
 				if ((loc[0]) < s.minSize.rows) {
@@ -2058,7 +2064,7 @@ jQuery.sheet = {
 				}
 				
 				if (addRows) {
-					jS.controlFactory.addRowMulti(addRows);
+					jS.controlFactory.addRowMulti(addRows, false, true);
 				}
 			},
 			themeRoller: { /* jQuery ui Themeroller integration	*/
@@ -2425,6 +2431,7 @@ jQuery.sheet = {
 												tableI: int, the current table integer;
 												fuel: variable holder, used to prevent memory leaks, and for calculations;
 											*/
+				tableI = (tableI ? tableI : jS.i);
 				jS.log('Calculation Started');
 				if (!jS.tableCellProviders[tableI]) {
 					jS.tableCellProviders[tableI] = new jS.tableCellProvider(tableI);
@@ -2844,7 +2851,7 @@ jQuery.sheet = {
 				}
 				//Let's recalculate the sheet just in case
 				jS.setTdIds();
-				jS.calc(jS.i);
+				jS.calc();
 			},
 			importColumn: function(columnArray) { /* creates a new column and then applies an array's values to each of it's new values
 													columnArray: array;
@@ -2872,7 +2879,7 @@ jQuery.sheet = {
 				}
 				//Let's recalculate the sheet just in case
 				jS.setTdIds();
-				jS.calc(jS.i);
+				jS.calc();
 			},
 			exportSheet: { /* exports sheets into xml, json, or html formats */
 				xml: function (skipCData) {
@@ -3447,7 +3454,7 @@ jQuery.sheet = {
 						.attr('cellRef', cellRef);
 				}
 				
-				jS.calc(jS.i);
+				jS.calc();
 			}
 		};
 
@@ -3798,8 +3805,8 @@ jQuery.sheet = {
 					SBARH:	function(v, legend, title) {
 						return jS.controlFactory.chart('sbar_h',arrHelpers.foldPrepare(v, arguments), legend, title);
 					},
-					LINE:	function(v1, v2, legend, title) {
-						return jS.controlFactory.chart('line', [arrHelpers.foldPrepare(v1, arguments), arrHelpers.foldPrepare(v2, arguments)], legend, title);
+					LINE:	function(valuesX, valuesY, legend, title) {
+						return jS.controlFactory.chart('line', [arrHelpers.foldPrepare(valuesX, arguments), arrHelpers.foldPrepare(valuesY, arguments)], legend, title);
 					},
 					PIE:	function(v, legend, title) {
 						return jS.controlFactory.chart('pie',arrHelpers.foldPrepare(v, arguments), legend, title);
@@ -4543,9 +4550,16 @@ var arrHelpers = {
 		return result;
 	},
 	toNumbers: function(arr) {
+		arr = jQuery.makeArray(arr);
+		
 		for (var i = 0; i < arr.length; i++) {
-			arr[i] = parseInt(arr[i] ? arr[i] : 0);
-			if (isNaN(arr[i])) {
+			if (jQuery.isArray(arr[i])) {
+				arr[i] = this.toNumbers(arr[i]);
+			} else if (arr[i]) {
+				if (isNaN(arr[i])) {
+					arr[i] = 0;
+				}
+			} else {
 				arr[i] = 0;
 			}
 		}
