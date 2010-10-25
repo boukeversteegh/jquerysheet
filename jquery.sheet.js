@@ -83,7 +83,7 @@ jQuery.fn.extend({
 jQuery.sheet = {
 	createInstance: function(s, I, origParent) { //s = jQuery.sheet settings, I = jQuery.sheet Instance Integer
 		var jS = {
-			version: '1.1.5 rc1',
+			version: '1.2 rc1',
 			i: 0,
 			I: I,
 			sheetCount: 0,
@@ -432,7 +432,7 @@ jQuery.sheet = {
 
 					jS.obj.pane().scroll();
 					
-					if (!skipFormulaReparse && eq != ':last') {
+					if (!skipFormulaReparse && eq != ':last' && !isBefore) {
 						//offset formulas
 						jS.offsetFormulaRange((isBefore ? loc[0] - qty : loc[0]) , (isBefore ? loc[1] - qty : loc[0]), o.offset[0], o.offset[1], isBefore);
 					}
@@ -723,10 +723,21 @@ jQuery.sheet = {
 								if (title) r.g.text(width / 2, 10, title).attr({"font-size": 20});
 								switch (type) {
 								case "bar":
-								case "bar_h":
-								case "sbar":
-								case "sbar_h":
 									r.g.barchart(0, 0, width, height, data, legend)
+										.hover(function () {
+											this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
+										},function () {
+											this.flag.animate({
+												opacity: 0
+												},300, 
+												function () {
+													this.remove();
+													}
+												);
+											});
+									break;
+								case "hbar":
+									r.g.hbarchart(0, 0, width, height, data, legend)
 										.hover(function () {
 											this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
 										},function () {
@@ -757,7 +768,6 @@ jQuery.sheet = {
 								
 									break;
 								case "pie":
-								case "pie_3d":
 									r.g.piechart(width / 2, height / 2, width / 5, data, (legend ? legend : {legend: data}))
 										.hover(function () {
 											this.sector.stop();
@@ -3796,23 +3806,14 @@ jQuery.sheet = {
 					BAR:	function(v, legend, title) {
 						return jS.controlFactory.chart('bar',arrHelpers.foldPrepare(v, arguments), legend, title);
 					},
-					BARH:	function(v, legend, title) {
-						return jS.controlFactory.chart('bar_h',arrHelpers.foldPrepare(v, arguments), legend, title);
-					},
-					SBAR:	function(v, legend, title) {
-						return jS.controlFactory.chart('sbar',arrHelpers.foldPrepare(v, arguments), legend, title);
-					},
-					SBARH:	function(v, legend, title) {
-						return jS.controlFactory.chart('sbar_h',arrHelpers.foldPrepare(v, arguments), legend, title);
+					HBAR:	function(v, legend, title) {
+						return jS.controlFactory.chart('hbar',arrHelpers.foldPrepare(v, arguments), legend, title);
 					},
 					LINE:	function(valuesX, valuesY, legend, title) {
 						return jS.controlFactory.chart('line', [arrHelpers.foldPrepare(valuesX, arguments), arrHelpers.foldPrepare(valuesY, arguments)], legend, title);
 					},
 					PIE:	function(v, legend, title) {
 						return jS.controlFactory.chart('pie',arrHelpers.foldPrepare(v, arguments), legend, title);
-					},
-					PIETHREED:	function(v, legend, title) {
-						return jS.controlFactory.chart('pie_3d',arrHelpers.foldPrepare(v, arguments), legend, title);
 					}
 				},
 				NPV: function(i, v) {
