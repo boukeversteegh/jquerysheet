@@ -704,28 +704,58 @@ jQuery.sheet = {
 					'</table>');
 				},
 				chartCache: [],
-				chart: function(type, data, legend, title) { /* creates a chart for use inside of a cell
+				chart: function(o) { /* creates a chart for use inside of a cell
 																piggybacks RaphealJS
+										options:
+											type
+											data
+											legend
+											title
+											x {data, legend}
+											y {data, legend}
 															*/
-					var o = jQuery('<div class="' + jS.cl.chart + '" />');
+					function sanitize(v, toNum) {
+						v = arrHelpers.foldPrepare((v ? v : ''), arguments);
+						if (toNum) {
+							v = arrHelpers.toNumbers(v);
+						}
+						return v;
+					}
 					
-					legend = (legend ? legend : '');
-					title = (title ? title : '');
+					o = jQuery.extend({
+						x: { legend: "", data: [0]},
+						y: { legend: "", data: [0]},
+						title: "",
+						data: [0],
+						legend: "",
+						chart: jQuery('<div class="' + jS.cl.chart + '" />')
+					}, o);
 					
-					data = arrHelpers.toNumbers(data);
+					o.data = sanitize(o.data, true);
+					o.x.data = sanitize(o.x.data, true);
+					o.y.data = sanitize(o.y.data, true);
+					o.legend = sanitize(o.legend);
+					o.x.legend = sanitize(o.x.legend);
+					o.y.legend = sanitize(o.y.legend);
+					
+					o.legend = (o.legend ? o.legend : o.data);
 					
 					if (Raphael) {
 						jQuery(document).one('calculation', function() {
-							var width = o.width();
-							var height = o.height();
-							var r = Raphael(o[0]);
+							var width = o.chart.width();
+							var height = o.chart.height();
+							var r = Raphael(o.chart[0]);
 							if (r.g) {
-								if (title) r.g.text(width / 2, 10, title).attr({"font-size": 20});
-								switch (type) {
+								if (o.title) r.g.text(width / 2, 10, o.title).attr({"font-size": 20});
+								switch (o.type) {
 								case "bar":
-									r.g.barchart(0, 0, width, height, data, legend)
+									r.g.barchart(0, 0, width, height, o.data, o.legend)
 										.hover(function () {
-											this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
+											this.flag = r.g.popup(
+												this.bar.x,
+												this.bar.y,
+												this.bar.value || "0"
+											).insertBefore(this);
 										},function () {
 											this.flag.animate({
 												opacity: 0
@@ -737,7 +767,7 @@ jQuery.sheet = {
 											});
 									break;
 								case "hbar":
-									r.g.hbarchart(0, 0, width, height, data, legend)
+									r.g.hbarchart(0, 0, width, height, o.data, o.legend)
 										.hover(function () {
 											this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
 										},function () {
@@ -751,7 +781,7 @@ jQuery.sheet = {
 											});
 									break;
 								case "line":
-									r.g.linechart(width * 0.05, height * 0.03, width * 0.9, height * 0.9, [data[0]], [data[1]], {
+									r.g.linechart(width * 0.05, height * 0.03, width * 0.9, height * 0.9, [o.x.data], [o.y.data], {
 										nostroke: false, 
 										axis: "0 0 1 1", 
 										symbol: "o", 
@@ -768,7 +798,7 @@ jQuery.sheet = {
 								
 									break;
 								case "pie":
-									r.g.piechart(width / 2, height / 2, width / 5, data, (legend ? legend : {legend: data}))
+									r.g.piechart(width / 2, height / 2, width / 5, o.data, {legend: o.legend})
 										.hover(function () {
 											this.sector.stop();
 											this.sector.scale(1.1, 1.1, this.cx, this.cy);
@@ -785,12 +815,34 @@ jQuery.sheet = {
 											}
 										});
 									break;
+								case "dot":
+									r.g.dotchart(width / 2, height / 2, width / 5, [o.x.data], [o.y.data], [o.data], {
+										symbol: "o", 
+										max: 10, 
+										heat: true, 
+										axis: "0 0 1 1", 
+										axisxstep: legendX.length - 1, 
+										axisystep: legendY.length - 1, 
+										axisxlabels: legendX, 
+										axisxtype: " ", 
+										axisytype: " ", 
+										axisylabels: legendY
+									})
+										.hover(function () {
+											this.tag = this.tag || r.g.tag(this.x, this.y, this.value, 0, this.r + 2).insertBefore(this);
+											this.tag.show();
+										}, function () {
+											this.tag && this.tag.hide();
+										});
+									break;
 								}
+								
+								jS.attrH.setHeight(jS.getTdLocation(o.chart.parent())[0], 'cell', false);
 							}
 						});
 					}
 						
-					return o;
+					return o.chart;
 				},
 				safeImg: function(src, row) { /* creates and image and then resizes the cell's row for viewing
 												src: string, location of image;
@@ -3803,17 +3855,58 @@ jQuery.sheet = {
 					}
 				},
 				CHART: {
-					BAR:	function(v, legend, title) {
-						return jS.controlFactory.chart('bar',arrHelpers.foldPrepare(v, arguments), legend, title);
+					BAR:	function(values, legend, title) {
+						return jS.controlFactory.chart({
+							type: 'bar',
+							data: values,
+							legend: legend,
+							title: title
+						});
 					},
-					HBAR:	function(v, legend, title) {
-						return jS.controlFactory.chart('hbar',arrHelpers.foldPrepare(v, arguments), legend, title);
+					HBAR:	function(values, legend, title) {
+						return jS.controlFactory.chart({
+							type: 'hbar',
+							data: values,
+							legend: legend,
+							title: title
+						});
 					},
-					LINE:	function(valuesX, valuesY, legend, title) {
-						return jS.controlFactory.chart('line', [arrHelpers.foldPrepare(valuesX, arguments), arrHelpers.foldPrepare(valuesY, arguments)], legend, title);
+					LINE:	function(valuesX, valuesY, legendX, legendY, title) {
+						return jS.controlFactory.chart({
+							type: 'line',
+							x: {
+								data: valuesX,
+								legend: legendX
+							},
+							y: {
+								data: valuesY,
+								legend: legendY
+							},
+							title: title
+						});
 					},
-					PIE:	function(v, legend, title) {
-						return jS.controlFactory.chart('pie',arrHelpers.foldPrepare(v, arguments), legend, title);
+					PIE:	function(values, legend, title) {
+						return jS.controlFactory.chart({
+							type: 'pie',
+							data: values,
+							legend: legend,
+							title: title
+						});
+					},
+					DOT:	function(valuesX, valuesY, values,legendX, legendY, title) {
+						return jS.controlFactory.chart({
+							type: 'dot',
+							values: values,
+							x: {
+								data: valuesX,
+								legend: legendX
+							},
+							y: {
+								data: valuesY,
+								legend: legendY
+							},
+							title: title
+						});
 					}
 				},
 				NPV: function(i, v) {
