@@ -3919,6 +3919,9 @@ jQuery.sheet = {
 					
 					return result;
 				},
+				SQRT: function(v) {
+					return Math.sqrt(v);
+				},
 				CELLREF: function(v, i) {
 					var td;
 					if (i) {
