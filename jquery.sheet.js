@@ -3922,8 +3922,12 @@ jQuery.sheet = {
 				SQRT: function(v) {
 					return Math.sqrt(v);
 				},
-				PMT: function (interest_rate, number_payments, principal_value, FV) { 
-					return this.ROUND(1 + interest_rate * -(FV - Math.pow(1 + interest_rate, number_payments) * principal_value) / (-1 + Math.pow((1 + interest_rate), number_payments)), 2);
+				PMT: function(interest_rate, number_payments, principal_value, FV) {
+					FV = (FV ? FV : 1000);
+					return -1 * this.ROUND(1 + interest_rate * (FV - Math.pow(1 + interest_rate, number_payments) * principal_value) / -(-1 + Math.pow((1 + interest_rate), number_payments)), 2);
+				},
+				NPER: function(rate, pmt, pv, fv) {
+					return Math.log((fv + pmt/rate) / (pv + pmt/rate)) / Math.log(1+rate);
 				},
 				CELLREF: function(v, i) {
 					var td;
