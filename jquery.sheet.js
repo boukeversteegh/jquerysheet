@@ -498,7 +498,7 @@ jQuery.sheet = {
 					var widthFn;
 					
 					if (reloadWidths) {
-						parents = o.find('tr:first').find('td,th'));
+						parents = o.find('tr:first').find('td,th');
 						widthFn = function(obj) {
 							return jS.attrH.width(obj);
 						};
@@ -3626,49 +3626,6 @@ jQuery.sheet = {
 								.replace(/\r/g,'');
 					}
 					return v;
-				},
-				pow1p:	function(x, y) {
-				    if (Math.abs(x) > 0.5) {
-				        return Math.pow(1 + x, y);
-				    } else {
-				        return Math.exp(y * Math.log(x));
-				    }
-				},
-				pow1pm1: function(x, y) {
-				    if (x <= -1) {
-				        return Math.pow(1 + x, y) - 1;
-				    } else {
-				        return cE.cFN.expm1(y * Math.log(x));
-				    }
-				},
-				expm1: function(x) {
-					var ret=0, n = 50; // degree of precision
-					var factorial = function factorial (n) {
-						if ((n === 0) || (n === 1)) {
-							return 1;
-						} else {
-							var result = (n * factorial(n-1) );
-							return result;
-						}
-				    };
-				    
-				    for (var i=1; i < n; i++) {
-				    	ret += Math.pow(x, i) / factorial(i);
-				    }
-				    
-				    return ret;
-				},
-				getPay: function(rate, nper, pv, fv, type) {
-				    var pvif;
-				    var fvifa;
-				    
-				    fv = (fv ? fv : 1);
-				    type = (type ? type : 1);
-				    
-				    pvif  = Math.pow( 1 + rate, nper );
-				    fvifa = ( pvif - 1 ) / rate;
-			
-				    return ( -pv * pvif - fv ) / ( ( 1.0 + rate * type ) * fvifa );
 				}
 			},
 			fn: {//fn = standard functions used in cells
@@ -3825,7 +3782,9 @@ jQuery.sheet = {
 				POWER: 		function(x, y) {
 					return Math.pow(x, y);
 				},
-				
+				SQRT: function(v) {
+					return Math.sqrt(v);
+				},
 				//Note, form objects are experimental, they don't work always as expected
 				INPUT: {
 					SELECT:	function(v, noBlank) {
@@ -3952,64 +3911,6 @@ jQuery.sheet = {
 							title: title
 						});
 					}
-				},
-				NPV: function(i, v) {
-					var values =arrHelpers.foldPrepare(v, arguments);
-					var result = 0;
-					
-					for (var t = 0; t < values.length; t++) {
-						result += values[t] / Math.pow((i / 100) + 1, t + 1);
-					}
-					
-					return result;
-				},
-				SQRT: function(v) {
-					return Math.sqrt(v);
-				},
-				PMTT: function(interest_rate, number_payments, principal_value, FV) {
-					FV = (FV ? FV : 1000);
-					return interest_rate * (FV - Math.pow(1 + interest_rate, number_payments) * principal_value) / -(-1 + Math.pow((1 + interest_rate), number_payments));
-				},
-				PMT: function(rate, nper, pv, fv){
-					var pmt_value = 0;
-					rate = rate / 100;
-					fv = parseFloat(fv ? fv : 0); //optional
-
-					if ( rate == 0 ) {
-						pmt_value = - (fv + pv)/nper;	
-					} else {
-						x = Math.pow(1 + rate,nper);
-						pmt_value = -((rate * (fv + x * pv))/(-1 + x));
-					}
-					
-					return this.ROUND(pmt_value, 2);
-				},
-				NPER: function(rate, nper, pv, fv){ //STill doesn't work right
-					//fv = parseFloat(fv ? fv : 1);
-					var nper = cE.cFN.getPay(rate, nper, pv, fv); 
-					return nper;
-				},
-				FVV: function(rate, nper, pmt, pv){
-					var fv_value = 0;
-					pv = (pv ? pv : 1);
-					
-					if ( rate == 0 ) {
-						fv_value = -(pv + (pmt * nper));
-					} else {
-						x = Math.pow(1 + rate, nper);
-						fv_value = -( -pmt + x * pmt + rate * x * pv ) /rate;
-					}
-					fv_value = this.ROUND(fv_value, 2);
-					return (fv_value);
-				},
-				FV: function(rate, nper, pmt, pv, type) {
-					type = (type ? type : 0);
-
-					pvif  = calculate_pvif (rate, nper);
-					fvifa = calculate_fvifa (rate, nper);
-
-				        return (-((pv * pvif) + pmt *
-								  (1.0 + rate * type) * fvifa));
 				},
 				CELLREF: function(v, i) {
 					var td;
@@ -4446,6 +4347,11 @@ jQuery.sheet = {
 		//Extend the calculation engine with advanced functions
 		if (jQuery.sheet.advancedfn) {
 			cE.fn = jQuery.extend(cE.fn, jQuery.sheet.advancedfn);
+		}
+		
+		//Extend the calculation engine with finance functions
+		if (jQuery.sheet.financefn) {
+			cE.fn = jQuery.extend(cE.fn, jQuery.sheet.financefn);
 		}
 		
 		//this makes cells and functions case insensitive
