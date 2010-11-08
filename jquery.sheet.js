@@ -656,10 +656,8 @@ jQuery.sheet = {
 					if (s.editable) {
 						pane
 							.mousedown(function(e) {
-								jS.evt.cellOnMouseDown(e);
-								return false;
-							});
-						pane
+								return jS.evt.cellOnMouseDown(e);
+							})
 							.dblclick(jS.evt.cellOnDblClick);
 					}
 					
@@ -890,28 +888,85 @@ jQuery.sheet = {
 					}
 				},
 				input: { /* inputs for use from the calculations engine	*/
-					select: function() {
-						return jQuery('<select style="width: 100%;" onchange="jQuery.sheet.instance[' + I + '].controlFactory.input.setValue(jQuery(this).val(), jQuery(this).parent());" class="clickable" />');
-					},
-					radio: function(v, cell) {
-						var radio = jQuery('<span class="clickable" />');
-						var name = I + '_table' + cell.tableI + '_cell_c' + (cell.col - 1) + '_r' + (cell.row - 1) + 'radio';
-						for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
+					select: function(v, noBlank) {
+						var o = jQuery('<select style="width: 100%;" class="clickable" />')
+							.change(function() {
+								jS.controlFactory.input.setValue(jQuery(this));
+							});
+							
+						if (!noBlank) {
+							o.append('<option value="">Select a value</option>');
+						}
+							
+						for (var i = 0; i < (v.length <= 50 ? v.length : 50); i++) {
 							if (v[i]) {
-								radio.append('<input onchange="jQuery.sheet.instance[' + I + '].controlFactory.input.setValue(jQuery(this).val(), jQuery(this).parent().parent());" type="radio" value="' + v[i] + '" name="' + name + '" />' + v[i] + '<br />');
+								o.append('<option value="' + v[i] + '">' + v[i] + '</option>');
 							}
 						}
+						
+						jQuery(document).one('calculation', function() {
+							var v = jS.controlFactory.input.getValue(o);
+							o.val(v);
+						});
+						
+						return o;
+					},
+					radio: function(v) {
+						var radio = jQuery('<span class="clickable" />');
+						for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
+							if (v[i]) {
+								radio
+									.append(
+										jQuery('<input type="radio" name="' + name + '" />')
+											.val(v[i])
+											.change(function() {
+												radio.find('input').removeAttr('CHECKED');
+												jQuery(this).attr('CHECKED', true);
+												jS.controlFactory.input.setValue(jQuery(this), radio.parent());
+											})
+									)
+									.append('<span class="clickable">' + v[i] + '</span>')
+									.append('<br />');
+							}
+						}
+						
+						jQuery(document).one('calculation', function() {
+							radio.find('input')
+								.attr('name', radio.parent().attr('id') + '_radio');
+							var val = jS.controlFactory.input.getValue(radio);
+							radio.find('input[value="' + val + '"]')
+								.attr('CHECKED', true);
+						});
+						
 						return radio;
 					},
 					checkbox: function(v) {
-						return jQuery('<input onclick="jQuery.sheet.instance[' + I + '].controlFactory.input.setValue(jQuery(this).is(\':checked\') + \'\', jQuery(this).parent());" type="checkbox" value="' + v + '" />' + v + '<br />');
+						var o = jQuery('<span class="clickable" />')
+							.append(
+								jQuery('<input type="checkbox" />')
+									.val(v)
+									.change(function() {
+										o.parent().removeAttr('selectedvalue');
+										if (jQuery(this).is(':checked')) {
+											jS.controlFactory.input.setValue(jQuery(this), o.parent());
+										}
+										jS.calc();
+									})
+							)
+							.append('<span>' + v + '</span><br />');
+							
+						jQuery(document).one('calculation', function() {
+							o.find('input').removeAttr('CHECKED');
+							o.find('input[value="' + o.parent().attr('selectedvalue') + '"]').attr('CHECKED', 'TRUE');
+						});
+						return o;
 					},
-					setValue: function(v, p) {
-						p.attr('selectedvalue', v);
-						jS.calc(cE.calcState.i);
+					setValue: function(o, parent) {
+						jQuery(parent ? parent : o.parent()).attr('selectedvalue', o.val());;
+						jS.calc();
 					},
-					getValue: function(cell) {
-						return jQuery(jS.getTd(cell.tableI, cell.row - 1, cell.col - 1)).attr('selectedvalue');
+					getValue: function(o, parent) {
+						return jQuery(parent ? parent : o.parent()).attr('selectedvalue');
 					}
 				},
 				autoFiller: function() { /* created the autofiller object */
@@ -3789,68 +3844,44 @@ jQuery.sheet = {
 				INPUT: {
 					SELECT:	function(v, noBlank) {
 						if (s.editable) {
-							v =arrHelpers.foldPrepare(v, arguments);
-							
-							var selectObj = jS.controlFactory.input.select();
-							
-							if (!noBlank) {
-								selectObj.append('<option value="">Select a value</option>');
-							}
-							
-							for (var i = 0; i < (v.length <= 50 ? v.length : 50); i++) {
-								if (v[i]) {
-									selectObj.append('<option value="' + v[i] + '">' + v[i] + '</option>');
-								}
-							}
-							
-							selectObj.val(jS.controlFactory.input.getValue(cE.thisCell));
-							
-							return selectObj;
+							v = arrHelpers.foldPrepare(v, arguments, true);
+							return jS.controlFactory.input.select(v, noBlank);
 						} else {
-							return jS.controlFactory.input.getValue(cE.thisCell);
+							return jS.controlFactory.input.getValue(v);
 						}
-						
-					},
-					SELECTVAL:	function(v) {
-						//v =arrHelpers.foldPrepare(v, arguments);
-						return (s.editable ? jQuery(v).val() : v);
 					},
 					RADIO: function(v) {
 						if (s.editable) {
-							v =arrHelpers.foldPrepare(v, arguments);
-							var o = jS.controlFactory.input.radio(v, cE.thisCell);
-							
-							o.find('input[value="' + jS.controlFactory.input.getValue(cE.thisCell) + '"]').attr('CHECKED', 'true');
+							v = arrHelpers.foldPrepare(v, arguments, true);
+							return jS.controlFactory.input.radio(v);
 						} else {
-							return jS.controlFactory.input.getValue(cE.thisCell);
+							return jS.controlFactory.input.getValue(v);
 						}
-						return o;
-					},
-					RADIOVAL: function(v) {
-						//v =arrHelpers.foldPrepare(v, arguments);
-						return (s.editable ? jQuery(v).find('input:checked').val() : v);
 					},
 					CHECKBOX: function(v) {
 						if (s.editable) {
-							v =arrHelpers.foldPrepare(v, arguments)[0];
-							var o = jS.controlFactory.input.checkbox(v, cE.thisCell);
-							var checked = jS.controlFactory.input.getValue(cE.thisCell);
-							if (checked == 'true' || checked == true) {
-								o.attr('CHECKED', 'TRUE');
-							} else {
-								o.removeAttr('CHECKED');
-							}
-							return o;
+							v = arrHelpers.foldPrepare(v, arguments)[0];
+							return jS.controlFactory.input.checkbox(v);
 						} else {
-							return jS.controlFactory.input.getValue(cE.thisCell);
+							return jS.controlFactory.input.getValue(v);
 						}
 					},
+					VAL: function(v) {
+						return jS.controlFactory.input.getValue(v);
+					},
+					SELECTVAL:	function(v) {
+						return jS.controlFactory.input.getValue(v);
+					},
+					RADIOVAL: function(v) {
+						return jS.controlFactory.input.getValue(v);
+					},
 					CHECKBOXVAL: function(v) {
-						return (s.editable ? jQuery(cE.foldPrepare(v, arguments)).val() : v);
+						return jS.controlFactory.input.getValue(v);
 					},
 					ISCHECKED:		function(v) {
-						var checked = jQuery(v).is(":checked");
-						if (checked) {
+						var val = jS.controlFactory.input.getValue(v);
+						var length = jQuery(v).find('input[value="' + val + '"]').length;
+						if (length) {
 							return 'TRUE';
 						} else {
 							return 'FALSE';
@@ -4626,14 +4657,21 @@ var key = { /* key objects, makes it easier to develop */
 };
 
 var arrHelpers = {
-	foldPrepare: function(firstArg, theArguments) { // Computes the best array-like arguments for calling fold().
+	foldPrepare: function(firstArg, theArguments, unique) { // Computes the best array-like arguments for calling fold().
+		var result;
 		if (firstArg != null &&
 			firstArg instanceof Object &&
 			firstArg["length"] != null) {
-			return firstArg;
+			result = firstArg;
 		} else {
-			return theArguments;
+			result = theArguments;
 		}
+		
+		if (unique) {
+			result = this.unique(result);
+		}
+		
+		return result;
 	},
 	fold: function(arr, funcOfTwoArgs, result, castToN, N) {
 		for (var i = 0; i < arr.length; i++) {
@@ -4657,5 +4695,18 @@ var arrHelpers = {
 		}
 		
 		return arr;
+	},
+	unique: function(arr) {
+		var a = [];
+		var l = arr.length;
+		for (var i=0; i<l; i++) {
+			for(var j=i+1; j<l; j++) {
+				// If this[i] is found later in the array
+				if (arr[i] === arr[j])
+					j = ++i;
+			}
+			a.push(arr[i]);
+		}
+		return a;
 	}
 };
