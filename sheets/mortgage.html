@@ -1,7 +1,7 @@
-<TABLE cellspacing="0" cellpadding="0" border="1px" style="width: 1062px;" id="jSheet_0_0" class="jSheet ui-widget-content">
+<TABLE cellspacing="0" cellpadding="0" border="1px" class="jSheet ui-widget-content" id="jSheet_0_0" style="width: 1128px;" title="Mortgage Calculator">
   <COLGROUP>
     <COL width="120px" style="width: 120px;"/>
-    <COL width="120px" style="width: 120px;"/>
+    <COL width="168" style="width: 168px;"/>
     <COL width="120px" style="width: 120px;"/>
     <COL width="120px" style="width: 120px;"/>
     <COL width="120px" style="width: 120px;"/>
@@ -80,7 +80,7 @@
     <TR height="18px" style="height: 18px;">
       <TD id="0_table0_cell_c0_r6"/>
       <TD id="0_table0_cell_c1_r6">Loan Amount</TD>
-      <TD id="0_table0_cell_c2_r6">150,000</TD>
+      <TD id="0_table0_cell_c2_r6">150000</TD>
       <TD id="0_table0_cell_c3_r6"/>
       <TD id="0_table0_cell_c4_r6"/>
       <TD id="0_table0_cell_c5_r6"/>
@@ -91,7 +91,7 @@
     <TR height="18px" style="height: 18px;">
       <TD id="0_table0_cell_c0_r7"/>
       <TD id="0_table0_cell_c1_r7">Annual Interest Rate</TD>
-      <TD id="0_table0_cell_c2_r7">6.000%</TD>
+      <TD id="0_table0_cell_c2_r7">0.06</TD>
       <TD id="0_table0_cell_c3_r7"/>
       <TD id="0_table0_cell_c4_r7"/>
       <TD id="0_table0_cell_c5_r7"/>
@@ -135,22 +135,22 @@
     <TR style="height: 18px;">
       <TD id="0_table0_cell_c0_r11"/>
       <TD id="0_table0_cell_c1_r11">Monthly Interest Rate</TD>
-      <TD id="0_table0_cell_c2_r11" formula="=IF(COUNTA(C7:C9)<3, H1 ,(POWER(1+C8/C4,C4/12))-1)">0.5</TD>
-      <TD id="0_table0_cell_c3_r11" formula="=IF(COUNTA(D7:D9)<3, H1 ,(POWER(1+D8/C4,C4/12))-1)">---</TD>
-      <TD id="0_table0_cell_c4_r11" formula="=IF(COUNTA(E7:E9)<3, H1 ,(POWER(1+E8/C4,C4/12))-1)">---</TD>
-      <TD id="0_table0_cell_c5_r11" formula="=IF(COUNTA(F7:F9)<3, H1 ,(POWER(1+F8/C4,C4/12))-1)">---</TD>
-      <TD id="0_table0_cell_c6_r11" formula="=IF(COUNTA(G7:G9)<3, H1 ,(POWER(1+G8/C4,C4/12))-1)">---</TD>
+      <TD id="0_table0_cell_c2_r11" formula="=IF(COUNTA(C7:C9)<3,' --- ',(POWER(1+C8/C4,C4/12))-1)">0.004999999999999893</TD>
+      <TD id="0_table0_cell_c3_r11" formula="=IF(COUNTA(D7:D9)<3,' --- ',((1+D8/$C$4)^($C$4/12))-1)">--- </TD>
+      <TD id="0_table0_cell_c4_r11" formula="=IF(COUNTA(E7:E9)<3,' --- ',((1+E8/$C$4)^($C$4/12))-1)">--- </TD>
+      <TD id="0_table0_cell_c5_r11" formula="=IF(COUNTA(F7:F9)<3,' --- ',((1+F8/$C$4)^($C$4/12))-1)">--- </TD>
+      <TD id="0_table0_cell_c6_r11" formula="=IF(COUNTA(G7:G9)<3,' --- ',((1+G8/$C$4)^($C$4/12))-1)">--- </TD>
       <TD id="0_table0_cell_c7_r11"/>
       <TD id="0_table0_cell_c8_r11"/>
     </TR>
     <TR style="height: 18px;">
       <TD id="0_table0_cell_c0_r12"/>
       <TD id="0_table0_cell_c1_r12">Monthly Payment (PI)</TD>
-      <TD id="0_table0_cell_c2_r12" formula="=IF(COUNTA(C7:C9)<3, H1 ,PMT(C12,C9*12,-C7))">899.33</TD>
-      <TD id="0_table0_cell_c3_r12" formula="=IF(COUNTA(D7:D9)<3, H1 ,PMT(D12,D9*12,-D7))">---</TD>
-      <TD id="0_table0_cell_c4_r12" formula="=IF(COUNTA(E7:E9)<3, H1 ,PMT(E12,E9*12,-E7))">---</TD>
-      <TD id="0_table0_cell_c5_r12" formula="=IF(COUNTA(F7:F9)<3, H1 ,PMT(F12,F9*12,-F7))">---</TD>
-      <TD id="0_table0_cell_c6_r12" formula="=IF(COUNTA(G7:G9)<3, H1 ,PMT(G12,G9*12,-G7))">---</TD>
+      <TD id="0_table0_cell_c2_r12" formula="=IF(COUNTA(C7:C9)<3,' --- ',PMT(C12,C9*12,-C7))">420.4383329036542</TD>
+      <TD id="0_table0_cell_c3_r12" formula="=IF(COUNTA(D7:D9)<3,' --- ',PMT(D12,D9*12,-D7))">--- </TD>
+      <TD id="0_table0_cell_c4_r12" formula="=IF(COUNTA(E7:E9)<3,' --- ',PMT(E12,E9*12,-E7))">--- </TD>
+      <TD id="0_table0_cell_c5_r12" formula="=IF(COUNTA(F7:F9)<3,' --- ',PMT(F12,F9*12,-F7))">--- </TD>
+      <TD id="0_table0_cell_c6_r12" formula="=IF(COUNTA(G7:G9)<3,' --- ',PMT(G12,G9*12,-G7))">--- </TD>
       <TD id="0_table0_cell_c7_r12"/>
       <TD id="0_table0_cell_c8_r12"/>
     </TR>
@@ -168,11 +168,11 @@
     <TR style="height: 18px;">
       <TD id="0_table0_cell_c0_r14"/>
       <TD id="0_table0_cell_c1_r14">Total MONTHLY PAYMENT</TD>
-      <TD id="0_table0_cell_c2_r14" formula="=IF(COUNTA(C7:C9)<3, H1 ,SUM(C13:C14))">1199.33</TD>
-      <TD id="0_table0_cell_c3_r14" formula="=IF(COUNTA(D7:D9)<3, H1 ,SUM(D13:D14))">---</TD>
-      <TD id="0_table0_cell_c4_r14" formula="=IF(COUNTA(E7:E9)<3, H1 ,SUM(E13:E14))">---</TD>
-      <TD id="0_table0_cell_c5_r14" formula="=IF(COUNTA(F7:F9)<3, H1 ,SUM(F13:F14))">---</TD>
-      <TD id="0_table0_cell_c6_r14" formula="=IF(COUNTA(G7:G9)<3, H1 ,SUM(G13:G14))">---</TD>
+      <TD id="0_table0_cell_c2_r14" formula="=IF(COUNTA(C7:C9)<3,' --- ',C13+C14)">420.4383329036542</TD>
+      <TD id="0_table0_cell_c3_r14" formula="=IF(COUNTA(D7:D9)<3,' --- ',D13+D14)">--- </TD>
+      <TD id="0_table0_cell_c4_r14" formula="=IF(COUNTA(E7:E9)<3,' --- ',E13+E14)">--- </TD>
+      <TD id="0_table0_cell_c5_r14" formula="=IF(COUNTA(F7:F9)<3,' --- ',F13+F14)">--- </TD>
+      <TD id="0_table0_cell_c6_r14" formula="=IF(COUNTA(G7:G9)<3,' --- ',G13+G14)">--- </TD>
       <TD id="0_table0_cell_c7_r14"/>
       <TD id="0_table0_cell_c8_r14"/>
     </TR>
@@ -201,44 +201,44 @@
     <TR style="height: 18px;">
       <TD id="0_table0_cell_c0_r17"/>
       <TD id="0_table0_cell_c1_r17">Number of Payments</TD>
-      <TD id="0_table0_cell_c2_r17" formula="=IF(COUNTA(C7:C9)<3, H1, NPER(C12,-C15,C7))">360</TD>
-      <TD id="0_table0_cell_c3_r17" formula="=IF(COUNTA(D7:D9)<3, H1 ,D9*12)">---</TD>
-      <TD id="0_table0_cell_c4_r17" formula="=IF(COUNTA(E7:E9)<3, H1 ,E9*12)">---</TD>
-      <TD id="0_table0_cell_c5_r17" formula="=IF(COUNTA(F7:F9)<3, H1 ,F9*12)">---</TD>
-      <TD id="0_table0_cell_c6_r17" formula="=IF(COUNTA(G7:G9)<3, H1 ,G9*12)">---</TD>
+      <TD id="0_table0_cell_c2_r17" formula="=IF(COUNTA(C7:C9)<3,' --- ',NPER(C12,-C15,C7))">20527.864921977038</TD>
+      <TD id="0_table0_cell_c3_r17" formula="=IF(COUNTA(D7:D9)<3,' --- ',NPER(D12,-D15,D7))">--- </TD>
+      <TD id="0_table0_cell_c4_r17" formula="=IF(COUNTA(E7:E9)<3,' --- ',NPER(E12,-E15,E7))">--- </TD>
+      <TD id="0_table0_cell_c5_r17" formula="=IF(COUNTA(F7:F9)<3,' --- ',NPER(F12,-F15,F7))">--- </TD>
+      <TD id="0_table0_cell_c6_r17" formula="=IF(COUNTA(G7:G9)<3,' --- ',NPER(G12,-G15,G7))">--- </TD>
       <TD id="0_table0_cell_c7_r17"/>
       <TD id="0_table0_cell_c8_r17"/>
     </TR>
     <TR style="height: 18px;">
       <TD id="0_table0_cell_c0_r18"/>
       <TD id="0_table0_cell_c1_r18">Number of Years to Payoff</TD>
-      <TD id="0_table0_cell_c2_r18" formula="=IF(COUNTA(C7:C9)<3, H1 ,C18/12)">30</TD>
-      <TD id="0_table0_cell_c3_r18" formula="=IF(COUNTA(D7:D9)<3, H1 ,D18/12)">---</TD>
-      <TD id="0_table0_cell_c4_r18" formula="=IF(COUNTA(E7:E9)<3, H1 ,E18/12)">---</TD>
-      <TD id="0_table0_cell_c5_r18" formula="=IF(COUNTA(F7:F9)<3, H1 ,F18/12)">---</TD>
-      <TD id="0_table0_cell_c6_r18" formula="=IF(COUNTA(G7:G9)<3, H1 ,G18/12)">---</TD>
+      <TD id="0_table0_cell_c2_r18" formula="=IF(COUNTA(C7:C9)<3,' --- ',C18/12)">1710.6554101647532</TD>
+      <TD id="0_table0_cell_c3_r18" formula="=IF(COUNTA(D7:D9)<3,' --- ',D18/12)">--- </TD>
+      <TD id="0_table0_cell_c4_r18" formula="=IF(COUNTA(E7:E9)<3,' --- ',E18/12)">--- </TD>
+      <TD id="0_table0_cell_c5_r18" formula="=IF(COUNTA(F7:F9)<3,' --- ',F18/12)">--- </TD>
+      <TD id="0_table0_cell_c6_r18" formula="=IF(COUNTA(G7:G9)<3,' --- ',G18/12)">--- </TD>
       <TD id="0_table0_cell_c7_r18"/>
       <TD id="0_table0_cell_c8_r18"/>
     </TR>
     <TR style="height: 18px;">
       <TD id="0_table0_cell_c0_r19"/>
       <TD id="0_table0_cell_c1_r19">Total Payments</TD>
-      <TD id="0_table0_cell_c2_r19" formula="=IF(COUNTA(C7:C9)<3, H1 ,C18*C15)">431758.8</TD>
-      <TD id="0_table0_cell_c3_r19" formula="=IF(COUNTA(D7:D9)<3, H1 ,D18*D15)">---</TD>
-      <TD id="0_table0_cell_c4_r19" formula="=IF(COUNTA(E7:E9)<3, H1 ,E18*E15)">---</TD>
-      <TD id="0_table0_cell_c5_r19" formula="=IF(COUNTA(F7:F9)<3, H1 ,F18*F15)">---</TD>
-      <TD id="0_table0_cell_c6_r19" formula="=IF(COUNTA(G7:G9)<3, H1 ,G18*G15)">---</TD>
+      <TD id="0_table0_cell_c2_r19" formula="=IF(COUNTA(C7:C9)<3,' --- ',C18*C15)">8630701.305867428</TD>
+      <TD id="0_table0_cell_c3_r19" formula="=IF(COUNTA(D7:D9)<3,' --- ',D18*D15)">--- </TD>
+      <TD id="0_table0_cell_c4_r19" formula="=IF(COUNTA(E7:E9)<3,' --- ',E18*E15)">--- </TD>
+      <TD id="0_table0_cell_c5_r19" formula="=IF(COUNTA(F7:F9)<3,' --- ',F18*F15)">--- </TD>
+      <TD id="0_table0_cell_c6_r19" formula="=IF(COUNTA(G7:G9)<3,' --- ',G18*G15)">--- </TD>
       <TD id="0_table0_cell_c7_r19"/>
       <TD id="0_table0_cell_c8_r19"/>
     </TR>
     <TR style="height: 18px;">
       <TD id="0_table0_cell_c0_r20"/>
       <TD id="0_table0_cell_c1_r20">Total INTEREST</TD>
-      <TD id="0_table0_cell_c2_r20" formula="=IF(COUNTA(C7:C9)<3, H1 ,C20-C7)">281758.8</TD>
-      <TD id="0_table0_cell_c3_r20" formula="=IF(COUNTA(D7:D9)<3, H1 ,D20-D7)">---</TD>
-      <TD id="0_table0_cell_c4_r20" formula="=IF(COUNTA(E7:E9)<3, H1 ,E20-E7)">---</TD>
-      <TD id="0_table0_cell_c5_r20" formula="=IF(COUNTA(F7:F9)<3, H1 ,F20-F7)">---</TD>
-      <TD id="0_table0_cell_c6_r20" formula="=IF(COUNTA(G7:G9)<3, H1 ,G20-G7)">---</TD>
+      <TD id="0_table0_cell_c2_r20" formula="=IF(COUNTA(C7:C9)<3,' --- ',C20-C7)">8480701.305867428</TD>
+      <TD id="0_table0_cell_c3_r20" formula="=IF(COUNTA(D7:D9)<3,' --- ',D20-D7)">--- </TD>
+      <TD id="0_table0_cell_c4_r20" formula="=IF(COUNTA(E7:E9)<3,' --- ',E20-E7)">--- </TD>
+      <TD id="0_table0_cell_c5_r20" formula="=IF(COUNTA(F7:F9)<3,' --- ',F20-F7)">--- </TD>
+      <TD id="0_table0_cell_c6_r20" formula="=IF(COUNTA(G7:G9)<3,' --- ',G20-G7)">--- </TD>
       <TD id="0_table0_cell_c7_r20"/>
       <TD id="0_table0_cell_c8_r20"/>
     </TR>
@@ -267,29 +267,29 @@
     <TR style="height: 18px;">
       <TD id="0_table0_cell_c0_r23"/>
       <TD id="0_table0_cell_c1_r23">Outstanding Balance</TD>
-      <TD id="0_table0_cell_c2_r23" formula="=IF(COUNTA(C7:C9,C23)<3, H1 ,-FV(C12,C23*12,-C15,C7))">#VALUE!: undefined</TD>
-      <TD id="0_table0_cell_c3_r23" formula="=IF(COUNTA(D7:D9,D23)<3, H1 ,-FV(D12,D23*12,-D15,D7))">#VALUE!: undefined</TD>
-      <TD id="0_table0_cell_c4_r23" formula="=IF(COUNTA(E7:E9,E23)<3, H1 ,-FV(E12,E23*12,-E15,E7))">#VALUE!: undefined</TD>
-      <TD id="0_table0_cell_c5_r23" formula="=IF(COUNTA(F7:F9,F23)<3, H1 ,-FV(F12,F23*12,-F15,F7))">#VALUE!: undefined</TD>
-      <TD id="0_table0_cell_c6_r23" formula="=IF(COUNTA(G7:G9,G23)<3, H1 ,-FV(G12,G23*12,-G15,G7))">#VALUE!: undefined</TD>
+      <TD id="0_table0_cell_c2_r23" formula="=IF(COUNTA(C7:C9,C23)<3,' --- ',-FV(C12,C23*12,-C15,C7))">154065.32850018365</TD>
+      <TD id="0_table0_cell_c3_r23" formula="=IF(COUNTA(D7:D9,D23)<4,' --- ',-FV(D12,D23*12,-D15,D7))">--- </TD>
+      <TD id="0_table0_cell_c4_r23" formula="=IF(COUNTA(E7:E9,E23)<4,' --- ',-FV(E12,E23*12,-E15,E7))">--- </TD>
+      <TD id="0_table0_cell_c5_r23" formula="=IF(COUNTA(F7:F9,F23)<4,' --- ',-FV(F12,F23*12,-F15,F7))">--- </TD>
+      <TD id="0_table0_cell_c6_r23" formula="=IF(COUNTA(G7:G9,G23)<4,' --- ',-FV(G12,G23*12,-G15,G7))">--- </TD>
       <TD id="0_table0_cell_c7_r23"/>
       <TD id="0_table0_cell_c8_r23"/>
     </TR>
     <TR style="height: 18px;">
       <TD id="0_table0_cell_c0_r24"/>
       <TD id="0_table0_cell_c1_r24">Interest Paid</TD>
-      <TD id="0_table0_cell_c2_r24" formula="=IF(COUNTA(C7:C9,C23)<3, H1 ,C23*12*C15-(C7-C24))">---</TD>
-      <TD id="0_table0_cell_c3_r24" formula="=IF(COUNTA(D7:D9,D23)<3, H1 ,D23*12*D15-(D7-D24))">---</TD>
-      <TD id="0_table0_cell_c4_r24" formula="=IF(COUNTA(E7:E9,E23)<3, H1 ,E23*12*E15-(E7-E24))">---</TD>
-      <TD id="0_table0_cell_c5_r24" formula="=IF(COUNTA(F7:F9,F23)<3, H1 ,F23*12*F15-(F7-F24))">---</TD>
-      <TD id="0_table0_cell_c6_r24" formula="=IF(COUNTA(G7:G9,G23)<3, H1 ,G23*12*G15-(G7-G24))">---</TD>
+      <TD id="0_table0_cell_c2_r24" formula="=IF(COUNTA(C7:C9,C23)<3,' --- ',C23*12*C15-(C7-C24))">9110.5884950275</TD>
+      <TD id="0_table0_cell_c3_r24" formula="=IF(COUNTA(D7:D9,D23)<4,' --- ',D23*12*D15-(D7-D24))">--- </TD>
+      <TD id="0_table0_cell_c4_r24" formula="=IF(COUNTA(E7:E9,E23)<4,' --- ',E23*12*E15-(E7-E24))">--- </TD>
+      <TD id="0_table0_cell_c5_r24" formula="=IF(COUNTA(F7:F9,F23)<4,' --- ',F23*12*F15-(F7-F24))">--- </TD>
+      <TD id="0_table0_cell_c6_r24" formula="=IF(COUNTA(G7:G9,G23)<4,' --- ',G23*12*G15-(G7-G24))">--- </TD>
       <TD id="0_table0_cell_c7_r24"/>
       <TD id="0_table0_cell_c8_r24"/>
     </TR>
     <TR style="height: 18px;">
       <TD id="0_table0_cell_c0_r25"/>
       <TD id="0_table0_cell_c1_r25">Original Down Payment</TD>
-      <TD id="0_table0_cell_c2_r25">10,000 </TD>
+      <TD id="0_table0_cell_c2_r25">10000</TD>
       <TD id="0_table0_cell_c3_r25"/>
       <TD id="0_table0_cell_c4_r25"/>
       <TD id="0_table0_cell_c5_r25"/>
@@ -300,11 +300,11 @@
     <TR style="height: 18px;">
       <TD id="0_table0_cell_c0_r26"/>
       <TD id="0_table0_cell_c1_r26">EQUITY</TD>
-      <TD id="0_table0_cell_c2_r26" formula="=IF(COUNTA(C7:C9,C23)<3, H1 ,C7-C24+C26)">---</TD>
-      <TD id="0_table0_cell_c3_r26" formula="=IF(COUNTA(D7:D9,D23)<3, H1 ,D7-D24+D26)">---</TD>
-      <TD id="0_table0_cell_c4_r26" formula="=IF(COUNTA(E7:E9,E23)<3, H1 ,E7-E24+E26)">---</TD>
-      <TD id="0_table0_cell_c5_r26" formula="=IF(COUNTA(F7:F9,F23)<3, H1 ,F7-F24+F26)">---</TD>
-      <TD id="0_table0_cell_c6_r26" formula="=IF(COUNTA(G7:G9,G23)<3, H1 ,G7-G24+G26)">---</TD>
+      <TD id="0_table0_cell_c2_r26" formula="=IF(COUNTA(C7:C9,C23)<3,' --- ',C7-C24+C26)">5934.671499816352</TD>
+      <TD id="0_table0_cell_c3_r26" formula="=IF(COUNTA(D7:D9,D23)<4,' --- ',D7-D24+D26)">--- </TD>
+      <TD id="0_table0_cell_c4_r26" formula="=IF(COUNTA(E7:E9,E23)<4,' --- ',E7-E24+E26)">--- </TD>
+      <TD id="0_table0_cell_c5_r26" formula="=IF(COUNTA(F7:F9,F23)<4,' --- ',F7-F24+F26)">--- </TD>
+      <TD id="0_table0_cell_c6_r26" formula="=IF(COUNTA(G7:G9,G23)<4,' --- ',G7-G24+G26)">--- </TD>
       <TD id="0_table0_cell_c7_r26"/>
       <TD id="0_table0_cell_c8_r26"/>
     </TR>
@@ -320,7 +320,7 @@
       <TD id="0_table0_cell_c8_r27"/>
     </TR>
     <TR style="height: 18px;">
-      <TD id="0_table0_cell_c0_r28">Caution: Results are only estimates. Interest rates may vary, values may be</TD>
+      <TD id="0_table0_cell_c0_r28"/>
       <TD id="0_table0_cell_c1_r28"/>
       <TD id="0_table0_cell_c2_r28"/>
       <TD id="0_table0_cell_c3_r28"/>
@@ -331,7 +331,7 @@
       <TD id="0_table0_cell_c8_r28"/>
     </TR>
     <TR style="height: 18px;">
-      <TD id="0_table0_cell_c0_r29">off due to rounding, and the calculator does not take into account fees, closing</TD>
+      <TD id="0_table0_cell_c0_r29"/>
       <TD id="0_table0_cell_c1_r29"/>
       <TD id="0_table0_cell_c2_r29"/>
       <TD id="0_table0_cell_c3_r29"/>
@@ -342,7 +342,7 @@
       <TD id="0_table0_cell_c8_r29"/>
     </TR>
     <TR style="height: 18px;">
-      <TD id="0_table0_cell_c0_r30">costs, property tax, mortgage insurance, tax deductions, etc.</TD>
+      <TD id="0_table0_cell_c0_r30"/>
       <TD id="0_table0_cell_c1_r30"/>
       <TD id="0_table0_cell_c2_r30"/>
       <TD id="0_table0_cell_c3_r30"/>
@@ -353,7 +353,7 @@
       <TD id="0_table0_cell_c8_r30"/>
     </TR>
     <TR style="height: 18px;">
-      <TD id="0_table0_cell_c0_r31">[42]</TD>
+      <TD id="0_table0_cell_c0_r31"/>
       <TD id="0_table0_cell_c1_r31"/>
       <TD id="0_table0_cell_c2_r31"/>
       <TD id="0_table0_cell_c3_r31"/>
