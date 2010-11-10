@@ -9,24 +9,22 @@ jQuery.sheet.financefn = {
 		
 		return result;
 	},
-	PMT: function(rate, nper, pv, fv){
-		var pmt_value = 0;
-		rate = rate / 100;
-		fv = parseFloat(fv ? fv : 0); //optional
-	
-		if ( rate == 0 ) {
-			pmt_value = - (fv + pv)/nper;	
-		} else {
-			x = Math.pow(1 + rate,nper);
-			pmt_value = -((rate * (fv + x * pv))/(-1 + x));
-		}
+	PMT: function(rate, nper, pv, fv, type){
+		fv = (fv ? fv : 0);
+		type = (type ? type : 0);
+		var invert = (pv < 0 ? true : false);
+		pv = Math.abs(pv);
 		
-		return this.ROUND(pmt_value, 2);
+		var v = ((-rate * (pv * Math.pow(1.0 + rate, nper) + fv)) /
+				((1.0 + rate * type) * (Math.pow(1.0 + rate, nper) - 1))
+			);
+		
+		return (invert ? -v : v);
 	},
 	NPER: function(rate, payment, pv, fv, type) { //not working yet
 		fv = (fv ? fv : 0);
 		type = (type ? type : 0);
-		invert = (payment < 0 ? true : false);
+		var invert = (payment < 0 ? true : false);
 		payment = Math.abs(payment);
 		
 		var v = (Math.log(
@@ -34,7 +32,7 @@ jQuery.sheet.financefn = {
 				/
 				(pv*rate + payment*(1.0 + rate*type))
 			)
-			/ Math.log(1.0+rate)) * 100;
+			/ Math.log(1.0+rate));
 			
 		return (invert ? -v : v);
 	},
