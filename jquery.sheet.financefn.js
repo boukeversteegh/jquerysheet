@@ -24,8 +24,18 @@ jQuery.sheet.financefn = {
 		return this.ROUND(pmt_value, 2);
 	},
 	NPER: function(rate, payment, pv, fv, type) { //not working yet
+		return Math.log(
+				(payment*(1.0+rate*type) + (-1.0/rate)*fv)
+				/
+				(pv*rate + payment*(1.0 + rate*type))
+			)
+			/ Math.log(1.0+rate);
 	},
 	FV: function(rate, nper, pmt, pv, type) { //not working yet
-		type = (type ? type : 0);
+		return -(
+			pv*Math.pow(1.0+rate, nper)
+			+ pmt * (1.0 + rate*type)
+				* (Math.pow(1.0+rate, nper) - 1.0) / rate
+		);
 	}
 }; 
