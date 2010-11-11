@@ -27,14 +27,15 @@ jQuery.sheet.financefn = {
 		var invert = (payment < 0 ? true : false);
 		payment = Math.abs(payment);
 		
-		var v = (Math.log(
-				(payment*(1.0+rate*type) + (-1.0/rate)*fv)
-				/
-				(pv*rate + payment*(1.0 + rate*type))
-			)
-			/ Math.log(1.0+rate));
-			
-		return (invert ? -v : v);
+		var v = (
+			Math.log(
+				(-payment * (1.0 + rate * type) + (-1.0 / rate) * fv) /
+				(pv * rate + -payment * (1.0 + rate * type))
+			) /
+			Math.log(1.0 + rate)
+		);
+
+		return (invert ? v : -v);
 	},
 	FV: function(rate, nper, pmt, pv, type) { //not working yet
 		pv = (pv ? pv : 0);
