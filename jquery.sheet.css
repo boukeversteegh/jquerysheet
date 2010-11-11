@@ -96,6 +96,12 @@
 	border-spacing: 0px ! important;
 	border-width: 1px ! important;
 	margin-bottom: 20px ! important;
+	cursor: cell;
+	/*Prevent table selection*/
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
 }
 .jSheet tbody
 {

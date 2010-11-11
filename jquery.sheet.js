@@ -654,9 +654,15 @@ jQuery.sheet = {
 					jS.sheetTab(true);
 					
 					if (s.editable) {
+						var formula = jS.obj.formula();
 						pane
 							.mousedown(function(e) {
 								return jS.evt.cellOnMouseDown(e);
+							})
+							.click(function() {
+								formula
+									.select()
+									.focus();
 							})
 							.dblclick(jS.evt.cellOnDblClick);
 					}
