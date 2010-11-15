@@ -657,13 +657,12 @@ jQuery.sheet = {
 						var formula = jS.obj.formula();
 						pane
 							.mousedown(function(e) {
-								return jS.evt.cellOnMouseDown(e);
+								if (jS.isTd(e.target)) {
+									jS.evt.cellOnMouseDown(e);
+									return false;
+								}
 							})
-							.click(function() {
-								formula
-									.select()
-									.focus();
-							})
+							.disableSelection()
 							.dblclick(jS.evt.cellOnDblClick);
 					}
 					
@@ -1330,13 +1329,8 @@ jQuery.sheet = {
 				cellOnMouseDown: function(e) {
 					if (e.shiftKey) {
 						jS.getTdRange(e, jS.obj.formula().val());
-						return false;
 					} else {
-						if (jS.isTd([e.target])) {
-							return jS.cellEdit(jQuery(e.target), true);
-						} else {
-							return true;
-						}
+						jS.cellEdit(jQuery(e.target), true);
 					}			
 				},
 				cellOnDblClick: function(e) {
@@ -1528,6 +1522,7 @@ jQuery.sheet = {
 			isTd: function(o) { /* ensures the the object selected is actually a td that is in a sheet
 									o: object, cell object;
 								*/
+				o = (o[0] ? o[0] : [o]);
 				if (o[0]) {
 					if (!isNaN(o[0].cellIndex)) { 
 						return true;
@@ -4716,3 +4711,13 @@ var arrHelpers = {
 		return a;
 	}
 };
+
+jQuery.fn.extend({ 
+        disableSelection : function() { 
+                this.each(function() { 
+                        this.onselectstart = function() { return false; }; 
+                        this.unselectable = "on"; 
+                        jQuery(this).css('-moz-user-select', 'none'); 
+                }); 
+        } 
+});
