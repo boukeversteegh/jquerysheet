@@ -84,7 +84,7 @@ jQuery.fn.extend({
 jQuery.sheet = {
 	createInstance: function(s, I, origParent) { //s = jQuery.sheet settings, I = jQuery.sheet Instance Integer
 		var jS = {
-			version: '1.2 rc1',
+			version: '1.2.0',
 			i: 0,
 			I: I,
 			sheetCount: 0,
