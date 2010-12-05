@@ -2,52 +2,11 @@
 <head>
 	<script type="text/javascript" src="jquery-1.4.4.min.js"></script>
 	<script type="text/javascript" src="jquery.sheet.engine.js"></script>
-	<script type="text/javascript" src="jquery.sheet.tdop.js"></script>
-	<script type="text/javascript" src="plugins/json3.min.js"></script>
+	<script type="text/javascript" src="jquery.sheet.parser.js"></script>
 	<script type="text/javascript">
-		Object.size = function(obj) {
-			var size = 0, key;
-			for (key in obj) {
-				if (obj.hasOwnProperty(key)) size++;
-			}
-			return size;
-		};
-
-		var r;
-		$(function() {
-			var parse = make_parse();
-			$('#button').click(function() {
-				var val = "";
-				var string = "";
-				try {
-					val = $('#text').val();
-					var tree = parse(val, jQuery.sheet.fn);
-					var treeCleaned = [];
-					
-					var j = 0;
-					alert(tree.length);
-					for (var i = Object.size(jQuery.sheet.fn) - 2; i < tree.length; i++) {
-						treeCleaned[j] = tree[i];
-						j++;
-					}
-					
-					string = JSON.stringify(treeCleaned, ['key', 'name', 'message',
-						'value', 'arity', 'first', 'second', 'third', 'fourth'], 4);
-				} catch (e) {
-					string = JSON.stringify(e, ['name', 'message', 'from', 'to', 'key',
-						'value', 'arity', 'first', 'second', 'third', 'fourth'], 4);
-				}
-				
-				$('#output').html(string);
-			});
-		});
+		
 	</script>
 </head>
 <body>
-	Formula:<br />
-	<textarea id="text" style="width: 100%; height: 200px;"></textarea>
-	<input id="button" type="button" value="click" />
-	Output:<br />
-	<pre id="output"></pre>
 </body>
 </html>
