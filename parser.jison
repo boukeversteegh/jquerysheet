@@ -4,11 +4,11 @@
 %lex
 %%
 \s+				{/* skip whitespace */}
-[0-9]+("."[0-9]+)?\b		{return 'NUMBER';}
-[A-Z][0-9][":"][A-Z][0-9]+	{return 'CELLS';}
-[A-Z][0-9]+			{return 'CELL';}
-(\w)+["("]+			{return 'FN';}
-"*"				{return '*';}
+[A-Z][0-9]([:][A-Z][0-9]+)?	{return 'CELL';}
+[A-Za-z]+                   	{return 'IDENTIFIER';}
+[0-9]+("."[0-9]+)?  		{return 'NUMBER';}
+";"			{return ';';}
+"*"		      {return '*';}
 "/"                   {return '/';}
 "-"                   {return '-';}
 "+"                   {return '+';}
@@ -36,7 +36,7 @@
 
 expressions
  : '=' e EOF
-     {return $1;}
+     {return $2;}
  ;
 
 e
@@ -61,9 +61,12 @@ e
  | PI
      {$$ = Math.PI;}
  | CELL
-     {$$ = cellValue($1);}
- | CELLS
-     {$$ = cellValue($1);}
- | FN e ')'
-     {$$ = FN([$1,$2,$3]);}
+     {$$ = cellValue($2);}
+ | IDENTIFIER '(' expseq ')'
+     {$$ = FN([$1,$3,$4,$5,$6]);}
+ ;
+
+expseq
+ : e
+ | expseq ';' e
  ;

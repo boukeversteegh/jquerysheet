@@ -2,11 +2,35 @@
 <head>
 	<script type="text/javascript" src="jquery-1.4.4.min.js"></script>
 	<script type="text/javascript" src="jquery.sheet.engine.js"></script>
-	<script type="text/javascript" src="jquery.sheet.parser.js"></script>
+	<script type="text/javascript" src="parser.js"></script>
 	<script type="text/javascript">
+		var cellValue = function (o) {
+			if (!cells[o])
+				cells[o] = 99;
+			lg(cells[o]);
+			return cells[o];
+		};
+	
+		var FN = function (o) {
+			var fn = jQuery.sheet.fn[o[0]];
+			lg(cells[o[1]]);
+			return o[1];
+		};
 		
+		var cells = {};
+		var fn = {};
+		var lg = function(o) {
+			$('#log').append('<span>Log: ' + o + '<br></span>');
+		};
+		
+		$(function() {
+			$('body').append('<div>' +
+				parser.parse("=SUM(A1:B5; A6)+ SUM(B7)") + 
+			'</div>');
+		});
 	</script>
 </head>
 <body>
+	<div id="log"></div>
 </body>
 </html>
