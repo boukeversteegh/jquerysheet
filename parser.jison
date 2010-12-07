@@ -4,7 +4,8 @@
 %lex
 %%
 \s+				{/* skip whitespace */}
-[A-Z][0-9]([:][A-Z][0-9]+)?	{return 'CELL';}
+[A-Z][0-9][:][A-Z][0-9]+	{return 'CELL';}
+[A-Z][0-9]+	{return 'CELL';}
 [A-Za-z]+                   	{return 'IDENTIFIER';}
 [0-9]+("."[0-9]+)?  		{return 'NUMBER';}
 ";"			{return ';';}
@@ -61,12 +62,16 @@ e
  | PI
      {$$ = Math.PI;}
  | CELL
-     {$$ = cellValue($2);}
+     {$$ = cellValue($1);}
  | IDENTIFIER '(' expseq ')'
-     {$$ = FN([$1,$3,$4,$5,$6]);}
+     {$$ = FN($1,$3);}
  ;
-
+ 
 expseq
  : e
- | expseq ';' e
+ | e ';' expseq
+ 	{
+ 		$$ = ($.isArray($3) ? $3 : [$3]);
+	 	$$.push($1);
+ 	}
  ;

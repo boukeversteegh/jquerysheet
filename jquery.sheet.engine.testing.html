@@ -1,23 +1,44 @@
 <html>
 <head>
 	<script type="text/javascript" src="jquery-1.4.4.min.js"></script>
+	<script type="text/javascript" src="jquery.sheet.js"></script>
 	<script type="text/javascript" src="jquery.sheet.engine.js"></script>
 	<script type="text/javascript" src="parser.js"></script>
-	<script type="text/javascript">
-		var cellValue = function (o) {
-			if (!cells[o])
-				cells[o] = 99;
-			lg(cells[o]);
-			return cells[o];
+	<script type="text/javascript">	
+		var isArray = function(o) { return $.isArray(0); };
+		Array.prototype.flatten = function flatten(){
+		   var flat = [];
+		   for (var i = 0, l = this.length; i < l; i++){
+		       var type = Object.prototype.toString.call(this[i]).split(' ').pop().split(']').shift().toLowerCase();
+		       if (type) { flat = flat.concat(/^(array|collection|arguments|object)$/.test(type) ? flatten.call(this[i]) : this[i]); }
+		   }
+		   return flat;
 		};
-	
-		var FN = function (o) {
-			var fn = jQuery.sheet.fn[o[0]];
-			lg(cells[o[1]]);
-			return o[1];
+
+		var pushFlat = function(val, array) {
+			for (var i = 0; i < val.length; i++) {
+				array.push(val);
+			}
+			return array;
 		};
 		
-		var cells = {};
+		var cellValue = function (o) {
+			return cells[o];
+			//return o;
+		};
+		
+		
+		var FN = function (fn, vars) {
+			return jQuery.sheet.fn[fn](vars);
+		};
+		
+		var cells = {
+			'A1:B5': 100,
+			'A6': 13,
+			'B7': 45,
+			'B8': 10
+		};
+		
 		var fn = {};
 		var lg = function(o) {
 			$('#log').append('<span>Log: ' + o + '<br></span>');
@@ -25,7 +46,7 @@
 		
 		$(function() {
 			$('body').append('<div>' +
-				parser.parse("=SUM(A1:B5; A6)+ SUM(B7)") + 
+				parser.parse("=SUM(A1:B5;A6;B8)+ SUM(B7)") + 
 			'</div>');
 		});
 	</script>

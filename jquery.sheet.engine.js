@@ -177,14 +177,14 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		}
 		return count;
 	},
-	SUM: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.sum, 0, true, jSE.fn.N); },
-	MAX: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.max, Number.MIN_VALUE, true, jSE.fn.N); },
-	MIN: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.min, Number.MAX_VALUE, true, jSE.fn.N); },
+	SUM: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.sum, 0, true, this.N); },
+	MAX: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.max, Number.MIN_VALUE, true, this.N); },
+	MIN: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.min, Number.MAX_VALUE, true, this.N); },
 	MEAN:		function(values) { return this.SUM(values) / values.length; },
-	ABS	: 		function(v) { return Math.abs(jSE.fn.N(v)); },
-	CEILING: 	function(v) { return Math.ceil(jSE.fn.N(v)); },
-	FLOOR: 		function(v) { return Math.floor(jSE.fn.N(v)); },
-	INT: 		function(v) { return Math.floor(jSE.fn.N(v)); },
+	ABS	: 		function(v) { return Math.abs(this.N(v)); },
+	CEILING: 	function(v) { return Math.ceil(this.N(v)); },
+	FLOOR: 		function(v) { return Math.floor(this.N(v)); },
+	INT: 		function(v) { return Math.floor(this.N(v)); },
 	ROUND: 		function(v, decimals) {
 		return jSE.fn.FIXED(v, (decimals ? decimals : 0), false);
 	},
@@ -226,7 +226,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 			decimals = 2;
 		}
 		var x = Math.pow(10, decimals);
-		var n = String(Math.round(jSE.fn.N(v) * x) / x); 
+		var n = String(Math.round(this.N(v) * x) / x); 
 		var p = n.indexOf('.');
 		if (p < 0) {
 			p = n.length;
