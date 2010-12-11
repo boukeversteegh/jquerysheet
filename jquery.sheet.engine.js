@@ -13,10 +13,66 @@ if (!jQuery.sheet) {
 }
 
 var jSE = jQuery.sheet.engine = { //Calculations Engine
-	calc: function(tdop, spreadsheets) {
-		var parse = function(o) {
-			
-		};
+	calc: function(spreadsheets, options) { //spreadsheets are array, [spreadsheet][cell], like o['TABLE1']['A1];
+		//var parser = this.parser();
+		//The following is grabbed from parser.js
+		for (var i = 0; i < spreadsheets.length; i++) {
+			for (var j = 0; j < spreadsheets[i].length; j++) {
+				for (var k = 0; k < spreadsheets[i][j].length; k++) {
+					var cell = spreadsheets[i][j][k];
+					
+					cell.valueOld = cell.value;
+					var oO = '';
+					if (cell.formula) {
+						try {
+							cell.value = parser.parse(cell.formula, options);
+						} catch(e) {
+							cell.value = '<pre>' + e + '</pre>'; //error
+						}
+					}
+				
+					if (cell.valueOld != cell.value) {
+						cell.td.html(cell.value);
+					}
+				}
+			}
+		}
+	},
+	parseLocation: function(locStr) { // With input of "A1", "B4", "F20", will return [0,0], [3,1], [19,5].
+		for (var firstNum = 0; firstNum < locStr.length; firstNum++) {
+			if (locStr.charCodeAt(firstNum) <= 57) {// 57 == '9'
+				break;
+			}
+		}
+		return {row: parseInt(locStr.substring(firstNum)) - 1, col: this.columnLabelIndex(locStr.substring(0, firstNum)) - 1};
+	},
+	columnLabelIndex: function(str) {
+		// Converts A to 1, B to 2, Z to 26, AA to 27.
+		var num = 0;
+		for (var i = 0; i < str.length; i++) {
+			var digit = str.toUpperCase().charCodeAt(i) - 65 + 1;	   // 65 == 'A'.
+			num = (num * 26) + digit;
+		}
+		return num;
+	},
+	columnLabelString: function(index) {
+		// The index is 1 based.  Convert 1 to A, 2 to B, 25 to Y, 26 to Z, 27 to AA, 28 to AB.
+		// TODO: Got a bug when index > 676.  675==YZ.  676==YZ.  677== AAA, which skips ZA series.
+		//	   In the spirit of billg, who needs more than 676 columns anyways?
+		var b = (index - 1).toString(26).toUpperCase();   // Radix is 26.
+		var c = [];
+		for (var i = 0; i < b.length; i++) {
+			var x = b.charCodeAt(i);
+			if (i <= 0 && b.length > 1) {				   // Leftmost digit is special, where 1 is A.
+				x = x - 1;
+			}
+			if (x <= 57) {								  // x <= '9'.
+				c.push(String.fromCharCode(x - 48 + 65)); // x - '0' + 'A'.
+			} else {
+				c.push(String.fromCharCode(x + 10));
+			}
+		}
+		return c.join("");
 	},
 	cFN: {//cFN = compiler functions, usually mathmatical
 		sum: 	function(x, y) { return x + y; },
@@ -56,99 +112,6 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 		lt: 	'&lt;',
 		gt: 	'&gt;',
 		nbsp: 	'&nbps;'
-	},
-	parseFormula: function(formula, dependencies, thisTableI) { // Parse formula (without "=" prefix) like "123+SUM(A1:A6)/D5" into JavaScript expression string.
-		var nrows = null;
-		var ncols = null;
-		if (jSE.calcState.cellProvider != null) {
-			nrows = jSE.calcState.cellProvider.nrows;
-			ncols = jSE.calcState.cellProvider.ncols;
-		}
-		
-		//Cell References Range - Other Tables
-		formula = formula.replace(jSE.regEx.remoteCellRange, 
-			function(ignored, TableStr, tableI, startColStr, startRowStr, endColStr, endRowStr) {
-				var res = [];
-				var startCol = jSE.columnLabelIndex(startColStr);
-				var startRow = parseInt(startRowStr);
-				var endCol   = jSE.columnLabelIndex(endColStr);
-				var endRow   = parseInt(endRowStr);
-				if (ncols != null) {
-					endCol = Math.min(endCol, ncols);
-				}
-				if (nrows != null) {
-					endRow = Math.min(endRow, nrows);
-				}
-				for (var r = startRow; r <= endRow; r++) {
-					for (var c = startCol; c <= endCol; c++) {
-						res.push("SHEET" + (tableI) + ":" + jSE.columnLabelString(c) + r);
-					}
-				}
-				return "[" + res.join(",") + "]";
-			}
-		);
-		
-		//Cell References Fixed - Other Tables
-		formula = formula.replace(jSE.regEx.remoteCell, 
-			function(ignored, tableStr, tableI, colStr, rowStr) {
-				tableI = parseInt(tableI) - 1;
-				colStr = colStr.toUpperCase();
-				if (dependencies != null) {
-					dependencies['SHEET' + (tableI) + ':' + colStr + rowStr] = [parseInt(rowStr), jSE.columnLabelIndex(colStr), tableI];
-				}
-				return "(jSE.calcState.cellProvider.getCell((" + (tableI) + "),(" + (rowStr) + "),\"" + (colStr) + "\").getValue())";
-			}
-		);
-		
-		//Cell References Range
-		formula = formula.replace(jSE.regEx.range, 
-			function(ignored, startColStr, startRowStr, endColStr, endRowStr) {
-				var res = [];
-				var startCol = jSE.columnLabelIndex(startColStr);
-				var startRow = parseInt(startRowStr);
-				var endCol   = jSE.columnLabelIndex(endColStr);
-				var endRow   = parseInt(endRowStr);
-				if (ncols != null) {
-					endCol = Math.min(endCol, ncols);
-				}
-				if (nrows != null) {
-					endRow = Math.min(endRow, nrows);
-				}
-				for (var r = startRow; r <= endRow; r++) {
-					for (var c = startCol; c <= endCol; c++) {
-						res.push(jSE.columnLabelString(c) + r);
-					}
-				}
-				return "[" + res.join(",") + "]";
-			}
-		);
-		
-		//Cell References Fixed
-		formula = formula.replace(jSE.regEx.cell, 
-			function(ignored, colStr, rowStr) {
-				colStr = colStr.toUpperCase();
-				if (dependencies != null) {
-					dependencies['SHEET' + thisTableI + ':' + colStr + rowStr] = [parseInt(rowStr), jSE.columnLabelIndex(colStr), thisTableI];
-				}
-				return "(jSE.calcState.cellProvider.getCell((" + thisTableI + "),(" + (rowStr) + "),\"" + (colStr) + "\").getValue())";
-			}
-		);
-		return formula;
-	},	
-	parseFormulaStatic: function(formula) { // Parse static formula value like "123.0" or "hello" or "'hello world" into JavaScript value.
-		if (formula == null) {
-			return null;
-		} else {
-			var formulaNum = formula.replace(jSE.regEx.n, '');
-			var value = parseFloat(formulaNum);
-			if (isNaN(value)) {
-				value = parseInt(formulaNum);
-			}
-			if (isNaN(value)) {
-				value = (formula.charAt(0) == "\'" ? formula.substring(1): formula);
-			}
-			return value;
-		}
 	}
 };
 
@@ -157,14 +120,15 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		return jQuery(v);
 	},
 	IMG: function(v) {
-		return jS.controlFactory.safeImg(v, jSE.calcState.row, jSE.calcState.col);
+		return jQuery('<img />')
+			.attr('src', v);
 	},
 	AVERAGE:	function(values) { 
 		var arr =arrHelpers.foldPrepare(values, arguments);
-		return jSE.fn.SUM(arr) / jSE.fn.COUNT(arr); 
+		return this.SUM(arr) / this.COUNT(arr); 
 	},
 	AVG: 		function(values) { 
-		return jSE.fn.AVERAGE(values);
+		return this.AVERAGE(values);
 	},
 	COUNT: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.count, 0); },
 	COUNTA:		function(v) {
@@ -186,10 +150,10 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 	FLOOR: 		function(v) { return Math.floor(this.N(v)); },
 	INT: 		function(v) { return Math.floor(this.N(v)); },
 	ROUND: 		function(v, decimals) {
-		return jSE.fn.FIXED(v, (decimals ? decimals : 0), false);
+		return this.FIXED(v, (decimals ? decimals : 0), false);
 	},
-	RAND: 		function(v) { return Math.random(); },
-	RND: 		function(v) { return Math.random(); },
+	RAND: 		function() { return Math.random(); },
+	RND: 		function() { return Math.random(); },
 	TRUE: 		function() { return 'TRUE'; },
 	FALSE: 		function() { return 'FALSE'; },
 	NOW: 		function() { return new Date ( ); },
@@ -207,19 +171,8 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		var d = new Date(v);
 		return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
 	},
-	IF:			function(v, t, f){
-		t = jSE.cFN.clean(t);
-		f = jSE.cFN.clean(f);
-		
-		try { v = eval(v); } catch(e) {};
-		try { t = eval(t); } catch(e) {};
-		try { t = eval(t); } catch(e) {};
-
-		if (v == 'true' || v == true || v > 0 || v == 'TRUE') {
-			return t;
-		} else {
-			return f;
-		}
+	IF:			function(expression, resultTrue, resultFalse){
+		return (expression ? resultTrue : resultFalse);
 	},
 	FIXED: 		function(v, decimals, noCommas) { 
 		if (decimals == null) {
@@ -285,7 +238,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 			symbol = '$';
 		}
 		
-		var r = jSE.fn.FIXED(v, decimals, false);
+		var r = this.FIXED(v, decimals, false);
 		
 		if (v >= 0) {
 			return symbol + r; 

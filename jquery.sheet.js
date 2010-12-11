@@ -88,7 +88,7 @@ jQuery.sheet = {
 			i: 0,
 			I: I,
 			sheetCount: 0,
-			s: {},//s = settings object, used for shorthand, populated from jQuery.sheet
+			spreadsheets: [], //the actual spreadsheets are going to be populated here
 			obj: {//obj = object references
 				//Please note, class references use the tag name because it's about 4 times faster
 				autoFiller:			function() { return jQuery('#' + jS.id.autoFiller + jS.i); },
@@ -237,6 +237,26 @@ jQuery.sheet = {
 				delete jQuery.sheet.instance[I];
 				delete jS;
 				delete origParent.sheetInstance;
+			},
+			spreadsheetsToArray: function(o) {
+				o = (o ? o : jS.obj.sheetAll());
+				
+				$(o).each(function(i) {
+					jS.spreadsheets[i] = [];
+					$(this).find('tr').each(function(j) {
+						jS.spreadsheets[i][j] = [];
+						$(this).find('td').each(function(k) {
+							var td = $(this);
+							jS.spreadsheets[i][j][k] = {
+								formula: td.attr('formula'),
+								value: jQuery.trim(td.text()),
+								td: td
+							};
+						});
+					});
+				});
+				
+				return jS.spreadsheets;
 			},
 			controlFactory: { /* controlFactory creates the different objects requied by sheet */
 				addRowMulti: function(qty, isBefore, skipFormulaReparse) { /* creates multi rows
@@ -744,7 +764,7 @@ jQuery.sheet = {
 					o.legend = (o.legend ? o.legend : o.data);
 					
 					if (Raphael) {
-						jQuery(document).one('calculation', function() {
+						origParent.one('calculation', function() {
 							var width = o.chart.width();
 							var height = o.chart.height();
 							var r = Raphael(o.chart[0]);
@@ -909,7 +929,7 @@ jQuery.sheet = {
 							}
 						}
 						
-						jQuery(document).one('calculation', function() {
+						origParent.one('calculation', function() {
 							var v = jS.controlFactory.input.getValue(o);
 							o.val(v);
 						});
@@ -935,7 +955,7 @@ jQuery.sheet = {
 							}
 						}
 						
-						jQuery(document).one('calculation', function() {
+						origParent.one('calculation', function() {
 							radio.find('input')
 								.attr('name', radio.parent().attr('id') + '_radio');
 							var val = jS.controlFactory.input.getValue(radio);
@@ -960,7 +980,7 @@ jQuery.sheet = {
 							)
 							.append('<span>' + v + '</span><br />');
 							
-						jQuery(document).one('calculation', function() {
+						origParent.one('calculation', function() {
 							o.find('input').removeAttr('CHECKED');
 							o.find('input[value="' + o.parent().attr('selectedvalue') + '"]').attr('CHECKED', 'TRUE');
 						});
@@ -2320,6 +2340,7 @@ jQuery.sheet = {
 					v = v.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;')
 						.replace(/ /g, '&nbsp;')
 						.replace(/>/g, '&gt;')
+
 						.replace(/</g, '&lt;')
 						.replace(/\n/g, '<br>')
 						.replace(/\r/g, '<br>');
@@ -2556,10 +2577,19 @@ jQuery.sheet = {
 					jS.tableCellProviders[tableI] = new jS.tableCellProvider(tableI);
 				}
 				if (!s.calcOff) {
-					jS.tableCellProviders[tableI].cells = {};
-					cE.calc(jS.tableCellProviders[tableI], jS.context, fuel);
+					if (jSE) { //If the new engine is alive, use it
+						jSE.calc(jS.spreadsheetsToArray(), {
+							cellValue: function(id) {
+								var loc = jSE.parseLocation(id);
+								return jS.spreadsheets[jS.i][loc.row][loc.col].value;
+							}
+						});
+					} else {
+						jS.tableCellProviders[tableI].cells = {};
+						cE.calc(jS.tableCellProviders[tableI], jS.context, fuel);
+					}
 					
-					jQuery(document).trigger('calculation');
+					origParent.trigger('calculation');
 					jS.isSheetEdit = false;
 				}
 				jS.log('Calculation Ended');
@@ -4317,8 +4347,6 @@ jQuery.sheet = {
 		var $window = jQuery(window);
 		
 		//initialize this instance of sheet
-		jS.s = s;
-		
 		s.fnBefore();
 		
 		var o; var emptyFN = function() {};
@@ -4358,6 +4386,7 @@ jQuery.sheet = {
 			s.boxModelCorrection = 0;
 		}
 		
+
 		if (!jQuery.scrollTo) {
 			jS.followMe = emptyFN;
 		}
@@ -4404,7 +4433,7 @@ jQuery.sheet = {
 		}
 		
 		jS.openSheet(o, s.forceColWidthsOnStartup);
-		
+
 		return jS;
 	},
 	makeTable : {

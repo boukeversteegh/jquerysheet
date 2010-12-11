@@ -44,9 +44,17 @@
 			$('#log').append('<span>Log: ' + o + '<br></span>');
 		};
 		
+		var parsed;
+		
+		try {
+			parsed = parser.parse("=SUM(A1:B5;A6;B8) + SUM(B7) + SUM(B7) + SUM(B7) + SUM(B7)");
+		} catch(e) {
+			parsed = '<pre>' + e + '</pre>';
+		}
+		
 		$(function() {
 			$('body').append('<div>' +
-				parser.parse("=SUM(A1:B5;A6;B8)+ SUM(B7)") + 
+				parsed + 
 			'</div>');
 		});
 	</script>
