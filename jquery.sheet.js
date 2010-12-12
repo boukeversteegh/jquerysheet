@@ -2566,6 +2566,80 @@ jQuery.sheet = {
 				
 				jS.cellUndoable.add(uiCell);
 			},
+			updateCellValue: function(table, row, col) {
+				var cell = jS.spreadsheets[table][row][col];
+				
+				cell.valueOld = cell.value; //we detect the last value, so that we don't have to update all cell, thus saving resources
+
+				if (cell.formula) {
+					if (cell.state) { //we set cell state so that if in the stack, it comes back to the cell, it knows
+						cell.value = " #Error: Loop Detected# ";
+					} else {
+						cell.state = 'red';
+						try {
+							if (cell.formula.charAt(0) == '=') {
+								cell.formula = cell.formula.substring(1, cell.formula.length);
+							}
+							
+							cell.value = parser.parse(cell.formula, jS.cellIdHandlers);
+						} catch(e) {
+							cell.value = '<pre>' + e + '</pre>'; //error
+						}
+					}
+				}
+				
+				cell.state = null;
+			
+				if (cell.valueOld != cell.value) {
+					cell.td.html(cell.value + '');
+				}
+				
+				return cell.value;
+			},
+			cellIdHandlers: {
+				cellValue: function(id) { //Example: A1
+					var loc = jSE.parseLocation(id);
+					return jS.updateCellValue(jS.i, loc.row, loc.col);
+				},
+				cellRangeValue: function(ids) {//Example: A1:B1
+					ids = ids.split(':');
+					var locStart = jSE.parseLocation(ids[0]);
+					var locEnd = jSE.parseLocation(ids[1]);
+					var result = [];
+					
+					for (var i = locEnd.row; i >= locStart.row; i--) {
+						for (var j = locEnd.col; j >= locStart.col; j--) {
+							result.push(jS.updateCellValue(jS.i, i, j));
+						}
+					}
+					
+					if (result.length) {
+						return result;
+					}
+				},
+				remoteCellValue: function(id) {//Example: TABLE1:A1
+					id = id.split(':');
+					var loc = jSE.parseLocation(id[1]);
+					return jS.updateCellValue((id[0].replace(/table/gi,'') * 1) - 1, loc.row, loc.col);
+				},
+				remoteCellRangeValue: function(ids) {//Example: TABLE1:A1:B2
+					ids = ids.split(':');
+					var table = (ids[0].replace(/table/gi,'') * 1) - 1;
+					var locStart = jSE.parseLocation(ids[1]);
+					var locEnd = jSE.parseLocation(ids[2]);
+					var result = [];
+					
+					for (var i = locEnd.row; i >= locStart.row; i--) {
+						for (var j = locEnd.col; j >= locStart.col; j--) {
+							result.push(jS.updateCellValue(table, i, j));
+						}
+					}
+					
+					if (result.length) {
+						return result;
+					}
+				}
+			},
 			context: {},
 			calc: function(tableI, fuel) { /* harnesses calculations engine's calculation function
 												tableI: int, the current table integer;
@@ -2578,50 +2652,7 @@ jQuery.sheet = {
 				}
 				if (!s.calcOff) {
 					if (jSE) { //If the new engine is alive, use it
-						jSE.calc(jS.spreadsheetsToArray(), {
-							cellValue: function(id) { //Example: A1
-								var loc = jSE.parseLocation(id);
-								return jS.spreadsheets[jS.i][loc.row][loc.col].value;
-							},
-							cellRangeValue: function(ids) {//Example: A1:B1
-								ids = ids.split(':');
-								var locStart = jSE.parseLocation(ids[0]);
-								var locEnd = jSE.parseLocation(ids[1]);
-								var result = [];
-								
-								for (var i = locEnd.row; i >= locStart.row; i--) {
-									for (var j = locEnd.col; j >= locStart.col; j--) {
-										result.push(jS.spreadsheets[jS.i][i][j].value);
-									}
-								}
-								
-								if (result.length) {
-									return result;
-								}
-							},
-							remoteCellValue: function(id) {//Example: TABLE1:A1
-								id = id.split(':');
-								var loc = jSE.parseLocation(id[1]);
-								return jS.spreadsheets[(id[0].replace(/table/gi,'') * 1) - 1][loc.row][loc.col].value;
-							},
-							remoteCellRangeValue: function(ids) {//Example: TABLE1:A1:B2
-								ids = ids.split(':');
-								var table = (ids[0].replace(/table/gi,'') * 1) - 1;
-								var locStart = jSE.parseLocation(ids[1]);
-								var locEnd = jSE.parseLocation(ids[2]);
-								var result = [];
-								
-								for (var i = locEnd.row; i >= locStart.row; i--) {
-									for (var j = locEnd.col; j >= locStart.col; j--) {
-										result.push(jS.spreadsheets[table][i][j].value);
-									}
-								}
-								
-								if (result.length) {
-									return result;
-								}
-							}
-						});
+						jSE.calc(jS.spreadsheetsToArray(), jS.updateCellValue);
 					} else {
 						jS.tableCellProviders[tableI].cells = {};
 						cE.calc(jS.tableCellProviders[tableI], jS.context, fuel);
@@ -4451,6 +4482,21 @@ jQuery.sheet = {
 		//Extend the calculation engine with finance functions
 		if (jQuery.sheet.financefn) {
 			cE.fn = jQuery.extend(cE.fn, jQuery.sheet.financefn);
+		}
+		
+		if (jQuery.sheet.fn) { //If the new calculations engine is alive, fill it too, we will remove above when no longer needed.
+			//Extend the calculation engine plugins
+			jQuery.sheet.fn = jQuery.extend(jQuery.sheet.fn, s.calculations);
+		
+			//Extend the calculation engine with advanced functions
+			if (jQuery.sheet.advancedfn) {
+				jQuery.sheet.fn = jQuery.extend(jQuery.sheet.fn, jQuery.sheet.advancedfn);
+			}
+		
+			//Extend the calculation engine with finance functions
+			if (jQuery.sheet.financefn) {
+				jQuery.sheet.fn = jQuery.extend(jQuery.sheet.fn, jQuery.sheet.financefn);
+			}
 		}
 		
 		//this makes cells and functions case insensitive

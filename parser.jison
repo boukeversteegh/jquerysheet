@@ -55,8 +55,8 @@
 %% /* language grammar */
 
 expressions
- : '=' e EOF
-     {return $2;}
+ : e EOF
+     {return $1;}
  ;
 
 e

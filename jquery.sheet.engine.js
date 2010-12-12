@@ -1,6 +1,6 @@
 /*
 jQuery.sheet() The Web Based Spreadsheet - Calculations Engine
-$Id$
+$Id:$
 http://code.google.com/p/jquerysheet/
 		
 Copyright (C) 2010 Robert Plummer
@@ -13,27 +13,13 @@ if (!jQuery.sheet) {
 }
 
 var jSE = jQuery.sheet.engine = { //Calculations Engine
-	calc: function(spreadsheets, options) { //spreadsheets are array, [spreadsheet][cell], like o['TABLE1']['A1];
+	calc: function(spreadsheets, go) { //spreadsheets are array, [spreadsheet][cell], like o['TABLE1']['A1];
 		//var parser = this.parser();
 		//The following is grabbed from parser.js
 		for (var i = 0; i < spreadsheets.length; i++) {
 			for (var j = 0; j < spreadsheets[i].length; j++) {
 				for (var k = 0; k < spreadsheets[i][j].length; k++) {
-					var cell = spreadsheets[i][j][k];
-					
-					cell.valueOld = cell.value;
-					var oO = '';
-					if (cell.formula) {
-						try {
-							cell.value = parser.parse(cell.formula, options);
-						} catch(e) {
-							cell.value = '<pre>' + e + '</pre>'; //error
-						}
-					}
-				
-					if (cell.valueOld != cell.value) {
-						cell.td.html(cell.value);
-					}
+					go(i, j, k);
 				}
 			}
 		}
