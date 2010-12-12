@@ -225,7 +225,9 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		}
 		return v;
 	},
-	HYPERLINK: function(link, name) {
+	HYPERLINK: function(o) {
+		var link = o[0];
+		var name = o[1];
 		name = (name ? name : 'LINK');
 		return jQuery('<a href="' + link + '" target="_new" class="clickable">' + name + '</a>');
 	},
@@ -262,108 +264,91 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 	SQRT: function(v) {
 		return Math.sqrt(v);
 	},
-	//Note, form objects are experimental, they don't work always as expected
-	INPUT: {
-		SELECT:	function(v, noBlank) {
-			if (s.editable) {
-				v = arrHelpers.foldPrepare(v, arguments, true);
-				return jS.controlFactory.input.select(v, noBlank);
-			} else {
-				return jS.controlFactory.input.getValue(v);
-			}
-		},
-		RADIO: function(v) {
-			if (s.editable) {
-				v = arrHelpers.foldPrepare(v, arguments, true);
-				return jS.controlFactory.input.radio(v);
-			} else {
-				return jS.controlFactory.input.getValue(v);
-			}
-		},
-		CHECKBOX: function(v) {
-			if (s.editable) {
-				v = arrHelpers.foldPrepare(v, arguments)[0];
-				return jS.controlFactory.input.checkbox(v);
-			} else {
-				return jS.controlFactory.input.getValue(v);
-			}
-		},
-		VAL: function(v) {
+	SELECTINPUT:	function(v, noBlank) {
+		if (s.editable) {
+			v = arrHelpers.foldPrepare(v, arguments, true);
+			return jS.controlFactory.input.select(v, noBlank);
+		} else {
 			return jS.controlFactory.input.getValue(v);
-		},
-		SELECTVAL:	function(v) {
-			return jS.controlFactory.input.getValue(v);
-		},
-		RADIOVAL: function(v) {
-			return jS.controlFactory.input.getValue(v);
-		},
-		CHECKBOXVAL: function(v) {
-			return jS.controlFactory.input.getValue(v);
-		},
-		ISCHECKED:		function(v) {
-			var val = jS.controlFactory.input.getValue(v);
-			var length = jQuery(v).find('input[value="' + val + '"]').length;
-			if (length) {
-				return 'TRUE';
-			} else {
-				return 'FALSE';
-			}
 		}
 	},
-	CHART: {
-		BAR:	function(values, legend, title) {
-			return jS.controlFactory.chart({
-				type: 'bar',
-				data: values,
-				legend: legend,
-				title: title
-			});
-		},
-		HBAR:	function(values, legend, title) {
-			return jS.controlFactory.chart({
-				type: 'hbar',
-				data: values,
-				legend: legend,
-				title: title
-			});
-		},
-		LINE:	function(valuesX, valuesY, legendX, legendY, title) {
-			return jS.controlFactory.chart({
-				type: 'line',
-				x: {
-					data: valuesX,
-					legend: legendX
-				},
-				y: {
-					data: valuesY,
-					legend: legendY
-				},
-				title: title
-			});
-		},
-		PIE:	function(values, legend, title) {
-			return jS.controlFactory.chart({
-				type: 'pie',
-				data: values,
-				legend: legend,
-				title: title
-			});
-		},
-		DOT:	function(valuesX, valuesY, values,legendX, legendY, title) {
-			return jS.controlFactory.chart({
-				type: 'dot',
-				values: values,
-				x: {
-					data: valuesX,
-					legend: legendX
-				},
-				y: {
-					data: valuesY,
-					legend: legendY
-				},
-				title: title
-			});
+	RADIOINPUT: function(v) {
+		if (s.editable) {
+			v = arrHelpers.foldPrepare(v, arguments, true);
+			return jS.controlFactory.input.radio(v);
+		} else {
+			return jS.controlFactory.input.getValue(v);
 		}
+	},
+	CHECKBOX: function(v) {
+		if (s.editable) {
+			v = arrHelpers.foldPrepare(v, arguments)[0];
+			return jS.controlFactory.input.checkbox(v);
+		} else {
+			return jS.controlFactory.input.getValue(v);
+		}
+	},
+	ISCHECKED:		function(v) {
+		var val = jS.controlFactory.input.getValue(v);
+		var length = jQuery(v).find('input[value="' + val + '"]').length;
+		if (length) {
+			return 'TRUE';
+		} else {
+			return 'FALSE';
+		}
+	},
+	BARCHART:	function(values, legend, title) {
+		return jQuery.sheet.instance[0].controlFactory.chart({
+			type: 'bar',
+			data: values,
+			legend: legend,
+			title: title
+		});
+	},
+	HBARCHART:	function(values, legend, title) {
+		return jS.controlFactory.chart({
+			type: 'hbar',
+			data: values,
+			legend: legend,
+			title: title
+		});
+	},
+	LINECHART:	function(valuesX, valuesY, legendX, legendY, title) {
+		return jS.controlFactory.chart({
+			type: 'line',
+			x: {
+				data: valuesX,
+				legend: legendX
+			},
+			y: {
+				data: valuesY,
+				legend: legendY
+			},
+			title: title
+		});
+	},
+	PIECHART:	function(values, legend, title) {
+		return jS.controlFactory.chart({
+			type: 'pie',
+			data: values,
+			legend: legend,
+			title: title
+		});
+	},
+	DOTCHART:	function(valuesX, valuesY, values,legendX, legendY, title) {
+		return jS.controlFactory.chart({
+			type: 'dot',
+			values: values,
+			x: {
+				data: valuesX,
+				legend: legendX
+			},
+			y: {
+				data: valuesY,
+				legend: legendY
+			},
+			title: title
+		});
 	},
 	CELLREF: function(v, i) {
 		var td;

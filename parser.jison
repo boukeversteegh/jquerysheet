@@ -4,9 +4,12 @@
 %lex
 %%
 \s+				{/* skip whitespace */}
-[A-Z][0-9][:][A-Z][0-9]+	{return 'CELL';}
+'TABLE'[0-9][:][A-Z][0-9][:][A-Z][0-9]+ 	{return 'REMOTECELLRANGE';}
+'TABLE'[0-9][:][A-Z][0-9]+ 	{return 'REMOTECELL';}
+[A-Z][0-9][:][A-Z][0-9]+	{return 'CELLRANGE';}
 [A-Z][0-9]+			{return 'CELL';}
-["](\\.|[^"])*["]		{return 'STRINGLITERAL';}
+'"'("\\"["]|[^"])*'"'		{return 'STRINGL';}
+"'"('\\'[']|[^'])*"'"		{return 'STRING';}
 [A-Za-z]+ 			{return 'IDENTIFIER';}
 [0-9]([0-9]?)[-/][0-9]([0-9]?)[-/][0-9]([0-9]?)([0-9]?)([0-9]?) {return 'DATE';}
 [0-9]+("."[0-9]+)?  		{return 'NUMBER';}
@@ -46,7 +49,6 @@
 %left '*' '/'
 %left '^'
 %left UMINUS
-%left '"' "'"
 
 %start expressions
 
@@ -85,21 +87,29 @@ e
 	| '(' e ')'
 		{$$ = $2;}
 	| DATE
-		{
-			var d = new Date($1).toString();
-		}
+		{/*$$ = new Date($1).toString();*/}
 	| NUMBER
 		{$$ = Number(yytext);}
 	| E
 		{$$ = Math.E;}
 	| CELL
 		{$$ = arguments[6].cellValue($1);}
-	| STRINGLITERAL
+	| CELLRANGE
+		{$$ = arguments[6].cellRangeValue($1);}
+	| REMOTECELL
+		{$$ = arguments[6].remoteCellValue($1);}
+	| REMOTECELLRANGE
+		{$$ = arguments[6].remoteCellRangeValue($1);}
+	| STRING
 		{$$ = $1.substring(1, $1.length - 1);}	
 	| IDENTIFIER '(' ')'
 		{$$ = jQuery.sheet.fn[$1]();}
 	| IDENTIFIER '(' expseq ')'
-		{$$ = jQuery.sheet.fn[$1]($3);}
+		{
+			if (jQuery.isArray($3))
+		 		$3.reverse();
+			$$ = jQuery.sheet.fn[$1](arguments = $3);
+		}
  ;
 
 expseq

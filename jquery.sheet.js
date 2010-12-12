@@ -2579,9 +2579,47 @@ jQuery.sheet = {
 				if (!s.calcOff) {
 					if (jSE) { //If the new engine is alive, use it
 						jSE.calc(jS.spreadsheetsToArray(), {
-							cellValue: function(id) {
+							cellValue: function(id) { //Example: A1
 								var loc = jSE.parseLocation(id);
 								return jS.spreadsheets[jS.i][loc.row][loc.col].value;
+							},
+							cellRangeValue: function(ids) {//Example: A1:B1
+								ids = ids.split(':');
+								var locStart = jSE.parseLocation(ids[0]);
+								var locEnd = jSE.parseLocation(ids[1]);
+								var result = [];
+								
+								for (var i = locEnd.row; i >= locStart.row; i--) {
+									for (var j = locEnd.col; j >= locStart.col; j--) {
+										result.push(jS.spreadsheets[jS.i][i][j].value);
+									}
+								}
+								
+								if (result.length) {
+									return result;
+								}
+							},
+							remoteCellValue: function(id) {//Example: TABLE1:A1
+								id = id.split(':');
+								var loc = jSE.parseLocation(id[1]);
+								return jS.spreadsheets[(id[0].replace(/table/gi,'') * 1) - 1][loc.row][loc.col].value;
+							},
+							remoteCellRangeValue: function(ids) {//Example: TABLE1:A1:B2
+								ids = ids.split(':');
+								var table = (ids[0].replace(/table/gi,'') * 1) - 1;
+								var locStart = jSE.parseLocation(ids[1]);
+								var locEnd = jSE.parseLocation(ids[2]);
+								var result = [];
+								
+								for (var i = locEnd.row; i >= locStart.row; i--) {
+									for (var j = locEnd.col; j >= locStart.col; j--) {
+										result.push(jS.spreadsheets[table][i][j].value);
+									}
+								}
+								
+								if (result.length) {
+									return result;
+								}
 							}
 						});
 					} else {
