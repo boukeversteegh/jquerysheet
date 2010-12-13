@@ -13,9 +13,7 @@ if (!jQuery.sheet) {
 }
 
 var jSE = jQuery.sheet.engine = { //Calculations Engine
-	calc: function(spreadsheets, go) { //spreadsheets are array, [spreadsheet][cell], like o['TABLE1']['A1];
-		//var parser = this.parser();
-		//The following is grabbed from parser.js
+	calc: function(spreadsheets, go) { //spreadsheets are array, [spreadsheet][row][cell], like A1 = o[0][0][0];
 		for (var i = 0; i < spreadsheets.length; i++) {
 			for (var j = 0; j < spreadsheets[i].length; j++) {
 				for (var k = 0; k < spreadsheets[i][j].length; k++) {
@@ -251,28 +249,16 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		return Math.sqrt(v);
 	},
 	SELECTINPUT:	function(v, noBlank) {
-		if (s.editable) {
-			v = arrHelpers.foldPrepare(v, arguments, true);
-			return jS.controlFactory.input.select(v, noBlank);
-		} else {
-			return jS.controlFactory.input.getValue(v);
-		}
+		v = arrHelpers.foldPrepare(v, arguments, true);
+		return jS.controlFactory.input.select(v, noBlank);
 	},
 	RADIOINPUT: function(v) {
-		if (s.editable) {
-			v = arrHelpers.foldPrepare(v, arguments, true);
-			return jS.controlFactory.input.radio(v);
-		} else {
-			return jS.controlFactory.input.getValue(v);
-		}
+		v = arrHelpers.foldPrepare(v, arguments, true);
+		return jS.controlFactory.input.radio(v);
 	},
 	CHECKBOX: function(v) {
-		if (s.editable) {
-			v = arrHelpers.foldPrepare(v, arguments)[0];
-			return jS.controlFactory.input.checkbox(v);
-		} else {
-			return jS.controlFactory.input.getValue(v);
-		}
+		v = arrHelpers.foldPrepare(v, arguments)[0];
+		return jS.controlFactory.input.checkbox(v);
 	},
 	ISCHECKED:		function(v) {
 		var val = jS.controlFactory.input.getValue(v);

@@ -176,6 +176,7 @@ jQuery.sheet = {
 				cellHighlighted: 		'jSheetCellHighighted',
 				chart:					'jSheetChart',
 				controls:				'jSheetControls',
+				error:				'jSheetError',
 				formula: 				'jSheetControls_formula',
 				inlineMenu:				'jSheetInlineMenu',
 				fullScreen:				'jSheetFullScreen',
@@ -201,6 +202,7 @@ jQuery.sheet = {
 				uiCellHighlighted: 		'ui-state-highlight',
 				uiControl: 				'ui-widget-header ui-corner-top',
 				uiControlTextBox:		'ui-widget-content',
+				uiError:			'ui-state-error',
 				uiFullScreen:			'ui-widget-content ui-corner-all',
 				uiInPlaceEdit:			'ui-state-active',
 				uiMenu:					'ui-state-highlight',
@@ -238,23 +240,41 @@ jQuery.sheet = {
 				delete jS;
 				delete origParent.sheetInstance;
 			},
-			spreadsheetsToArray: function(o) {
-				o = (o ? o : jS.obj.sheetAll());
-				
-				$(o).each(function(i) {
-					jS.spreadsheets[i] = [];
-					$(this).find('tr').each(function(j) {
-						jS.spreadsheets[i][j] = [];
-						$(this).find('td').each(function(k) {
-							var td = $(this);
-							jS.spreadsheets[i][j][k] = {
-								formula: td.attr('formula'),
-								value: jQuery.trim(td.text()),
-								td: td
-							};
+			spreadsheetsToArray: function(forceRebuild) {
+				if (forceRebuild || jS.spreadsheets.length == 0) {	
+					var loc = jS.sheetSize();
+					for (var i = 0; i < jS.sheetCount; i++) {
+						jS.spreadsheets[i] = [];
+						var loc = jS.sheetSize();
+						for (var j = 0; j <= loc[0]; j++) {
+							jS.spreadsheets[i][j] = [];
+							for (var k = 0; k <= loc[1]; k++) {
+								var td = jQuery(document.getElementById(jS.getTdId(i, j, k)));
+								jS.spreadsheets[i][j][k] = {
+									formula: td.attr('formula'),
+									value: jQuery.trim(td.text()),
+									td: td
+								};
+							}
+						}
+					}
+					/*
+					jQuery(o).each(function(i) {
+						jS.spreadsheets[i] = [];
+						jQuery(this).find('tr').each(function(j) {
+							jS.spreadsheets[i][j] = [];
+							jQuery(this).children().each(function(k) {
+								var td = $(this);
+								jS.spreadsheets[i][j][k] = {
+									formula: td.attr('formula'),
+									value: jQuery.trim(td.text()),
+									td: td,
+									state: null
+								};
+							});
 						});
-					});
-				});
+					});*/
+				}
 				
 				return jS.spreadsheets;
 			},
@@ -914,77 +934,88 @@ jQuery.sheet = {
 				},
 				input: { /* inputs for use from the calculations engine	*/
 					select: function(v, noBlank) {
-						var o = jQuery('<select style="width: 100%;" class="clickable" />')
-							.change(function() {
-								jS.controlFactory.input.setValue(jQuery(this));
-							});
+						if (s.editable) {
+							var o = jQuery('<select style="width: 100%;" class="clickable" />')
+								.change(function() {
+									jS.controlFactory.input.setValue(jQuery(this));
+								});
 							
-						if (!noBlank) {
-							o.append('<option value="">Select a value</option>');
-						}
-							
-						for (var i = 0; i < (v.length <= 50 ? v.length : 50); i++) {
-							if (v[i]) {
-								o.append('<option value="' + v[i] + '">' + v[i] + '</option>');
+							if (!noBlank) {
+								o.append('<option value="">Select a value</option>');
 							}
+							
+							for (var i = 0; i < (v.length <= 50 ? v.length : 50); i++) {
+								if (v[i]) {
+									o.append('<option value="' + v[i] + '">' + v[i] + '</option>');
+								}
+							}
+						
+							origParent.one('calculation', function() {
+								var v = jS.controlFactory.input.getValue(o);
+								o.val(v);
+							});
+							return o;
+						} else {
+							return jS.controlFactory.input.getValue(v);
 						}
-						
-						origParent.one('calculation', function() {
-							var v = jS.controlFactory.input.getValue(o);
-							o.val(v);
-						});
-						
-						return o;
 					},
 					radio: function(v) {
-						var radio = jQuery('<span class="clickable" />');
-						for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
-							if (v[i]) {
-								radio
-									.append(
-										jQuery('<input type="radio" name="' + name + '" />')
-											.val(v[i])
-											.change(function() {
-												radio.find('input').removeAttr('CHECKED');
-												jQuery(this).attr('CHECKED', true);
-												jS.controlFactory.input.setValue(jQuery(this), radio.parent());
-											})
-									)
-									.append('<span class="clickable">' + v[i] + '</span>')
-									.append('<br />');
+						if (s.editable) {
+							var radio = jQuery('<span class="clickable" />');
+							for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
+								if (v[i]) {
+									radio
+										.append(
+											jQuery('<input type="radio" name="' + name + '" />')
+												.val(v[i])
+												.change(function() {
+													radio.find('input').removeAttr('CHECKED');
+													jQuery(this).attr('CHECKED', true);
+													jS.controlFactory.input.setValue(jQuery(this), radio.parent());
+												})
+										)
+										.append('<span class="clickable">' + v[i] + '</span>')
+										.append('<br />');
+								}
 							}
+						
+							origParent.one('calculation', function() {
+								radio.find('input')
+									.attr('name', radio.parent().attr('id') + '_radio');
+								var val = jS.controlFactory.input.getValue(radio);
+								radio.find('input[value="' + val + '"]')
+									.attr('CHECKED', true);
+							});
+						
+							return radio;
+						} else {
+							return jS.controlFactory.input.getValue(v);
 						}
-						
-						origParent.one('calculation', function() {
-							radio.find('input')
-								.attr('name', radio.parent().attr('id') + '_radio');
-							var val = jS.controlFactory.input.getValue(radio);
-							radio.find('input[value="' + val + '"]')
-								.attr('CHECKED', true);
-						});
-						
-						return radio;
 					},
 					checkbox: function(v) {
-						var o = jQuery('<span class="clickable" />')
-							.append(
-								jQuery('<input type="checkbox" />')
-									.val(v)
-									.change(function() {
-										o.parent().removeAttr('selectedvalue');
-										if (jQuery(this).is(':checked')) {
-											jS.controlFactory.input.setValue(jQuery(this), o.parent());
-										}
-										jS.calc();
-									})
-							)
-							.append('<span>' + v + '</span><br />');
+						if (s.editable) {
+							var o = jQuery('<span class="clickable" />')
+								.append(
+									jQuery('<input type="checkbox" />')
+										.val(v)
+										.change(function() {
+											o.parent().removeAttr('selectedvalue');
+											if (jQuery(this).is(':checked')) {
+												jS.controlFactory.input.setValue(jQuery(this), o.parent());
+											}
+											jS.calc();
+										})
+								)
+								.append('<span>' + v + '</span><br />');
 							
-						origParent.one('calculation', function() {
-							o.find('input').removeAttr('CHECKED');
-							o.find('input[value="' + o.parent().attr('selectedvalue') + '"]').attr('CHECKED', 'TRUE');
-						});
-						return o;
+							origParent.one('calculation', function() {
+								o.find('input').removeAttr('CHECKED');
+								o.find('input[value="' + o.parent().attr('selectedvalue') + '"]').attr('CHECKED', 'TRUE');
+							});
+							return o;
+						} else {
+							return jS.controlFactory.input.getValue(v); 
+						}
 					},
 					setValue: function(o, parent) {
 						jQuery(parent ? parent : o.parent()).attr('selectedvalue', o.val());;
@@ -1209,15 +1240,19 @@ jQuery.sheet = {
 										//This should return either a val from textbox or formula, but if fails it tries once more from formula.
 										var v = jS.manageTextToHtml(formula.val());
 										var prevVal = td.html();
-
+										var cell = jS.spreadsheets[jS.i][jS.cellLast.row][jS.cellLast.col];
 										if (v.charAt(0) == '=') {
 											td
 												.attr('formula', v)
 												.html('');
+											cell.value = v;
+											cell.formula = v;
 										} else {
 											td
 												.removeAttr('formula')
 												.html(v);
+											cell.value = v;
+											cell.formula = null;
 										}
 										
 										if (v != prevVal || forceCalc) {
@@ -2405,7 +2440,7 @@ jQuery.sheet = {
 					.select();
 				jS.cellSetActive(td, loc, isDrag);
 			},
-			cellSetActive: function(td, loc, isDrag, directional, fnDone) { /* cell cell active to sheet, and highlights it for the user
+			cellSetActive: function(td, loc, isDrag, directional, fnDone) { /* cell cell active to sheet, and highlights it for the user, shouldn't be called directly, should use cellEdit
 																				td: object, td object;
 																				loc: array of ints - [col, row];
 																				isDrag: bool, should be determained by if the user is dragging their mouse around setting cells;
@@ -2567,33 +2602,37 @@ jQuery.sheet = {
 				jS.cellUndoable.add(uiCell);
 			},
 			updateCellValue: function(table, row, col) {
-				var cell = jS.spreadsheets[table][row][col];
+				//first detect if the cell exists if not return nothing
+				if (!jS.spreadsheets[table]) return false;
+				if (!jS.spreadsheets[table][row]) return false;
+				if (!jS.spreadsheets[table][row][col]) return false;
 				
-				cell.valueOld = cell.value; //we detect the last value, so that we don't have to update all cell, thus saving resources
+				var cell = jS.spreadsheets[table][row][col];
+				cell.oldValue = cell.value; //we detect the last value, so that we don't have to update all cell, thus saving resources
 
 				if (cell.formula) {
 					if (cell.state) { //we set cell state so that if in the stack, it comes back to the cell, it knows
-						cell.value = " #Error: Loop Detected# ";
+						throw("Error: Loop Detected");
 					} else {
 						cell.state = 'red';
 						try {
 							if (cell.formula.charAt(0) == '=') {
 								cell.formula = cell.formula.substring(1, cell.formula.length);
 							}
-							
+						
 							cell.value = parser.parse(cell.formula, jS.cellIdHandlers);
 						} catch(e) {
-							cell.value = '<pre>' + e + '</pre>'; //error
+							cell.value = e.toString().replace(/\n/g, '<br />'); //error
 						}
 					}
 				}
-				
-				cell.state = null;
 			
-				if (cell.valueOld != cell.value) {
-					cell.td.html(cell.value + '');
+				cell.state = null;
+		
+				if (cell.oldValue != cell.value) {
+					cell.td.html(cell.value);
 				}
-				
+			
 				return cell.value;
 			},
 			cellIdHandlers: {

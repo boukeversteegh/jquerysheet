@@ -347,17 +347,17 @@ lexer.performAction = function anonymous(yy,yy_) {
 switch(arguments[2]) {
 case 0:/* skip whitespace */
 break;
-case 1:return 25;
+case 1:return 26;
 break;
-case 2:return 24;
+case 2:return 26;
 break;
-case 3:return 23;
+case 3:return 25;
 break;
-case 4:return 22;
+case 4:return 24;
 break;
-case 5:return 'STRINGL';
+case 5:return 23;
 break;
-case 6:return 26;
+case 6:return 22;
 break;
 case 7:return 27;
 break;
@@ -417,7 +417,7 @@ case 34:return '=';
 break;
 }
 };
-lexer.rules = [/^\s+/,/^TABLE[0-9][:][A-Z][0-9][:][A-Z][0-9]+/,/^TABLE[0-9][:][A-Z][0-9]+/,/^[A-Z][0-9][:][A-Z][0-9]+/,/^[A-Z][0-9]+/,/^"(\\["]|[^"])*"/,/^'(\\[']|[^'])*'/,/^[A-Za-z]+/,/^[0-9]([0-9]?)[-/][0-9]([0-9]?)[-/][0-9]([0-9]?)([0-9]?)([0-9]?)/,/^[0-9]+(\.[0-9]+)?/,/^\$/,/^ /,/^\./,/^:/,/^;/,/^,/,/^\*/,/^\//,/^-/,/^\+/,/^\^/,/^\(/,/^\)/,/^>/,/^</,/^>=/,/^<=/,/^<>/,/^NOT\b/,/^PI\b/,/^E\b/,/^"/,/^'/,/^$/,/^=/];return lexer;})()
+lexer.rules = [/^\s+/,/^"(\\["]|[^"])*"/,/^'(\\[']|[^'])*'/,/^TABLE[0-9][:][A-Za-z][0-9][:][A-Za-z][0-9]+/,/^TABLE[0-9][:][A-Za-z][0-9]+/,/^[A-Za-z][0-9][:][A-Za-z][0-9]+/,/^[A-Za-z][0-9]+/,/^[A-Za-z]+/,/^[0-9]([0-9]?)[-/][0-9]([0-9]?)[-/][0-9]([0-9]?)([0-9]?)([0-9]?)/,/^[0-9]+(\.[0-9]+)?/,/^\$/,/^ /,/^\./,/^:/,/^;/,/^,/,/^\*/,/^\//,/^-/,/^\+/,/^\^/,/^\(/,/^\)/,/^>/,/^</,/^>=/,/^<=/,/^<>/,/^NOT\b/,/^PI\b/,/^E\b/,/^"/,/^'/,/^$/,/^=/];return lexer;})()
 parser.lexer = lexer;
 return parser;
 })();

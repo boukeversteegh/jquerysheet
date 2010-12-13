@@ -130,8 +130,13 @@
 	position: relative;
 	min-width: 25px ! important;
 }
-.jSheet pre {
+.jSheetError {
 	text-align: left;
+	width: inherit ! important;
+	height: inherit ! important;
+	overflow: auto;
+	padding: 0px;
+	margin: 0px;
 }
 
 .jSheet colgroup col
