@@ -6,10 +6,10 @@
 \s+				{/* skip whitespace */}
 '"'("\\"["]|[^"])*'"'		{return 'STRING';}
 "'"('\\'[']|[^'])*"'"		{return 'STRING';}
-'TABLE'[0-9][:][A-Za-z][0-9][:][A-Za-z][0-9]+ 	{return 'REMOTECELLRANGE';}
-'TABLE'[0-9][:][A-Za-z][0-9]+ 	{return 'REMOTECELL';}
-[A-Za-z][0-9][:][A-Za-z][0-9]+	{return 'CELLRANGE';}
-[A-Za-z][0-9]+			{return 'CELL';}
+'TABLE'[0-9]+[:][A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+ 	{return 'REMOTECELLRANGE';}
+'TABLE'[0-9]+[:][A-Za-z]+[0-9]+ 	{return 'REMOTECELL';}
+[A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+	{return 'CELLRANGE';}
+[A-Za-z]+[0-9]+			{return 'CELL';}
 [A-Za-z]+ 			{return 'IDENTIFIER';}
 [0-9]([0-9]?)[-/][0-9]([0-9]?)[-/][0-9]([0-9]?)([0-9]?)([0-9]?) {return 'DATE';}
 [0-9]+("."[0-9]+)?  		{return 'NUMBER';}

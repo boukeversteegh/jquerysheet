@@ -242,38 +242,21 @@ jQuery.sheet = {
 			},
 			spreadsheetsToArray: function(forceRebuild) {
 				if (forceRebuild || jS.spreadsheets.length == 0) {	
-					var loc = jS.sheetSize();
-					for (var i = 0; i < jS.sheetCount; i++) {
+					jS.obj.sheetAll().each(function(i) {
 						jS.spreadsheets[i] = [];
-						var loc = jS.sheetSize();
+						var loc = jS.sheetSize(jQuery(this));
 						for (var j = 0; j <= loc[0]; j++) {
 							jS.spreadsheets[i][j] = [];
 							for (var k = 0; k <= loc[1]; k++) {
-								var td = jQuery(document.getElementById(jS.getTdId(i, j, k)));
+								var td = jQuery(jS.getTd(i, j, k));
 								jS.spreadsheets[i][j][k] = {
 									formula: td.attr('formula'),
-									value: jQuery.trim(td.text()),
-									td: td
+									value: td.html(),
+									calculated: false
 								};
 							}
 						}
-					}
-					/*
-					jQuery(o).each(function(i) {
-						jS.spreadsheets[i] = [];
-						jQuery(this).find('tr').each(function(j) {
-							jS.spreadsheets[i][j] = [];
-							jQuery(this).children().each(function(k) {
-								var td = $(this);
-								jS.spreadsheets[i][j][k] = {
-									formula: td.attr('formula'),
-									value: jQuery.trim(td.text()),
-									td: td,
-									state: null
-								};
-							});
-						});
-					});*/
+					});
 				}
 				
 				return jS.spreadsheets;
@@ -545,6 +528,7 @@ jQuery.sheet = {
 					} else {
 						parents = o.find('col');
 						widthFn = function(obj) {
+
 							return parseInt(jQuery(obj).css('width').replace('px','')) - s.boxModelCorrection;
 						};
 					}
@@ -2603,14 +2587,14 @@ jQuery.sheet = {
 			},
 			updateCellValue: function(table, row, col) {
 				//first detect if the cell exists if not return nothing
-				if (!jS.spreadsheets[table]) return false;
-				if (!jS.spreadsheets[table][row]) return false;
-				if (!jS.spreadsheets[table][row][col]) return false;
+				if (!jS.spreadsheets[table]) return 'Error: Sheet not found';
+				if (!jS.spreadsheets[table][row]) return 'Error: Row not found';
+				if (!jS.spreadsheets[table][row][col]) return 'Error: Column not found';
 				
 				var cell = jS.spreadsheets[table][row][col];
 				cell.oldValue = cell.value; //we detect the last value, so that we don't have to update all cell, thus saving resources
 
-				if (cell.formula) {
+				if (cell.formula && !cell.calculated) {
 					if (cell.state) { //we set cell state so that if in the stack, it comes back to the cell, it knows
 						throw("Error: Loop Detected");
 					} else {
@@ -2624,14 +2608,17 @@ jQuery.sheet = {
 						} catch(e) {
 							cell.value = e.toString().replace(/\n/g, '<br />'); //error
 						}
+						
 					}
 				}
-			
+				
 				cell.state = null;
 		
-				if (cell.oldValue != cell.value) {
-					cell.td.html(cell.value);
+				if (cell.oldValue != cell.value && !cell.calculated) {
+					jQuery(jS.getTd(table, row, col)).html(cell.value);
 				}
+				
+				cell.calculated = true;
 			
 				return cell.value;
 			},
@@ -2691,7 +2678,7 @@ jQuery.sheet = {
 				}
 				if (!s.calcOff) {
 					if (jSE) { //If the new engine is alive, use it
-						jSE.calc(jS.spreadsheetsToArray(), jS.updateCellValue);
+						jSE.calc(tableI, jS.spreadsheetsToArray()[tableI], jS.updateCellValue);
 					} else {
 						jS.tableCellProviders[tableI].cells = {};
 						cE.calc(jS.tableCellProviders[tableI], jS.context, fuel);
@@ -3681,8 +3668,8 @@ jQuery.sheet = {
 				i: 0,
 				stack: []
 			},
-			sheetSize: function() {
-				return jS.getTdLocation(jS.obj.sheet().find('td:last'));
+			sheetSize: function(o) {
+				return jS.getTdLocation((o ? o : jS.obj.sheet()).find('td:last'));
 			},
 			toggleState:  function(replacementSheets) {
 				if (s.allowToggleState) {
@@ -3753,7 +3740,7 @@ jQuery.sheet = {
 			td: null,
 			getTd: function() {
 				if (!this.td) { //this attempts to check if the td is cached, then cache it if not, then return it
-					this.td = document.getElementById(jS.getTdId(this.tableI, this.row - 1, this.col - 1));	
+					this.td = jS.getTd(this.tableI, this.row - 1, this.col - 1);
 				}
 				
 				return this.td;
@@ -4606,6 +4593,7 @@ jQuery.sheet = {
 							var cl = td.attr('class');
 							var style = td.attr('style');
 							var colSpan = td.attr('colspan');
+
 							
 							var formula = '';
 							if (text.charAt(0) == '=') {

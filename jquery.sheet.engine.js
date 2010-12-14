@@ -13,14 +13,14 @@ if (!jQuery.sheet) {
 }
 
 var jSE = jQuery.sheet.engine = { //Calculations Engine
-	calc: function(spreadsheets, go) { //spreadsheets are array, [spreadsheet][row][cell], like A1 = o[0][0][0];
-		for (var i = 0; i < spreadsheets.length; i++) {
-			for (var j = 0; j < spreadsheets[i].length; j++) {
-				for (var k = 0; k < spreadsheets[i][j].length; k++) {
-					go(i, j, k);
-				}
+	calc: function(tableI, spreadsheets, ignite) { //spreadsheets are array, [spreadsheet][row][cell], like A1 = o[0][0][0];
+		for (var j = 0; j < spreadsheets.length; j++) {
+			for (var k = 0; k < spreadsheets[j].length; k++) {
+				spreadsheets[j][k].calculated = false;
+				ignite(tableI, j, k);
 			}
 		}
+		
 	},
 	parseLocation: function(locStr) { // With input of "A1", "B4", "F20", will return [0,0], [3,1], [19,5].
 		for (var firstNum = 0; firstNum < locStr.length; firstNum++) {
@@ -28,7 +28,10 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 				break;
 			}
 		}
-		return {row: parseInt(locStr.substring(firstNum)) - 1, col: this.columnLabelIndex(locStr.substring(0, firstNum)) - 1};
+		return {
+			row: parseInt(locStr.substring(firstNum)) - 1, 
+			col: this.columnLabelIndex(locStr.substring(0, firstNum)) - 1
+		};
 	},
 	columnLabelIndex: function(str) {
 		// Converts A to 1, B to 2, Z to 26, AA to 27.
@@ -278,7 +281,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		});
 	},
 	HBARCHART:	function(values, legend, title) {
-		return jS.controlFactory.chart({
+		return jQuery.sheet.instance[0].controlFactory.chart({
 			type: 'hbar',
 			data: values,
 			legend: legend,
@@ -286,7 +289,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		});
 	},
 	LINECHART:	function(valuesX, valuesY, legendX, legendY, title) {
-		return jS.controlFactory.chart({
+		return jQuery.sheet.instance[0].controlFactory.chart({
 			type: 'line',
 			x: {
 				data: valuesX,
@@ -300,7 +303,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		});
 	},
 	PIECHART:	function(values, legend, title) {
-		return jS.controlFactory.chart({
+		return jQuery.sheet.instance[0].controlFactory.chart({
 			type: 'pie',
 			data: values,
 			legend: legend,
@@ -308,7 +311,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		});
 	},
 	DOTCHART:	function(valuesX, valuesY, values,legendX, legendY, title) {
-		return jS.controlFactory.chart({
+		return jQuery.sheet.instance[0].controlFactory.chart({
 			type: 'dot',
 			values: values,
 			x: {
