@@ -8,8 +8,8 @@
 "'"('\\'[']|[^'])*"'"						{return 'STRING';}
 '$'[A-Za-z]+'$'[0-9]+[:]'$'[A-Za-z]+'$'[0-9]+			{return 'FIXEDCELLRANGE';}
 '$'[A-Za-z]+'$'[0-9]+						{return 'FIXEDCELL';}
-'TABLE'[0-9]+[:][A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+ 		{return 'REMOTECELLRANGE';}
-'TABLE'[0-9]+[:][A-Za-z]+[0-9]+ 				{return 'REMOTECELL';}
+'SHEET'[0-9]+[:!][A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+ 		{return 'REMOTECELLRANGE';}
+'SHEET'[0-9]+[:!][A-Za-z]+[0-9]+ 				{return 'REMOTECELL';}
 [A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+				{return 'CELLRANGE';}
 [A-Za-z]+[0-9]+							{return 'CELL';}
 [A-Za-z]+ 							{return 'IDENTIFIER';}
@@ -39,6 +39,7 @@
 "E"				{return 'E';}
 '"'				{return '"';}
 "'"				{return "'";}
+"!"				{return "!";}
 <<EOF>>				{return 'EOF';}
 "="				{return '=';}
 
