@@ -58,11 +58,9 @@ jQuery.fn.extend({
 			fnPaneScroll:		function() {},					//fn, called when a spreadsheet is scrolled
 			joinedResizing: 	false, 							//bool, this joins the column/row with the resize bar
 			boxModelCorrection: 2, 								//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
-			showErrors:			true,							//bool, will make cells value an error if spreadsheet function isn't working correctly or is broken
 			calculations:		{},								//object, used to extend the standard functions that come with sheet
 			cellSelectModel: 	'excel',						//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
 			autoAddCells:		true,							//bool, when user presses enter on the last row, this will allow them to add another cell, thus improving performance and optimizing modification speed
-			caseInsensitive: 	false,							//bool, this makes all the calculations engine user functions case sensitive/insensitive
 			resizable: 			true,							//bool, makes the $(obj).sheet(); object resizeable, also adds a resizable formula textarea at top of sheet
 			autoFiller: 		false,							//bool, the little guy that hangs out to the bottom right of a selected cell, users can click and drag the value to other cells
 			minSize: 			{rows: 15, cols: 5},			//object - {rows: int, cols: int}, Makes the sheet stay at a certain size when loaded in edit mode, to make modification more productive
@@ -394,7 +392,7 @@ jQuery.sheet = {
 								},
 								reLabel: function() {
 									o.barParent.children().each(function(i) {
-										jQuery(this).text(cE.columnLabelString(i + 1));
+										jQuery(this).text(jSE.columnLabelString(i + 1));
 									});
 								},
 								dimensions: function(loc, bar, cell, col) {								
@@ -534,7 +532,7 @@ jQuery.sheet = {
 					}
 					
 					parents.each(function(i) {
-						var v = cE.columnLabelString(i + 1);
+						var v = jSE.columnLabelString(i + 1);
 						var w = widthFn(this);
 						
 						var child = jQuery("<div>" + v + "</div>")
@@ -2014,14 +2012,14 @@ jQuery.sheet = {
 				
 				function reparseFormula(loc) {
 					return ( //A1
-						cE.columnLabelString(loc[1] + colOffset) + (loc[0] + rowOffset)
+						jSE.columnLabelString(loc[1] + colOffset) + (loc[0] + rowOffset)
 					);
 				}
 				
 				function reparseFormulaRange(startLoc, endLoc) {
 					return ( //A1:B4
-						(cE.columnLabelString(startLoc[1] + colOffset) + (startLoc[0] + rowOffset)) + ':' + 
-						(cE.columnLabelString(endLoc[1] + colOffset) + (endLoc[0] + rowOffset))
+						(jSE.columnLabelString(startLoc[1] + colOffset) + (startLoc[0] + rowOffset)) + ':' + 
+						(jSE.columnLabelString(endLoc[1] + colOffset) + (endLoc[0] + rowOffset))
 					);
 				}
 				
@@ -2029,15 +2027,15 @@ jQuery.sheet = {
 					var formula = td.attr('formula');
 					
 					if (formula && jS.isFormulaEditable(td)) {
-						formula = formula.replace(cE.regEx.cell, 
+						formula = formula.replace(jSE.regEx.cell, 
 							function(ignored, colStr, rowStr, pos) {
 								var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
-								if (!colStr.match(cE.regEx.sheet) &&
+								if (!colStr.match(jSE.regEx.sheet) &&
 									charAt[0] != ':' &&
 									charAt[1] != ':'
 								) { //verify it's not a range or an exact location
 									
-									var colI = cE.columnLabelIndex(colStr);
+									var colI = jSE.columnLabelIndex(colStr);
 									var rowI = parseInt(rowStr);
 									
 									if (isInFormula([rowI, colI])) {
@@ -2049,18 +2047,18 @@ jQuery.sheet = {
 									return ignored;
 								}
 						});
-						formula = formula.replace(cE.regEx.range, 
+						formula = formula.replace(jSE.regEx.range, 
 							function(ignored, startColStr, startRowStr, endColStr, endRowStr, pos) {
 								var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
-								if (!startColStr.match(cE.regEx.sheet) &&
+								if (!startColStr.match(jSE.regEx.sheet) &&
 									charAt[0] != ':'
 								) {
 									
 									var startRowI = parseInt(startRowStr);
-									var startColI = cE.columnLabelIndex(startColStr);
+									var startColI = jSE.columnLabelIndex(startColStr);
 									
 									var endRowI = parseInt(endRowStr);
-									var endColI = cE.columnLabelIndex(endColStr);
+									var endColI = jSE.columnLabelIndex(endColStr);
 									
 									if (isInFormulaRange([startRowI, startColI], [endRowI, endColI])) {
 										return reparseFormulaRange([startRowI, startColI], [endRowI, endColI]);
@@ -2116,7 +2114,7 @@ jQuery.sheet = {
 				var charAt = [];
 				var col = '';
 				var row = '';
-				formula = formula.replace(cE.regEx.cell, 
+				formula = formula.replace(jSE.regEx.cell, 
 					function(ignored, colStr, rowStr, pos) {
 						charAt[0] = formula.charAt(pos - 1);
 						charAt[1] = formula.charAt(ignored.length + pos);
@@ -2124,18 +2122,18 @@ jQuery.sheet = {
 						charAt[0] = (charAt[0] ? charAt[0] : '');
 						charAt[1] = (charAt[1] ? charAt[1] : '');
 						
-						if (colStr.match(cE.regEx.sheet) || 
+						if (colStr.match(jSE.regEx.sheet) || 
 							charAt[0] == ':' || 
 							charAt[1] == ':'
 						) { //verify it's not a range or an exact location
 							return ignored;
 						} else {
 							row = parseInt(rowStr) + rowOffset;
-							col = cE.columnLabelIndex(colStr) + colOffset;
+							col = jSE.columnLabelIndex(colStr) + colOffset;
 							row = (row > 0 ? row : '1'); //table rows are never negative
 							col = (col > 0 ? col : '1'); //table cols are never negative
 							
-							return cE.columnLabelString(col) + row;
+							return jSE.columnLabelString(col) + row;
 						}
 					}
 				);
@@ -2385,7 +2383,7 @@ jQuery.sheet = {
 													setDirect: bool, converts the array of a1 or [0,0] to "A1";
 												*/
 				if (!setDirect) {
-					jS.obj.label().html(cE.columnLabelString(v[1] + 1) + (v[0] + 1));
+					jS.obj.label().html(jSE.columnLabelString(v[1] + 1) + (v[0] + 1));
 				} else {
 					jS.obj.label().html(v);
 				}
@@ -2683,7 +2681,7 @@ jQuery.sheet = {
 						jSE.calc(tableI, jS.spreadsheetsToArray()[tableI], jS.updateCellValue);
 					} else {
 						jS.tableCellProviders[tableI].cells = {};
-						cE.calc(jS.tableCellProviders[tableI], jS.context, fuel);
+						jSE.calc(jS.tableCellProviders[tableI], jS.context, fuel);
 					}
 					
 					origParent.trigger('calculation');
@@ -2694,7 +2692,7 @@ jQuery.sheet = {
 			refreshLabelsColumns: function(){ /* reset values inside bars for columns */
 				var w = 0;
 				jS.obj.barTop().find('div').each(function(i) {
-					jQuery(this).text(cE.columnLabelString(i+1));
+					jQuery(this).text(jSE.columnLabelString(i+1));
 					w += jQuery(this).width();
 				});
 				return w;
@@ -3423,13 +3421,13 @@ jQuery.sheet = {
 						loc.first[0] > loc.last[0]
 					) {
 						return {
-							first: cE.columnLabelString(loc.last[1] + 1) + (loc.last[0] + 1),
-							last: cE.columnLabelString(loc.first[1] + 1) + (loc.first[0] + 1)
+							first: jSE.columnLabelString(loc.last[1] + 1) + (loc.last[0] + 1),
+							last: jSE.columnLabelString(loc.first[1] + 1) + (loc.first[0] + 1)
 						};
 					} else {
 						return {
-							first: cE.columnLabelString(loc.first[1] + 1) + (loc.first[0] + 1),
-							last: cE.columnLabelString(loc.last[1] + 1) + (loc.last[0] + 1)
+							first: jSE.columnLabelString(loc.first[1] + 1) + (loc.first[0] + 1),
+							last: jSE.columnLabelString(loc.last[1] + 1) + (loc.last[0] + 1)
 						};
 					}
 				};
@@ -3557,7 +3555,7 @@ jQuery.sheet = {
 				return parseInt(i) - 1;
 			},
 			getBarTopIndex: function(o) { /* get's index from object */
-				var i = cE.columnLabelIndex(jQuery.trim(jQuery(o).text()));
+				var i = jSE.columnLabelIndex(jQuery.trim(jQuery(o).text()));
 				return parseInt(i) - 1;
 			},
 			tableCellProvider: function(tableI) { /* provider for calculations engine */
@@ -3573,7 +3571,7 @@ jQuery.sheet = {
 				this.col = col;
 				this.value = jS.EMPTY_VALUE;
 				
-				//this.prototype = new cE.cell();
+				//this.prototype = new jSE.cell();
 			},
 			EMPTY_VALUE: {},
 			time: { /* time loggin used with jS.log, useful for finding out if new methods are faster */
@@ -3707,7 +3705,7 @@ jQuery.sheet = {
 		jS.tableCellProvider.prototype = {
 			getCell: function(tableI, row, col) {
 				if (typeof(col) == "string") {
-					col = cE.columnLabelIndex(col);
+					col = jSE.columnLabelIndex(col);
 				}
 				var key = tableI + "," + row + "," + col;
 				var cell = this.cells[key];
@@ -3758,7 +3756,7 @@ jQuery.sheet = {
 					
 					v = jQuery(this.getTd()).text(); //again, stability rules!
 
-					v = this.value = (v.length > 0 ? cE.parseFormulaStatic(v) : null);
+					v = this.value = (v.length > 0 ? jSE.parseFormulaStatic(v) : null);
 				}
 				
 				return (v === jS.EMPTY_VALUE ? null: v);
@@ -3793,654 +3791,6 @@ jQuery.sheet = {
 			}
 		};
 
-		var cE = { //Calculations Engine
-			TEST: {},
-			ERROR: "#VALUE!",
-			cFN: {//cFN = compiler functions, usually mathmatical
-				sum: 	function(x, y) { return x + y; },
-				max: 	function(x, y) { return x > y ? x: y; },
-				min: 	function(x, y) { return x < y ? x: y; },
-				count: 	function(x, y) { return (y != null) ? x + 1: x; },
-				clean: function(v) {
-					if (typeof(v) == 'string') {
-						v = v.replace(cE.regEx.amp, '&')
-								.replace(cE.regEx.nbsp, ' ')
-								.replace(/\n/g,'')
-								.replace(/\r/g,'');
-					}
-					return v;
-				}
-			},
-			fn: {//fn = standard functions used in cells
-				HTML: function(v) {
-					return jQuery(v);
-				},
-				IMG: function(v) {
-					return jS.controlFactory.safeImg(v, cE.calcState.row, cE.calcState.col);
-				},
-				AVERAGE:	function(values) { 
-					var arr =arrHelpers.foldPrepare(values, arguments);
-					return cE.fn.SUM(arr) / cE.fn.COUNT(arr); 
-				},
-				AVG: 		function(values) { 
-					return cE.fn.AVERAGE(values);
-				},
-				COUNT: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), cE.cFN.count, 0); },
-				COUNTA:		function(v) {
-					var values =arrHelpers.foldPrepare(v, arguments);
-					var count = 0;
-					for (var i = 0; i < values.length; i++) {
-						if (values[i]) {
-							count++;
-						}
-					}
-					return count;
-				},
-				SUM: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), cE.cFN.sum, 0, true, cE.fn.N); },
-				MAX: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), cE.cFN.max, Number.MIN_VALUE, true, cE.fn.N); },
-				MIN: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), cE.cFN.min, Number.MAX_VALUE, true, cE.fn.N); },
-				MEAN:		function(values) { return this.SUM(values) / values.length; },
-				ABS	: 		function(v) { return Math.abs(cE.fn.N(v)); },
-				CEILING: 	function(v) { return Math.ceil(cE.fn.N(v)); },
-				FLOOR: 		function(v) { return Math.floor(cE.fn.N(v)); },
-				INT: 		function(v) { return Math.floor(cE.fn.N(v)); },
-				ROUND: 		function(v, decimals) {
-					return cE.fn.FIXED(v, (decimals ? decimals : 0), false);
-				},
-				RAND: 		function(v) { return Math.random(); },
-				RND: 		function(v) { return Math.random(); },
-				TRUE: 		function() { return 'TRUE'; },
-				FALSE: 		function() { return 'FALSE'; },
-				NOW: 		function() { return new Date ( ); },
-				TODAY: 		function() { return Date( Math.floor( new Date ( ) ) ); },
-				DAYSFROM: 	function(year, month, day) { 
-					return Math.floor( (new Date() - new Date (year, (month - 1), day)) / 86400000);
-				},
-				DAYS: function(v1, v2) {
-					var date1 = new Date(v1);
-					var date2 = new Date(v2);
-					var ONE_DAY = 1000 * 60 * 60 * 24;
-					return Math.round(Math.abs(date1.getTime() - date2.getTime()) / ONE_DAY);
-				},
-				DATEVALUE: function(v) {
-					var d = new Date(v);
-					return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
-				},
-				IF:			function(v, t, f){
-					t = cE.cFN.clean(t);
-					f = cE.cFN.clean(f);
-					
-					try { v = eval(v); } catch(e) {};
-					try { t = eval(t); } catch(e) {};
-					try { t = eval(t); } catch(e) {};
-
-					if (v == 'true' || v == true || v > 0 || v == 'TRUE') {
-						return t;
-					} else {
-						return f;
-					}
-				},
-				FIXED: 		function(v, decimals, noCommas) { 
-					if (decimals == null) {
-						decimals = 2;
-					}
-					var x = Math.pow(10, decimals);
-					var n = String(Math.round(cE.fn.N(v) * x) / x); 
-					var p = n.indexOf('.');
-					if (p < 0) {
-						p = n.length;
-						n += '.';
-					}
-					for (var i = n.length - p - 1; i < decimals; i++) {
-						n += '0';
-					}
-					if (noCommas == true) {// Treats null as false.
-						return n;
-					}
-					var arr	= n.replace('-', '').split('.');
-					var result = [];
-					var first  = true;
-					while (arr[0].length > 0) { // LHS of decimal point.
-						if (!first) {
-							result.unshift(',');
-						}
-						result.unshift(arr[0].slice(-3));
-						arr[0] = arr[0].slice(0, -3);
-						first = false;
-					}
-					if (decimals > 0) {
-						result.push('.');
-						var first = true;
-						while (arr[1].length > 0) { // RHS of decimal point.
-							if (!first) {
-								result.push(',');
-							}
-							result.push(arr[1].slice(0, 3));
-							arr[1] = arr[1].slice(3);
-							first = false;
-						}
-					}
-					if (v < 0) {
-						return '-' + result.join('');
-					}
-					return result.join('');
-				},
-				TRIM:		function(v) { 
-					if (typeof(v) == 'string') {
-						v = jQuery.trim(v);
-					}
-					return v;
-				},
-				HYPERLINK: function(link, name) {
-					name = (name ? name : 'LINK');
-					return jQuery('<a href="' + link + '" target="_new" class="clickable">' + name + '</a>');
-				},
-				DOLLAR: 	function(v, decimals, symbol) { 
-					if (decimals == null) {
-						decimals = 2;
-					}
-					
-					if (symbol == null) {
-						symbol = '$';
-					}
-					
-					var r = cE.fn.FIXED(v, decimals, false);
-					
-					if (v >= 0) {
-						return symbol + r; 
-					} else {
-						return '-' + symbol + r.slice(1);
-					}
-				},
-				VALUE: 		function(v) { return parseFloat(v); },
-				N: 			function(v) { if (v == null) {return 0;}
-								  if (v instanceof Date) {return v.getTime();}
-								  if (typeof(v) == 'object') {v = v.toString();}
-								  if (typeof(v) == 'string') {v = parseFloat(v.replace(cE.regEx.n, ''));}
-								  if (isNaN(v))		   {return 0;}
-								  if (typeof(v) == 'number') {return v;}
-								  if (v == true)			 {return 1;}
-								  return 0; },
-				PI: 		function() { return Math.PI; },
-				POWER: 		function(x, y) {
-					return Math.pow(x, y);
-				},
-				SQRT: function(v) {
-					return Math.sqrt(v);
-				},
-				//Note, form objects are experimental, they don't work always as expected
-				INPUT: {
-					SELECT:	function(v, noBlank) {
-						if (s.editable) {
-							v = arrHelpers.foldPrepare(v, arguments, true);
-							return jS.controlFactory.input.select(v, noBlank);
-						} else {
-							return jS.controlFactory.input.getValue(v);
-						}
-					},
-					RADIO: function(v) {
-						if (s.editable) {
-							v = arrHelpers.foldPrepare(v, arguments, true);
-							return jS.controlFactory.input.radio(v);
-						} else {
-							return jS.controlFactory.input.getValue(v);
-						}
-					},
-					CHECKBOX: function(v) {
-						if (s.editable) {
-							v = arrHelpers.foldPrepare(v, arguments)[0];
-							return jS.controlFactory.input.checkbox(v);
-						} else {
-							return jS.controlFactory.input.getValue(v);
-						}
-					},
-					VAL: function(v) {
-						return jS.controlFactory.input.getValue(v);
-					},
-					SELECTVAL:	function(v) {
-						return jS.controlFactory.input.getValue(v);
-					},
-					RADIOVAL: function(v) {
-						return jS.controlFactory.input.getValue(v);
-					},
-					CHECKBOXVAL: function(v) {
-						return jS.controlFactory.input.getValue(v);
-					},
-					ISCHECKED:		function(v) {
-						var val = jS.controlFactory.input.getValue(v);
-						var length = jQuery(v).find('input[value="' + val + '"]').length;
-						if (length) {
-							return 'TRUE';
-						} else {
-							return 'FALSE';
-						}
-					}
-				},
-				CHART: {
-					BAR:	function(values, legend, title) {
-						return jS.controlFactory.chart({
-							type: 'bar',
-							data: values,
-							legend: legend,
-							title: title
-						});
-					},
-					HBAR:	function(values, legend, title) {
-						return jS.controlFactory.chart({
-							type: 'hbar',
-							data: values,
-							legend: legend,
-							title: title
-						});
-					},
-					LINE:	function(valuesX, valuesY, legendX, legendY, title) {
-						return jS.controlFactory.chart({
-							type: 'line',
-							x: {
-								data: valuesX,
-								legend: legendX
-							},
-							y: {
-								data: valuesY,
-								legend: legendY
-							},
-							title: title
-						});
-					},
-					PIE:	function(values, legend, title) {
-						return jS.controlFactory.chart({
-							type: 'pie',
-							data: values,
-							legend: legend,
-							title: title
-						});
-					},
-					DOT:	function(valuesX, valuesY, values,legendX, legendY, title) {
-						return jS.controlFactory.chart({
-							type: 'dot',
-							values: values,
-							x: {
-								data: valuesX,
-								legend: legendX
-							},
-							y: {
-								data: valuesY,
-								legend: legendY
-							},
-							title: title
-						});
-					}
-				},
-				CELLREF: function(v, i) {
-					var td;
-					if (i) {
-						td = jS.obj.sheetAll().eq(i).find('td.' + v);
-					} else {
-						td = jS.obj.sheet().find('td.' + v);
-					}
-					
-					return td.html();
-				}
-			},
-			calcState: {},
-			calc: function(cellProvider, context, startFuel) {
-				// Returns null if all done with a complete calc() run.
-				// Else, returns a non-null continuation function if we ran out of fuel.  
-				// The continuation function can then be later invoked with more fuel value.
-				// The fuelStart is either null (which forces a complete calc() to the finish) 
-				// or is an integer > 0 to slice up long calc() runs.  A fuelStart number
-				// is roughly matches the number of cells to visit per calc() run.
-				cE.calcState = { 
-					cellProvider:	cellProvider, 
-					context: 		(context != null ? context : {}),
-					row: 			1, 
-					col: 			1,
-					i:				cellProvider.tableI,
-					done:			false,
-					stack:			[],
-					calcMore: 		function(moreFuel) {
-										cE.calcState.fuel = moreFuel;
-										return cE.calcLoop();
-									}
-				};
-				return cE.calcState.calcMore(startFuel);
-			},
-			calcLoop: function() {
-				if (cE.calcState.done == true) {
-					return null;
-				} else {
-					while (cE.calcState.fuel == null || cE.calcState.fuel > 0) {
-						if (cE.calcState.stack.length > 0) {
-							var workFunc = cE.calcState.stack.pop();
-							if (workFunc != null) {
-								workFunc(cE.calcState);
-							}
-						} else if (cE.calcState.cellProvider.formulaCells != null) {
-							if (cE.calcState.cellProvider.formulaCells.length > 0) {
-								var loc = cE.calcState.cellProvider.formulaCells.shift();
-								cE.visitCell(cE.calcState.i, loc[0], loc[1]);
-							} else {
-								cE.calcState.done = true;
-								return null;
-							}
-						} else {
-							if (cE.visitCell(cE.calcState.i, cE.calcState.row, cE.calcState.col) == true) {
-								cE.calcState.done = true;
-								return null;
-							}
-
-							if (cE.calcState.col >= cE.calcState.cellProvider.getNumberOfColumns(cE.calcState.row - 1)) {
-								cE.calcState.row++;
-								cE.calcState.col =  1;
-							} else {
-								cE.calcState.col++; // Sweep through columns first.
-							}
-						}
-						
-						if (cE.calcState.fuel != null) {
-							cE.calcState.fuel -= 1;
-						}
-					}
-					return cE.calcState.calcMore;
-				}
-			},
-			visitCell: function(tableI, r, c) { // Returns true if done with all cells.
-				var cell = cE.calcState.cellProvider.getCell(tableI, r, c);
-				if (cell == null) {
-					return true;
-				} else {
-					var value = cell.getValue();
-					if (value == null) {
-						this.formula = cell.getFormula();
-						if (this.formula) {
-							if (this.formula.charAt(0) == '=') {
-								this.formulaFunc = cell.getFormulaFunc();
-								if (this.formulaFunc == null ||
-									this.formulaFunc.formula != this.formula) {
-									this.formulaFunc = null;
-									try {
-										var dependencies = {};
-										var body = cE.parseFormula(this.formula.substring(1), dependencies, tableI);
-										this.formulaFunc = function() {
-											if (!body.match(/function/gi)) {
-												with (cE.fn) {
-													return eval(body);
-												}
-											} else {
-												return jS.msg.evalError;
-											}
-										};
-										
-										this.formulaFunc.formula = this.formula;
-										this.formulaFunc.dependencies = dependencies;
-										cell.setFormulaFunc(this.formulaFunc);
-									} catch (e) {
-										cell.setValue(cE.ERROR + ': ' + e);
-									}
-								}
-								if (this.formulaFunc) {
-									cE.calcState.stack.push(cE.makeFormulaEval(cell, r, c, this.formulaFunc));
-
-									// Push the cell's dependencies, first checking for any cycles. 
-									var dependencies = this.formulaFunc.dependencies;
-									for (var k in dependencies) {
-										if (dependencies[k] instanceof Array &&
-											(cE.checkCycles(dependencies[k][0], dependencies[k][1], dependencies[k][2]) == true) //same cell on same sheet
-										) {
-											cell.setValue(cE.ERROR + ': cycle detected');
-											cE.calcState.stack.pop();
-											return false;
-										}
-									}
-									for (var k in dependencies) {
-										if (dependencies[k] instanceof Array) {
-											cE.calcState.stack.push(cE.makeCellVisit(dependencies[k][2], dependencies[k][0], dependencies[k][1]));
-										}
-									}
-								}
-							} else {
-								cell.setValue(cE.parseFormulaStatic(this.formula));
-							}
-						}
-					}
-					return false;
-				}
-			},
-			makeCellVisit: function(tableI, row, col) {
-				var fn = function() { 
-					return cE.visitCell(tableI, row, col);
-				};
-				fn.row = row;
-				fn.col = col;
-				return fn;
-			},
-			cell: function() {
-				prototype: {// Cells don't know their coordinates, to make shifting easier.
-					getError = 			function()	 { return this.error; },
-					getValue = 			function()	 { return this.value; },
-					setValue = 			function(v, e) { this.value = v; this.error = e; },
-					getFormula	 = 		function()  { return this.formula; },	 // Like "=1+2+3" or "'hello" or "1234.5"
-					setFormula	 = 		function(v) { this.formula = v; },
-					getFormulaFunc = 	function()  { return this.formulaFunc; },
-					setFormulaFunc = 	function(v) { this.formulaFunc = v; },
-					toString = 			function() { return "Cell:[" + this.getFormula() + ": " + this.getValue() + ": " + this.getError() + "]"; };
-				}
-			}, // Prototype setup is later.
-			columnLabelIndex: function(str) {
-				// Converts A to 1, B to 2, Z to 26, AA to 27.
-				var num = 0;
-				for (var i = 0; i < str.length; i++) {
-					var digit = str.toUpperCase().charCodeAt(i) - 65 + 1;	   // 65 == 'A'.
-					num = (num * 26) + digit;
-				}
-				return num;
-			},
-			parseLocation: function(locStr) { // With input of "A1", "B4", "F20",
-				if (locStr != null &&								  // will return [1,1], [4,2], [20,6].
-					locStr.length > 0 &&
-					locStr != "&nbsp;") {
-					for (var firstNum = 0; firstNum < locStr.length; firstNum++) {
-						if (locStr.charCodeAt(firstNum) <= 57) {// 57 == '9'
-							break;
-						}
-					}
-					return [ parseInt(locStr.substring(firstNum)),
-							 cE.columnLabelIndex(locStr.substring(0, firstNum)) ];
-				} else {
-					return null;
-				}
-			},
-			columnLabelString: function(index) {
-				// The index is 1 based.  Convert 1 to A, 2 to B, 25 to Y, 26 to Z, 27 to AA, 28 to AB.
-				// TODO: Got a bug when index > 676.  675==YZ.  676==YZ.  677== AAA, which skips ZA series.
-				//	   In the spirit of billg, who needs more than 676 columns anyways?
-				var b = (index - 1).toString(26).toUpperCase();   // Radix is 26.
-				var c = [];
-				for (var i = 0; i < b.length; i++) {
-					var x = b.charCodeAt(i);
-					if (i <= 0 && b.length > 1) {				   // Leftmost digit is special, where 1 is A.
-						x = x - 1;
-					}
-					if (x <= 57) {								  // x <= '9'.
-						c.push(String.fromCharCode(x - 48 + 65)); // x - '0' + 'A'.
-					} else {
-						c.push(String.fromCharCode(x + 10));
-					}
-				}
-				return c.join("");
-			},
-			regEx: {
-				n: 					/[\$,\s]/g,
-				cell: 				/\$?([a-zA-Z]+)\$?([0-9]+)/g, //A1
-				range: 				/\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g, //A1:B4
-				remoteCell:			/\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g, //SHEET1:A1
-				remoteCellRange: 	/\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/g, //SHEET1:A1:B4
-				sheet: 				/SHEET/,
-				cellInsensitive: 				/\$?([a-zA-Z]+)\$?([0-9]+)/gi, //a1
-				rangeInsensitive: 				/\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/gi, //a1:a4
-				remoteCellInsensitive:			/\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/gi, //sheet1:a1
-				remoteCellRangeInsensitive: 	/\$?(SHEET+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+):\$?([a-zA-Z]+)\$?([0-9]+)/gi, //sheet1:a1:b4
-				sheetInsensitive:	/SHEET/i,
-				amp: 				/&/g,
-				gt: 				/</g,
-				lt: 				/>/g,
-				nbsp: 				/&nbsp;/g
-			},
-			str: {
-				amp: 	'&amp;',
-				lt: 	'&lt;',
-				gt: 	'&gt;',
-				nbsp: 	'&nbps;'
-			},
-			parseFormula: function(formula, dependencies, thisTableI) { // Parse formula (without "=" prefix) like "123+SUM(A1:A6)/D5" into JavaScript expression string.
-				var nrows = null;
-				var ncols = null;
-				if (cE.calcState.cellProvider != null) {
-					nrows = cE.calcState.cellProvider.nrows;
-					ncols = cE.calcState.cellProvider.ncols;
-				}
-				
-				//Cell References Range - Other Tables
-				formula = formula.replace(cE.regEx.remoteCellRange, 
-					function(ignored, TableStr, tableI, startColStr, startRowStr, endColStr, endRowStr) {
-						var res = [];
-						var startCol = cE.columnLabelIndex(startColStr);
-						var startRow = parseInt(startRowStr);
-						var endCol   = cE.columnLabelIndex(endColStr);
-						var endRow   = parseInt(endRowStr);
-						if (ncols != null) {
-							endCol = Math.min(endCol, ncols);
-						}
-						if (nrows != null) {
-							endRow = Math.min(endRow, nrows);
-						}
-						for (var r = startRow; r <= endRow; r++) {
-							for (var c = startCol; c <= endCol; c++) {
-								res.push("SHEET" + (tableI) + ":" + cE.columnLabelString(c) + r);
-							}
-						}
-						return "[" + res.join(",") + "]";
-					}
-				);
-				
-				//Cell References Fixed - Other Tables
-				formula = formula.replace(cE.regEx.remoteCell, 
-					function(ignored, tableStr, tableI, colStr, rowStr) {
-						tableI = parseInt(tableI) - 1;
-						colStr = colStr.toUpperCase();
-						if (dependencies != null) {
-							dependencies['SHEET' + (tableI) + ':' + colStr + rowStr] = [parseInt(rowStr), cE.columnLabelIndex(colStr), tableI];
-						}
-						return "(cE.calcState.cellProvider.getCell((" + (tableI) + "),(" + (rowStr) + "),\"" + (colStr) + "\").getValue())";
-					}
-				);
-				
-				//Cell References Range
-				formula = formula.replace(cE.regEx.range, 
-					function(ignored, startColStr, startRowStr, endColStr, endRowStr) {
-						var res = [];
-						var startCol = cE.columnLabelIndex(startColStr);
-						var startRow = parseInt(startRowStr);
-						var endCol   = cE.columnLabelIndex(endColStr);
-						var endRow   = parseInt(endRowStr);
-						if (ncols != null) {
-							endCol = Math.min(endCol, ncols);
-						}
-						if (nrows != null) {
-							endRow = Math.min(endRow, nrows);
-						}
-						for (var r = startRow; r <= endRow; r++) {
-							for (var c = startCol; c <= endCol; c++) {
-								res.push(cE.columnLabelString(c) + r);
-							}
-						}
-						return "[" + res.join(",") + "]";
-					}
-				);
-				
-				//Cell References Fixed
-				formula = formula.replace(cE.regEx.cell, 
-					function(ignored, colStr, rowStr) {
-						colStr = colStr.toUpperCase();
-						if (dependencies != null) {
-							dependencies['SHEET' + thisTableI + ':' + colStr + rowStr] = [parseInt(rowStr), cE.columnLabelIndex(colStr), thisTableI];
-						}
-						return "(cE.calcState.cellProvider.getCell((" + thisTableI + "),(" + (rowStr) + "),\"" + (colStr) + "\").getValue())";
-					}
-				);
-				return formula;
-			},	
-			parseFormulaStatic: function(formula) { // Parse static formula value like "123.0" or "hello" or "'hello world" into JavaScript value.
-				if (formula == null) {
-					return null;
-				} else {
-					var formulaNum = formula.replace(cE.regEx.n, '');
-					var value = parseFloat(formulaNum);
-					if (isNaN(value)) {
-						value = parseInt(formulaNum);
-					}
-					if (isNaN(value)) {
-						value = (formula.charAt(0) == "\'" ? formula.substring(1): formula);
-					}
-					return value;
-				}
-			},
-			formula: null,
-			formulaFunc: null,
-			thisCell: null,
-			makeFormulaEval: function(cell, row, col, formulaFunc) {
-				cE.thisCell = cell;
-				var fn = function() {
-					var v = "";
-					
-					try {
-						v = formulaFunc();
-						/*
-						switch(typeof(v)) {
-							case "string":
-								v = v
-									.replace(cE.regEx.amp, cE.str.amp)
-									.replace(cE.regEx.lt, cE.str.lt)
-									.replace(cE.regEx.gt, cE.str.gt)
-									.replace(cE.regEx.nbsp, cE.str.nbsp);
-						}
-						*/
-						cell.setValue(v);
-						
-					} catch (e) {
-						cE.makeError(cell, e);
-					}
-				};
-				fn.row = row;
-				fn.col = col;
-				return fn;
-			},
-			makeError: function(cell, e) {
-				var msg = cE.ERROR + ': ' + msg;
-				e.message.replace(/\d+\.?\d*, \d+\.?\d*/, function(v, i) {
-					try {
-						v = v.split(', ');
-						msg = ('Cell:' + cE.columnLabelString(parseInt(v[0]) + 1) + (parseInt(v[1])) + ' not found');
-					} catch (e) {}
-				});
-				cell.setValue(msg);
-			},
-			checkCycles: function(row, col, tableI) {
-				for (var i = 0; i < cE.calcState.stack.length; i++) {
-					var item = cE.calcState.stack[i];
-					if (item.row != null && 
-						item.col != null &&
-						item.row == row  &&
-						item.col == col &&
-						tableI == cE.calcState.i
-					) {
-						return true;
-					}
-				}
-				return false;
-			}
-		};
-		
 		var $window = jQuery(window);
 		
 		//initialize this instance of sheet
@@ -4475,10 +3825,6 @@ jQuery.sheet = {
 			jS.log = emptyFN;
 		}
 		
-		if (!s.showErrors) {
-			cE.makeError = emptyFN;
-		}
-		
 		if (!jQuery.support.boxModel) {
 			s.boxModelCorrection = 0;
 		}
@@ -4499,18 +3845,6 @@ jQuery.sheet = {
 			}
 		});
 		
-		//Extend the calculation engine plugins
-		cE.fn = jQuery.extend(cE.fn, s.calculations);
-		
-		//Extend the calculation engine with advanced functions
-		if (jQuery.sheet.advancedfn) {
-			cE.fn = jQuery.extend(cE.fn, jQuery.sheet.advancedfn);
-		}
-		
-		//Extend the calculation engine with finance functions
-		if (jQuery.sheet.financefn) {
-			cE.fn = jQuery.extend(cE.fn, jQuery.sheet.financefn);
-		}
 		
 		if (jQuery.sheet.fn) { //If the new calculations engine is alive, fill it too, we will remove above when no longer needed.
 			//Extend the calculation engine plugins
@@ -4524,23 +3858,6 @@ jQuery.sheet = {
 			//Extend the calculation engine with finance functions
 			if (jQuery.sheet.financefn) {
 				jQuery.sheet.fn = jQuery.extend(jQuery.sheet.fn, jQuery.sheet.financefn);
-			}
-		}
-		
-		//this makes cells and functions case insensitive
-		if (s.caseInsensitive) {
-			cE.regEx.cell = cE.regEx.cellInsensitive;
-			cE.regEx.range = cE.regEx.rangeInsensitive;
-			cE.regEx.remoteCell = cE.regEx.remoteCellInsensitive;
-			cE.regEx.remoteCellRange = cE.regEx.remoteCellRangeInsensitive;
-			cE.regEx.sheet = cE.regEx.sheetInsensitive;
-			
-			//Make sheet functions upper and lower case compatible
-			for (var k in cE.fn) {
-				var kLower = k.toLowerCase();
-				if (kLower != k) {
-					cE.fn[kLower] = cE.fn[k];
-				}
 			}
 		}
 		
