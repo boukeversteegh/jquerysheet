@@ -4870,6 +4870,7 @@ jQuery.fn.extend({
                         this.onselectstart = function() { return false; }; 
                         this.unselectable = "on"; 
                         jQuery(this).css('-moz-user-select', 'none'); 
-                }); 
+                });
+                return this;
         } 
 });
