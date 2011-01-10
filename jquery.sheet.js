@@ -4864,13 +4864,14 @@ var arrHelpers = {
 	}
 };
 
-jQuery.fn.extend({ 
-        disableSelection : function() { 
-                this.each(function() { 
-                        this.onselectstart = function() { return false; }; 
-                        this.unselectable = "on"; 
-                        jQuery(this).css('-moz-user-select', 'none'); 
-                });
-                return this;
-        } 
-});
+if (!jQuery.fn.disableSelection) {
+	jQuery.fn.extend({ 
+		disableSelection : function() { 
+		        this.each(function() { 
+		                this.onselectstart = function() { return false; }; 
+		                this.unselectable = "on"; 
+		                jQuery(this).css('-moz-user-select', 'none'); 
+		        }); 
+		} 
+	});
+}
