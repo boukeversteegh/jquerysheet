@@ -18,10 +18,6 @@
         <!--/Required-->
 		
 		<!--Optional-->
-			<!--Menu-->
-				<link rel="stylesheet" type="text/css" href="plugins/menu.css" />
-				<script type="text/javascript" src="plugins/mbMenu.min.js"></script>
-			<!--/Menu-->
 			<!--ScrollTo-->
 				<script type="text/javascript" src="plugins/jquery.scrollTo-min.js"></script>
 			<!--/ScrollTo-->
@@ -31,10 +27,6 @@
 			<!--Raphaeljs - for charts-->
 				<script type="text/javascript" src="plugins/raphael-min.js"></script>
 				<script type="text/javascript" src="plugins/g.raphael-min.js"></script>
-				<script type="text/javascript" src="plugins/g.pie-min.js"></script>
-				<script type="text/javascript" src="plugins/g.line-min.js"></script>
-				<script type="text/javascript" src="plugins/g.dot-min.js"></script>
-				<script type="text/javascript" src="plugins/g.bar-min.js"></script>
 			<!--/Raphaeljs-->
 			<!--ColorPicker-->
 				<link rel="stylesheet" type="text/css" href="plugins/jquery.colorPicker.css" />
@@ -126,8 +118,8 @@
             });
             
             //This function builds the inline menu to make it easy to interact with each sheet instance
-            function inlineMenu(instance){
-                var I = (instance ? instance.length : 0);
+            function inlineMenu(I){
+                I = (I ? I.length : 0);
                 
                 //we want to be able to edit the html for the menu to make them multi-instance
                 var html = $('#inlineMenu').html().replace(/sheetInstance/g, "$.sheet.instance[" + I + "]");
@@ -164,6 +156,9 @@
                 padding: 0px;
                 margin: 0px;
                 padding-bottom: 100px;
+                color: black;
+                font-family: sans-serif;
+                font-size: 13px;
             }
             
             .wrapper {

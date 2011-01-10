@@ -3,16 +3,19 @@
 /* lexical grammar */
 %lex
 %%
-\s+				{/* skip whitespace */}
-'"'("\\"["]|[^"])*'"'		{return 'STRING';}
-"'"('\\'[']|[^'])*"'"		{return 'STRING';}
-'TABLE'[0-9]+[:][A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+ 	{return 'REMOTECELLRANGE';}
-'TABLE'[0-9]+[:][A-Za-z]+[0-9]+ 	{return 'REMOTECELL';}
-[A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+	{return 'CELLRANGE';}
-[A-Za-z]+[0-9]+			{return 'CELL';}
-[A-Za-z]+ 			{return 'IDENTIFIER';}
+\s+								{/* skip whitespace */}
+'"'("\\"["]|[^"])*'"'						{return 'STRING';}
+"'"('\\'[']|[^'])*"'"						{return 'STRING';}
+'$'[A-Za-z]+'$'[0-9]+[:]'$'[A-Za-z]+'$'[0-9]+			{return 'FIXEDCELLRANGE';}
+'$'[A-Za-z]+'$'[0-9]+						{return 'FIXEDCELL';}
+'TABLE'[0-9]+[:][A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+ 		{return 'REMOTECELLRANGE';}
+'TABLE'[0-9]+[:][A-Za-z]+[0-9]+ 				{return 'REMOTECELL';}
+[A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+				{return 'CELLRANGE';}
+[A-Za-z]+[0-9]+							{return 'CELL';}
+[A-Za-z]+ 							{return 'IDENTIFIER';}
 [0-9]([0-9]?)[-/][0-9]([0-9]?)[-/][0-9]([0-9]?)([0-9]?)([0-9]?) {return 'DATE';}
-[0-9]+("."[0-9]+)?  		{return 'NUMBER';}
+[0-9]+[%]							{return 'PERCENT';}
+[0-9]+("."[0-9]+)?  						{return 'NUMBER';}
 "$"				{/* skip whitespace */}
 " "				{return ' ';}
 "."				{return '.';}
@@ -48,6 +51,7 @@
 %left '+' '-'
 %left '*' '/'
 %left '^'
+%left '%'
 %left UMINUS
 
 %start expressions
@@ -61,37 +65,43 @@ expressions
 
 e
 	: e '<=' e
-		{$$ = $1 <= $3;}
+		{$$ = ($1 * 1) <= ($3 * 1);}
 	| e '>=' e
-		{$$ = $1 >= $3;}
+		{$$ = ($1 * 1) >= ($3 * 1);}
 	| e '<>' e
-		{$$ = $1 != $3;}
+		{$$ = ($1 * 1) != ($3 * 1);}
 	| e NOT e
-		{$$ = $1 != $3;}
+		{$$ = ($1 * 1) != ($3 * 1);}
 	| e '>' e
-		{$$ = $1 > $3;}
+		{$$ = ($1 * 1) > ($3 * 1);}
 	| e '<' e
-		{$$ = $1 < $3;}
+		{$$ = ($1 * 1) < ($3 * 1);}
 	| e '+' e
-		{$$ = $1 + $3;}
+		{$$ = ($1 * 1) + ($3 * 1);}
 	| e '-' e
-		{$$ = $1 - $3;}
+		{$$ = ($1 * 1) - ($3 * 1);}
 	| e '*' e
-		{$$ = $1 * $3;}
+		{$$ = ($1 * 1) * ($3 * 1);}
 	| e '/' e
-		{$$ = $1 / $3;}
+		{$$ = ($1 * 1) / ($3 * 1);}
 	| e '^' e
-		{$$ = Math.pow($1, $3);}
-	| '-' e %prec UMINUS
-		{$$ = -$2;}
+		{$$ = Math.pow(($1 * 1), ($3 * 1));}
+	| '-' e
+		{$$ = $2 * -1;}
 	| '(' e ')'
 		{$$ = $2;}
+	| PERCENT
+		{$$ = ($1.replace(/%/,'') * 1) / 100;}
 	| DATE
 		{/*$$ = new Date($1).toString();*/}
 	| NUMBER
 		{$$ = Number(yytext);}
 	| E
 		{$$ = Math.E;}
+	| FIXEDCELL
+		{$$ = arguments[6].fixedCellValue($1);}
+	| FIXEDCELLRANGE
+		{$$ = arguments[6].fixedCellRangeValue($1);}
 	| CELL
 		{$$ = arguments[6].cellValue($1);}
 	| CELLRANGE
@@ -105,11 +115,7 @@ e
 	| IDENTIFIER '(' ')'
 		{$$ = jQuery.sheet.fn[$1]();}
 	| IDENTIFIER '(' expseq ')'
-		{
-			if (jQuery.isArray($3))
-		 		$3.reverse();
-			$$ = jQuery.sheet.fn[$1](arguments = $3);
-		}
+		{$$ = arguments[6].callFunction($1, $3);}
  ;
 
 expseq

@@ -26,23 +26,83 @@
 	padding: 0px ! important;
 	border: none ! important;
 	width: 100%; 
-	margin: 0px; 
+	margin: 0px;
 }
 
-.jSheetMenu
+/* Menu */
+.jSheetMenu {
+	padding: 3px;
+	background: none;
+}
+.jSheetMenu *
+{
+	border-color: inherit ! important;
+	border-width: 1px;
+	text-decoration: none ! important;
+	white-space: nowrap;
+	width: auto;
+}
+
+.jSheetMenu ul
 {
 	cursor: pointer;
-	background-color: transparent ! important;
 	padding: 0px ! important;
 	margin: 0px ! important;
 	border: none ! important;
+	z-index: 999999;
+	position:relative;
+	margin:0;
+	padding:0;
+	list-style:none;
+	list-style-position:outside;
 }
 
-.jSheetMenu *
-{
-	color: inherit ! important;
-	background-color: inherit ! important;
+.jSheetMenu a{
+	display:block;
+	padding:0px 5px;
 }
+
+.jSheetMenu li{
+	float:left;
+	position:relative;
+	border: none;
+	background-image: none;
+	border-width: 1px;
+	width: inherit;
+}
+.jSheetMenu li:hover{
+	background-image: inherit;
+}
+
+.jSheetMenu ul ul {
+	position:absolute;
+	display:none;
+	width:12em;
+	top:1.5em;
+}
+
+.jSheetMenu li ul a{
+	width:12em;
+	height:auto;
+	float:left;
+}
+
+.jSheetMenu ul ul{
+	top:auto;
+}	
+
+.jSheetMenu li ul ul {
+	left:12em;
+	margin:0px 0 0 10px;
+}
+
+.jSheetMenu li:hover ul ul, .jSheetMenu li:hover ul ul ul, .jSheetMenu li:hover ul ul ul ul{
+	display:none;
+}
+.jSheetMenu li:hover ul, .jSheetMenu li li:hover ul, .jSheetMenu li li li:hover ul, .jSheetMenu li li li li:hover ul{
+	display:block;
+}
+
 .menu
 {
 	display: none;
@@ -120,6 +180,7 @@
 	padding: 0px ! important;
 	border-style: solid ! important;
 	-moz-border-radius: 0px 0px 0px 0px;
+	overflow: hidden;
 	text-overflow: ellipsis ! important;
 	white-space: nowrap ! important;
 	margin: 0px ! important;

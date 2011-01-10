@@ -577,42 +577,33 @@ jQuery.sheet = {
 					}
 					
 					if (s.editable) {
-						//Page Menu Control	
-						if (jQuery.mbMenu) {
-							jQuery('<div />').load(s.urlMenu, function() {
-								var menu = jQuery('<td style="width: 50px; text-align: center;" id="' + jS.id.menu + '" class="rootVoices ui-corner-tl ' + jS.cl.menu + '" />')
-									.html(
-										jQuery(this).html()
-											.replace(/sheetInstance/g, "jQuery.sheet.instance[" + I + "]")
-											.replace(/menuInstance/g, I));
-											
-									menu
-										.prependTo(firstRowTr)
-										.buildMenu({
-											menuWidth:		100,
-											openOnRight:	false,
-											containment: 	s.parent.attr('id'),
-											hasImages:		false,
-											fadeInTime:		0,
-											fadeOutTime:	0,
-											adjustLeft:		2,
-											minZindex:		"auto",
-											adjustTop:		10,
-											opacity:		.95,
-											shadow:			false,
-											closeOnMouseOut:true,
-											closeAfter:		1000,
-											hoverIntent:	0, //if you use jquery.hoverIntent.js set this to time in milliseconds; 0= false;
-											submenuHoverIntent: 0
-										})
-										.hover(function() {
-											//not going to add to jS.cl because this isn't our control
-											jQuery(this).addClass(jS.cl.uiMenu);
-										}, function() {
-											jQuery(this).removeClass(jS.cl.uiMenu);
+						//Sheet Menu Control	
+						jQuery('<div />').load(s.urlMenu, function() {
+							var menu = jQuery('<td id="' + jS.id.menu + '" class="' + jS.cl.menu + '" />')
+								.html(
+									jQuery(this).html()
+										.replace(/sheetInstance/g, "jQuery.sheet.instance[" + I + "]")
+										.replace(/menuInstance/g, I));
+										
+								menu
+									.prependTo(firstRowTr)
+									.find("ul").hide()
+									.addClass(jS.cl.uiMenuUl)
+									.first().show();
+								
+								menu
+									.find("li")
+										.addClass(jS.cl.uiMenuLi)
+										.hover(function(){
+											jQuery(this).find('ul:first')
+												.hide()
+												.show(400);
+										},function(){
+											jQuery(this).find('ul:first')
+												.hide();
 										});
-							});
-						}
+						});
+						
 						
 						//Edit box menu
 						var secondRow = jQuery('<table cellpadding="0" cellspacing="0" border="0">' +
@@ -2640,8 +2631,14 @@ jQuery.sheet = {
 					}
 					
 					if (result.length) {
-						return result;
+						return [result];
 					}
+				},
+				fixedCellValue: function(id) {
+					return this.cellValue(id.replace(/[$]/g, ''));
+				},
+				fixedCellRangeValue: function(ids) {
+					return this.cellRangeValue(ids.replace(/[$]/g, ''));
 				},
 				remoteCellValue: function(id) {//Example: TABLE1:A1
 					id = id.split(':');
@@ -2662,8 +2659,13 @@ jQuery.sheet = {
 					}
 					
 					if (result.length) {
-						return result;
+						return [result];
 					}
+				},
+				callFunction: function(fn, args) {
+					if (jQuery.isArray(args))
+						return jQuery.sheet.fn[fn].apply(jQuery.sheet.fn, args.reverse());
+					return jQuery.sheet.fn[fn](args);
 				}
 			},
 			context: {},
@@ -4849,6 +4851,16 @@ var arrHelpers = {
 			a.push(arr[i]);
 		}
 		return a;
+	},
+	flatten: function(arr) {
+		var flat = [];
+		for (var i = 0, l = arr.length; i < l; i++){
+			var type = Object.prototype.toString.call(arr[i]).split(' ').pop().split(']').shift().toLowerCase();
+			if (type) {
+				flat = flat.concat(/^(array|collection|arguments|object)$/.test(type) ? this.flatten(arr[i]) : arr[i]);
+			}
+		}
+		return flat;
 	}
 };
 

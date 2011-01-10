@@ -118,11 +118,11 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		return this.AVERAGE(values);
 	},
 	COUNT: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.count, 0); },
-	COUNTA:		function(v) {
-		var values =arrHelpers.foldPrepare(v, arguments);
+	COUNTA:		function() {
 		var count = 0;
-		for (var i = 0; i < values.length; i++) {
-			if (values[i]) {
+		var args = arrHelpers.flatten(arguments);
+		for (var i = 0; i < args.length; i++) {
+			if (args[i]) {
 				count++;
 			}
 		}
@@ -159,6 +159,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
 	},
 	IF:			function(expression, resultTrue, resultFalse){
+		//return [expression, resultTrue, resultFalse] + "";
 		return (expression ? resultTrue : resultFalse);
 	},
 	FIXED: 		function(v, decimals, noCommas) { 
