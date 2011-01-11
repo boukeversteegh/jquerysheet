@@ -116,7 +116,7 @@ e
 	| IDENTIFIER '(' ')'
 		{$$ = jQuery.sheet.fn[$1]();}
 	| IDENTIFIER '(' expseq ')'
-		{$$ = arguments[6].callFunction($1, $3);}
+		{$$ = arguments[6].callFunction($1, $3, arguments[7]);}
  ;
 
 expseq

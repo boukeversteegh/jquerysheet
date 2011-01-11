@@ -61,7 +61,7 @@ case 25:this.$ = $$[$0-1+1-1].substring(1, $$[$0-1+1-1].length - 1);
 break;
 case 26:this.$ = jQuery.sheet.fn[$$[$0-3+1-1]]();
 break;
-case 27:this.$ = arguments[6].callFunction($$[$0-4+1-1], $$[$0-4+3-1]);
+case 27:this.$ = arguments[6].callFunction($$[$0-4+1-1], $$[$0-4+3-1], arguments[7]);
 break;
 case 29:
  		this.$ = ($.isArray($$[$0-3+3-1]) ? $$[$0-3+3-1] : [$$[$0-3+3-1]]);
@@ -80,7 +80,7 @@ defaultActions: {"17":[2,1],"50":[2,29],"51":[2,30]},
 parseError: function parseError(str, hash) {
     throw new Error(str);
 },
-parse: function parse(input, fn) {
+parse: function parse(input, fn, cell) {
     var self = this,
         stack = [0],
         vstack = [null], // semantic value stack
@@ -219,7 +219,7 @@ parse: function parse(input, fn) {
 
                 // perform semantic action
                 yyval.$ = vstack[vstack.length-len]; // default to $$ = $1
-                r = this.performAction.call(yyval, yytext, yyleng, yylineno, this.yy, a[1], vstack, fn);
+                r = this.performAction.call(yyval, yytext, yyleng, yylineno, this.yy, a[1], vstack, fn, cell);
 
                 if (typeof r !== 'undefined') {
                     return r;

@@ -2481,13 +2481,13 @@ jQuery.sheet = {
 				
 				jS.cellUndoable.add(uiCell);
 			},
-			updateCellValue: function(table, row, col) {
+			updateCellValue: function(sheet, row, col) {
 				//first detect if the cell exists if not return nothing
-				if (!jS.spreadsheets[table]) return 'Error: Sheet not found';
-				if (!jS.spreadsheets[table][row]) return 'Error: Row not found';
-				if (!jS.spreadsheets[table][row][col]) return 'Error: Column not found';
+				if (!jS.spreadsheets[sheet]) return 'Error: Sheet not found';
+				if (!jS.spreadsheets[sheet][row]) return 'Error: Row not found';
+				if (!jS.spreadsheets[sheet][row][col]) return 'Error: Column not found';
 				
-				var cell = jS.spreadsheets[table][row][col];
+				var cell = jS.spreadsheets[sheet][row][col];
 				cell.oldValue = cell.value; //we detect the last value, so that we don't have to update all cell, thus saving resources
 
 				if (cell.formula && !cell.calculated) {
@@ -2500,7 +2500,14 @@ jQuery.sheet = {
 								cell.formula = cell.formula.substring(1, cell.formula.length);
 							}
 						
-							cell.value = parser.parse(cell.formula, jS.cellIdHandlers);
+							cell.value = parser.parse(cell.formula, jS.cellIdHandlers, {
+								sheet: sheet,
+								row: row,
+								col: col,
+								cell: jS.spreadsheets[sheet][row][col],
+								editable: s.editable,
+								jS: jS
+							});
 						} catch(e) {
 							cell.value = e.toString().replace(/\n/g, '<br />'); //error
 						}
@@ -2509,9 +2516,10 @@ jQuery.sheet = {
 				}
 				
 				cell.state = null;
-		
-				if (cell.oldValue != cell.value && !cell.calculated) {
-					jQuery(jS.getTd(table, row, col)).html(cell.value);
+				if (cell.html) {
+					jQuery(jS.getTd(sheet, row, col)).html(cell.html);					
+				} else if (cell.oldValue != cell.value && !cell.calculated) {
+					jQuery(jS.getTd(sheet, row, col)).html(cell.value);
 				}
 				
 				cell.calculated = true;
@@ -2575,14 +2583,20 @@ jQuery.sheet = {
 						return [result];
 					}
 				},
-				callFunction: function(fn, args) {
-					if (jQuery.isArray(args))
-						return jQuery.sheet.fn[fn].apply(jQuery.sheet.fn, args.reverse());
-					return jQuery.sheet.fn[fn](args);
+				callFunction: function(fn, args, cell) {					
+					if (!args) {
+						args = [''];
+					} else if (jQuery.isArray(args)) {
+						args = args.reverse();
+					} else {
+						args = [args];
+					}
+						
+					return jQuery.sheet.fn[fn].apply(cell, args);
 				}
 			},
 			context: {},
-			calc: function(tableI, fuel) { /* harnesses calculations engine's calculation function
+			calc: function(tableI) { /* harnesses calculations engine's calculation function
 												tableI: int, the current table integer;
 												fuel: variable holder, used to prevent memory leaks, and for calculations;
 											*/
@@ -3664,7 +3678,8 @@ jQuery.sheet = {
 		}
 		
 		jS.openSheet(o, s.forceColWidthsOnStartup);
-
+		jS.s = s;
+		
 		return jS;
 	},
 	makeTable : {
@@ -4121,11 +4136,11 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 	},
 	DROPDOWN: function(v, noBlank) {
 		v = arrHelpers.foldPrepare(v, arguments, true);
-		if (s.editable) {
-			var o = jQuery('<select style="width: 100%;" class="clickable" />')
-				.change(function() {
-					jS.controlFactory.input.setValue(jQuery(this));
-				});
+		if (this.editable) {
+			var cell = this.cell;
+			var jS = this.jS;
+			var id = "dropdown" + this.jS.I + "_" + this.sheet + "_" + this.row + "_" + jS.I;
+			var o = jQuery('<select style="width: 100%;" class="clickable" name="' + id + '" id="' + id + '" />');				
 		
 			if (!noBlank) {
 				o.append('<option value="">Select a value</option>');
@@ -4136,84 +4151,86 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 					o.append('<option value="' + v[i] + '">' + v[i] + '</option>');
 				}
 			}
-	
-			origParent.one('calculation', function() {
-				var v = jS.controlFactory.input.getValue(o);
-				o.val(v);
+			
+			jS.s.parent.one('calculation', function() {
+				jQuery('#' + id)
+					.change(function() {
+						cell.selectedValue = jQuery(this).val();
+						jS.calc();
+					});
 			});
-			return o;
-		} else {
-			return jS.controlFactory.input.getValue(v);
+					
+			o.val(cell.selectedValue);
+			
+			this.cell.html = o;
 		}
+		return cell.selectedValue;
 	},
 	RADIO: function(v) {
 		v = arrHelpers.foldPrepare(v, arguments, true);
-		if (s.editable) {
-			var radio = jQuery('<span class="clickable" />');
+		var cell = this.cell;
+		var jS = this.jS;
+		
+		if (this.editable) {
+			var id = "radio" + this.jS.I + "_" + this.sheet + "_" + this.row + "_" + jS.I;
+			var o = jQuery('<span class="clickable" />');
 			for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
 				if (v[i]) {
-					radio
-						.append(
-							jQuery('<input type="radio" name="' + name + '" />')
-								.val(v[i])
-								.change(function() {
-									radio.find('input').removeAttr('CHECKED');
-									jQuery(this).attr('CHECKED', true);
-									jS.controlFactory.input.setValue(jQuery(this), radio.parent());
-								})
-						)
+					var input = jQuery('<input type="radio" name="' + id + '" class="' + id + '" />')
+						.val(v[i]);
+					
+					if (v[i] == cell.selectedValue) {
+						input.attr('checked', 'true');
+					}
+					
+					o
+						.append(input)
 						.append('<span class="clickable">' + v[i] + '</span>')
 						.append('<br />');
+					
+					jS.s.parent.one('calculation', function() {
+						jQuery('.' + id)
+							.change(function() {
+								cell.selectedValue = jQuery(this).val();
+								jS.calc();
+							});
+					});
 				}
 			}
-		
-			origParent.one('calculation', function() {
-				radio.find('input')
-					.attr('name', radio.parent().attr('id') + '_radio');
-				var val = jS.controlFactory.input.getValue(radio);
-				radio.find('input[value="' + val + '"]')
-					.attr('CHECKED', true);
-			});
-		
-			return radio;
-		} else {
-			return jS.controlFactory.input.getValue(v);
+			
+			this.cell.html = o;
 		}
+		return cell.selectedValue;
 	},
 	CHECKBOX: function(v) {
 		v = arrHelpers.foldPrepare(v, arguments)[0];
-		if (s.editable) {
+		var cell = this.cell;
+		var jS = this.jS;
+		
+		if (this.editable) {
+			var id = "checkbox" + this.jS.I + "_" + this.sheet + "_" + this.row + "_" + jS.I;
+			var checkbox = jQuery('<input type="checkbox" name="' + id + '" class="' + id + '" />')
+				.val(v);
+				
 			var o = jQuery('<span class="clickable" />')
-				.append(
-					jQuery('<input type="checkbox" />')
-						.val(v)
-						.change(function() {
-							o.parent().removeAttr('selectedvalue');
-							if (jQuery(this).is(':checked')) {
-								jS.controlFactory.input.setValue(jQuery(this), o.parent());
-							}
-							jS.calc();
-						})
-				)
+				.append(checkbox)
 				.append('<span>' + v + '</span><br />');
 			
-			origParent.one('calculation', function() {
-				o.find('input').removeAttr('CHECKED');
-				o.find('input[value="' + o.parent().attr('selectedvalue') + '"]').attr('CHECKED', 'TRUE');
+			if (v == cell.selectedValue) {
+				checkbox.attr('checked', true);
+			}
+			
+			jS.s.parent.one('calculation', function() {
+				jQuery('.' + id)
+					.change(function() {
+						cell.selectedValue = (jQuery(this).is(':checked') ? jQuery(this).val() : '');
+						jS.calc();
+					});
 			});
-			return o;
-		} else {
-			return jS.controlFactory.input.getValue(v); 
+			
+			this.cell.html = o;
 		}
-	},
-	ISCHECKED:		function(v) {
-		var val = jS.controlFactory.input.getValue(v);
-		var length = jQuery(v).find('input[value="' + val + '"]').length;
-		if (length) {
-			return 'TRUE';
-		} else {
-			return 'FALSE';
-		}
+		return cell.selectedValue;
 	},
 	BARCHART:	function(values, legend, title) {
 		return jQuery.sheet.instance[0].controlFactory.chart({
@@ -4376,6 +4393,13 @@ var arrHelpers = {
 			}
 		}
 		return flat;
+	},
+	is: function(obj) {
+		if (obj instanceof Array) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 };
 
