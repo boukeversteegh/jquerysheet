@@ -905,99 +905,6 @@ jQuery.sheet = {
 						textarea.elastic();
 					}
 				},
-				input: { /* inputs for use from the calculations engine	*/
-					select: function(v, noBlank) {
-						if (s.editable) {
-							var o = jQuery('<select style="width: 100%;" class="clickable" />')
-								.change(function() {
-									jS.controlFactory.input.setValue(jQuery(this));
-								});
-							
-							if (!noBlank) {
-								o.append('<option value="">Select a value</option>');
-							}
-							
-							for (var i = 0; i < (v.length <= 50 ? v.length : 50); i++) {
-								if (v[i]) {
-									o.append('<option value="' + v[i] + '">' + v[i] + '</option>');
-								}
-							}
-						
-							origParent.one('calculation', function() {
-								var v = jS.controlFactory.input.getValue(o);
-								o.val(v);
-							});
-							return o;
-						} else {
-							return jS.controlFactory.input.getValue(v);
-						}
-					},
-					radio: function(v) {
-						if (s.editable) {
-							var radio = jQuery('<span class="clickable" />');
-							for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
-								if (v[i]) {
-									radio
-										.append(
-											jQuery('<input type="radio" name="' + name + '" />')
-												.val(v[i])
-												.change(function() {
-													radio.find('input').removeAttr('CHECKED');
-													jQuery(this).attr('CHECKED', true);
-													jS.controlFactory.input.setValue(jQuery(this), radio.parent());
-												})
-										)
-										.append('<span class="clickable">' + v[i] + '</span>')
-										.append('<br />');
-								}
-							}
-						
-							origParent.one('calculation', function() {
-								radio.find('input')
-									.attr('name', radio.parent().attr('id') + '_radio');
-								var val = jS.controlFactory.input.getValue(radio);
-								radio.find('input[value="' + val + '"]')
-									.attr('CHECKED', true);
-							});
-						
-							return radio;
-						} else {
-							return jS.controlFactory.input.getValue(v);
-						}
-					},
-					checkbox: function(v) {
-						if (s.editable) {
-							var o = jQuery('<span class="clickable" />')
-								.append(
-									jQuery('<input type="checkbox" />')
-										.val(v)
-										.change(function() {
-											o.parent().removeAttr('selectedvalue');
-											if (jQuery(this).is(':checked')) {
-												jS.controlFactory.input.setValue(jQuery(this), o.parent());
-											}
-											jS.calc();
-										})
-								)
-								.append('<span>' + v + '</span><br />');
-							
-							origParent.one('calculation', function() {
-								o.find('input').removeAttr('CHECKED');
-								o.find('input[value="' + o.parent().attr('selectedvalue') + '"]').attr('CHECKED', 'TRUE');
-							});
-							return o;
-						} else {
-							return jS.controlFactory.input.getValue(v); 
-						}
-					},
-					setValue: function(o, parent) {
-						jQuery(parent ? parent : o.parent()).attr('selectedvalue', o.val());;
-						jS.calc();
-					},
-					getValue: function(o, parent) {
-						return jQuery(parent ? parent : o.parent()).attr('selectedvalue');
-					}
-				},
 				autoFiller: function() { /* created the autofiller object */
 					return jQuery('<div id="' + (jS.id.autoFiller + jS.i) + '" class="' + jS.cl.autoFiller + ' ' + jS.cl.uiAutoFiller + '">' +
 									'<div class="' + jS.cl.autoFillerHandle + '" />' +
@@ -2681,17 +2588,8 @@ jQuery.sheet = {
 											*/
 				tableI = (tableI ? tableI : jS.i);
 				jS.log('Calculation Started');
-				if (!jS.tableCellProviders[tableI]) {
-					jS.tableCellProviders[tableI] = new jS.tableCellProvider(tableI);
-				}
 				if (!s.calcOff) {
-					if (jSE) { //If the new engine is alive, use it
-						jSE.calc(tableI, jS.spreadsheetsToArray()[tableI], jS.updateCellValue);
-					} else {
-						jS.tableCellProviders[tableI].cells = {};
-						jSE.calc(jS.tableCellProviders[tableI], jS.context, fuel);
-					}
-					
+					jSE.calc(tableI, jS.spreadsheetsToArray()[tableI], jS.updateCellValue);
 					origParent.trigger('calculation');
 					jS.isSheetEdit = false;
 				}
@@ -3566,21 +3464,6 @@ jQuery.sheet = {
 				var i = jSE.columnLabelIndex(jQuery.trim(jQuery(o).text()));
 				return parseInt(i) - 1;
 			},
-			tableCellProvider: function(tableI) { /* provider for calculations engine */
-				this.tableBodyId = jS.id.sheet + tableI;
-				this.tableI = tableI;
-				this.cells = {};
-			},
-			tableCellProviders: [],
-			tableCell: function(tableI, row, col) { /* provider for calculations engine */
-				this.tableBodyId = jS.id.sheet + tableI;
-				this.tableI = tableI;
-				this.row = row;
-				this.col = col;
-				this.value = jS.EMPTY_VALUE;
-				
-				//this.prototype = new jSE.cell();
-			},
 			EMPTY_VALUE: {},
 			time: { /* time loggin used with jS.log, useful for finding out if new methods are faster */
 				now: new Date(),
@@ -3710,95 +3593,6 @@ jQuery.sheet = {
 			}
 		};
 
-		jS.tableCellProvider.prototype = {
-			getCell: function(tableI, row, col) {
-				if (typeof(col) == "string") {
-					col = jSE.columnLabelIndex(col);
-				}
-				var key = tableI + "," + row + "," + col;
-				var cell = this.cells[key];
-				if (!cell) {
-					var td = jS.getTd(tableI, row - 1, col - 1);
-					if (td) {
-						cell = this.cells[key] = new jS.tableCell(tableI, row, col);
-					}
-				}
-				return cell;
-			},
-			getNumberOfColumns: function(row) {
-				var tableBody = document.getElementById(this.tableBodyId);
-				if (tableBody) {
-					var tr = tableBody.rows[row];
-					if (tr) {
-						return tr.cells.length;
-					}
-				}
-				return 0;
-			},
-			toString: function() {
-				result = "";
-				jQuery('#' + (this.tableBodyId) + ' tr').each(function() {
-					result += this.innerHTML.replace(/\n/g, "") + "\n";
-				});
-				return result;
-			}
-		};
-
-		jS.tableCell.prototype = {
-			td: null,
-			getTd: function() {
-				if (!this.td) { //this attempts to check if the td is cached, then cache it if not, then return it
-					this.td = jS.getTd(this.tableI, this.row - 1, this.col - 1);
-				}
-				
-				return this.td;
-			},
-			setValue: function(v, e) {
-				this.error = e;
-				this.value = v;
-				jQuery(this.getTd()).html(v ? v: ''); //I know this is slower than innerHTML = '', but sometimes stability just rules!
-			},
-			getValue: function() {
-				var v = this.value;
-				if (v === jS.EMPTY_VALUE && !this.getFormula()) {
-					
-					v = jQuery(this.getTd()).text(); //again, stability rules!
-
-					v = this.value = (v.length > 0 ? jSE.parseFormulaStatic(v) : null);
-				}
-				
-				return (v === jS.EMPTY_VALUE ? null: v);
-			},
-			getFormat: function() {
-				return jQuery(this.getTd()).attr("format");
-			},
-			setFormat: function(v) {
-				jQuery(this.getTd()).attr("format", v);
-			},
-			getFormulaFunc: function() {
-				return this.formulaFunc;
-			},
-			setFormulaFunc: function(v) {
-				this.formulaFunc = v;
-			},
-			formula: null,
-			getFormula: function() {
-				if (!this.formula) { //this if statement takes line breaks out of formulas so that they calculate better, then they are cached because the formulas to not change, on the cell 
-					var v = jQuery(this.getTd()).attr('formula'); 
-					this.formula = (v ? v.replace(/\n/g, ' ') : v);
-				}
-				
-				return this.formula;
-			},
-			setFormula: function(v) {
-				if (v && v.length > 0) {
-					jQuery(this.getTd()).attr('formula', v);
-				} else {
-					jQuery(this.getTd()).removeAttr('formula');
-				}
-			}
-		};
-
 		var $window = jQuery(window);
 		
 		//initialize this instance of sheet
@@ -3845,13 +3639,13 @@ jQuery.sheet = {
 		jS.log('Startup');
 		
 		$window
-		.resize(function() {
-			if (jS) { //We check because jS might have been killed
-				s.width = s.parent.width();
-				s.height = s.parent.height();
-				jS.sheetSyncSize();
-			}
-		});
+			.resize(function() {
+				if (jS) { //We check because jS might have been killed
+					s.width = s.parent.width();
+					s.height = s.parent.height();
+					jS.sheetSyncSize();
+				}
+			});
 		
 		
 		if (jQuery.sheet.fn) { //If the new calculations engine is alive, fill it too, we will remove above when no longer needed.
@@ -4184,7 +3978,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 			.attr('src', v);
 	},
 	AVERAGE:	function(values) { 
-		var arr =arrHelpers.foldPrepare(values, arguments);
+		var arr = arrHelpers.foldPrepare(values, arguments);
 		return this.SUM(arr) / this.COUNT(arr); 
 	},
 	AVG: 		function(values) { 
@@ -4325,17 +4119,92 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 	SQRT: function(v) {
 		return Math.sqrt(v);
 	},
-	SELECTINPUT:	function(v, noBlank) {
+	DROPDOWN: function(v, noBlank) {
 		v = arrHelpers.foldPrepare(v, arguments, true);
-		return jS.controlFactory.input.select(v, noBlank);
+		if (s.editable) {
+			var o = jQuery('<select style="width: 100%;" class="clickable" />')
+				.change(function() {
+					jS.controlFactory.input.setValue(jQuery(this));
+				});
+		
+			if (!noBlank) {
+				o.append('<option value="">Select a value</option>');
+			}
+		
+			for (var i = 0; i < (v.length <= 50 ? v.length : 50); i++) {
+				if (v[i]) {
+					o.append('<option value="' + v[i] + '">' + v[i] + '</option>');
+				}
+			}
+	
+			origParent.one('calculation', function() {
+				var v = jS.controlFactory.input.getValue(o);
+				o.val(v);
+			});
+			return o;
+		} else {
+			return jS.controlFactory.input.getValue(v);
+		}
 	},
-	RADIOINPUT: function(v) {
+	RADIO: function(v) {
 		v = arrHelpers.foldPrepare(v, arguments, true);
-		return jS.controlFactory.input.radio(v);
+		if (s.editable) {
+			var radio = jQuery('<span class="clickable" />');
+			for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
+				if (v[i]) {
+					radio
+						.append(
+							jQuery('<input type="radio" name="' + name + '" />')
+								.val(v[i])
+								.change(function() {
+									radio.find('input').removeAttr('CHECKED');
+									jQuery(this).attr('CHECKED', true);
+									jS.controlFactory.input.setValue(jQuery(this), radio.parent());
+								})
+						)
+						.append('<span class="clickable">' + v[i] + '</span>')
+						.append('<br />');
+				}
+			}
+		
+			origParent.one('calculation', function() {
+				radio.find('input')
+					.attr('name', radio.parent().attr('id') + '_radio');
+				var val = jS.controlFactory.input.getValue(radio);
+				radio.find('input[value="' + val + '"]')
+					.attr('CHECKED', true);
+			});
+		
+			return radio;
+		} else {
+			return jS.controlFactory.input.getValue(v);
+		}
 	},
 	CHECKBOX: function(v) {
 		v = arrHelpers.foldPrepare(v, arguments)[0];
-		return jS.controlFactory.input.checkbox(v);
+		if (s.editable) {
+			var o = jQuery('<span class="clickable" />')
+				.append(
+					jQuery('<input type="checkbox" />')
+						.val(v)
+						.change(function() {
+							o.parent().removeAttr('selectedvalue');
+							if (jQuery(this).is(':checked')) {
+								jS.controlFactory.input.setValue(jQuery(this), o.parent());
+							}
+							jS.calc();
+						})
+				)
+				.append('<span>' + v + '</span><br />');
+			
+			origParent.one('calculation', function() {
+				o.find('input').removeAttr('CHECKED');
+				o.find('input[value="' + o.parent().attr('selectedvalue') + '"]').attr('CHECKED', 'TRUE');
+			});
+			return o;
+		} else {
+			return jS.controlFactory.input.getValue(v); 
+		}
 	},
 	ISCHECKED:		function(v) {
 		var val = jS.controlFactory.input.getValue(v);
