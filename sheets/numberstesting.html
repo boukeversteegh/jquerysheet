@@ -116,7 +116,7 @@
   </COLGROUP>
   <TBODY>
     <TR height="18px" style="height: 18px;">
-      <TD id="0_table1_cell_c0_r0">Inputs are for capturing fixed data, such as a drop down list (INPUT.SELECT), or a checkbox (INPUT.CHECKBOX)</TD>
+      <TD id="0_table1_cell_c0_r0">Inputs are for capturing fixed data, such as a drop down list (DROPDOWN), or a checkbox (CHECKBOX)</TD>
       <TD id="0_table1_cell_c1_r0"/>
       <TD id="0_table1_cell_c2_r0"/>
       <TD id="0_table1_cell_c3_r0"/>
@@ -131,15 +131,15 @@
     </TR>
     <TR height="18px" style="height: 18px;">
       <TD id="0_table1_cell_c0_r2">Select List</TD>
-      <TD id="0_table1_cell_c1_r2">"=SELECTINPUT(D3:D10)"</TD>
-      <TD selectedvalue="4" formula="=SELECTINPUT(D3:D10)" id="0_table1_cell_c2_r2"></TD>
+      <TD id="0_table1_cell_c1_r2">"=DROPDOWN(D3:D10)"</TD>
+      <TD selectedvalue="4" formula="=DROPDOWN(D3:D10)" id="0_table1_cell_c2_r2"></TD>
       <TD id="0_table1_cell_c3_r2">34</TD>
       <TD id="0_table1_cell_c4_r2">Lorem</TD>
     </TR>
     <TR height="18px" style="height: 18px;">
       <TD id="0_table1_cell_c0_r3">Radio List</TD>
-      <TD id="0_table1_cell_c1_r3">"=RADIOINPUT(E3:E10)"</TD>
-      <TD selectedvalue="Donec" formula="=RADIOINPUT(E3:E10)" id="0_table1_cell_c2_r3"></TD>
+      <TD id="0_table1_cell_c1_r3">"=RADIO(E3:E10)"</TD>
+      <TD selectedvalue="Donec" formula="=RADIO(E3:E10)" id="0_table1_cell_c2_r3"></TD>
       <TD id="0_table1_cell_c3_r3">-20</TD>
       <TD id="0_table1_cell_c4_r3">Proin</TD>
     </TR>
@@ -152,29 +152,29 @@
     </TR>
     <TR height="18px" style="height: 18px;">
       <TD id="0_table1_cell_c0_r5">Get Select List Value</TD>
-      <TD id="0_table1_cell_c1_r5">"=INPUT.SELECTVAL(C3)"</TD>
-      <TD formula="=INPUT.SELECTVAL(C3)" id="0_table1_cell_c2_r5">4</TD>
+      <TD id="0_table1_cell_c1_r5">"=C3"</TD>
+      <TD formula="=C3" id="0_table1_cell_c2_r5">4</TD>
       <TD id="0_table1_cell_c3_r5">123</TD>
       <TD id="0_table1_cell_c4_r5">Quisque</TD>
     </TR>
     <TR height="18px" style="height: 18px;">
       <TD id="0_table1_cell_c0_r6">Get Radio List Value</TD>
-      <TD id="0_table1_cell_c1_r6">"=INPUT.RADIOVAL(C4)"</TD>
-      <TD formula="=INPUT.RADIOVAL(C4)" id="0_table1_cell_c2_r6">Donec</TD>
+      <TD id="0_table1_cell_c1_r6">"=C4"</TD>
+      <TD formula="=C4" id="0_table1_cell_c2_r6">Donec</TD>
       <TD id="0_table1_cell_c3_r6">4</TD>
       <TD id="0_table1_cell_c4_r6">Aliquam</TD>
     </TR>
     <TR height="18px" style="height: 18px;">
       <TD id="0_table1_cell_c0_r7">Get Checkbox Value</TD>
-      <TD id="0_table1_cell_c1_r7">"=INPUT.CHECKBOXVAL(C5)"</TD>
-      <TD formula="=INPUT.CHECKBOXVAL(C5)" id="0_table1_cell_c2_r7">false</TD>
+      <TD id="0_table1_cell_c1_r7">"=C5"</TD>
+      <TD formula="=C5" id="0_table1_cell_c2_r7">false</TD>
       <TD id="0_table1_cell_c3_r7">534456</TD>
       <TD id="0_table1_cell_c4_r7">Vivamus</TD>
     </TR>
     <TR height="18px" style="height: 18px;">
-      <TD id="0_table1_cell_c0_r8">Detect if Checkbox is Checked</TD>
-      <TD id="0_table1_cell_c1_r8">"=ISCHECKED(C5)"</TD>
-      <TD formula="=ISCHECKED(C5)" id="0_table1_cell_c2_r8">FALSE</TD>
+      <TD id="0_table1_cell_c0_r8"></TD>
+      <TD id="0_table1_cell_c1_r8"></TD>
+      <TD id="0_table1_cell_c2_r8"></TD>
       <TD id="0_table1_cell_c3_r8">3</TD>
       <TD id="0_table1_cell_c4_r8">Etiam</TD>
     </TR>
@@ -247,7 +247,7 @@ styleItalics">Things to note:
         <BR/>groups of 10 rows, summed, then 
         <BR/>averaged.
       </TD>
-      <TD formula="=BARCHART(AVG(SUM(A2:J11)), AVG(SUM(A12:J21)))" class="styleBold styleItalics" id="0_table2_cell_c1_r0">
+      <TD formula="=BARCHART(A2:J11)" class="styleBold styleItalics" id="0_table2_cell_c1_r0">
       </TD>
       <TD class="styleBold styleItalics" id="0_table2_cell_c2_r0"/>
       <TD class="styleBold styleItalics" id="0_table2_cell_c3_r0"/>
@@ -1493,18 +1493,18 @@ styleItalics">Things to note:
       <TD id="0_table3_cell_c3_r0"/>
       <TD id="0_table3_cell_c4_r0"/>
       <TD id="0_table3_cell_c5_r0"/>
-      <TD id="0_table3_cell_c6_r0">? 2008 Vertex42 LLC</TD>
-      <TD id="0_table3_cell_c7_r0">---</TD>
+      <TD id="0_table3_cell_c6_r0"></TD>
+      <TD id="0_table3_cell_c7_r0"></TD>
       <TD id="0_table3_cell_c8_r0"/>
     </TR>
     <TR height="18px" style="height: 18px;">
-      <TD id="0_table3_cell_c0_r1">http://www.vertex42.com/Calculators/mortgage-payment-calculator.html</TD>
+      <TD id="0_table3_cell_c0_r1"></TD>
       <TD id="0_table3_cell_c1_r1"/>
       <TD id="0_table3_cell_c2_r1"/>
       <TD id="0_table3_cell_c3_r1"/>
       <TD id="0_table3_cell_c4_r1"/>
       <TD id="0_table3_cell_c5_r1"/>
-      <TD id="0_table3_cell_c6_r1">Help</TD>
+      <TD id="0_table3_cell_c6_r1"></TD>
       <TD id="0_table3_cell_c7_r1"/>
       <TD id="0_table3_cell_c8_r1"/>
     </TR>
@@ -1610,7 +1610,7 @@ styleItalics">Things to note:
     <TR style="height: 18px;">
       <TD id="0_table3_cell_c0_r11"/>
       <TD id="0_table3_cell_c1_r11">Monthly Interest Rate</TD>
-      <TD id="0_table3_cell_c2_r11" formula="=IF(COUNTA(C7:C9)<3,' --- ',(POWER(1+C8/C4,C4/12))-1)">0.004999999999999893</TD>
+      <TD id="0_table3_cell_c2_r11" formula="=IF(COUNTA(C7:C9)<3,' --- ',((1+C8/$C$4)^($C$4/12))-1)">0.004999999999999893</TD>
       <TD id="0_table3_cell_c3_r11" formula="=IF(COUNTA(D7:D9)<3,' --- ',((1+D8/$C$4)^($C$4/12))-1)">--- </TD>
       <TD id="0_table3_cell_c4_r11" formula="=IF(COUNTA(E7:E9)<3,' --- ',((1+E8/$C$4)^($C$4/12))-1)">--- </TD>
       <TD id="0_table3_cell_c5_r11" formula="=IF(COUNTA(F7:F9)<3,' --- ',((1+F8/$C$4)^($C$4/12))-1)">--- </TD>

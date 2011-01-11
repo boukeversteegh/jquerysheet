@@ -4139,7 +4139,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		if (this.editable) {
 			var cell = this.cell;
 			var jS = this.jS;
-			var id = "dropdown" + this.jS.I + "_" + this.sheet + "_" + this.row + "_" + jS.I;
+			var id = "dropdown" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
 			var o = jQuery('<select style="width: 100%;" class="clickable" name="' + id + '" id="' + id + '" />');				
 		
 			if (!noBlank) {
@@ -4158,6 +4158,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 						cell.selectedValue = jQuery(this).val();
 						jS.calc();
 					});
+				jS.attrH.setHeight(jS.getTdLocation(o.parent())[0], 'cell', false);
 			});
 					
 			o.val(cell.selectedValue);
@@ -4172,7 +4173,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		var jS = this.jS;
 		
 		if (this.editable) {
-			var id = "radio" + this.jS.I + "_" + this.sheet + "_" + this.row + "_" + jS.I;
+			var id = "radio" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
 			var o = jQuery('<span class="clickable" />');
 			for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
 				if (v[i]) {
@@ -4194,6 +4195,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 								cell.selectedValue = jQuery(this).val();
 								jS.calc();
 							});
+						jS.attrH.setHeight(jS.getTdLocation(o.parent())[0], 'cell', false);
 					});
 				}
 			}
@@ -4208,7 +4210,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		var jS = this.jS;
 		
 		if (this.editable) {
-			var id = "checkbox" + this.jS.I + "_" + this.sheet + "_" + this.row + "_" + jS.I;
+			var id = "checkbox" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
 			var checkbox = jQuery('<input type="checkbox" name="' + id + '" class="' + id + '" />')
 				.val(v);
 				
