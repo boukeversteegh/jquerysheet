@@ -78,7 +78,7 @@ e
 	| e '<' e
 		{$$ = ($1 * 1) < ($3 * 1);}
 	| e '+' e
-		{$$ = ($1 * 1) + ($3 * 1);}
+		{$$ = jSE.cFN.sanitize($1) + jSE.cFN.sanitize($3);}
 	| e '-' e
 		{$$ = ($1 * 1) - ($3 * 1);}
 	| e '*' e
@@ -100,21 +100,21 @@ e
 	| E
 		{$$ = Math.E;}
 	| FIXEDCELL
-		{$$ = arguments[6].fixedCellValue($1);}
+		{$$ = arguments[6].fixedCellValue($1, arguments[7]);}
 	| FIXEDCELLRANGE
-		{$$ = arguments[6].fixedCellRangeValue($1);}
+		{$$ = arguments[6].fixedCellRangeValue($1, arguments[7]);}
 	| CELL
-		{$$ = arguments[6].cellValue($1);}
+		{$$ = arguments[6].cellValue($1, arguments[7]);}
 	| CELLRANGE
-		{$$ = arguments[6].cellRangeValue($1);}
+		{$$ = arguments[6].cellRangeValue($1, arguments[7]);}
 	| REMOTECELL
-		{$$ = arguments[6].remoteCellValue($1);}
+		{$$ = arguments[6].remoteCellValue($1, arguments[7]);}
 	| REMOTECELLRANGE
-		{$$ = arguments[6].remoteCellRangeValue($1);}
+		{$$ = arguments[6].remoteCellRangeValue($1, arguments[7]);}
 	| STRING
 		{$$ = $1.substring(1, $1.length - 1);}	
 	| IDENTIFIER '(' ')'
-		{$$ = jQuery.sheet.fn[$1]();}
+		{$$ = arguments[6].callFunction($1, '', arguments[7]);}
 	| IDENTIFIER '(' expseq ')'
 		{$$ = arguments[6].callFunction($1, $3, arguments[7]);}
  ;

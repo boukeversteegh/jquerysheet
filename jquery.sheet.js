@@ -729,11 +729,21 @@ jQuery.sheet = {
 											title
 											x {data, legend}
 											y {data, legend}
+											owner
 															*/
 					function sanitize(v, toNum) {
-						v = arrHelpers.foldPrepare((v ? v : ''), arguments);
-						if (toNum) {
-							v = arrHelpers.toNumbers(v);
+						if (!v) {
+							if (toNum) {
+								v = 0;
+							} else {
+								v = "";
+							}
+						} else {
+							if (toNum) {
+								v = arrHelpers.toNumbers(v);
+							} else {
+								v = arrHelpers.flatten(v);
+							}
 						}
 						return v;
 					}
@@ -797,7 +807,7 @@ jQuery.sheet = {
 											});
 									break;
 								case "line":
-									r.g.linechart(width * 0.05, height * 0.03, width * 0.9, height * 0.9, [o.x.data], [o.y.data], {
+									r.g.linechart(width * 0.05, height * 0.03, width * 0.9, height * 0.9, o.x.data, o.y.data, {
 										nostroke: false, 
 										axis: "0 0 1 1", 
 										symbol: "o", 
@@ -853,7 +863,7 @@ jQuery.sheet = {
 									break;
 								}
 								
-								jS.attrH.setHeight(jS.getTdLocation(o.chart.parent())[0], 'cell', false);
+								jS.attrH.setHeight(o.owner.row, 'cell', false);
 							}
 						});
 					}
@@ -2527,19 +2537,19 @@ jQuery.sheet = {
 				return cell.value;
 			},
 			cellIdHandlers: {
-				cellValue: function(id) { //Example: A1
+				cellValue: function(id, owner) { //Example: A1
 					var loc = jSE.parseLocation(id);
-					return jS.updateCellValue(jS.i, loc.row, loc.col);
+					return jS.updateCellValue(owner.sheet, loc.row, loc.col);
 				},
-				cellRangeValue: function(ids) {//Example: A1:B1
+				cellRangeValue: function(ids, owner) {//Example: A1:B1
 					ids = ids.split(':');
-					var locStart = jSE.parseLocation(ids[0]);
-					var locEnd = jSE.parseLocation(ids[1]);
+					var start = jSE.parseLocation(ids[0]);
+					var end = jSE.parseLocation(ids[1]);
 					var result = [];
 					
-					for (var i = locEnd.row; i >= locStart.row; i--) {
-						for (var j = locEnd.col; j >= locStart.col; j--) {
-							result.push(jS.updateCellValue(jS.i, i, j));
+					for (var i = start.row; i <= end.row; i++) {
+						for (var j = start.col; j <= end.col; j++) {
+							result.push(jS.updateCellValue(owner.sheet, i, j));
 						}
 					}
 					
@@ -2547,13 +2557,13 @@ jQuery.sheet = {
 						return [result];
 					}
 				},
-				fixedCellValue: function(id) {
-					return this.cellValue(id.replace(/[$]/g, ''));
+				fixedCellValue: function(id, owner) {
+					return this.cellValue(id.replace(/[$]/g, ''), owner);
 				},
-				fixedCellRangeValue: function(ids) {
-					return this.cellRangeValue(ids.replace(/[$]/g, ''));
+				fixedCellRangeValue: function(ids, owner) {
+					return this.cellRangeValue(ids.replace(/[$]/g, ''), owner);
 				},
-				remoteCellValue: function(id) {//Example: SHEET1:A1
+				remoteCellValue: function(id, owner) {//Example: SHEET1:A1
 					var sheet, loc;
 					id = id.replace(jSE.regEx.remoteCell, function(ignored1, ignored2, I, col, row) {
 						sheet = (I * 1) - 1;
@@ -2562,7 +2572,7 @@ jQuery.sheet = {
 					});
 					return jS.updateCellValue(sheet, loc.row, loc.col);
 				},
-				remoteCellRangeValue: function(ids) {//Example: SHEET1:A1:B2
+				remoteCellRangeValue: function(ids, owner) {//Example: SHEET1:A1:B2
 					var sheet, start, end;
 					ids = ids.replace(jSE.regEx.remoteCellRange, function(ignored1, ignored2, I, startCol, startRow, endCol, endRow) {
 						sheet = (I * 1) - 1;
@@ -2573,8 +2583,8 @@ jQuery.sheet = {
 					
 					var result = [];
 					
-					for (var i = end.row; i >= start.row; i--) {
-						for (var j = end.col; j >= start.col; j--) {
+					for (var i = start.row; i <= end.row; i++) {
+						for (var j = start.col; j <= end.col; j++) {
 							result.push(jS.updateCellValue(sheet, i, j));
 						}
 					}
@@ -2592,7 +2602,7 @@ jQuery.sheet = {
 						args = [args];
 					}
 						
-					return jQuery.sheet.fn[fn].apply(cell, args);
+					return (jQuery.sheet.fn[fn] ? jQuery.sheet.fn[fn].apply(cell, args) : "Error: Function Not Found");
 				}
 			},
 			context: {},
@@ -3435,6 +3445,7 @@ jQuery.sheet = {
 			getTdLocation: function(td) { /* gets td column and row int
 												td: object, td object;
 											*/
+				if (!td) return [-1, -1];
 				var col = parseInt(td[0].cellIndex);
 				var row = parseInt(td[0].parentNode.rowIndex);
 				return [row, col];
@@ -3957,11 +3968,21 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 		clean: function(v) {
 			if (typeof(v) == 'string') {
 				v = v.replace(jSE.regEx.amp, '&')
-						.replace(jSE.regEx.nbsp, ' ')
-						.replace(/\n/g,'')
-						.replace(/\r/g,'');
+					.replace(jSE.regEx.nbsp, ' ')
+					.replace(/\n/g,'')
+					.replace(/\r/g,'');
 			}
 			return v;
+		},
+		sanitize: function(v) {
+			if (v) {
+				if (isNaN(v)) {
+					return v;
+				} else {
+					return v * 1;
+				}
+			}
+			return "";
 		}
 	},
 	regEx: {
@@ -3984,7 +4005,10 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 	}
 };
 
-jQuery.sheet.fn = {//fn = standard functions used in cells
+var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
+	VERSION: function() {
+		return this.jS.version;
+	},
 	HTML: function(v) {
 		return jQuery(v);
 	},
@@ -3994,7 +4018,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 	},
 	AVERAGE:	function(values) { 
 		var arr = arrHelpers.foldPrepare(values, arguments);
-		return this.SUM(arr) / this.COUNT(arr); 
+		return jFN.SUM(arr) / jFN.COUNT(arr); 
 	},
 	AVG: 		function(values) { 
 		return this.AVERAGE(values);
@@ -4010,16 +4034,16 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		}
 		return count;
 	},
-	SUM: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.sum, 0, true, this.N); },
-	MAX: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.max, Number.MIN_VALUE, true, this.N); },
-	MIN: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.min, Number.MAX_VALUE, true, this.N); },
+	SUM: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.sum, 0, true, jFN.N); },
+	MAX: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.max, Number.MIN_VALUE, true, jFN.N); },
+	MIN: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.min, Number.MAX_VALUE, true, jFN.N); },
 	MEAN:		function(values) { return this.SUM(values) / values.length; },
-	ABS	: 		function(v) { return Math.abs(this.N(v)); },
-	CEILING: 	function(v) { return Math.ceil(this.N(v)); },
-	FLOOR: 		function(v) { return Math.floor(this.N(v)); },
-	INT: 		function(v) { return Math.floor(this.N(v)); },
+	ABS	: 		function(v) { return Math.abs(jFN.N(v)); },
+	CEILING: 	function(v) { return Math.ceil(jFN.N(v)); },
+	FLOOR: 		function(v) { return Math.floor(jFN.N(v)); },
+	INT: 		function(v) { return Math.floor(jFN.N(v)); },
 	ROUND: 		function(v, decimals) {
-		return this.FIXED(v, (decimals ? decimals : 0), false);
+		return jFN.FIXED(v, (decimals ? decimals : 0), false);
 	},
 	RAND: 		function() { return Math.random(); },
 	RND: 		function() { return Math.random(); },
@@ -4040,7 +4064,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		var d = new Date(v);
 		return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
 	},
-	IF:			function(expression, resultTrue, resultFalse){
+	IF: function(expression, resultTrue, resultFalse){
 		//return [expression, resultTrue, resultFalse] + "";
 		return (expression ? resultTrue : resultFalse);
 	},
@@ -4049,7 +4073,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 			decimals = 2;
 		}
 		var x = Math.pow(10, decimals);
-		var n = String(Math.round(this.N(v) * x) / x); 
+		var n = String(Math.round(jFN.N(v) * x) / x); 
 		var p = n.indexOf('.');
 		if (p < 0) {
 			p = n.length;
@@ -4089,19 +4113,17 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		}
 		return result.join('');
 	},
-	TRIM:		function(v) { 
+	TRIM: function(v) { 
 		if (typeof(v) == 'string') {
 			v = jQuery.trim(v);
 		}
 		return v;
 	},
-	HYPERLINK: function(o) {
-		var link = o[0];
-		var name = o[1];
+	HYPERLINK: function(link, name) {
 		name = (name ? name : 'LINK');
-		return jQuery('<a href="' + link + '" target="_new" class="clickable">' + name + '</a>');
+		return jQuery('<a href="' + link + '" target="_new">' + name + '</a>');
 	},
-	DOLLAR: 	function(v, decimals, symbol) { 
+	DOLLAR: function(v, decimals, symbol) { 
 		if (decimals == null) {
 			decimals = 2;
 		}
@@ -4118,17 +4140,19 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 			return '-' + symbol + r.slice(1);
 		}
 	},
-	VALUE: 		function(v) { return parseFloat(v); },
-	N: 			function(v) { if (v == null) {return 0;}
-					  if (v instanceof Date) {return v.getTime();}
-					  if (typeof(v) == 'object') {v = v.toString();}
-					  if (typeof(v) == 'string') {v = parseFloat(v.replace(jSE.regEx.n, ''));}
-					  if (isNaN(v))		   {return 0;}
-					  if (typeof(v) == 'number') {return v;}
-					  if (v == true)			 {return 1;}
-					  return 0; },
-	PI: 		function() { return Math.PI; },
-	POWER: 		function(x, y) {
+	VALUE: function(v) { return parseFloat(v); },
+	N: function(v) {
+		if (v == null) {return 0;}
+		if (v instanceof Date) {return v.getTime();}
+		if (typeof(v) == 'object') {v = v.toString();}
+		if (typeof(v) == 'string') {v = parseFloat(v.replace(jSE.regEx.n, ''));}
+		if (isNaN(v)) {return 0;}
+		if (typeof(v) == 'number') {return v;}
+		if (v == true) {return 1;}
+		return 0;
+	},
+	PI: function() { return Math.PI; },
+	POWER: function(x, y) {
 		return Math.pow(x, y);
 	},
 	SQRT: function(v) {
@@ -4140,7 +4164,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 			var cell = this.cell;
 			var jS = this.jS;
 			var id = "dropdown" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
-			var o = jQuery('<select style="width: 100%;" class="clickable" name="' + id + '" id="' + id + '" />');				
+			var o = jQuery('<select style="width: 100%;" name="' + id + '" id="' + id + '" />');				
 		
 			if (!noBlank) {
 				o.append('<option value="">Select a value</option>');
@@ -4174,7 +4198,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		
 		if (this.editable) {
 			var id = "radio" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
-			var o = jQuery('<span class="clickable" />');
+			var o = jQuery('<span />');
 			for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
 				if (v[i]) {
 					var input = jQuery('<input type="radio" name="' + id + '" class="' + id + '" />')
@@ -4186,7 +4210,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 					
 					o
 						.append(input)
-						.append('<span class="clickable">' + v[i] + '</span>')
+						.append('<span>' + v[i] + '</span>')
 						.append('<br />');
 					
 					jS.s.parent.one('calculation', function() {
@@ -4214,7 +4238,7 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 			var checkbox = jQuery('<input type="checkbox" name="' + id + '" class="' + id + '" />')
 				.val(v);
 				
-			var o = jQuery('<span class="clickable" />')
+			var o = jQuery('<span />')
 				.append(checkbox)
 				.append('<span>' + v + '</span><br />');
 			
@@ -4235,45 +4259,47 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 		return cell.selectedValue;
 	},
 	BARCHART:	function(values, legend, title) {
-		return jQuery.sheet.instance[0].controlFactory.chart({
+		return this.jS.controlFactory.chart({
 			type: 'bar',
 			data: values,
 			legend: legend,
-			title: title
+			title: title,
+			owner: this
 		});
 	},
 	HBARCHART:	function(values, legend, title) {
-		return jQuery.sheet.instance[0].controlFactory.chart({
+		return this.jS.controlFactory.chart({
 			type: 'hbar',
 			data: values,
 			legend: legend,
-			title: title
+			title: title,
+			owner: this
 		});
 	},
-	LINECHART:	function(valuesX, valuesY, legendX, legendY, title) {
-		return jQuery.sheet.instance[0].controlFactory.chart({
+	LINECHART:	function(valuesX, valuesY) {
+		return this.jS.controlFactory.chart({
 			type: 'line',
 			x: {
-				data: valuesX,
-				legend: legendX
+				data: valuesX
 			},
 			y: {
-				data: valuesY,
-				legend: legendY
+				data: valuesY
 			},
-			title: title
+			title: "",
+			owner: this
 		});
 	},
 	PIECHART:	function(values, legend, title) {
-		return jQuery.sheet.instance[0].controlFactory.chart({
+		return this.jS.controlFactory.chart({
 			type: 'pie',
 			data: values,
 			legend: legend,
-			title: title
+			title: title,
+			owner: this
 		});
 	},
 	DOTCHART:	function(valuesX, valuesY, values,legendX, legendY, title) {
-		return jQuery.sheet.instance[0].controlFactory.chart({
+		return this.jS.controlFactory.chart({
 			type: 'dot',
 			values: values,
 			x: {
@@ -4284,7 +4310,8 @@ jQuery.sheet.fn = {//fn = standard functions used in cells
 				data: valuesY,
 				legend: legendY
 			},
-			title: title
+			title: title,
+			owner: this
 		});
 	},
 	CELLREF: function(v, i) {
@@ -4357,12 +4384,11 @@ var arrHelpers = {
 		return result;
 	},
 	toNumbers: function(arr) {
-		arr = jQuery.makeArray(arr);
+		arr = this.flatten(arr);
 		
 		for (var i = 0; i < arr.length; i++) {
-			if (jQuery.isArray(arr[i])) {
-				arr[i] = this.toNumbers(arr[i]);
-			} else if (arr[i]) {
+			if (arr[i]) {
+				arr[i] = arr[i].toString().replace(' ','') * 1;
 				if (isNaN(arr[i])) {
 					arr[i] = 0;
 				}
