@@ -100,17 +100,17 @@ e
 	| E
 		{$$ = Math.E;}
 	| FIXEDCELL
-		{$$ = arguments[6].fixedCellValue($1, arguments[7]);}
+		{$$ = arguments[6].fixedCellValue.apply(arguments[7], [$1]);}
 	| FIXEDCELLRANGE
-		{$$ = arguments[6].fixedCellRangeValue($1, arguments[7]);}
+		{$$ = arguments[6].fixedCellRangeValue.apply(arguments[7], [$1]);}
 	| CELL
-		{$$ = arguments[6].cellValue($1, arguments[7]);}
+		{$$ = arguments[6].cellValue.apply(arguments[7], [$1]);}
 	| CELLRANGE
-		{$$ = arguments[6].cellRangeValue($1, arguments[7]);}
+		{$$ = arguments[6].cellRangeValue.apply(arguments[7], [$1]);}
 	| REMOTECELL
-		{$$ = arguments[6].remoteCellValue($1, arguments[7]);}
+		{$$ = arguments[6].remoteCellValue.apply(arguments[7], [$1]);}
 	| REMOTECELLRANGE
-		{$$ = arguments[6].remoteCellRangeValue($1, arguments[7]);}
+		{$$ = arguments[6].remoteCellRangeValue.apply(arguments[7], [$1]);}
 	| STRING
 		{$$ = $1.substring(1, $1.length - 1);}	
 	| IDENTIFIER '(' ')'

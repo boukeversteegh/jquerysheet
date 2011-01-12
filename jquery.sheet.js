@@ -64,7 +64,8 @@ jQuery.fn.extend({
 			resizable: 			true,							//bool, makes the $(obj).sheet(); object resizeable, also adds a resizable formula textarea at top of sheet
 			autoFiller: 		false,							//bool, the little guy that hangs out to the bottom right of a selected cell, users can click and drag the value to other cells
 			minSize: 			{rows: 15, cols: 5},			//object - {rows: int, cols: int}, Makes the sheet stay at a certain size when loaded in edit mode, to make modification more productive
-			forceColWidthsOnStartup:true						//bool, makes cell widths load from pre-made colgroup/col objects, use this if you plan on making the col items, makes widths more stable on startup
+			forceColWidthsOnStartup:true,						//bool, makes cell widths load from pre-made colgroup/col objects, use this if you plan on making the col items, makes widths more stable on startup
+			alertFormulaErrors:	false
 		}, settings);
 		
 		o = settings.parent;
@@ -720,156 +721,6 @@ jQuery.sheet = {
 					'</table>');
 				},
 				chartCache: [],
-				chart: function(o) { /* creates a chart for use inside of a cell
-																piggybacks RaphealJS
-										options:
-											type
-											data
-											legend
-											title
-											x {data, legend}
-											y {data, legend}
-											owner
-															*/
-					function sanitize(v, toNum) {
-						if (!v) {
-							if (toNum) {
-								v = 0;
-							} else {
-								v = "";
-							}
-						} else {
-							if (toNum) {
-								v = arrHelpers.toNumbers(v);
-							} else {
-								v = arrHelpers.flatten(v);
-							}
-						}
-						return v;
-					}
-					
-					o = jQuery.extend({
-						x: { legend: "", data: [0]},
-						y: { legend: "", data: [0]},
-						title: "",
-						data: [0],
-						legend: "",
-						chart: jQuery('<div class="' + jS.cl.chart + '" />')
-					}, o);
-					
-					o.data = sanitize(o.data, true);
-					o.x.data = sanitize(o.x.data, true);
-					o.y.data = sanitize(o.y.data, true);
-					o.legend = sanitize(o.legend);
-					o.x.legend = sanitize(o.x.legend);
-					o.y.legend = sanitize(o.y.legend);
-					
-					o.legend = (o.legend ? o.legend : o.data);
-					
-					if (Raphael) {
-						origParent.one('calculation', function() {
-							var width = o.chart.width();
-							var height = o.chart.height();
-							var r = Raphael(o.chart[0]);
-							if (r.g) {
-								if (o.title) r.g.text(width / 2, 10, o.title).attr({"font-size": 20});
-								switch (o.type) {
-								case "bar":
-									r.g.barchart(0, 0, width, height, o.data, o.legend)
-										.hover(function () {
-											this.flag = r.g.popup(
-												this.bar.x,
-												this.bar.y,
-												this.bar.value || "0"
-											).insertBefore(this);
-										},function () {
-											this.flag.animate({
-												opacity: 0
-												},300, 
-												function () {
-													this.remove();
-													}
-												);
-											});
-									break;
-								case "hbar":
-									r.g.hbarchart(0, 0, width, height, o.data, o.legend)
-										.hover(function () {
-											this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
-										},function () {
-											this.flag.animate({
-												opacity: 0
-												},300, 
-												function () {
-													this.remove();
-													}
-												);
-											});
-									break;
-								case "line":
-									r.g.linechart(width * 0.05, height * 0.03, width * 0.9, height * 0.9, o.x.data, o.y.data, {
-										nostroke: false, 
-										axis: "0 0 1 1", 
-										symbol: "o", 
-										smooth: true
-									})
-									.hoverColumn(function () {
-										this.tags = r.set();
-										for (var i = 0, ii = this.y.length; i < ii; i++) {
-											this.tags.push(r.g.tag(this.x, this.y[i], this.values[i], 160, 10).insertBefore(this).attr([{fill: "#fff"}, {fill: this.symbols[i].attr("fill")}]));
-										}
-									}, function () {
-										this.tags && this.tags.remove();
-									});
-								
-									break;
-								case "pie":
-									r.g.piechart(width / 2, height / 2, width / 5, o.data, {legend: o.legend})
-										.hover(function () {
-											this.sector.stop();
-											this.sector.scale(1.1, 1.1, this.cx, this.cy);
-											if (this.label) {
-												this.label[0].stop();
-												this.label[0].scale(1.5);
-												this.label[1].attr({"font-weight": 800});
-											}
-										}, function () {
-											this.sector.animate({scale: [1, 1, this.cx, this.cy]}, 500, "bounce");
-											if (this.label) {
-												this.label[0].animate({scale: 1}, 500, "bounce");
-												this.label[1].attr({"font-weight": 400});
-											}
-										});
-									break;
-								case "dot":
-									r.g.dotchart(width / 2, height / 2, width / 5, [o.x.data], [o.y.data], [o.data], {
-										symbol: "o", 
-										max: 10, 
-										heat: true, 
-										axis: "0 0 1 1", 
-										axisxstep: legendX.length - 1, 
-										axisystep: legendY.length - 1, 
-										axisxlabels: legendX, 
-										axisxtype: " ", 
-										axisytype: " ", 
-										axisylabels: legendY
-									})
-										.hover(function () {
-											this.tag = this.tag || r.g.tag(this.x, this.y, this.value, 0, this.r + 2).insertBefore(this);
-											this.tag.show();
-										}, function () {
-											this.tag && this.tag.hide();
-										});
-									break;
-								}
-								
-								jS.attrH.setHeight(o.owner.row, 'cell', false);
-							}
-						});
-					}
-						
-					return o.chart;
-				},
 				safeImg: function(src, row) { /* creates and image and then resizes the cell's row for viewing
 												src: string, location of image;
 												row: int, the row number where the image is located;
@@ -2514,11 +2365,13 @@ jQuery.sheet = {
 								sheet: sheet,
 								row: row,
 								col: col,
-								cell: jS.spreadsheets[sheet][row][col],
+								cell: cell,
 								editable: s.editable,
 								jS: jS
 							});
 						} catch(e) {
+							
+							
 							cell.value = e.toString().replace(/\n/g, '<br />'); //error
 						}
 						
@@ -2537,11 +2390,11 @@ jQuery.sheet = {
 				return cell.value;
 			},
 			cellIdHandlers: {
-				cellValue: function(id, owner) { //Example: A1
+				cellValue: function(id) { //Example: A1
 					var loc = jSE.parseLocation(id);
-					return jS.updateCellValue(owner.sheet, loc.row, loc.col);
+					return jS.updateCellValue(this.sheet, loc.row, loc.col);
 				},
-				cellRangeValue: function(ids, owner) {//Example: A1:B1
+				cellRangeValue: function(ids) {//Example: A1:B1
 					ids = ids.split(':');
 					var start = jSE.parseLocation(ids[0]);
 					var end = jSE.parseLocation(ids[1]);
@@ -2549,7 +2402,7 @@ jQuery.sheet = {
 					
 					for (var i = start.row; i <= end.row; i++) {
 						for (var j = start.col; j <= end.col; j++) {
-							result.push(jS.updateCellValue(owner.sheet, i, j));
+							result.push(jS.updateCellValue(this.sheet, i, j));
 						}
 					}
 					
@@ -2557,13 +2410,13 @@ jQuery.sheet = {
 						return [result];
 					}
 				},
-				fixedCellValue: function(id, owner) {
-					return this.cellValue(id.replace(/[$]/g, ''), owner);
+				fixedCellValue: function(id) {
+					return jS.cellIdHandlers.cellValue.apply(this, [id.replace(/[$]/g, '')]);
 				},
-				fixedCellRangeValue: function(ids, owner) {
-					return this.cellRangeValue(ids.replace(/[$]/g, ''), owner);
+				fixedCellRangeValue: function(ids) {
+					return jS.cellIdHandlers.cellRangeValue.apply(this, [ids.replace(/[$]/g, '')]);
 				},
-				remoteCellValue: function(id, owner) {//Example: SHEET1:A1
+				remoteCellValue: function(id) {//Example: SHEET1:A1
 					var sheet, loc;
 					id = id.replace(jSE.regEx.remoteCell, function(ignored1, ignored2, I, col, row) {
 						sheet = (I * 1) - 1;
@@ -2572,7 +2425,7 @@ jQuery.sheet = {
 					});
 					return jS.updateCellValue(sheet, loc.row, loc.col);
 				},
-				remoteCellRangeValue: function(ids, owner) {//Example: SHEET1:A1:B2
+				remoteCellRangeValue: function(ids) {//Example: SHEET1:A1:B2
 					var sheet, start, end;
 					ids = ids.replace(jSE.regEx.remoteCellRange, function(ignored1, ignored2, I, startCol, startRow, endCol, endRow) {
 						sheet = (I * 1) - 1;
@@ -2604,6 +2457,13 @@ jQuery.sheet = {
 						
 					return (jQuery.sheet.fn[fn] ? jQuery.sheet.fn[fn].apply(cell, args) : "Error: Function Not Found");
 				}
+			},
+			alertFormulaError: function(msg) {
+				alert(
+					'cell:' + row + ' ;' + col + '\n' +
+					'value: "' + cell.formula + '"\n' + 
+					'error: \n' + e
+				);
 			},
 			context: {},
 			calc: function(tableI) { /* harnesses calculations engine's calculation function
@@ -3636,6 +3496,7 @@ jQuery.sheet = {
 		
 		//We need to take the sheet out of the parent in order to get an accurate reading of it's height and width
 		//jQuery(this).html(s.loading);
+		s.origParent = origParent;
 		s.parent
 			.html('')
 			.addClass(jS.cl.parent);
@@ -3686,6 +3547,10 @@ jQuery.sheet = {
 			if (jQuery.sheet.financefn) {
 				jQuery.sheet.fn = jQuery.extend(jQuery.sheet.fn, jQuery.sheet.financefn);
 			}
+		}
+		
+		if (!s.alertFormulaErrors) {
+			jS.alertFormulaError = emptyFN;
 		}
 		
 		jS.openSheet(o, s.forceColWidthsOnStartup);
@@ -4002,6 +3867,162 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 		lt: 	'&lt;',
 		gt: 	'&gt;',
 		nbsp: 	'&nbps;'
+	},
+	chart: function(o) { /* creates a chart for use inside of a cell
+													piggybacks RaphealJS
+							options:
+								type
+
+								data
+								legend
+								title
+								x {data, legend}
+
+								y {data, legend}
+								owner
+												*/
+		var jS = this.jS;
+		var owner = this;
+		
+		function sanitize(v, toNum) {
+			if (!v) {
+				if (toNum) {
+					v = 0;
+				} else {
+					v = "";
+				}
+			} else {
+				if (toNum) {
+					v = arrHelpers.toNumbers(v);
+				} else {
+					v = arrHelpers.flatten(v);
+				}
+			}
+			return v;
+		}
+	
+		o = jQuery.extend({
+			x: { legend: "", data: [0]},
+			y: { legend: "", data: [0]},
+			title: "",
+			data: [0],
+			legend: "",
+			chart: jQuery('<div class="' + jS.cl.chart + '" />')
+		}, o);
+	
+		o.data = sanitize(o.data, true);
+		o.x.data = sanitize(o.x.data, true);
+		o.y.data = sanitize(o.y.data, true);
+		o.legend = sanitize(o.legend);
+		o.x.legend = sanitize(o.x.legend);
+		o.y.legend = sanitize(o.y.legend);
+	
+		o.legend = (o.legend ? o.legend : o.data);
+	
+		if (Raphael) {
+			jS.s.origParent.one('calculation', function() {
+				var width = o.chart.width();
+				var height = o.chart.height();
+				var r = Raphael(o.chart[0]);
+				if (r.g) {
+					if (o.title) r.g.text(width / 2, 10, o.title).attr({"font-size": 20});
+					switch (o.type) {
+					case "bar":
+						r.g.barchart(0, 0, width, height, o.data, o.legend)
+							.hover(function () {
+								this.flag = r.g.popup(
+									this.bar.x,
+									this.bar.y,
+									this.bar.value || "0"
+								).insertBefore(this);
+							},function () {
+								this.flag.animate({
+									opacity: 0
+									},300, 
+
+									function () {
+										this.remove();
+										}
+									);
+								});
+						break;
+					case "hbar":
+						r.g.hbarchart(0, 0, width, height, o.data, o.legend)
+							.hover(function () {
+								this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
+							},function () {
+								this.flag.animate({
+									opacity: 0
+									},300, 
+									function () {
+										this.remove();
+										}
+									);
+								});
+						break;
+					case "line":
+						r.g.linechart(width * 0.05, height * 0.03, width * 0.9, height * 0.9, o.x.data, o.y.data, {
+							nostroke: false, 
+							axis: "0 0 1 1", 
+							symbol: "o", 
+							smooth: true
+						})
+						.hoverColumn(function () {
+							this.tags = r.set();
+							for (var i = 0, ii = this.y.length; i < ii; i++) {
+								this.tags.push(r.g.tag(this.x, this.y[i], this.values[i], 160, 10).insertBefore(this).attr([{fill: "#fff"}, {fill: this.symbols[i].attr("fill")}]));
+							}
+						}, function () {
+							this.tags && this.tags.remove();
+						});
+				
+						break;
+					case "pie":
+						r.g.piechart(width / 2, height / 2, width / 5, o.data, {legend: o.legend})
+							.hover(function () {
+								this.sector.stop();
+								this.sector.scale(1.1, 1.1, this.cx, this.cy);
+								if (this.label) {
+									this.label[0].stop();
+									this.label[0].scale(1.5);
+									this.label[1].attr({"font-weight": 800});
+								}
+							}, function () {
+								this.sector.animate({scale: [1, 1, this.cx, this.cy]}, 500, "bounce");
+								if (this.label) {
+									this.label[0].animate({scale: 1}, 500, "bounce");
+									this.label[1].attr({"font-weight": 400});
+								}
+							});
+						break;
+					case "dot":
+						r.g.dotchart(width / 2, height / 2, width / 5, [o.x.data], [o.y.data], [o.data], {
+							symbol: "o", 
+							max: 10, 
+							heat: true, 
+							axis: "0 0 1 1", 
+							axisxstep: legendX.length - 1, 
+							axisystep: legendY.length - 1, 
+							axisxlabels: legendX, 
+							axisxtype: " ", 
+							axisytype: " ", 
+							axisylabels: legendY
+						})
+							.hover(function () {
+								this.tag = this.tag || r.g.tag(this.x, this.y, this.value, 0, this.r + 2).insertBefore(this);
+								this.tag.show();
+							}, function () {
+								this.tag && this.tag.hide();
+							});
+						break;
+					}
+				
+					jS.attrH.setHeight(owner.row, 'cell', false);
+				}
+			});
+		}
+		
+		return o.chart;
 	}
 };
 
@@ -4021,7 +4042,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		return jFN.SUM(arr) / jFN.COUNT(arr); 
 	},
 	AVG: 		function(values) { 
-		return this.AVERAGE(values);
+		return jFN.AVERAGE(values);
 	},
 	COUNT: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.count, 0); },
 	COUNTA:		function() {
@@ -4132,7 +4153,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			symbol = '$';
 		}
 		
-		var r = this.FIXED(v, decimals, false);
+		var r = jFN.FIXED(v, decimals, false);
 		
 		if (v >= 0) {
 			return symbol + r; 
@@ -4176,7 +4197,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				}
 			}
 			
-			jS.s.parent.one('calculation', function() {
+			jS.s.origParent.one('calculation', function() {
 				jQuery('#' + id)
 					.change(function() {
 						cell.selectedValue = jQuery(this).val();
@@ -4213,7 +4234,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 						.append('<span>' + v[i] + '</span>')
 						.append('<br />');
 					
-					jS.s.parent.one('calculation', function() {
+					jS.s.origParent.one('calculation', function() {
 						jQuery('.' + id)
 							.change(function() {
 								cell.selectedValue = jQuery(this).val();
@@ -4246,7 +4267,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				checkbox.attr('checked', true);
 			}
 			
-			jS.s.parent.one('calculation', function() {
+			jS.s.origParent.one('calculation', function() {
 				jQuery('.' + id)
 					.change(function() {
 						cell.selectedValue = (jQuery(this).is(':checked') ? jQuery(this).val() : '');
@@ -4259,25 +4280,23 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		return cell.selectedValue;
 	},
 	BARCHART:	function(values, legend, title) {
-		return this.jS.controlFactory.chart({
+		return jSE.chart.apply(this, [{
 			type: 'bar',
 			data: values,
 			legend: legend,
-			title: title,
-			owner: this
-		});
+			title: title
+		}]);
 	},
 	HBARCHART:	function(values, legend, title) {
-		return this.jS.controlFactory.chart({
+		return jSE.chart.apply(this, [{
 			type: 'hbar',
 			data: values,
 			legend: legend,
-			title: title,
-			owner: this
-		});
+			title: title
+		}]);
 	},
 	LINECHART:	function(valuesX, valuesY) {
-		return this.jS.controlFactory.chart({
+		return jSE.chart.apply(this, [{
 			type: 'line',
 			x: {
 				data: valuesX
@@ -4285,21 +4304,19 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			y: {
 				data: valuesY
 			},
-			title: "",
-			owner: this
-		});
+			title: ""
+		}]);
 	},
 	PIECHART:	function(values, legend, title) {
-		return this.jS.controlFactory.chart({
+		return jSE.chart.apply(this, [{
 			type: 'pie',
 			data: values,
 			legend: legend,
-			title: title,
-			owner: this
-		});
+			title: title
+		}]);
 	},
 	DOTCHART:	function(valuesX, valuesY, values,legendX, legendY, title) {
-		return this.jS.controlFactory.chart({
+		return jSE.chart.apply(this, [{
 			type: 'dot',
 			values: values,
 			x: {
@@ -4310,9 +4327,8 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				data: valuesY,
 				legend: legendY
 			},
-			title: title,
-			owner: this
-		});
+			title: title
+		}]);
 	},
 	CELLREF: function(v, i) {
 		var td;
@@ -4388,9 +4404,11 @@ var arrHelpers = {
 		
 		for (var i = 0; i < arr.length; i++) {
 			if (arr[i]) {
-				arr[i] = arr[i].toString().replace(' ','') * 1;
+				arr[i] = jQuery.trim(arr[i]);
 				if (isNaN(arr[i])) {
 					arr[i] = 0;
+				} else {
+					arr[i] = arr[i] * 1;
 				}
 			} else {
 				arr[i] = 0;
