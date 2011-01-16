@@ -21,6 +21,7 @@ http://www.gnu.org/licenses/
 		It is recommended to use STRICT doc types on the viewing page when using sheet to ensure that the heights/widths of bars and sheet rows show up correctly
 		Example of recommended doc type: <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 */
+var Lexer, Parser;
 jQuery.fn.extend({
 	sheet: function(settings) {
 		var o;
@@ -67,6 +68,17 @@ jQuery.fn.extend({
 			forceColWidthsOnStartup:true,						//bool, makes cell widths load from pre-made colgroup/col objects, use this if you plan on making the col items, makes widths more stable on startup
 			alertFormulaErrors:	false
 		}, settings);
+		
+		//ready the sheet's parser
+		if (!Lexer || !Parser) {
+			Lexer = function() {};
+			Lexer.prototype = parser.lexer;
+			Parser = function() {
+				this.lexer = new Lexer();
+				this.yy = {};
+			};
+			Parser.prototype = parser;
+		}
 		
 		o = settings.parent;
 		if (jQuery.sheet.instance) {
@@ -251,7 +263,7 @@ jQuery.sheet = {
 								jS.spreadsheets[i][j][k] = {
 									formula: td.attr('formula'),
 									value: td.html(),
-									calculated: false
+									calcCount: 0
 								};
 							}
 						}
@@ -995,6 +1007,9 @@ jQuery.sheet = {
 											cell.value = v;
 											cell.formula = null;
 										}
+										
+										//reset the cell's value
+										cell.calcCount = 0;
 										
 										if (v != prevVal || forceCalc) {
 											jS.calc();
@@ -2351,50 +2366,60 @@ jQuery.sheet = {
 				var cell = jS.spreadsheets[sheet][row][col];
 				cell.oldValue = cell.value; //we detect the last value, so that we don't have to update all cell, thus saving resources
 
-				if (cell.formula && !cell.calculated) {
-					if (cell.state) { //we set cell state so that if in the stack, it comes back to the cell, it knows
-						throw("Error: Loop Detected");
-					} else {
-						cell.state = 'red';
-						try {
-							if (cell.formula.charAt(0) == '=') {
-								cell.formula = cell.formula.substring(1, cell.formula.length);
+				if (cell.calcCount < 1) {
+					cell.calcCount++;
+					if (cell.formula) {
+						if (cell.state) { //we set cell state so that if in the stack, it comes back to the cell, it knows
+							throw("Error: Loop Detected");
+						} else {
+							cell.state = 'red';
+							try {
+								if (cell.formula.charAt(0) == '=') {
+									cell.formula = cell.formula.substring(1, cell.formula.length);
+									
+								}
+								
+								if (!cell.parser) cell.parser = (new Parser);
+								
+								cell.value = cell.parser.parse(cell.formula, jS.cellIdHandlers, {
+									sheet: sheet,
+									row: row,
+									col: col,
+									cell: cell,
+									s: s,
+									editable: s.editable,
+									jS: jS
+								});
+							} catch(e) {
+								cell.value = e.toString().replace(/\n/g, '<br />'); //error
+								
+								origParent.one('calculation', function() { // the error size may be bigger than that of the cell, so adjust the height accordingly
+									jS.attrH.setHeight(row, 'cell', false);
+								});
+								
+								jS.alertFormulaError(cell.value);
 							}
-						
-							cell.value = parser.parse(cell.formula, jS.cellIdHandlers, {
-								sheet: sheet,
-								row: row,
-								col: col,
-								cell: cell,
-								editable: s.editable,
-								jS: jS
-							});
-						} catch(e) {
-							
-							
-							cell.value = e.toString().replace(/\n/g, '<br />'); //error
 						}
-						
+					}
+				
+					if (cell.html) { //if cell has an html front bring that to the value but preserve it's value
+						jQuery(jS.getTd(sheet, row, col)).html(cell.html);					
+					} else if (cell.oldValue != cell.value) {
+						jQuery(jS.getTd(sheet, row, col)).html(cell.value);
 					}
 				}
 				
-				cell.state = null;
-				if (cell.html) {
-					jQuery(jS.getTd(sheet, row, col)).html(cell.html);					
-				} else if (cell.oldValue != cell.value && !cell.calculated) {
-					jQuery(jS.getTd(sheet, row, col)).html(cell.value);
-				}
 				
-				cell.calculated = true;
-			
+				cell.state = null;
+				
 				return cell.value;
 			},
 			cellIdHandlers: {
-				cellValue: function(id) { //Example: A1
+				cellValue: function(owner, id) { //Example: A1
 					var loc = jSE.parseLocation(id);
-					return jS.updateCellValue(this.sheet, loc.row, loc.col);
+					return jS.updateCellValue(owner.sheet, loc.row, loc.col);
 				},
-				cellRangeValue: function(ids) {//Example: A1:B1
+				cellRangeValue: function(owner, ids) {//Example: A1:B1
 					ids = ids.split(':');
 					var start = jSE.parseLocation(ids[0]);
 					var end = jSE.parseLocation(ids[1]);
@@ -2402,19 +2427,16 @@ jQuery.sheet = {
 					
 					for (var i = start.row; i <= end.row; i++) {
 						for (var j = start.col; j <= end.col; j++) {
-							result.push(jS.updateCellValue(this.sheet, i, j));
+							result.push(jS.updateCellValue(owner.sheet, i, j));
 						}
 					}
-					
-					if (result.length) {
-						return [result];
-					}
+					return [result];
 				},
-				fixedCellValue: function(id) {
-					return jS.cellIdHandlers.cellValue.apply(this, [id.replace(/[$]/g, '')]);
+				fixedCellValue: function(owner, id) {
+					return jS.cellIdHandlers.cellValue(owner, id.replace(/[$]/g, ''));
 				},
-				fixedCellRangeValue: function(ids) {
-					return jS.cellIdHandlers.cellRangeValue.apply(this, [ids.replace(/[$]/g, '')]);
+				fixedCellRangeValue: function(owner, ids) {
+					return jS.cellIdHandlers.cellRangeValue(owner, ids.replace(/[$]/g, ''));
 				},
 				remoteCellValue: function(id) {//Example: SHEET1:A1
 					var sheet, loc;
@@ -2441,10 +2463,8 @@ jQuery.sheet = {
 							result.push(jS.updateCellValue(sheet, i, j));
 						}
 					}
-					
-					if (result.length) {
-						return [result];
-					}
+
+					return [result];
 				},
 				callFunction: function(fn, args, cell) {					
 					if (!args) {
@@ -3776,14 +3796,18 @@ jQuery.sheet = {
 };
 
 var jSE = jQuery.sheet.engine = { //Calculations Engine
-	calc: function(tableI, spreadsheets, ignite) { //spreadsheets are array, [spreadsheet][row][cell], like A1 = o[0][0][0];
+	calc: function(tableI, spreadsheets, ignite, freshCalc) { //spreadsheets are array, [spreadsheet][row][cell], like A1 = o[0][0][0];
 		for (var j = 0; j < spreadsheets.length; j++) {
 			for (var k = 0; k < spreadsheets[j].length; k++) {
-				spreadsheets[j][k].calculated = false;
-				ignite(tableI, j, k);
+				spreadsheets[j][k].calcCount = 0;
 			}
 		}
 		
+		for (var j = 0; j < spreadsheets.length; j++) {
+			for (var k = 0; k < spreadsheets[j].length; k++) {
+				ignite(tableI, j, k);
+			}
+		}
 	},
 	parseLocation: function(locStr) { // With input of "A1", "B4", "F20", will return {row: 0,col: 0}, {row: 3,col: 1}, {row: 19,col: 5}.
 		for (var firstNum = 0; firstNum < locStr.length; firstNum++) {
@@ -3920,7 +3944,7 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 		o.legend = (o.legend ? o.legend : o.data);
 	
 		if (Raphael) {
-			jS.s.origParent.one('calculation', function() {
+			this.s.origParent.one('calculation', function() {
 				var width = o.chart.width();
 				var height = o.chart.height();
 				var r = Raphael(o.chart[0]);
