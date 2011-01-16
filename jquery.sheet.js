@@ -21,7 +21,6 @@ http://www.gnu.org/licenses/
 		It is recommended to use STRICT doc types on the viewing page when using sheet to ensure that the heights/widths of bars and sheet rows show up correctly
 		Example of recommended doc type: <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 */
-var Lexer, Parser;
 jQuery.fn.extend({
 	sheet: function(settings) {
 		var o;
@@ -68,17 +67,6 @@ jQuery.fn.extend({
 			forceColWidthsOnStartup:true,						//bool, makes cell widths load from pre-made colgroup/col objects, use this if you plan on making the col items, makes widths more stable on startup
 			alertFormulaErrors:	false
 		}, settings);
-		
-		//ready the sheet's parser
-		if (!Lexer || !Parser) {
-			Lexer = function() {};
-			Lexer.prototype = parser.lexer;
-			Parser = function() {
-				this.lexer = new Lexer();
-				this.yy = {};
-			};
-			Parser.prototype = parser;
-		}
 		
 		o = settings.parent;
 		if (jQuery.sheet.instance) {
@@ -2357,6 +2345,7 @@ jQuery.sheet = {
 				
 				jS.cellUndoable.add(uiCell);
 			},
+			callStack: 0,
 			updateCellValue: function(sheet, row, col) {
 				//first detect if the cell exists if not return nothing
 				if (!jS.spreadsheets[sheet]) return 'Error: Sheet not found';
@@ -2372,15 +2361,22 @@ jQuery.sheet = {
 						if (cell.state) { //we set cell state so that if in the stack, it comes back to the cell, it knows
 							throw("Error: Loop Detected");
 						} else {
+							
+						
 							cell.state = 'red';
+							
 							try {
 								if (cell.formula.charAt(0) == '=') {
 									cell.formula = cell.formula.substring(1, cell.formula.length);
-									
 								}
 								
-								if (!cell.parser) cell.parser = (new Parser);
+								if (jS.callStack) {
+									cell.parser = (new jS.parser);
+								} else {
+									cell.parser = jS.Parser;
+								}
 								
+								jS.callStack++
 								cell.value = cell.parser.parse(cell.formula, jS.cellIdHandlers, {
 									sheet: sheet,
 									row: row,
@@ -2399,6 +2395,7 @@ jQuery.sheet = {
 								
 								jS.alertFormulaError(cell.value);
 							}
+							jS.callStack--;
 						}
 					}
 				
@@ -3504,6 +3501,18 @@ jQuery.sheet = {
 		s.fnBefore();
 		
 		var o; var emptyFN = function() {};
+		
+		//ready the sheet's parser
+		jS.lexer = function() {};
+		jS.lexer.prototype = parser.lexer;
+		jS.parser = function() {
+			this.lexer = new jS.lexer();
+			this.yy = {};
+		};
+		jS.parser.prototype = parser;
+		
+		jS.Parser = new jS.parser;
+		
 		if (s.buildSheet) {//override urlGet, this has some effect on how the topbar is sized
 			if (typeof(s.buildSheet) == 'object') {
 				o = s.buildSheet;
