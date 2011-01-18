@@ -614,6 +614,7 @@ jQuery.sheet = {
 							.change(function() {
 								jS.obj.inPlaceEdit().val(jS.obj.formula().val());
 							})
+							.bind('paste', jS.evt.pasteOverCells)
 							.appendTo(header);
 					}
 					
@@ -750,6 +751,7 @@ jQuery.sheet = {
 						.change(function() {
 							formula.val(textarea.val());
 						})
+						.bind('paste', jS.evt.pasteOverCells)
 						.appendTo('body')
 						.val(formula.val())
 						.focus()
@@ -782,6 +784,69 @@ jQuery.sheet = {
 			sizeSync: { /* future location of all deminsion sync/mods */
 			
 			},
+			updateCellsAfterPasteToFormula: function(oldVal) { /* oldVal is what formula should be when this is done working with all the values */
+				var newValCount = 0;
+				var formula = jS.obj.formula();
+				
+				oldVal = (oldVal ? oldVal : formula.val());
+				
+				var loc = {row: jS.cellLast.row,col: jS.cellLast.col};								
+				var val = formula.val(); //once ctrl+v is hit formula now has the data we need
+				var firstValue = '';
+		
+				if (loc.row == -1 && loc.col == -1) return false; //at this point we need to check if there is even a cell selected, if not, we can't save the information, so clear formula editor
+		
+				var tdsBefore = jQuery('<div />');
+				var tdsAfter = jQuery('<div />');
+		
+				var row = val.split(/\n/g); //break at rows
+		
+				for (var i = 0; i < row.length; i++) {
+					var col = row[i].split(/\t/g); //break at columns
+					for (var j = 0; j < col.length; j++) {
+						newValCount++;
+						if (col[j]) {
+							var td = jQuery(jS.getTd(jS.i, i + loc.row, j + loc.col));
+
+							if (td.length) {
+								var cell = jS.spreadsheets[jS.i][i + loc.row][j + loc.col];
+								tdsBefore.append(td.clone());
+					
+								if ((col[j] + '').charAt(0) == '=') { //we need to know if it's a formula here
+									cell.formula = col[j];
+									td.attr('formula', col[j]);
+								} else {
+									cell.formula = null;
+									cell.value = col[j];
+						
+									td
+										.html(col[j])
+										.removeAttr('formula');
+								}
+					
+								tdsAfter.append(td.clone());
+					
+								if (i == 0 && j == 0) { //we have to finish the current edit
+									firstValue = col[j];
+								}
+							}
+						}
+					}
+				}
+		
+				jS.cellUndoable.add(tdsBefore.children());
+				jS.cellUndoable.add(tdsAfter.children());
+		
+				formula.val(firstValue);
+		
+				if (newValCount == 1) {//minimum is 2 for index of 1x1
+					jS.fillUpOrDown(false, false, firstValue);
+					return true;
+				}
+		
+				jS.setDirty(true);
+				jS.evt.cellEditDone(true);
+			},
 			evt: { /* event handlers for sheet; e = event */
 				keyDownHandler: {
 					enterOnInPlaceEdit: function(e) {
@@ -801,75 +866,6 @@ jQuery.sheet = {
 					},
 					tab: function(e) {
 						return jS.evt.cellSetFocusFromKeyCode(e);
-					},
-					pasteOverCells: function(e) { //used for pasting from other spreadsheets
-						if (e.ctrlKey) {
-							var formula = jS.obj.formula(); //so we don't have to keep calling the function and wasting memory
-							var oldVal = formula.val();
-							formula.val('');  //we use formula to catch the pasted data
-							var newValCount = 0;
-							
-							jQuery(document).one('keyup', function() {
-								var loc = {row: jS.cellLast.row,col: jS.cellLast.col};								
-								var val = formula.val(); //once ctrl+v is hit formula now has the data we need
-								var firstValue = '';
-								formula.val(''); 
-								
-								if (loc.row == -1 && loc.col == -1) return false; //at this point we need to check if there is even a cell selected, if not, we can't save the information, so clear formula editor
-								
-								var tdsBefore = jQuery('<div />');
-								var tdsAfter = jQuery('<div />');
-								
-								var row = val.split(/\n/g); //break at rows
-								
-								for (var i = 0; i < row.length; i++) {
-									var col = row[i].split(/\t/g); //break at columns
-									for (var j = 0; j < col.length; j++) {
-										newValCount++;
-										if (col[j]) {
-											var td = jQuery(jS.getTd(jS.i, i + loc.row, j + loc.col));
-
-											if (td.length) {
-												var cell = jS.spreadsheets[jS.i][i + loc.row][j + loc.col];
-												tdsBefore.append(td.clone());
-											
-												if ((col[j] + '').charAt(0) == '=') { //we need to know if it's a formula here
-													cell.formula = col[j];
-													td.attr('formula', col[j]);
-												} else {
-													cell.formula = null;
-													cell.value = col[j];
-												
-													td
-														.html(col[j])
-														.removeAttr('formula');
-												}
-											
-												tdsAfter.append(td.clone());
-											
-												if (i == 0 && j == 0) { //we have to finish the current edit
-													firstValue = col[j];
-												}
-											}
-										}
-									}
-								}
-								
-								jS.cellUndoable.add(tdsBefore.children());
-								jS.cellUndoable.add(tdsAfter.children());
-								
-								formula.val(firstValue);
-								
-								if (newValCount == 1) {//minimum is 2 for index of 1x1
-									jS.fillUpOrDown(false, false, firstValue);
-									return true;
-								}
-								
-								jS.setDirty(true);
-								jS.evt.cellEditDone(true);
-							});
-						}
-						return true;
 					},
 					findCell: function(e) {
 						if (e.ctrlKey) { 
@@ -925,7 +921,7 @@ jQuery.sheet = {
 								break;
 							case key.PAGE_DOWN:	return jS.evt.keyDownHandler.pageUpDown();
 								break;
-							case key.V:			return jS.evt.keyDownHandler.pasteOverCells(e);
+							case key.V:			return jS.evt.pasteOverCells(e);
 								break;
 							case key.Y:			return jS.evt.keyDownHandler.redo(e);
 								break;
@@ -946,6 +942,19 @@ jQuery.sheet = {
 								break;
 							default: 			jS.cellLast.isEdit = true;
 						}
+					}
+				},
+				pasteOverCells: function(e) { //used for pasting from other spreadsheets
+					if (e.ctrlKey || e.type == "paste") {
+						var formula = jS.obj.formula(); //so we don't have to keep calling the function and wasting memory
+						var oldVal = formula.val();
+						formula.val('');  //we use formula to catch the pasted data
+						
+						jQuery(document).one('keyup', function() {
+							jS.updateCellsAfterPasteToFormula(oldVal);
+						});
+						
+						return true;
 					}
 				},
 				inPlaceEditOnKeyDown: function(e) {
@@ -1084,7 +1093,13 @@ jQuery.sheet = {
 						case key.RIGHT: 	c++; break;
 						case key.ENTER:		r++;
 							overrideIsEdit = true;
-							if (s.autoAddCells) {
+							if (jS.highlightedLast.td.length > 1) {
+								var inPlaceEdit = jS.obj.inPlaceEdit();
+								var v = inPlaceEdit.val();
+								inPlaceEdit.remove();
+								jS.updateCellsAfterPasteToFormula(v);
+								return true;
+							} else if (s.autoAddCells) {
 								if (jS.cellLast.row == jS.sheetSize().height) {
 									jS.controlFactory.addRow(':last');
 								}
