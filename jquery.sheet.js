@@ -810,10 +810,13 @@ jQuery.sheet = {
 							var newValCount = 0;
 							
 							jQuery(document).one('keyup', function() {
-								var loc = jS.getTdLocation(jS.cellLast.td); //save the currrent cell
+								var loc = {row: jS.cellLast.row,col: jS.cellLast.col};								
 								var val = formula.val(); //once ctrl+v is hit formula now has the data we need
 								var firstValue = '';
 								formula.val(''); 
+								
+								if (loc.row == -1 && loc.col == -1) return false; //at this point we need to check if there is even a cell selected, if not, we can't save the information, so clear formula editor
+								
 								var tdsBefore = jQuery('<div />');
 								var tdsAfter = jQuery('<div />');
 								
@@ -825,22 +828,28 @@ jQuery.sheet = {
 										newValCount++;
 										if (col[j]) {
 											var td = jQuery(jS.getTd(jS.i, i + loc.row, j + loc.col));
+
+											if (td.length) {
+												var cell = jS.spreadsheets[jS.i][i + loc.row][j + loc.col];
+												tdsBefore.append(td.clone());
 											
-											tdsBefore.append(td.clone());
+												if ((col[j] + '').charAt(0) == '=') { //we need to know if it's a formula here
+													cell.formula = col[j];
+													td.attr('formula', col[j]);
+												} else {
+													cell.formula = null;
+													cell.value = col[j];
+												
+													td
+														.html(col[j])
+														.removeAttr('formula');
+												}
 											
+												tdsAfter.append(td.clone());
 											
-											if ((col[j] + '').charAt(0) == '=') { //we need to know if it's a formula here
-												td.attr('formula', col[j]);
-											} else {
-												td
-													.html(col[j])
-													.removeAttr('formula'); //we get rid of formula because we don't know if it was a formula, to check may take too long
-											}
-											
-											tdsAfter.append(td.clone());
-											
-											if (i == 0 && j == 0) { //we have to finish the current edit
-												firstValue = col[j];
+												if (i == 0 && j == 0) { //we have to finish the current edit
+													firstValue = col[j];
+												}
 											}
 										}
 									}
@@ -853,13 +862,13 @@ jQuery.sheet = {
 								
 								if (newValCount == 1) {//minimum is 2 for index of 1x1
 									jS.fillUpOrDown(false, false, firstValue);
+									return true;
 								}
 								
 								jS.setDirty(true);
 								jS.evt.cellEditDone(true);
 							});
 						}
-						jS.calc();
 						return true;
 					},
 					findCell: function(e) {
@@ -958,13 +967,12 @@ jQuery.sheet = {
 				cellEditDone: function(forceCalc) { /* called to edit a cells value from jS.obj.formula(), afterward setting "fnAfterCellEdit" is called w/ params (td, row, col, spreadsheetIndex, sheetIndex)
 														forceCalc: bool, if set to true forces a calculation of the selected sheet
 													*/
-					switch (jS.cellLast.isEdit) {
+					switch (jS.cellLast.isEdit || forceCalc) {
 						case true:
 							jS.obj.inPlaceEdit().remove();
 							var formula = jS.obj.formula();
 							formula.unbind('keydown'); //remove any lingering events from inPlaceEdit
 							var td = jS.cellLast.td;
-							
 							switch(jS.isFormulaEditable(td)) {
 								case true:
 									//Lets ensure that the cell being edited is actually active
@@ -1674,13 +1682,19 @@ jQuery.sheet = {
 				var formulaOffset = (startFromActiveCell ? 0 : 1);
 				
 				if ((v + '').charAt(0) == '=') {
-					fn = function(o, i) {
+					fn = function(o, i, r, c) {
+						v = (skipOffsetForumals ? v : jS.offsetFormula(v, i + formulaOffset, 0));
+
+						jS.spreadsheets[jS.i][r][c].formula = v;
 						o
-							.attr('formula', (skipOffsetForumals ? v : jS.offsetFormula(v, i + formulaOffset, 0)))
+							.attr('formula', v)
 							.html(''); //we subtract one here because cells are 1 based and indexes are 0 based
 					};
 				} else {
-					fn = function (o) {
+					fn = function (o, i, r, c) {
+						jS.spreadsheets[jS.i][r][c].formula = null;
+						jS.spreadsheets[jS.i][r][c].value = v;
+						
 						o
 							.removeAttr('formula')
 							.html(v);
@@ -1689,10 +1703,9 @@ jQuery.sheet = {
 				
 				function fill(r, c, i) {
 					var td = jQuery(jS.getTd(jS.i, r, c));
-					
 					//make sure the formula isn't locked for this cell
 					if (jS.isFormulaEditable(td)) {
-						fn(td, i);
+						fn(td, i, r, c);
 					}
 				}
 				
@@ -2356,53 +2369,48 @@ jQuery.sheet = {
 				
 				var cell = jS.spreadsheets[sheet][row][col];
 				cell.oldValue = cell.value; //we detect the last value, so that we don't have to update all cell, thus saving resources
-
+				
+				if (cell.state) throw("Error: Loop Detected");
+				cell.state = "red";
+				
 				if (cell.calcCount < 1) {
 					cell.calcCount++;
 					if (cell.formula) {
-						if (cell.state) { //we set cell state so that if in the stack, it comes back to the cell, it knows
-							throw("Error: Loop Detected");
-						} else {
-							
-						
-							cell.state = 'red';
-							
-							try {
-								if (cell.formula.charAt(0) == '=') {
-									cell.formula = cell.formula.substring(1, cell.formula.length);
-								}
-								
-								var Parser;
-								if (jS.callStack) { //we prevent parsers from overwriting each other
-									if (!cell.parser) { //cut down on un-needed parser creation
-										cell.parser = (new jS.parser);
-									}
-									Parser = cell.parser
-								} else {//use the sheet's parser if there aren't many calls in the callStack
-									Parser = jS.Parser;
-								}
-								
-								jS.callStack++
-								cell.value = Parser.parse(cell.formula, jS.cellIdHandlers, {
-									sheet: sheet,
-									row: row,
-									col: col,
-									cell: cell,
-									s: s,
-									editable: s.editable,
-									jS: jS
-								});
-							} catch(e) {
-								cell.value = e.toString().replace(/\n/g, '<br />'); //error
-								
-								origParent.one('calculation', function() { // the error size may be bigger than that of the cell, so adjust the height accordingly
-									jS.attrH.setHeight(row, 'cell', false);
-								});
-								
-								jS.alertFormulaError(cell.value);
+						try {
+							if (cell.formula.charAt(0) == '=') {
+								cell.formula = cell.formula.substring(1, cell.formula.length);
 							}
-							jS.callStack--;
+							
+							var Parser;
+							if (jS.callStack) { //we prevent parsers from overwriting each other
+								if (!cell.parser) { //cut down on un-needed parser creation
+									cell.parser = (new jS.parser);
+								}
+								Parser = cell.parser
+							} else {//use the sheet's parser if there aren't many calls in the callStack
+								Parser = jS.Parser;
+							}
+							
+							jS.callStack++
+							cell.value = Parser.parse(cell.formula, jS.cellIdHandlers, {
+								sheet: sheet,
+								row: row,
+								col: col,
+								cell: cell,
+								s: s,
+								editable: s.editable,
+								jS: jS
+							});
+						} catch(e) {
+							cell.value = e.toString().replace(/\n/g, '<br />'); //error
+							
+							origParent.one('calculation', function() { // the error size may be bigger than that of the cell, so adjust the height accordingly
+								jS.attrH.setHeight(row, 'cell', false);
+							});
+							
+							jS.alertFormulaError(cell.value);
 						}
+						jS.callStack--;
 					}
 				
 					if (cell.html) { //if cell has an html front bring that to the value but preserve it's value
@@ -3328,7 +3336,7 @@ jQuery.sheet = {
 			getTdLocation: function(td) { /* gets td column and row int
 												td: object, td object;
 											*/
-				if (!td || !td[0]) return {col: -1, row: -1};
+				if (!td || !td[0]) return {col: 0, row: 0};
 				return {
 					col: parseInt(td[0].cellIndex),
 					row: parseInt(td[0].parentNode.rowIndex)
