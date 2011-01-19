@@ -3831,6 +3831,15 @@ jQuery.sheet = {
 		jQuery(jQuery.sheet.instance).each(function(i) {
 			this.setActiveSheet(I);
 		});
+	},
+	I: function() {
+		var I = 0;
+		if ( this.instance ) {
+			I = this.instance.length; //we use length here because we havent yet created sheet, it will append 1 to this number thus making this the effective instance number
+		} else {
+			this.instance = [];
+		}
+		return I;
 	}
 };
 
@@ -4495,13 +4504,6 @@ var arrHelpers = {
 			}
 		}
 		return flat;
-	},
-	is: function(obj) {
-		if (obj instanceof Array) {
-			return true;
-		} else {
-			return false;
-		}
 	}
 };
 
