@@ -77,6 +77,14 @@ jQuery.fn.extend({
 			jQuery.sheet.instance = [o.sheetInstance];
 		}
 		return o;
+	},
+	disableSelectionSpecial : function() { 
+	        this.each(function() { 
+	                this.onselectstart = function() { return false; }; 
+	                this.unselectable = "on"; 
+	                jQuery(this).css('-moz-user-select', 'none'); 
+	        });
+			return this;
 	}
 });
 
@@ -671,7 +679,7 @@ jQuery.sheet = {
 									return false;
 								}
 							})
-							.disableSelection()
+							.disableSelectionSpecial()
 							.dblclick(jS.evt.cellOnDblClick);
 					}
 					
@@ -985,7 +993,7 @@ jQuery.sheet = {
 							switch(jS.isFormulaEditable(td)) {
 								case true:
 									//Lets ensure that the cell being edited is actually active
-									if (td) { 
+									if (td && jS.cellLast.row > -1 && jS.cellLast.col > -1) {
 										//first, let's make it undoable before we edit it
 										jS.cellUndoable.add(td);
 										
@@ -3232,7 +3240,10 @@ jQuery.sheet = {
 								}
 							}
 							first = {row: 0,col: 0};
-							last = loc;
+							last = {
+								row: size.height,
+								col: size.width
+							}
 						};
 						break;
 				}
@@ -3835,7 +3846,7 @@ jQuery.sheet = {
 	I: function() {
 		var I = 0;
 		if ( this.instance ) {
-			I = this.instance.length; //we use length here because we havent yet created sheet, it will append 1 to this number thus making this the effective instance number
+			I = (this.instance.length === 0 ? 0 : this.instance.length - 1); //we use length here because we havent yet created sheet, it will append 1 to this number thus making this the effective instance number
 		} else {
 			this.instance = [];
 		}
@@ -4506,15 +4517,3 @@ var arrHelpers = {
 		return flat;
 	}
 };
-
-if (!jQuery.fn.disableSelection) {
-	jQuery.fn.extend({ 
-		disableSelection : function() { 
-		        this.each(function() { 
-		                this.onselectstart = function() { return false; }; 
-		                this.unselectable = "on"; 
-		                jQuery(this).css('-moz-user-select', 'none'); 
-		        }); 
-		} 
-	});
-}
