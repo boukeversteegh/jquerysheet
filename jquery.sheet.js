@@ -1480,6 +1480,8 @@ jQuery.sheet = {
 						jQuery(this).attr('id', jS.getTdId(jS.i, row, col));
 					});
 				});
+				
+				jS.spreadsheetsToArray(true);
 			},
 			setControlIds: function() { /* resets the control ids, useful for when adding new sheets/controls between sheets/controls :) */
 				var resetIds = function(o, id) {
@@ -2449,11 +2451,11 @@ jQuery.sheet = {
 				return cell.value;
 			},
 			cellIdHandlers: {
-				cellValue: function(owner, id) { //Example: A1
+				cellValue: function(id) { //Example: A1
 					var loc = jSE.parseLocation(id);
-					return jS.updateCellValue(owner.sheet, loc.row, loc.col);
+					return jS.updateCellValue(this.sheet, loc.row, loc.col);
 				},
-				cellRangeValue: function(owner, ids) {//Example: A1:B1
+				cellRangeValue: function(ids) {//Example: A1:B1
 					ids = ids.split(':');
 					var start = jSE.parseLocation(ids[0]);
 					var end = jSE.parseLocation(ids[1]);
@@ -2461,16 +2463,16 @@ jQuery.sheet = {
 					
 					for (var i = start.row; i <= end.row; i++) {
 						for (var j = start.col; j <= end.col; j++) {
-							result.push(jS.updateCellValue(owner.sheet, i, j));
+							result.push(jS.updateCellValue(this.sheet, i, j));
 						}
 					}
 					return [result];
 				},
-				fixedCellValue: function(owner, id) {
-					return jS.cellIdHandlers.cellValue(owner, id.replace(/[$]/g, ''));
+				fixedCellValue: function(id) {
+					return jS.cellIdHandlers.cellValue.apply(this, [(id + '').replace(/[$]/g, '')]);
 				},
-				fixedCellRangeValue: function(owner, ids) {
-					return jS.cellIdHandlers.cellRangeValue(owner, ids.replace(/[$]/g, ''));
+				fixedCellRangeValue: function(ids) {
+					return jS.cellIdHandlers.cellRangeValue.apply(this, [(ids + '').replace(/[$]/g, '')]);
 				},
 				remoteCellValue: function(id) {//Example: SHEET1:A1
 					var sheet, loc;
