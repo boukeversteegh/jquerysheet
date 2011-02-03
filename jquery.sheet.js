@@ -246,7 +246,11 @@ jQuery.sheet = {
 				toggleHideRow:		"No row selected.",
 				toggleHideColumn: 	"Now column selected.",
 				merge:				"Merging is not allowed on the first row.",
-				evalError:			"Error, functions as formulas not supported."
+				evalError:			"Error, functions as formulas not supported.",
+				menuInsertColumnAfter: "Insert column after",
+				menuInsertColumnBefore: "Insert column before",
+				menuAddColumnEnd:		"Add column to end",
+				menuDeleteColumn:	"Delete this column"
 			},
 			kill: function() { /* For ajax manipulation, kills this instance of sheet entirley */
 				jS.obj.tabContainer().remove();
@@ -536,7 +540,7 @@ jQuery.sheet = {
 					var widthFn;
 					
 					if (reloadWidths) {
-						parents = o.find('tr:first').find('td,th');
+						parents = o.find('tr:first').children();
 						widthFn = function(obj) {
 							return jS.attrH.width(obj);
 						};
@@ -567,7 +571,7 @@ jQuery.sheet = {
 					if (i != 0) return false;
 					jS.obj.barHelper().remove();
 					
-					var target = jS.obj.barTop().children().eq(i).next();
+					var target = jS.obj.barTop().children().eq(i);
 					
 					var pos = target.position();
 
@@ -592,7 +596,7 @@ jQuery.sheet = {
 					if (i != 0) return false;
 					jS.obj.barHelper().remove();
 					
-					var target = jS.obj.barLeft().children().eq(i).next();
+					var target = jS.obj.barLeft().children().eq(i);
 					
 					var pos = target.position();
 
@@ -615,9 +619,10 @@ jQuery.sheet = {
 				barTopMenu: function(target, i) {
 					if (jS.busy) return false;
 					jS.obj.barTopMenuParent().remove();
+					jS.obj.barTopMenu().remove();
 					
 					if (i) jS.obj.barTopHandle().remove();
-					
+					var menu;
 					var barTopMenu = jQuery('<div id="' + jS.id.barTopMenuParent + '" class="' + jS.cl.uiBarTopMenu + ' ' + jS.cl.barHelper + '">' +
 						'<span class="ui-icon ui-icon-triangle-1-s" /></span>' +
 					'</div>')
@@ -628,32 +633,45 @@ jQuery.sheet = {
 							
 							jS.obj.barTopMenu().remove();
 							var offset = barTopMenu.offset();
-							var menu = jQuery('<div id="' + jS.id.barTopMenu + '" class="' + jS.cl.uiMenu + '" />')
-								.css('position', 'absolute')
-								.css('left', offset.left + 'px')
-								.css('top', (offset.top + barTopMenu.height()) + 'px')
+							menu = jQuery('<div id="' + jS.id.barTopMenu + '" class="' + jS.cl.uiMenu + ' ' + jS.cl.barHelper + '" />')
+								.css('left', (offset.left - (s.newColumnWidth - s.colMargin)) + 'px')
+								.css('top', (offset.top + (s.colMargin * .8)) + 'px')
+								.width(s.newColumnWidth)
 								.mouseleave(function() {
 									menu.hide();
-								});
+								})
+								.appendTo('body');
 							
-							menu.append(jQuery('<a href="#">Insert column after</a><br />').click(function() {
+							function addLink(msg, fn) {
+								jQuery('<a href="#">' + msg + '</a><br />').click(function() {
+									fn();
+									return false;
+								})
+									.appendTo(menu);
+							}
+							
+							addLink(jS.msg.menuInsertColumnAfter, function() {
 								jS.controlFactory.addColumn(); 
 								return false;
-							}));
-							menu.append(jQuery('<a href="#">Insert column before</a><br />').click(function() {
+							});
+							
+							addLink(jS.msg.menuInsertColumnBefore, function() {
 								jS.controlFactory.addColumn(null, true);
 								return false;
-							}));
-							menu.append(jQuery('<a href="#">Add column to end</a><br />').click(function() {
-								jS.controlFactory.addColumn(null, null, ':last');
+							});
+							
+							addLink(jS.msg.menuAddColumnEnd, function() {
+								jS.controlFactory.addColumn(':last', null);
 								return false;
-							}));
-							menu.append(jQuery('<a href="#">Delete</a><br />').click(function() {
+							});
+							
+							addLink(jS.msg.menuDeleteColumn, function() {
 								jS.deleteColumn();
 								return false;
-							}));
-							
-							menu.appendTo('body');
+							});
+						})
+						.blur(function() {
+							if (menu) menu.hide();
 						})
 						.width(s.colMargin)
 						.height(s.colMargin)
@@ -1538,7 +1556,7 @@ jQuery.sheet = {
 									*/
 				o = (o ? o : jS.obj.sheet());
 				o.find('tr').each(function(row) {
-					jQuery(this).find('td,th').each(function(col) {
+					jQuery(this).children().each(function(col) {
 						jQuery(this).attr('id', jS.getTdId(jS.i, row, col));
 					});
 				});
@@ -1600,7 +1618,7 @@ jQuery.sheet = {
 						var o = jS.obj.barTop().children('div').eq(i);
 						if (o.is(':visible')) {
 							jS.obj.sheet().find('tbody tr').each(function() {
-								jQuery(this).find('td,th').eq(i).hide();
+								jQuery(this).children().eq(i).hide();
 							});
 							o.hide();
 							jS.obj.sheet().find('colgroup col').eq(i).hide();
@@ -1987,7 +2005,7 @@ jQuery.sheet = {
 				if (o.find('colgroup').length < 1 || o.find('col').length < 1) {
 					o.remove('colgroup');
 					var colgroup = jQuery('<colgroup />');
-					o.find('tr:first').find('td,th').each(function() {
+					o.find('tr:first').children().each(function() {
 						var w = s.newColumnWidth;
 						jQuery('<col />')
 							.width(w)

@@ -257,10 +257,13 @@
 #jSheetBarTopMenuParent
 {
 	right: .3em;
-	top: 0em;
+	top: .2em;
 	position: absolute;
 }
-
+#jSheetBarTopMenu
+{
+	position: absolute;
+}
 #jSheetBarTopHandle
 {
 	top: 0em;
@@ -269,17 +272,17 @@
 	cursor: move;
 	border-top: none;
 	border-bottom: none;
-	z-index:9999999;
+	z-index:99999;
 }
 
 #jSheetBarLeftHandle
 {
-	bottom: 0em;
+	bottom: .1em;
 	position: absolute;
 	cursor: move;
 	border-left: none;
 	border-right: none;
-	z-index:9999999;
+	z-index:99999;
 }
 .jSheetBarLeft
 {
