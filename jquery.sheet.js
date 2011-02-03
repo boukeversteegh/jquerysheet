@@ -112,6 +112,7 @@ jQuery.sheet = {
 				barLeftParent: 		function() { return jQuery('#' + jS.id.barLeftParent + jS.i); },
 				barLeftParentAll:	function() { return s.parent.find('div.' + jS.cl.barLeftParent); },
 				barTopHandle:		function() { return jQuery('#' + jS.id.barTopHandle); },
+				barTopMenu:			function() { return jQuery('#' + jS.id.barTopMenu); },
 				cellActive:			function() { return jQuery(jS.cellLast.td); },
 				cellHighlighted:	function() { return jQuery(jS.highlightedLast.td); },
 				chart:				function() { return jQuery('div.' + jS.cl.chart); },
@@ -151,6 +152,7 @@ jQuery.sheet = {
 				barLeft: 			'jSheetBarLeft_' + I + '_',
 				barLeftParent: 		'jSheetBarLeftParent_' + I + '_',
 				barTopHandle:		'jSheetBarTopHandle',
+				barTopMenu:			'jSheetBarTopMenu',
 				controls:			'jSheetControls_' + I,
 				formula: 			'jSheetControls_formula_' + I,
 				inlineMenu:			'jSheetInlineMenu_' + I,
@@ -213,10 +215,10 @@ jQuery.sheet = {
 				uiCellHighlighted: 		'ui-state-highlight',
 				uiControl: 				'ui-widget-header ui-corner-top',
 				uiControlTextBox:		'ui-widget-content',
-				uiError:			'ui-state-error',
+				uiError:				'ui-state-error',
 				uiFullScreen:			'ui-widget-content ui-corner-all',
 				uiInPlaceEdit:			'ui-state-active',
-				uiMenu:					'ui-state-highlight',
+				uiMenu:					'ui-state-default',
 				uiMenuUl: 				'ui-widget-header',
 				uiMenuLi: 				'ui-widget-header',
 				uiMenuHighlighted: 		'ui-state-highlight',
@@ -305,6 +307,8 @@ jQuery.sheet = {
 					}
 					
 					jS.setDirty(true);
+					jS.obj.barTopHandle().remove();
+					jS.obj.barTopMenu().remove();
 					
 					var sheet = jS.obj.sheet();
 					var sheetWidth = sheet.width();
@@ -554,9 +558,42 @@ jQuery.sheet = {
 				},
 				barTopHandle: function(bar, target) {
 					jS.obj.barTopHandle().remove();
-					jQuery('<div id="' + jS.id.barTopHandle + '" class="' + jS.cl.uiBarTopHandle + '">' +
+					jS.obj.barTopMenu().remove();
+					
+					var barTopHandle = jQuery('<div id="' + jS.id.barTopHandle + '" class="' + jS.cl.uiBarTopHandle + '">' +
 						'<span class="ui-icon ui-icon-triangle-1-s" /></span>' +
 					'</div>')
+						.click(function(e) {
+							barTopHandle.parent().mousedown().mouseup();
+							
+							jS.obj.barTopMenu().remove();
+							var menu = jQuery('<div id="' + jS.id.barTopMenu + '" class="' + jS.cl.uiMenu + '" />')
+								.css('position', 'absolute')
+								.css('left', e.pageX + 'px')
+								.css('top', e.pageY + 'px')
+								.mouseleave(function() {
+									menu.hide();
+								});
+							
+							menu.append(jQuery('<a href="#">Insert column after</a><br />').click(function() {
+								jS.controlFactory.addColumn(); 
+								return false;
+							}));
+							menu.append(jQuery('<a href="#">Insert column before</a><br />').click(function() {
+								jS.controlFactory.addColumn(null, true);
+								return false;
+							}));
+							menu.append(jQuery('<a href="#">Add column to end</a><br />').click(function() {
+								jS.controlFactory.addColumn(null, null, ':last');
+								return false;
+							}));
+							menu.append(jQuery('<a href="#">Delete</a><br />').click(function() {
+								jS.deleteColumn();
+								return false;
+							}));
+							
+							menu.appendTo('body');
+						})
 						.width(s.colMargin)
 						.height(s.colMargin)
 						.appendTo(target);
@@ -1274,8 +1311,10 @@ jQuery.sheet = {
 								var i = jS.getBarTopIndex(e.target);
 								if (i == -1) return false;
 								
-								jS.controlFactory.barTopHandle(jQuery(this), jQuery(e.target));
 								jS.resizeBarTop(e);
+								
+								if (s.editable)
+									jS.controlFactory.barTopHandle(jQuery(this), jQuery(e.target));
 								
 								return false;
 							});
@@ -2492,6 +2531,8 @@ jQuery.sheet = {
 				}
 			},
 			deleteSheet: function() { /* removes the currently selected sheet */
+				jS.obj.barTopHandle().remove();
+				jS.obj.barTopMenu().remove();
 				jS.obj.tableControl().remove();
 				jS.obj.tabContainer().children().eq(jS.i).remove();
 				jS.i = 0;
@@ -2500,6 +2541,7 @@ jQuery.sheet = {
 				jS.setControlIds();
 				
 				jS.setActiveSheet(jS.i);
+				jS.setDirty(true);
 			},
 			deleteRow: function() { /* removes the currently selected row */
 				var v = confirm(jS.msg.deleteRow);
@@ -2516,11 +2558,15 @@ jQuery.sheet = {
 					jS.rowLast = -1;
 					
 					jS.offsetFormulaRange(jS.rowLast, 0, -1, 0);
+					jS.setDirty(true);
 				}		
 			},
 			deleteColumn: function() { /* removes the currently selected column */
 				var v = confirm(jS.msg.deleteColumn);
 				if (v) {
+					jS.obj.barTopHandle().remove();
+					jS.obj.barTopMenu().remove();
+					
 					jS.obj.barTop().children('div').eq(jS.colLast).remove();
 					jS.obj.sheet().find('colgroup col').eq(jS.colLast).remove();
 					jS.obj.sheet().find('tr').each(function(i) {
@@ -2537,6 +2583,7 @@ jQuery.sheet = {
 					jS.colLast = -1;
 					
 					jS.offsetFormulaRange(0, jS.colLast, 0, -1);
+					jS.setDirty(true);
 				}		
 			},
 			sheetTab: function(get) { /* manages a tabs inner value

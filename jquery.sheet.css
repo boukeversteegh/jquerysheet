@@ -57,12 +57,14 @@
 	list-style-position:outside;
 }
 
-.jSheetMenu a{
+.jSheetMenu a
+{
 	display:block;
 	padding:0px 5px;
 }
 
-.jSheetMenu li{
+.jSheetMenu li
+{
 	float:left;
 	position:relative;
 	border: none;
