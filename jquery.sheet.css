@@ -254,12 +254,24 @@
 	border-width: 0px ! important;
 	min-width: 100000px;
 }
-#jSheetBarTopHandle
+#jSheetBarTopMenuParent
 {
-	right: .5em;
+	right: .3em;
 	top: 0em;
 	position: absolute;
 }
+
+#jSheetBarTopHandle
+{
+	top: 0em;
+	height: 1em;
+	position: absolute;
+	cursor: move;
+	border-top: none;
+	border-bottom: none;
+	z-index:9999999;
+}
+
 #jSheetBarLeftHandle
 {
 	bottom: 0em;
@@ -267,6 +279,7 @@
 	cursor: move;
 	border-left: none;
 	border-right: none;
+	z-index:9999999;
 }
 .jSheetBarLeft
 {
@@ -284,6 +297,8 @@
 	position: relative ! important;
 	vertical-align: middle ! important;
 	min-width: 14px ! important;
+	z-index; 999;
+	position: relative;
 }
 .jSheetBarTop > div
 {
@@ -297,6 +312,8 @@
 	border-top: none ! important;
 	border-bottom: none ! important;
 	min-width: 25px ! important;
+	z-index; 999;
+	position: relative;
 }
 
 .jSheetControls img
