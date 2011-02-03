@@ -561,6 +561,8 @@ jQuery.sheet = {
 					);
 				},
 				barTopHandle: function(bar, target) {
+					if (jS.resizing.top) return false;
+					
 					jS.obj.barHandle().remove();
 					jS.obj.barTopMenu().remove();
 					
@@ -568,13 +570,16 @@ jQuery.sheet = {
 						'<span class="ui-icon ui-icon-triangle-1-s" /></span>' +
 					'</div>')
 						.click(function(e) {
-							barTopHandle.parent().mousedown().mouseup();
+							barTopHandle.parent()
+								.mousedown()
+								.mouseup();
 							
 							jS.obj.barTopMenu().remove();
+							var offset = barTopHandle.offset();
 							var menu = jQuery('<div id="' + jS.id.barTopMenu + '" class="' + jS.cl.uiMenu + '" />')
 								.css('position', 'absolute')
-								.css('left', e.pageX + 'px')
-								.css('top', e.pageY + 'px')
+								.css('left', offset.left + 'px')
+								.css('top', (offset.top + barTopHandle.height()) + 'px')
 								.mouseleave(function() {
 									menu.hide();
 								});
@@ -602,7 +607,10 @@ jQuery.sheet = {
 						.height(s.colMargin)
 						.appendTo(target);
 				},
-				barLeftHandle: function(bar, target) {
+				barLeftHandle: function(bar, target, i) {
+					if (jS.resizing.left) return false;
+					if (i != 0) return false;
+					
 					jS.obj.barHandle().remove();
 					
 					var barLeftHandle = jQuery('<div id="' + jS.id.barLeftHandle + '" class="' + jS.cl.uiBarLeftHandle + ' ' + jS.cl.barHandle + '" />')
@@ -1295,7 +1303,7 @@ jQuery.sheet = {
 								jS.resizeBarLeft(e);
 								
 								if (s.editable)
-									jS.controlFactory.barLeftHandle(jQuery(this), jQuery(e.target));
+									jS.controlFactory.barLeftHandle(jQuery(this), jQuery(e.target), i);
 							});
 							
 						if (s.editable) { //only let editable select
@@ -2095,10 +2103,19 @@ jQuery.sheet = {
 					o.resizable("destroy");
 				}
 			},
+			resizing: {
+				top: false,
+				left: false,
+			},
 			resizeBarTop: function(e) {
 					jS.resizable(jQuery(e.target), {
 						handles: 'e',
+						start: function() {
+							jS.resizing.top = true;
+							jS.obj.barHandle().remove();
+						},
 						stop: function(e, ui) {
+							jS.resizing.top = false;
 							var i = jS.getBarTopIndex(this);
 							jS.sheetSyncSizeToDivs();
 							var w = jS.attrH.width(this, true);
@@ -2107,6 +2124,7 @@ jQuery.sheet = {
 								.css('width', w + 'px')
 								.attr('width', w + 'px');
 							
+							jS.followMe();
 							jS.obj.pane().scroll();
 						}
 					});
@@ -2114,11 +2132,17 @@ jQuery.sheet = {
 			resizeBarLeft: function(e) {
 					jS.resizable(jQuery(e.target), {
 						handles: 's',
+						start: function() {
+							jS.resizing.left = true;
+							jS.obj.barHandle().remove();
+						},
 						stop: function(e, ui) {
+							jS.resizing.left = false;
 							var i = jS.getBarLeftIndex(jQuery(this));
 							jS.attrH.setHeight(i, 'bar', true);
 							jS.attrH.setHeight(i, 'cell');
-
+							
+							jS.followMe();
 							jS.obj.pane().scroll();
 						}
 					});
@@ -2821,7 +2845,7 @@ jQuery.sheet = {
 					if (td.attr('id')) { //ensure that it is a usable cell
 						tdPos = td.position();
 						jS.obj.autoFiller()
-							.show('slow')
+							.show()
 							.css('top', ((tdPos.top + (tdHeight ? tdHeight : td.height()) - 3) + 'px'))
 							.css('left', ((tdPos.left + (tdWidth ? tdWidth : td.width()) - 3) + 'px'));
 					}
