@@ -260,6 +260,14 @@
 	top: 0em;
 	position: absolute;
 }
+#jSheetBarLeftHandle
+{
+	bottom: 0em;
+	position: absolute;
+	cursor: move;
+	border-left: none;
+	border-right: none;
+}
 .jSheetBarLeft
 {
 	position: relative ! important;
