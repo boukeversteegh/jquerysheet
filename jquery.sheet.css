@@ -259,7 +259,7 @@
 	border-width: 0px ! important;
 	min-height: 100000px;
 }
-.jSheetBarLeft div
+.jSheetBarLeft > div
 {
 	text-align: center;
 	font-size: .8em;
@@ -270,7 +270,7 @@
 	vertical-align: middle ! important;
 	min-width: 14px ! important;
 }
-.jSheetBarTop div
+.jSheetBarTop > div
 {
 	text-align: center ! important;
 	font-size: .8em;

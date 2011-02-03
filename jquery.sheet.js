@@ -205,6 +205,7 @@ jQuery.sheet = {
 				uiAutoFiller:			'ui-state-active',
 				uiActive:				'ui-state-active',
 				uiBar: 					'ui-widget-header',
+				uiBarHighlight: 		'ui-state-highlight',
 				uiCellActive:			'ui-state-active',
 				uiCellHighlighted: 		'ui-state-highlight',
 				uiControl: 				'ui-widget-header ui-corner-top',
@@ -327,7 +328,7 @@ jQuery.sheet = {
 					switch (type) {
 						case "row":
 							o = {
-								bar: jS.obj.barLeft().find('div' + eq),
+								bar: jS.obj.barLeft().children('div' + eq),
 								barParent: jS.obj.barLeft(),
 								cells: function() {
 									return sheet.find('tr' + eq);
@@ -350,7 +351,7 @@ jQuery.sheet = {
 								newCol: '',
 								reLabel: function() {								
 									o.barParent.children().each(function(i) {
-										jQuery(this).text(i + 1);
+										//jQuery(this).text(i + 1);
 									});
 								},
 								dimensions: function(loc, bar, cell, col) {
@@ -502,13 +503,16 @@ jQuery.sheet = {
 					
 					o.find('tr').each(function(i) {
 						var child = jQuery('<div>' + (i + 1) + '</div>');
-						jQuery(barLeft).append(child);
+						barLeft.append(child);
 						heightFn(i, jQuery(this), child);
 					});
 					
 					jS.evt.barMouseDown.height(
 						jS.obj.barLeftParent().append(barLeft)
 					);
+					
+					//add resize
+					jS.resizeBarLeft();
 				},
 				barTop: function(reloadWidths, o) { /* creates all the bars to the top of the spreadsheet
 															reloadWidths: bool, reloads all the widths of each bar from the cells of the sheet;
@@ -547,6 +551,29 @@ jQuery.sheet = {
 					jS.evt.barMouseDown.width(
 						jS.obj.barTopParent().append(barTop)
 					);
+					
+					jS.resizeBarTop();
+				},
+				barHandle: function(bar, target, isTop) {
+					target = jQuery(target);
+					bar = jQuery(bar);
+					
+					var barPos = bar.position();
+					var position = target.position();
+					var targetWidth = target.width();
+					var width = s.colMargin / 2;
+					
+					jQuery('#barHandle').remove();
+					jQuery('<div id="barHandle" style="background-color: purple;" />')
+						.width(width)
+						.height(s.colMargin)
+						.css('position', 'absolute')
+						.css('top', barPos.top + 'px')
+						.css('left', ((position.left + targetWidth) - (width / 2)) + 'px')
+						.mouseover(function() {
+							return false;
+						})
+						.appendTo(target);
 				},
 				header: function() { /* creates the control/container for everything above the spreadsheet */
 					jS.obj.controls().remove();
@@ -1177,80 +1204,6 @@ jQuery.sheet = {
 					s.fnSwitchSheet(i);
 					return false;
 				},
-				resizeBar: function(e, o) {
-					//Resize Column & Row & Prototype functions are private under class jSheet		
-					var target = jQuery(e.target);
-					var resizeBar = {
-						start: function(e) {
-							
-							jS.log('start resize');
-							//I never had any problems with the numbers not being ints but I used the parse method
-							//to ensuev non-breakage
-							o.offset = target.offset();
-							o.tdPageXY = [o.offset.left, o.offset.top][o.xyDimension];
-							o.startXY = [e.pageX, e.pageY][o.xyDimension];
-							o.i = o.getIndex(target);
-							o.srcBarSize = o.getSize(target);
-							o.edgeDelta = o.startXY - (o.tdPageXY + o.srcBarSize);
-							o.min = 10;
-							
-							if (s.joinedResizing) {
-								o.resizeFn = function(size) {
-									o.setDesinationSize(size);
-									o.setSize(target, size);
-								};
-							} else {
-								o.resizeFn = function(size) {
-									o.setSize(target, size);
-								};
-							}
-							
-							//We start the drag sequence
-							if (Math.abs(o.edgeDelta) <= o.min) {
-								//some ui enhancements, lets the user know he's resizing
-								jQuery(e.target).parent().css('cursor', o.cursor);
-								
-								jQuery(document)
-									.mousemove(resizeBar.drag)
-									.mouseup(resizeBar.stop);
-								
-								return true; //is resizing
-							} else {
-								return false; //isn't resizing
-							}
-						},
-						drag: function(e) {
-							var newSize = o.min;
-
-							var v = o.srcBarSize + ([e.pageX, e.pageY][o.xyDimension] - o.startXY);
-							if (v > 0) {// A non-zero minimum size saves many headaches.
-								newSize = Math.max(v, o.min);
-							}
-
-							o.resizeFn(newSize);
-							return false;
-						},
-						stop: function(e) {
-							o.setDesinationSize(o.getSize(target));
-							
-							jQuery(document)
-								.unbind('mousemove')
-								.unbind('mouseup');
-
-							jS.obj.formula()
-								.focus()
-								.select();
-							
-							target.parent().css('cursor', 'pointer');
-							
-							jS.autoFillerGoToTd();
-							
-							jS.log('stop resizing');
-						}
-					};
-					
-					return resizeBar.start(e);
-				},
 				scrollBars: function(pane) { /* makes the bars scroll as the sheet is scrolled
 												pane: object, the sheet's pane;
 											*/
@@ -1267,24 +1220,20 @@ jQuery.sheet = {
 					});
 				},
 				barMouseDown: { /* handles bar events, including resizing */
-					select: function(o, e, selectFn, resizeFn) {
-						var isResizing = jS.evt.resizeBar(e, resizeFn);
-								
-						if (!isResizing) {
-							selectFn(e.target);
-							o
-								.unbind('mouseover')
-								.mouseover(function(e) {
-									selectFn(e.target);
-								});
-								
-							jQuery(document)
-								.one('mouseup', function() {
-									o
-										.unbind('mouseover')
-										.unbind('mouseup');
-								});
-						}
+					select: function(o, e, selectFn, resizeFn) {		
+						selectFn(e.target);
+						o
+							.unbind('mouseover')
+							.mouseover(function(e) {
+								selectFn(e.target);
+							});
+							
+						jQuery(document)
+							.one('mouseup', function() {
+								o
+									.unbind('mouseover')
+									.unbind('mouseup');
+							});
 						
 						return false;
 					},
@@ -1292,7 +1241,7 @@ jQuery.sheet = {
 					last: 0,
 					height: function(o) {			
 						var selectRow = function () {};
-						
+
 						o //let any user resize
 							.unbind('mousedown')
 							.mousedown(function(e) {
@@ -1301,7 +1250,13 @@ jQuery.sheet = {
 									jS.evt.barMouseDown.select(o, e, selectRow, jS.rowResizer);
 								}
 								return false;
+							})
+							.children()
+							.children()
+							.resizable({
+								handles: 's'
 							});
+							
 						if (s.editable) { //only let editable select
 							selectRow = function(o) {
 								if (!jQuery(o).attr('id')) {
@@ -1317,7 +1272,7 @@ jQuery.sheet = {
 					},
 					width: function(o) {
 						var selectColumn = function() {};
-						
+						var w = 0;
 						o //let any user resize
 							.unbind('mousedown')
 							.mousedown(function(e) {
@@ -1328,11 +1283,18 @@ jQuery.sheet = {
 								
 								return false;
 							});
+							
+							/*.parent()
+								.mouseover(function(e) {
+									jS.controlFactory.barHandle(this, e.target);
+									jS.obj.barTop().find('.' + jS.cl.uiBarHighlight).removeClass(jS.cl.uiBarHighlight);
+									jQuery(e.target).addClass(jS.cl.uiBarHighlight);
+								});*/
 						if (s.editable) { //only let editable select
 							selectColumn = function(o) {
 								if (!jQuery(o).attr('id')) {
 									var i = jS.getBarTopIndex(o);
-									
+									if (i == -1) return false;
 									jS.colLast = i; //keep track of last column for inserting new columns
 									jS.evt.barMouseDown.last = i;
 									
@@ -1448,7 +1410,7 @@ jQuery.sheet = {
 					
 					switch(from) {
 						case 'cell':
-							o = (o ? o : jS.obj.barLeft().find('div').eq(i));
+							o = (o ? o : jS.obj.barLeft().children().eq(i));
 							h = jS.attrH.height(jQuery(jS.getTd(jS.i, i, 0)).parent().andSelf(), skipCorrection);
 							break;
 						case 'bar':
@@ -1457,7 +1419,7 @@ jQuery.sheet = {
 								var td = tr.children();
 								o = tr.add(td);
 							} 
-							h = jS.attrH.heightReverse(jS.obj.barLeft().find('div').eq(i), skipCorrection);
+							h = jS.attrH.heightReverse(jS.obj.barLeft().children().eq(i), skipCorrection);
 							break;
 					}
 					
@@ -1506,64 +1468,13 @@ jQuery.sheet = {
 					jQuery(this).attr('i', j);
 				}), jS.id.tab);
 			},
-			columnResizer: { /* used for resizing columns */
-				xyDimension: 0,
-				getIndex: function(o) {
-					return jS.getBarTopIndex(o);
-				},
-				getSize: function(o) {
-					return jS.attrH.width(o, true);
-				},
-				setSize: function(o, v) {
-					o.width(v);
-				},
-				setDesinationSize: function(w) {
-					jS.sheetSyncSizeToDivs();
-					
-					jS.obj.sheet().find('col').eq(this.i)
-						.width(w)
-						.css('width', w)
-						.attr('width', w);
-					
-					jS.obj.pane().scroll();
-				},
-				cursor: 'w-resize'
-			},
-			rowResizer: { /* used for resizing rows */
-				xyDimension: 1,
-					getIndex: function(o) {
-						return jS.getBarLeftIndex(o);
-					},
-					getSize: function(o) {
-						return jS.attrH.height(o, true);
-					},
-					setSize: function(o, v) {
-						if (v) {
-						o
-							.height(v)
-							.css('height', v)
-							.attr('height', v);
-						}
-						return jS.attrH.height(o);
-					},
-					setDesinationSize: function() {
-						//Set the cell height
-						jS.attrH.setHeight(this.i, 'bar', true);
-						
-						//Reset the bar height if the resized row don't match
-						jS.attrH.setHeight(this.i, 'cell', false);
-						
-						jS.obj.pane().scroll();
-					},
-					cursor: 's-resize'
-			},
 			toggleHide: {//These are not ready for prime time
 				row: function(i) {
 					if (!i) {//If i is empty, lets get the current row
 						i = jS.obj.cellActive().parent().attr('rowIndex');
 					}
 					if (i) {//Make sure that i equals something
-						var o = jS.obj.barLeft().find('div').eq(i);
+						var o = jS.obj.barLeft().children().eq(i);
 						if (o.is(':visible')) {//This hides the current row
 							o.hide();
 							jS.obj.sheet().find('tr').eq(i).hide();
@@ -1578,7 +1489,7 @@ jQuery.sheet = {
 				},
 				rowAll: function() {
 					jS.obj.sheet().find('tr').show();
-					jS.obj.barLeft().find('div').show();
+					jS.obj.barLeft().children().show();
 				},
 				column: function(i) {
 					if (!i) {
@@ -1586,7 +1497,7 @@ jQuery.sheet = {
 					}
 					if (i) {
 						//We need to hide both the col and td of the same i
-						var o = jS.obj.barTop().find('div').eq(i);
+						var o = jS.obj.barTop().children('div').eq(i);
 						if (o.is(':visible')) {
 							jS.obj.sheet().find('tbody tr').each(function() {
 								jQuery(this).find('td,th').eq(i).hide();
@@ -1606,7 +1517,7 @@ jQuery.sheet = {
 					var w = jS.obj.barTop().width();
 					var newW = 0;
 					var newW = 0;
-					jS.obj.barTop().find('div').each(function() {
+					jS.obj.barTop().children('div').each(function() {
 						var o = jQuery(this);
 						if (o.is(':hidden')) {
 							newW += o.width();
@@ -2030,8 +1941,8 @@ jQuery.sheet = {
 					s.parent.addClass(jS.cl.uiParent);
 					jS.obj.sheet().addClass(jS.cl.uiSheet);
 					//Style bars
-					jS.obj.barLeft().find('div').addClass(jS.cl.uiBar);
-					jS.obj.barTop().find('div').addClass(jS.cl.uiBar);
+					jS.obj.barLeft().children().addClass(jS.cl.uiBar);
+					jS.obj.barTop().children().addClass(jS.cl.uiBar);
 					jS.obj.barCornerParent().addClass(jS.cl.uiBar);
 					
 					jS.obj.controls().addClass(jS.cl.uiControl);
@@ -2071,14 +1982,14 @@ jQuery.sheet = {
 					setActive: function(direction, i) {
 						//We don't clear here because we can have multi active bars
 						switch(direction) {
-							case 'top': jS.obj.barTop().find('div').eq(i).addClass(jS.cl.uiActive);
+							case 'top': jS.obj.barTop().children().eq(i).addClass(jS.cl.uiActive);
 								break;
-							case 'left': jS.obj.barLeft().find('div').eq(i).addClass(jS.cl.uiActive);
+							case 'left': jS.obj.barLeft().children().eq(i).addClass(jS.cl.uiActive);
 								break;
 						}
 					},
 					clearActive: function() {
-						jS.obj.barTop().add(jS.obj.barLeft()).find('div.' + jS.cl.uiActive)
+						jS.obj.barTop().add(jS.obj.barLeft()).children('.' + jS.cl.uiActive)
 							.removeClass(jS.cl.uiActive);
 					}
 				},
@@ -2133,6 +2044,34 @@ jQuery.sheet = {
 						.resizable(settings)
 						.attr('resizable', true);
 				}
+			},
+			resizeBarTop: function(o) {
+					jS.resizable((o ? o : jS.obj.barTop().children()), {
+						handles: 'e',
+						stop: function(e, ui) {
+							var i = jS.getBarTopIndex(this);
+							jS.sheetSyncSizeToDivs();
+							var w = jS.attrH.width(this, true);
+							jS.obj.sheet().find('col').eq(i)
+								.width(w)
+								.css('width', w + 'px')
+								.attr('width', w + 'px');
+							
+							jS.obj.pane().scroll();
+						}
+					});
+			},
+			resizeBarLeft: function(o) {
+					jS.resizable((o ? o : jS.obj.barLeft().children()), {
+						handles: 's',
+						stop: function(e, ui) {
+							var i = jS.getBarLeftIndex(this);
+							jS.attrH.setHeight(i, 'bar', true);
+							jS.attrH.setHeight(i, 'cell');
+							//jS.attrH.setHeight(i, 'row', false, this);
+							//jS.obj.pane().scroll();
+						}
+					});
 			},
 			manageHtmlToText: function(v) { /* converts html to text for use in textareas
 												v: string, value to convert;
@@ -2537,14 +2476,14 @@ jQuery.sheet = {
 			},
 			refreshLabelsColumns: function(){ /* reset values inside bars for columns */
 				var w = 0;
-				jS.obj.barTop().find('div').each(function(i) {
+				jS.obj.barTop().children('div').each(function(i) {
 					jQuery(this).text(jSE.columnLabelString(i+1));
 					w += jQuery(this).width();
 				});
 				return w;
 			},
 			refreshLabelsRows: function(){ /* resets values inside bars for rows */
-				jS.obj.barLeft().find('div').each(function(i) {
+				jS.obj.barLeft().children().each(function(i) {
 					jQuery(this).text((i + 1));
 				});
 			},
@@ -2573,8 +2512,8 @@ jQuery.sheet = {
 			deleteRow: function() { /* removes the currently selected row */
 				var v = confirm(jS.msg.deleteRow);
 				if (v) {
-					jS.obj.barLeft().find('div').eq(jS.rowLast).remove();
-					jS.obj.sheet().find('tr').eq(jS.rowLast).remove();
+					jS.obj.barLeft().children().eq(jS.rowLast).remove();
+					jS.obj.sheet().children('tr').eq(jS.rowLast).remove();
 					
 					jS.evt.cellEditAbandon();
 					
@@ -2590,7 +2529,7 @@ jQuery.sheet = {
 			deleteColumn: function() { /* removes the currently selected column */
 				var v = confirm(jS.msg.deleteColumn);
 				if (v) {
-					jS.obj.barTop().find('div').eq(jS.colLast).remove();
+					jS.obj.barTop().children('div').eq(jS.colLast).remove();
 					jS.obj.sheet().find('colgroup col').eq(jS.colLast).remove();
 					jS.obj.sheet().find('tr').each(function(i) {
 							jQuery(this).find('td').eq(jS.colLast).remove();
@@ -3096,10 +3035,14 @@ jQuery.sheet = {
 			},
 			sheetSyncSizeToDivs: function() { /* syncs a sheet's size from bars/divs */
 				var newSheetWidth = 0;
-				jS.obj.barTop().find('div').each(function() {
-					newSheetWidth += parseInt(jQuery(this).outerWidth());
+				jS.obj.barTop().children().each(function() {
+					newSheetWidth += jQuery(this).width() - s.boxModelCorrection;
 				});
-				jS.obj.sheet().width(newSheetWidth);
+				jS.obj.sheet()
+					.width(newSheetWidth)
+					.attr('width', newSheetWidth + 'px')
+					.css('width', newSheetWidth + 'px');
+				return newSheetWidth;
 			},
 			sheetSyncSizeToCols: function(o) { /* syncs a sheet's size from it's col objects
 													o: object, sheet object;
@@ -3406,7 +3349,12 @@ jQuery.sheet = {
 			},
 			getBarTopIndex: function(o) { /* get's index from object */
 				var i = jSE.columnLabelIndex(jQuery.trim(jQuery(o).text()));
-				return parseInt(i) - 1;
+				i = parseInt(i);
+				if (isNaN(i)) {
+					return -1;
+				} else {
+					return i - 1;
+				}
 			},
 			EMPTY_VALUE: {},
 			time: { /* time loggin used with jS.log, useful for finding out if new methods are faster */
