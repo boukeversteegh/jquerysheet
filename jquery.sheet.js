@@ -362,7 +362,7 @@ jQuery.sheet = {
 								newCol: '',
 								reLabel: function() {								
 									o.barParent.children().each(function(i) {
-										//jQuery(this).text(i + 1);
+										jQuery(this).text(i + 1);
 									});
 								},
 								dimensions: function(loc, bar, cell, col) {
@@ -1291,7 +1291,7 @@ jQuery.sheet = {
 								var i = jS.getBarLeftIndex(e.target);
 								if (i == -1) return false;
 								
-								jS.evt.barMouseDown.first = jS.evt.barMouseDown.last = jS.rowLast = jS.getBarLeftIndex(e.target);
+								jS.evt.barMouseDown.first = jS.evt.barMouseDown.last = jS.rowLast = i;
 								jS.evt.barMouseDown.select(o, e, selectRow);
 								return false;
 							})
@@ -1308,14 +1308,15 @@ jQuery.sheet = {
 							
 						if (s.editable) { //only let editable select
 							selectRow = function(o) {
-								if (!jQuery(o).attr('id')) {
-									var i = jS.getBarLeftIndex(o);
-									
-									jS.rowLast = i; //keep track of last row for inserting new rows
-									jS.evt.barMouseDown.last = i;
-									
-									jS.cellSetActiveBar('row', jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
-								}
+								if (!o) return false;
+								if (jQuery(o).attr('id')) return false;
+								var i = jS.getBarLeftIndex(o);
+								if (i == -1) return false;
+								
+								jS.rowLast = i; //keep track of last row for inserting new rows
+								jS.evt.barMouseDown.last = i;
+								
+								jS.cellSetActiveBar('row', jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
 							};
 						}
 					},
@@ -1347,14 +1348,15 @@ jQuery.sheet = {
 							});
 						if (s.editable) { //only let editable select
 							selectColumn = function(o) {
-								if (!jQuery(o).attr('id')) {
-									var i = jS.getBarTopIndex(o);
-									if (i == -1) return false;
-									jS.colLast = i; //keep track of last column for inserting new columns
-									jS.evt.barMouseDown.last = i;
-									
-									jS.cellSetActiveBar('col', jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
-								}
+								if (!o) return false;
+								if (jQuery(o).attr('id')) return false;
+								var i = jS.getBarTopIndex(o);
+								if (i == -1) return false;
+								
+								jS.colLast = i; //keep track of last column for inserting new columns
+								jS.evt.barMouseDown.last = i;
+								
+								jS.cellSetActiveBar('col', jS.evt.barMouseDown.first, jS.evt.barMouseDown.last);
 							};
 						}
 					}
