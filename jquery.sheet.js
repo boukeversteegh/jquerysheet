@@ -28,6 +28,9 @@ jQuery.fn.extend({
 			urlGet: 			"sheets/enduser.documentation.html", //local url, if you want to get a sheet from a url
 			urlSave: 			"save.html", 					//local url, for use only with the default save for sheet
 			editable: 			true, 							//bool, Makes the jSheetControls_formula & jSheetControls_fx appear
+			editableTabs:		true,							//bool, If sheet is editable, this allows users to change the tabs by second click
+			barTopMenu:			true,							//bool, if sheet is editable, this will show the mini menu in barTap for column manipulation
+			freezableCells:		false,							//bool, if sheet is editable, this will show the barHandles and allow user to drag them to freeze cells, not yet working.
 			allowToggleState: 	true,							//allows the function that changes the spreadsheet's state from static to editable and back
 			urlMenu: 			"menu.html", 					//local url, for the menu to the right of title
 			newColumnWidth: 	120, 							//int, the width of new columns or columns that have no width assigned
@@ -59,7 +62,7 @@ jQuery.fn.extend({
 			boxModelCorrection: 2, 								//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
 			calculations:		{},								//object, used to extend the standard functions that come with sheet
 			cellSelectModel: 	'excel',						//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
-			autoAddCells:		true,							//bool, when user presses enter on the last row, this will allow them to add another cell, thus improving performance and optimizing modification speed
+			autoAddCells:		true,							//bool, when user presses enter on the last row/col, this will allow them to add more cells, thus improving performance and optimizing modification speed
 			resizable: 			true,							//bool, makes the $(obj).sheet(); object resizeable, also adds a resizable formula textarea at top of sheet
 			autoFiller: 		false,							//bool, the little guy that hangs out to the bottom right of a selected cell, users can click and drag the value to other cells
 			minSize: 			{rows: 15, cols: 5},			//object - {rows: int, cols: int}, Makes the sheet stay at a certain size when loaded in edit mode, to make modification more productive
@@ -2700,7 +2703,7 @@ jQuery.sheet = {
 				if (get) {
 					sheetTab = jS.obj.sheet().attr('title');
 					sheetTab = (sheetTab ? sheetTab : 'Spreadsheet ' + (jS.i + 1));
-				} else if (s.editable) { //ensure that the sheet is editable, then let them change the sheet's name
+				} else if (s.editable && s.editableTabs) { //ensure that the sheet is editable, then let them change the sheet's name
 					var newTitle = prompt("What would you like the sheet's title to be?", jS.sheetTab(true));
 					if (!newTitle) { //The user didn't set the new tab name
 						sheetTab = jS.obj.sheet().attr('title');
@@ -3691,9 +3694,16 @@ jQuery.sheet = {
 			s.boxModelCorrection = 0;
 		}
 		
-
 		if (!jQuery.scrollTo) {
 			jS.followMe = emptyFN;
+		}
+		
+		if (!s.barTopMenu) {
+			jS.controlFactory.barTopMenu = emptyFN;
+		}
+		
+		if (!s.freezableCells) { //this feature does not yet work
+			jS.controlFactory.barTopHandle = jS.controlFactory.barLeftHandle = emptyFN;
 		}
 		
 		jS.log('Startup');
