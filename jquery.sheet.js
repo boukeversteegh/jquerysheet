@@ -1356,6 +1356,7 @@ jQuery.sheet = {
 							})
 							.parent()
 							.mouseover(function(e) {
+								if (jQuery(e.target).attr('id')) return false;
 								var i = jS.getBarLeftIndex(e.target);
 								if (i == -1) return false;
 								
@@ -1395,6 +1396,7 @@ jQuery.sheet = {
 							})
 							.parent()
 							.mouseover(function(e) {
+								if (jQuery(e.target).attr('id')) return false;
 								var i = jS.getBarTopIndex(e.target);
 								if (i == -1) return false;
 								
@@ -1615,7 +1617,7 @@ jQuery.sheet = {
 					}
 					if (i) {
 						//We need to hide both the col and td of the same i
-						var o = jS.obj.barTop().children('div').eq(i);
+						var o = jS.obj.barTop().children().eq(i);
 						if (o.is(':visible')) {
 							jS.obj.sheet().find('tbody tr').each(function() {
 								jQuery(this).children().eq(i).hide();
@@ -1635,7 +1637,7 @@ jQuery.sheet = {
 					var w = jS.obj.barTop().width();
 					var newW = 0;
 					var newW = 0;
-					jS.obj.barTop().children('div').each(function() {
+					jS.obj.barTop().children().each(function() {
 						var o = jQuery(this);
 						if (o.is(':hidden')) {
 							newW += o.width();
@@ -2614,7 +2616,7 @@ jQuery.sheet = {
 			},
 			refreshLabelsColumns: function(){ /* reset values inside bars for columns */
 				var w = 0;
-				jS.obj.barTop().children('div').each(function(i) {
+				jS.obj.barTop().children().each(function(i) {
 					jQuery(this).text(jSE.columnLabelString(i+1));
 					w += jQuery(this).width();
 				});
@@ -2672,11 +2674,10 @@ jQuery.sheet = {
 				var v = confirm(jS.msg.deleteColumn);
 				if (v) {
 					jS.obj.barHelper().remove();
-					
-					jS.obj.barTop().children('div').eq(jS.colLast).remove();
+					jS.obj.barTop().children().eq(jS.colLast).remove();
 					jS.obj.sheet().find('colgroup col').eq(jS.colLast).remove();
 					jS.obj.sheet().find('tr').each(function(i) {
-							jQuery(this).find('td').eq(jS.colLast).remove();
+							jQuery(this).children().eq(jS.colLast).remove();
 					});
 					
 					jS.evt.cellEditAbandon();
