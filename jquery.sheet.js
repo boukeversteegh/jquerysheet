@@ -1372,7 +1372,27 @@ jQuery.sheet = {
 						//if the td exists, lets go to it
 						if (td) {
 							jS.themeRoller.cell.clearHighlighted();
-							jS.cellEdit(jQuery(td));
+							td = jQuery(td);
+							if (td.is(':hidden')) {
+								function getNext(o, reverse) {
+									if (reverse) {
+										c++;
+										o = o.next()
+									}
+									else {
+										c--;
+										o = o.prev();
+									}
+									
+									if (o.is(':hidden') && o.length) {
+										return getNext(o, reverse);
+									}
+									return o;
+								}
+								
+								td = getNext(td, c > jS.cellLast.col);
+							}
+							jS.cellEdit(td);
 							return false;
 						}
 					}
