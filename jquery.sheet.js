@@ -382,7 +382,7 @@ jQuery.sheet = {
 							break;
 						case "col":
 							o = {
-								bar: jS.obj.barTop().find('div' + eq),
+								bar: jS.obj.barTop().children('div' + eq),
 								barParent: jS.obj.barTop(),
 								cells: function() {
 									var cellStart = sheet.find('tr:first td' + eq);
@@ -664,7 +664,7 @@ jQuery.sheet = {
 							});
 							
 							addLink(jS.msg.menuAddColumnEnd, function() {
-								jS.controlFactory.addColumn(':last', null);
+								jS.controlFactory.addColumn(':last');
 								return false;
 							});
 							
