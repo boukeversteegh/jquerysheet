@@ -665,12 +665,11 @@ jQuery.sheet = {
 				},
 				barTopMenu: function(e, i, target) {
 					if (jS.busy) return false;
-					jS.obj.barTopMenu().hide();
+					var menu = jS.obj.barTopMenu().hide();
 					
 					if (i) jS.obj.barTopHandle().remove();
 					var menu;
 					
-					menu = jS.obj.barTopMenu();
 					if (!menu.length) {
 						menu = jS.controlFactory.makeMenu('top', [{
 							msg: jS.msg.menuInsertColumnAfter,
@@ -1459,7 +1458,11 @@ jQuery.sheet = {
 							.bind('contextmenu', function(e) {
 								var i = jS.getBarLeftIndex(e.target);
 								if (i == -1) return false;
-								o.mousedown().mouseup();
+								
+								o.parent()
+									.mousedown()
+									.mouseup();
+								
 								jS.controlFactory.barLeftMenu(e, i);
 								return false;
 							})
@@ -1506,7 +1509,7 @@ jQuery.sheet = {
 							.bind('contextmenu', function(e) {
 								var i = jS.getBarTopIndex(e.target);
 								if (i == -1) return false;
-								o
+								o.parent()
 									.mousedown()
 									.mouseup();
 									
@@ -2397,7 +2400,7 @@ jQuery.sheet = {
 					jS.obj.label().html(v);
 				}
 			},
-			cellEdit: function(td, isDrag) { /* starts cell to be edited
+			cellEdit: function(td, isDrag, skipFocus) { /* starts cell to be edited
 												td: object, td object;
 
 												isDrag: bool, should be determained by if the user is dragging their mouse around setting cells;
@@ -2406,6 +2409,7 @@ jQuery.sheet = {
 				//This finished up the edit of the last cell
 				jS.evt.cellEditDone();
 				jS.followMe(td);
+				jS.obj.pane().scroll();
 				var loc = jS.getTdLocation(td);
 				
 				//Show where we are to the user
@@ -2416,10 +2420,15 @@ jQuery.sheet = {
 					v = jS.manageHtmlToText(td.html());
 				}
 				
-				jS.obj.formula()
-					.val(v)
-					.focus()
-					.select();
+				var formula = jS.obj.formula()
+					.val(v);
+				
+				if (!skipFocus) {
+					formula
+						.focus()
+						.select();
+				}
+				
 				jS.cellSetActive(td, loc, isDrag);
 			},
 			cellSetActive: function(td, loc, isDrag, directional, fnDone) { /* cell cell active to sheet, and highlights it for the user, shouldn't be called directly, should use cellEdit
@@ -2775,19 +2784,15 @@ jQuery.sheet = {
 					jS.obj.barLeft().children().eq(jS.rowLast).remove();
 					jQuery(jS.getTd(jS.i, jS.rowLast, 0)).parent().remove();
 					
-					jS.evt.cellEditAbandon();
-					
 					jS.setTdIds();
 					jS.refreshLabelsRows();
 					jS.obj.pane().scroll();
-					
-					jS.rowLast = -1;
 					
 					jS.offsetFormulaRange(jS.rowLast, 0, -1, 0);
 					
 					jS.setDirty(true);
 					
-					if (!skipCalc) jS.calc();
+					jS.evt.cellEditAbandon();
 				}		
 			},
 			deleteColumn: function(skipCalc) { /* removes the currently selected column */
@@ -2801,20 +2806,16 @@ jQuery.sheet = {
 						jQuery(jS.getTd(jS.i, i, jS.colLast)).remove();
 					}
 					
-					jS.evt.cellEditAbandon();
-					
 					var w = jS.refreshLabelsColumns();
 					jS.setTdIds();
 					jS.obj.sheet().width(w);
 					jS.obj.pane().scroll();
 					
-					jS.colLast = -1;
-					
 					jS.offsetFormulaRange(0, jS.colLast, 0, -1);
 					
 					jS.setDirty(true);
 					
-					if (!skipCalc) jS.calc();
+					jS.evt.cellEditAbandon();
 				}		
 			},
 			sheetTab: function(get) { /* manages a tabs inner value
@@ -4230,6 +4231,9 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 			data: [0],
 			legend: "",
 			chart: jQuery('<div class="' + jS.cl.chart + '" />')
+				.click(function() {
+					jS.cellEdit(jQuery(this).parent(), null, true);
+				})
 		}, o);
 	
 		o.data = sanitize(o.data, true);
@@ -4507,7 +4511,10 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			var cell = this.cell;
 			var jS = this.jS;
 			var id = "dropdown" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
-			var o = jQuery('<select style="width: 100%;" name="' + id + '" id="' + id + '" />');				
+			var o = jQuery('<select style="width: 100%;" name="' + id + '" id="' + id + '" />')
+				.click(function() {
+					jS.cellEdit(jQuery(this).parent(), null, true);
+				});
 		
 			if (!noBlank) {
 				o.append('<option value="">Select a value</option>');
@@ -4537,11 +4544,14 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	RADIO: function(v) {
 		v = arrHelpers.foldPrepare(v, arguments, true);
 		var cell = this.cell;
-		var jS = this.jS;
 		
 		if (this.editable) {
 			var id = "radio" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
-			var o = jQuery('<span />');
+			var jS = this.jS;
+			var o = jQuery('<span />')
+				.click(function() {
+					jS.cellEdit(jQuery(this).parent());
+				});
 			for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
 				if (v[i]) {
 					var input = jQuery('<input type="radio" name="' + id + '" class="' + id + '" />')
@@ -4574,16 +4584,19 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	CHECKBOX: function(v) {
 		v = arrHelpers.foldPrepare(v, arguments)[0];
 		var cell = this.cell;
-		var jS = this.jS;
 		
 		if (this.editable) {
+			var jS = this.jS;
 			var id = "checkbox" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
 			var checkbox = jQuery('<input type="checkbox" name="' + id + '" class="' + id + '" />')
 				.val(v);
 				
 			var o = jQuery('<span />')
 				.append(checkbox)
-				.append('<span>' + v + '</span><br />');
+				.append('<span>' + v + '</span><br />')
+				.click(function() {
+					jS.cellEdit(jQuery(this).parent());
+				});
 			
 			if (v == cell.selectedValue) {
 				checkbox.attr('checked', true);
