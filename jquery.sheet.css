@@ -260,10 +260,19 @@
 	top: .2em;
 	position: absolute;
 }
-#jSheetBarTopMenu
+#jSheetBarTopMenu,#jSheetBarLeftMenu
 {
 	position: absolute;
 	z-index:99999;
+}
+#jSheetBarTopMenu *,#jSheetBarLeftMenu *
+{
+	font-size: .9em;
+	cursor: pointer;
+}
+#jSheetBarTopMenu *:hover,#jSheetBarLeftMenu *:hover
+{
+	background-color: inherit;
 }
 #jSheetBarTopHandle
 {
