@@ -3781,16 +3781,20 @@ jQuery.sheet = {
 				
 				formula.val(fV + v);
 			},
-			cellUndoable: { /* makes cell editing undoable and redoable */
+			cellUndoable: { /* makes cell editing undoable and redoable
+								there should always be 2 cellUndoable.add()'s every time used, one to save the current state, the second to save the new
+							*/
 				undoOrRedo: function(undo) {
 					//hide the autoFiller, it can get confused
 					if (s.autoFiller) {
 						jS.obj.autoFiller().hide();
 					}
 					
-					if (!undo && this.i > 0) {
+					if (undo && this.i > 0) {
 						this.i--;
-					} else if (undo && this.i < this.stack.length) {
+						this.i--;
+					} else if (!undo && this.i < this.stack.length) {
+						this.i++;
 						this.i++;
 					}
 					
@@ -3811,6 +3815,8 @@ jQuery.sheet = {
 					jS.themeRoller.cell.clearActive();
 					jS.themeRoller.bar.clearActive();
 					jS.themeRoller.cell.clearHighlighted();
+					
+					jS.calc();
 				},
 				get: function() { //gets the current cell
 					return jQuery(this.stack[this.i]);
@@ -3824,15 +3830,20 @@ jQuery.sheet = {
 							.attr('undoable', id)
 							.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
 					});
-					if (this.stack.length > 0) {
-						this.stack.unshift(oldTds);
-					} else {
-						this.stack = [oldTds];
+					
+					this.stack[this.i++] = oldTds;
+						
+					if (this.stack.length > this.i) {
+						for (var i = this.stack.length; i > this.i; i--) {
+							this.stack.pop();
+						}
 					}
-					this.i = -1;
+					
+					
 					if (this.stack.length > 20) { //undoable count, we want to be careful of too much memory consumption
-						this.stack.pop(); //drop the last value
+						this.stack.shift(); //drop the first value
 					}
+						
 				},
 				i: 0,
 				stack: []
