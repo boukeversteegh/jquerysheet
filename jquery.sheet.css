@@ -283,6 +283,12 @@
 	border-width: 0px ! important;
 	min-height: 100000px;
 }
+.jSheetBarLeft span
+{
+	position: absolute;
+	top: 50%;
+	
+}
 .jSheetBarLeft > div
 {
 	text-align: center;

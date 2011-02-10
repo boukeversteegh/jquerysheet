@@ -406,10 +406,7 @@ jQuery.sheet = {
 								bar: jS.obj.barTop().children('div' + eq),
 								barParent: jS.obj.barTop(),
 								cells: function() {
-									var cellStart = sheet.find('tr:first td' + eq);
-									if (!cellStart[0]) {
-										cellStart = sheet.find('tr:first th' + eq);
-									}
+									var cellStart = sheet.find('tr:first').children(eq);
 									var cellEnd = sheet.find('td:last');
 									var loc1 = jS.getTdLocation(cellStart);
 									var loc2 = jS.getTdLocation(cellEnd);
@@ -499,9 +496,9 @@ jQuery.sheet = {
 
 					jS.obj.pane().scroll();
 					
-					if (!skipFormulaReparse && eq != ':last' && !isBefore) {
+					if (!skipFormulaReparse && eq != ':last') {
 						//offset formulas
-						jS.offsetFormulaRange((isBefore ? loc.row - qty : loc.row) , (isBefore ? loc.col - qty : loc.col), o.offset, isBefore);
+						jS.offsetFormulaRange(loc.row, loc.col, o.offset, isBefore);
 					}
 					
 					//Because the line numbers get bigger, it is possible that the bars have changed in size, lets sync them
@@ -1098,8 +1095,10 @@ jQuery.sheet = {
 								if (td) {
 									var loc = jS.getTdLocation(td);
 									jS.cellSetActive(td, loc, true, jS.autoFillerNotGroup, function() {										
-										jS.fillUpOrDown();
-										jS.autoFillerGoToTd(jS.obj.cellHighlighted().last());
+										var hlighted = jS.obj.cellHighlighted();
+										var hLoc = jS.getTdLocation(hlighted.first());
+										jS.fillUpOrDown(hLoc.row < loc.row || hLoc.col < loc.col);
+										jS.autoFillerGoToTd(hlighted.last());
 										jS.autoFillerNotGroup = false;
 									});
 								}
@@ -1968,16 +1967,20 @@ jQuery.sheet = {
 				var formulaOffset = (startFromActiveCell ? 0 : 1);
 				
 				if ((v + '').charAt(0) == '=') {
-					fn = function(o, i, r, c) {
+					fn = function(o, i, row, col) {
 						v = (skipOffsetForumals ? v : jS.offsetFormula(v, i + formulaOffset, 0));
-
-						jS.spreadsheets[jS.i][r][c].formula = v;
+						
+						jS.spreadsheets[jS.i][row][col].formula = v;
+						
 						o
 							.attr('formula', v)
-							.html(''); //we subtract one here because cells are 1 based and indexes are 0 based
+							.html('');
 					};
 				} else {
 					fn = function (o, i, r, c) {
+						if (!isNaN(v)) {
+							v = (v * 1) + i;
+						}
 						jS.spreadsheets[jS.i][r][c].formula = null;
 						jS.spreadsheets[jS.i][r][c].value = v;
 						
@@ -1987,27 +1990,27 @@ jQuery.sheet = {
 					};
 				}
 				
-				function fill(r, c, i) {
-					var td = jQuery(jS.getTd(jS.i, r, c));
+				function fill(i, row, col) {
+					var td = jQuery(jS.getTd(jS.i, row, col));
 					//make sure the formula isn't locked for this cell
 					if (jS.isFormulaEditable(td)) {
-						fn(td, i, r, c);
+						fn(td, i, row, col);
 					}
 				}
 				
-				var k = 0;
+				var i = 0;
 				if (goUp) {
-					for (var i = locLast.row; i >= locFirst.row; i--) {
-						for (var j = locLast.col; j >= locFirst.col; j--) {
-							fill(i, j, k);
-							k++;
+					for (var row = locLast.row; row >= locFirst.row; row--) {
+						for (var col = locLast.col; col >= locFirst.col; col--) {
+							fill(i, row, col);
+							i--;
 						}
 					}
 				} else {
-					for (var i = locFirst.row; i <= locLast.row; i++) {
-						for (var j = locFirst.col; j <= locLast.col; j++) {
-							fill(i, j, k);
-							k++;
+					for (var row = locFirst.row; row <= locLast.row; row++) {
+						for (var col = locFirst.col; col <= locLast.col; col++) {
+							fill(i, row, col);
+							i++;
 						}
 					}
 				}
@@ -2024,9 +2027,28 @@ jQuery.sheet = {
 																						offset: {row: int,col: int} offsets increment;
 																						isBefore: bool, makes increment backward;
 																					*/
+				row = (row ? row : 0);
+				col = (col ? col : 0);
+				var size = jS.sheetSize();
 				var shiftedRange = {
-					first: {row: (row ? row : 0), col: (col ? col : 0)},
-					last: jS.sheetSize()
+					first: {
+						row: (row >= 0? row : 0),
+						col: (col >= 0? col : 0)
+					},
+					last: {
+						row: size.height,
+						col: size.width
+					}
+				};
+				var affectedRange = {
+					first: {
+						row: 0,
+						col: 0
+					},
+					last: {
+						row: size.height,
+						col: size.width
+					}
 				};
 				
 				if (!isBefore && offset.row) { //this shift is from a row
@@ -2040,10 +2062,10 @@ jQuery.sheet = {
 				}
 				
 				function isInFormula(loc) {
-					if ((loc.row - 1) >= shiftedRange.first.row &&
-						(loc.col - 1) >= shiftedRange.first.col &&
-						(loc.row - 1) <= shiftedRange.last.row &&
-						(loc.col - 1) <= shiftedRange.last.col
+					if ((loc.row) >= shiftedRange.first.row &&
+						(loc.col) >= shiftedRange.first.col &&
+						(loc.row) <= shiftedRange.last.row &&
+						(loc.col) <= shiftedRange.last.col
 					) {
 						return true;
 					} else {
@@ -2085,11 +2107,11 @@ jQuery.sheet = {
 						(jSE.columnLabelString(endLoc.col + offset.col) + (endLoc.row + offset.row))
 					);
 				}
-				
+
 				jS.cycleCells(function (sheet, row, col) {
 					var td = jQuery(this);
 					var formula = td.attr('formula');
-					
+
 					if (formula && jS.isFormulaEditable(td)) {
 						formula = formula.replace(jSE.regEx.cell, 
 							function(ignored, colStr, rowStr, pos) {
@@ -2102,8 +2124,15 @@ jQuery.sheet = {
 									var colI = jSE.columnLabelIndex(colStr);
 									var rowI = parseInt(rowStr);
 									
-									if (isInFormula([rowI, colI])) {
-										return reparseFormula([rowI, colI]);
+									if (isInFormula({
+											row: rowI,
+											col: colI
+										})
+									) {
+										return reparseFormula({
+											row: rowI,
+											col: colI
+										});
 									} else {
 										return ignored;
 									}
@@ -2124,8 +2153,21 @@ jQuery.sheet = {
 									var endRowI = parseInt(endRowStr);
 									var endColI = jSE.columnLabelIndex(endColStr);
 									
-									if (isInFormulaRange([startRowI, startColI], [endRowI, endColI])) {
-										return reparseFormulaRange([startRowI, startColI], [endRowI, endColI]);
+									if (isInFormulaRange({
+											row: startRowI,
+											col: startColI
+										}, {
+											row: endRowI,
+											col: endColI
+										})
+									) {
+										return reparseFormulaRange({
+											row: startRowI,
+											col: startColI
+										}, {
+											row: endRowI,
+											col: endColI
+										});
 									} else {
 										return ignored;
 									}
@@ -2134,11 +2176,12 @@ jQuery.sheet = {
 								}
 						});
 						
+						jS.spreadsheets[sheet][row][col].formula = formula;
 						td.attr('formula', formula);
 					}
 
-				}, {row: 0,col: 0}, shiftedRange.last);
-				
+				}, affectedRange.first, affectedRange.last);
+
 				jS.calc();
 			},
 			cycleCells: function(fn, firstLoc, lastLoc, sheet) { /* cylces through a certain group of cells in a spreadsheet and applies a function to them
@@ -2899,7 +2942,10 @@ jQuery.sheet = {
 					jS.refreshLabelsRows();
 					jS.obj.pane().scroll();
 					
-					jS.offsetFormulaRange(jS.rowLast, 0, -1, 0);
+					jS.offsetFormulaRange(jS.rowLast, 0, {
+						row: -1,
+						col: 0
+					});
 					
 					jS.setDirty(true);
 					
@@ -2922,7 +2968,10 @@ jQuery.sheet = {
 					jS.obj.sheet().width(w);
 					jS.obj.pane().scroll();
 					
-					jS.offsetFormulaRange(0, jS.colLast, 0, -1);
+					jS.offsetFormulaRange(0, jS.colLast, {
+						row: 0,
+						col: -1
+					});
 					
 					jS.setDirty(true);
 					
@@ -3954,6 +4003,10 @@ jQuery.sheet = {
 			jS.calc = emptyFN;
 		}
 		
+		if (!Raphael) {
+			jSE.chart = emptyFN;
+		}
+		
 		jS.log('Startup');
 		
 		$window
@@ -4366,109 +4419,107 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 		o.y.legend = sanitize(o.y.legend);
 	
 		o.legend = (o.legend ? o.legend : o.data);
-	
-		if (Raphael) {
-			this.s.origParent.one('calculation', function() {
-				var width = o.chart.width();
-				var height = o.chart.height();
-				var r = Raphael(o.chart[0]);
-				if (r.g) {
-					if (o.title) r.g.text(width / 2, 10, o.title).attr({"font-size": 20});
-					switch (o.type) {
-					case "bar":
-						r.g.barchart(width / 8, height / 8, width * 0.8, height * 0.8, o.data, o.legend)
-							.hover(function () {
-								this.flag = r.g.popup(
-									this.bar.x,
-									this.bar.y,
-									this.bar.value || "0"
-								).insertBefore(this);
-							},function () {
-								this.flag.animate({
-									opacity: 0
-									},300, 
 
-									function () {
-										this.remove();
-										}
-									);
-								});
-						break;
-					case "hbar":
-						r.g.hbarchart(width / 8, height / 8, width * 0.8, height * 0.8, o.data, o.legend)
-							.hover(function () {
-								this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
-							},function () {
-								this.flag.animate({
-									opacity: 0
-									},300, 
-									function () {
-										this.remove();
-										}
-									);
-								});
-						break;
-					case "line":
-						r.g.linechart(width / 8, height / 8, width * 0.8, height * 0.8, o.x.data, o.y.data, {
-							nostroke: false, 
-							axis: "0 0 1 1", 
-							symbol: "o", 
-							smooth: true
-						})
-						.hoverColumn(function () {
-							this.tags = r.set();
-							for (var i = 0, ii = this.y.length; i < ii; i++) {
-								this.tags.push(r.g.tag(this.x, this.y[i], this.values[i], 160, 10).insertBefore(this).attr([{fill: "#fff"}, {fill: this.symbols[i].attr("fill")}]));
+		this.s.origParent.one('calculation', function() {
+			var width = o.chart.width();
+			var height = o.chart.height();
+			var r = Raphael(o.chart[0]);
+			if (r.g) {
+				if (o.title) r.g.text(width / 2, 10, o.title).attr({"font-size": 20});
+				switch (o.type) {
+				case "bar":
+					r.g.barchart(width / 8, height / 8, width * 0.8, height * 0.8, o.data, o.legend)
+						.hover(function () {
+							this.flag = r.g.popup(
+								this.bar.x,
+								this.bar.y,
+								this.bar.value || "0"
+							).insertBefore(this);
+						},function () {
+							this.flag.animate({
+								opacity: 0
+								},300, 
+
+								function () {
+									this.remove();
+									}
+								);
+							});
+					break;
+				case "hbar":
+					r.g.hbarchart(width / 8, height / 8, width * 0.8, height * 0.8, o.data, o.legend)
+						.hover(function () {
+							this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
+						},function () {
+							this.flag.animate({
+								opacity: 0
+								},300, 
+								function () {
+									this.remove();
+									}
+								);
+							});
+					break;
+				case "line":
+					r.g.linechart(width / 8, height / 8, width * 0.8, height * 0.8, o.x.data, o.y.data, {
+						nostroke: false, 
+						axis: "0 0 1 1", 
+						symbol: "o", 
+						smooth: true
+					})
+					.hoverColumn(function () {
+						this.tags = r.set();
+						for (var i = 0, ii = this.y.length; i < ii; i++) {
+							this.tags.push(r.g.tag(this.x, this.y[i], this.values[i], 160, 10).insertBefore(this).attr([{fill: "#fff"}, {fill: this.symbols[i].attr("fill")}]));
+						}
+					}, function () {
+						this.tags && this.tags.remove();
+					});
+			
+					break;
+				case "pie":
+					r.g.piechart(width / 2, height / 2, (width < height ? width : height) / 2, o.data, {legend: o.legend})
+						.hover(function () {
+							this.sector.stop();
+							this.sector.scale(1.1, 1.1, this.cx, this.cy);
+							if (this.label) {
+								this.label[0].stop();
+								this.label[0].scale(1.5);
+								this.label[1].attr({"font-weight": 800});
 							}
 						}, function () {
-							this.tags && this.tags.remove();
+							this.sector.animate({scale: [1, 1, this.cx, this.cy]}, 500, "bounce");
+							if (this.label) {
+								this.label[0].animate({scale: 1}, 500, "bounce");
+								this.label[1].attr({"font-weight": 400});
+							}
 						});
-				
-						break;
-					case "pie":
-						r.g.piechart(width / 2, height / 2, (width < height ? width : height) / 2, o.data, {legend: o.legend})
-							.hover(function () {
-								this.sector.stop();
-								this.sector.scale(1.1, 1.1, this.cx, this.cy);
-								if (this.label) {
-									this.label[0].stop();
-									this.label[0].scale(1.5);
-									this.label[1].attr({"font-weight": 800});
-								}
-							}, function () {
-								this.sector.animate({scale: [1, 1, this.cx, this.cy]}, 500, "bounce");
-								if (this.label) {
-									this.label[0].animate({scale: 1}, 500, "bounce");
-									this.label[1].attr({"font-weight": 400});
-								}
-							});
-						break;
-					case "dot":
-						r.g.dotchart(width / 8, height / 8, width * 0.8, height * 0.8, o.x.data, o.y.data, o.data, {
-							symbol: "o", 
-							max: 10, 
-							heat: true, 
-							axis: "0 0 1 1", 
-							axisxstep: o.x.data.length - 1, 
-							axisystep: o.y.data.length - 1, 
-							axisxlabels: (o.x.legend ? o.x.legend : o.x.data),
-							axisylabels: (o.y.legend ? o.y.legend : o.y.data),
-							axisxtype: " ", 
-							axisytype: " "
-						})
-							.hover(function () {
-								this.tag = this.tag || r.g.tag(this.x, this.y, this.value, 0, this.r + 2).insertBefore(this);
-								this.tag.show();
-							}, function () {
-								this.tag && this.tag.hide();
-							});
-						break;
-					}
-				
-					jS.attrH.setHeight(owner.row, 'cell', false);
+					break;
+				case "dot":
+					r.g.dotchart(width / 8, height / 8, width * 0.8, height * 0.8, o.x.data, o.y.data, o.data, {
+						symbol: "o", 
+						max: 10, 
+						heat: true, 
+						axis: "0 0 1 1", 
+						axisxstep: o.x.data.length - 1, 
+						axisystep: o.y.data.length - 1, 
+						axisxlabels: (o.x.legend ? o.x.legend : o.x.data),
+						axisylabels: (o.y.legend ? o.y.legend : o.y.data),
+						axisxtype: " ", 
+						axisytype: " "
+					})
+						.hover(function () {
+							this.tag = this.tag || r.g.tag(this.x, this.y, this.value, 0, this.r + 2).insertBefore(this);
+							this.tag.show();
+						}, function () {
+							this.tag && this.tag.hide();
+						});
+					break;
 				}
-			});
-		}
+			
+				jS.attrH.setHeight(owner.row, 'cell', false);
+			}
+		});
 		
 		return o.chart;
 	}
