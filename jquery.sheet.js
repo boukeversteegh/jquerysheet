@@ -4345,7 +4345,7 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 			}
 			return v;
 		}
-	
+		
 		o = jQuery.extend({
 			x: { legend: "", data: [0]},
 			y: { legend: "", data: [0]},
@@ -4376,7 +4376,7 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 					if (o.title) r.g.text(width / 2, 10, o.title).attr({"font-size": 20});
 					switch (o.type) {
 					case "bar":
-						r.g.barchart(0, 0, width, height, o.data, o.legend)
+						r.g.barchart(width / 8, height / 8, width * 0.8, height * 0.8, o.data, o.legend)
 							.hover(function () {
 								this.flag = r.g.popup(
 									this.bar.x,
@@ -4395,7 +4395,7 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 								});
 						break;
 					case "hbar":
-						r.g.hbarchart(0, 0, width, height, o.data, o.legend)
+						r.g.hbarchart(width / 8, height / 8, width * 0.8, height * 0.8, o.data, o.legend)
 							.hover(function () {
 								this.flag = r.g.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
 							},function () {
@@ -4409,7 +4409,7 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 								});
 						break;
 					case "line":
-						r.g.linechart(width * 0.05, height * 0.03, width * 0.9, height * 0.9, o.x.data, o.y.data, {
+						r.g.linechart(width / 8, height / 8, width * 0.8, height * 0.8, o.x.data, o.y.data, {
 							nostroke: false, 
 							axis: "0 0 1 1", 
 							symbol: "o", 
@@ -4426,7 +4426,7 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 				
 						break;
 					case "pie":
-						r.g.piechart(width / 2, height / 2, width / 5, o.data, {legend: o.legend})
+						r.g.piechart(width / 2, height / 2, (width < height ? width : height) / 2, o.data, {legend: o.legend})
 							.hover(function () {
 								this.sector.stop();
 								this.sector.scale(1.1, 1.1, this.cx, this.cy);
@@ -4444,17 +4444,17 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 							});
 						break;
 					case "dot":
-						r.g.dotchart(width / 2, height / 2, width / 5, [o.x.data], [o.y.data], [o.data], {
+						r.g.dotchart(width / 8, height / 8, width * 0.8, height * 0.8, o.x.data, o.y.data, o.data, {
 							symbol: "o", 
 							max: 10, 
 							heat: true, 
 							axis: "0 0 1 1", 
-							axisxstep: legendX.length - 1, 
-							axisystep: legendY.length - 1, 
-							axisxlabels: legendX, 
+							axisxstep: o.x.data.length - 1, 
+							axisystep: o.y.data.length - 1, 
+							axisxlabels: (o.x.legend ? o.x.legend : o.x.data),
+							axisylabels: (o.y.legend ? o.y.legend : o.y.data),
 							axisxtype: " ", 
-							axisytype: " ", 
-							axisylabels: legendY
+							axisytype: " "
 						})
 							.hover(function () {
 								this.tag = this.tag || r.g.tag(this.x, this.y, this.value, 0, this.r + 2).insertBefore(this);
@@ -4773,17 +4773,17 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			title: title
 		}]);
 	},
-	DOTCHART:	function(valuesX, valuesY, values,legendX, legendY, title) {
+	DOTCHART:	function(valuesX, valuesY, values, legendX, legendY, title) {
 		return jSE.chart.apply(this, [{
 			type: 'dot',
-			values: values,
+			data: (values ? values : valuesX),
 			x: {
 				data: valuesX,
 				legend: legendX
 			},
 			y: {
-				data: valuesY,
-				legend: legendY
+				data: (valuesY ? valuesY : valuesX),
+				legend: (legendY ? legendY : legendX)
 			},
 			title: title
 		}]);
