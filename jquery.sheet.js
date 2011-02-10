@@ -120,6 +120,7 @@ jQuery.sheet = {
 				barTopMenuParent:	function() { return jQuery('#' + jS.id.barTopMenuParent); },
 				barTopMenu:			function() { return jQuery('#' + jS.id.barTopMenu); },
 				cellActive:			function() { return jQuery(jS.cellLast.td); },
+				cellMenu:			function() { return jQuery('#' + jS.id.cellMenu); },
 				cellHighlighted:	function() { return jQuery(jS.highlightedLast.td); },
 				chart:				function() { return jQuery('div.' + jS.cl.chart); },
 				controls:			function() { return jQuery('#' + jS.id.controls); },
@@ -155,13 +156,14 @@ jQuery.sheet = {
 				barCornerParent:	'jSheetBarCornerParent_' + I + '_',
 				barLeft: 			'jSheetBarLeft_' + I + '_',
 				barLeftParent: 		'jSheetBarLeftParent_' + I + '_',
-				barLeftHandle:		'jSheetBarLeftHandle',
-				barLeftMenu:		'jSheetBarLeftMenu',
+				barLeftHandle:		'jSheetBarLeftHandle_' + I,
+				barLeftMenu:		'jSheetBarLeftMenu_' + I,
 				barTop: 			'jSheetBarTop_' + I + '_',
 				barTopParent: 		'jSheetBarTopParent_' + I + '_',
 				barTopHandle:		'jSheetBarTopHandle',
-				barTopMenu:			'jSheetBarTopMenu',
-				barTopMenuParent:	'jSheetBarTopMenuParent',
+				barTopMenu:			'jSheetBarTopMenu_' + I,
+				barTopMenuParent:	'jSheetBarTopMenuParent_' + I,
+				cellMenu:			'jSheetCellMenu_' + I,
 				controls:			'jSheetControls_' + I,
 				formula: 			'jSheetControls_formula_' + I,
 				inlineMenu:			'jSheetInlineMenu_' + I,
@@ -186,11 +188,13 @@ jQuery.sheet = {
 				autoFillerConver:		'jSheetAutoFillerCover',
 				barCorner:				'jSheetBarCorner',
 				barCornerParent:		'jSheetBarCornerParent',
-				barHelper:				'jSheetbarHelper',
+				barHelper:				'jSheetBarHelper',
 				barLeftTd:				'barLeft',
 				barLeft: 				'jSheetBarLeft',
+				barLeftHandle:			'jSheetBarLeftHandle',
 				barLeftParent: 			'jSheetBarLeftParent',
 				barTop: 				'jSheetBarTop',
+				barTopHandle:			'jSheetBarTopHandle',
 				barTopParent: 			'jSheetBarTopParent',
 				barTopTd:				'barTop',
 				cellActive:				'jSheetCellActive',
@@ -242,25 +246,25 @@ jQuery.sheet = {
 				uiTabActive:			'ui-state-highlight'
 			},
 			msg: { /*msg = messages used throught sheet, for easy access to change them for other languages*/
-				addRowMulti: 		"How many rows would you like to add?",
-				addColumnMulti: 	"How many columns would you like to add?",
-				newSheet: 			"What size would you like to make your spreadsheet? Example: '5x10' creates a sheet that is 5 columns by 10 rows.",
-				deleteRow: 			"Are you sure that you want to delete that row?",
-				deleteColumn: 		"Are you sure that you want to delete that column?",
-				openSheet: 			"Are you sure you want to open a different sheet?  All unsaved changes will be lost.",
-				cellFind: 			"No results found.",
-				toggleHideRow:		"No row selected.",
-				toggleHideColumn: 	"Now column selected.",
-				merge:				"Merging is not allowed on the first row.",
-				evalError:			"Error, functions as formulas not supported.",
-				menuInsertColumnAfter: "Insert column after",
+				addRowMulti: 			"How many rows would you like to add?",
+				addColumnMulti: 		"How many columns would you like to add?",
+				newSheet: 				"What size would you like to make your spreadsheet? Example: '5x10' creates a sheet that is 5 columns by 10 rows.",
+				deleteRow: 				"Are you sure that you want to delete that row?",
+				deleteColumn: 			"Are you sure that you want to delete that column?",
+				openSheet: 				"Are you sure you want to open a different sheet?  All unsaved changes will be lost.",
+				cellFind: 				"No results found.",
+				toggleHideRow:			"No row selected.",
+				toggleHideColumn: 		"Now column selected.",
+				merge:					"Merging is not allowed on the first row.",
+				evalError:				"Error, functions as formulas not supported.",
+				menuInsertColumnAfter: 	"Insert column after",
 				menuInsertColumnBefore: "Insert column before",
 				menuAddColumnEnd:		"Add column to end",
-				menuDeleteColumn:	"Delete this column",
-				menuInsertRowAfter: "Insert row after",
-				menuInsertRowBefore: "Insert row before",
-				menuAddRowEnd:		"Add row to end",
-				menuDeleteRow:	"Delete this row"
+				menuDeleteColumn:		"Delete this column",
+				menuInsertRowAfter: 	"Insert row after",
+				menuInsertRowBefore:	"Insert row before",
+				menuAddRowEnd:			"Add row to end",
+				menuDeleteRow:			"Delete this row"
 			},
 			kill: function() { /* For ajax manipulation, kills this instance of sheet entirley */
 				jS.obj.tabContainer().remove();
@@ -585,9 +589,9 @@ jQuery.sheet = {
 					
 					var pos = target.position();
 
-					var barTopHandle = jQuery('<div id="' + jS.id.barTopHandle + '" class="' + jS.cl.uiBarTopHandle + ' ' + jS.cl.barHelper + '" />')
+					var barTopHandle = jQuery('<div id="' + jS.id.barTopHandle + '" class="' + jS.cl.uiBarTopHandle + ' ' + jS.cl.barHelper + ' ' + jS.cl.barTopHandle + '" />')
 						.width(s.colMargin / 3)
-						.height(s.colMargin)
+						.height(s.colMargin - 2)
 						.css('left', pos.left + 'px')
 						.appendTo(bar);
 					
@@ -610,8 +614,8 @@ jQuery.sheet = {
 					
 					var pos = target.position();
 
-					var barLeftHandle = jQuery('<div id="' + jS.id.barLeftHandle + '" class="' + jS.cl.uiBarLeftHandle + ' ' + jS.cl.barHelper + '" />')
-						.width(s.colMargin)
+					var barLeftHandle = jQuery('<div id="' + jS.id.barLeftHandle + '" class="' + jS.cl.uiBarLeftHandle + ' ' + jS.cl.barHelper + ' ' + jS.cl.barLeftHandle + '" />')
+						.width(s.colMargin - 6)
 						.height(s.colMargin / 3)
 						.css('top', pos.top + 'px')
 						.appendTo(bar);
@@ -629,33 +633,38 @@ jQuery.sheet = {
 				makeMenu: function(bar, menuItems) {
 					var menu;
 					function addLink(msg, fn) {
-						jQuery('<div>' + msg + '</div>').click(function() {
-							fn();
-							return false;
-						})
-							.appendTo(menu);
+						switch (msg) {
+							case "line":
+								jQuery('<hr />').appendTo(menu);
+								break;
+							default:
+								jQuery('<div>' + msg + '</div>').click(function() {
+									fn();
+									return false;
+								}).appendTo(menu);
+						}
+							
 					}
 					
 					switch (bar) {
 						case "top":
-							menu = jQuery('<div id="' + jS.id.barTopMenu + '" class="' + jS.cl.uiMenu + ' ' + jS.cl.barHelper + '" />')
-								.width(s.newColumnWidth)
-								.mouseleave(function() {
-									menu.hide();
-								})
-								.appendTo('body')
-								.hide();
+							menu = jQuery('<div id="' + jS.id.barTopMenu + '" class="' + jS.cl.uiMenu + ' ' + jS.cl.barHelper + '" />');
 							break;
 						case "left":
-							menu = jQuery('<div id="' + jS.id.barLeftMenu + '" class="' + jS.cl.uiMenu + ' ' + jS.cl.barHelper + '" />')
-								.width(s.newColumnWidth)
-								.mouseleave(function() {
-									menu.hide();
-								})
-								.appendTo('body')
-								.hide();
+							menu = jQuery('<div id="' + jS.id.barLeftMenu + '" class="' + jS.cl.uiMenu + ' ' + jS.cl.barHelper + '" />');
+							break;
+						case "cell":
+							menu = jQuery('<div id="' + jS.id.cellMenu + '" class="' + jS.cl.uiMenu + ' ' + jS.cl.barHelper + '" />');
 							break;
 					}
+					
+					menu
+						.width(s.newColumnWidth)
+						.mouseleave(function() {
+							menu.hide();
+						})
+						.appendTo('body')
+						.hide();
 					
 					jQuery(menuItems).each(function() {
 						addLink(this.msg, this.fn);
@@ -778,6 +787,71 @@ jQuery.sheet = {
 						.css('top', (e.pageY - 5) + 'px')
 						.show();
 				},
+				cellMenu: function(e) {
+					if (jS.busy) return false;
+					jS.obj.cellMenu().hide();
+					
+					var menu = jS.obj.cellMenu();
+					
+					if (!menu.length) {
+						menu = jS.controlFactory.makeMenu('cell', [{
+								msg: jS.msg.menuInsertColumnAfter,
+								fn: function(){
+									jS.controlFactory.addColumn();
+									return false;
+								}
+							}, {
+								msg: jS.msg.menuInsertColumnBefore,
+								fn: function(){
+									jS.controlFactory.addColumn(null, true);
+									return false;
+								}
+							}, {
+								msg: jS.msg.menuAddColumnEnd,
+								fn: function(){
+									jS.controlFactory.addColumn(':last');
+									return false;
+								}
+							}, {
+								msg: jS.msg.menuDeleteColumn,
+								fn: function(){
+									jS.deleteColumn();
+									return false;
+								}
+							}, {
+								msg: "line"
+							},{
+								msg: jS.msg.menuInsertRowAfter,
+								fn: function(){
+									jS.controlFactory.addRow();
+									return false;
+								}
+							}, {
+								msg: jS.msg.menuInsertRowBefore,
+								fn: function(){
+									jS.controlFactory.addRow(null, true);
+									return false;
+								}
+							}, {
+								msg: jS.msg.menuAddRowEnd,
+								fn: function(){
+									jS.controlFactory.addRow(':last');
+									return false;
+								}
+							}, {
+								msg: jS.msg.menuDeleteRow,
+								fn: function(){
+									jS.deleteRow();
+									return false;
+								}
+							}]);
+					}
+					
+					menu
+						.css('left', (e.pageX - 5) + 'px')
+						.css('top', (e.pageY - 5) + 'px')
+						.show();
+				},
 				header: function() { /* creates the control/container for everything above the spreadsheet */
 					jS.obj.controls().remove();
 					jS.obj.tabContainer().remove();
@@ -828,7 +902,7 @@ jQuery.sheet = {
 										.hover(function(){
 											jQuery(this).find('ul:first')
 												.hide()
-												.show(400);
+												.show();
 										},function(){
 											jQuery(this).find('ul:first')
 												.hide();
@@ -904,10 +978,18 @@ jQuery.sheet = {
 						var formula = jS.obj.formula();
 						pane
 							.mousedown(function(e) {
-								if (jS.isTd(e.target)) {
-									jS.evt.cellOnMouseDown(e);
-									return false;
+								switch (e.which) {
+									case 1:
+										if (jS.isTd(e.target)) {
+											jS.evt.cellOnMouseDown(e);
+											return false;
+										}
+										break;
 								}
+							})
+							.bind('contextmenu', function(e) {
+								jS.controlFactory.cellMenu(e);
+								return false;
 							})
 							.disableSelectionSpecial()
 							.dblclick(jS.evt.cellOnDblClick);

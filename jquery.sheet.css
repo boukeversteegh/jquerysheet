@@ -30,6 +30,18 @@
 }
 
 /* Menu */
+.jSheetBarHelper {
+	position: absolute;
+	z-index: 99999;
+	font-size: .9em;
+	cursor: pointer;
+	right: .3em;
+	top: .2em;
+}
+.jSheetBarHelper *:hover
+{
+	background-color: inherit;
+}
 .jSheetMenu {
 	padding: 3px;
 	background: none;
@@ -129,7 +141,7 @@
 	padding: 2px 5px 0 5px ! important;
 	cursor: pointer;
 }
-.jSheetTabContainer *, .menuDiv *
+.jSheetTabContainer *, .Div *
 {
 	font-size: 1em ! important;
 }
@@ -254,45 +266,16 @@
 	border-width: 0px ! important;
 	min-width: 100000px;
 }
-#jSheetBarTopMenuParent
+.jSheetBarTopHandle
 {
-	right: .3em;
-	top: .2em;
-	position: absolute;
-}
-#jSheetBarTopMenu,#jSheetBarLeftMenu
-{
-	position: absolute;
-	z-index:99999;
-}
-#jSheetBarTopMenu *,#jSheetBarLeftMenu *
-{
-	font-size: .9em;
-	cursor: pointer;
-}
-#jSheetBarTopMenu *:hover,#jSheetBarLeftMenu *:hover
-{
-	background-color: inherit;
-}
-#jSheetBarTopHandle
-{
-	top: 0em;
-	height: 1em;
-	position: absolute;
-	cursor: move;
-	border-top: none;
-	border-bottom: none;
-	z-index:99999;
+	top: 0em ! important;
+	cursor: move ! important;
 }
 
-#jSheetBarLeftHandle
+.jSheetBarLeftHandle
 {
-	bottom: .1em;
-	position: absolute;
-	cursor: move;
-	border-left: none;
-	border-right: none;
-	z-index:99999;
+	right: 0em ! important;
+	cursor: move ! important;
 }
 .jSheetBarLeft
 {
