@@ -296,7 +296,8 @@ jQuery.sheet = {
 						jS.spreadsheets[sheet][row][col] = {
 							formula: td.attr('formula'),
 							value: td.html(),
-							calcCount: 0
+							calcCount: 0,
+							calcLast: -1
 						};
 					});
 				}
@@ -987,14 +988,10 @@ jQuery.sheet = {
 						var formula = jS.obj.formula();
 						pane
 							.mousedown(function(e) {
-								switch (e.which) {
-									case 1:
-										if (jS.isTd(e.target)) {
-											jS.evt.cellOnMouseDown(e);
-											return false;
-										}
-										break;
-								}
+								if (jS.isTd(e.target)) {
+										jS.evt.cellOnMouseDown(e);
+										return false;
+									}
 							})
 							.bind('contextmenu', function(e) {
 								jS.controlFactory.cellMenu(e);
@@ -2716,7 +2713,8 @@ jQuery.sheet = {
 				if (cell.state) throw("Error: Loop Detected");
 				cell.state = "red";
 				
-				if (cell.calcCount < 1) {
+				if (cell.calcCount < 1 && cell.calcLast != jS.calcLast) {
+					cell.calcLast = jS.calcLast;
 					cell.calcCount++;
 					if (cell.formula) {
 						try {
@@ -2758,7 +2756,7 @@ jQuery.sheet = {
 				
 					if (cell.html) { //if cell has an html front bring that to the value but preserve it's value
 						jQuery(jS.getTd(sheet, row, col)).html(cell.html);					
-					} else if (cell.oldValue != cell.value) {
+					} else {
 						jQuery(jS.getTd(sheet, row, col)).html(cell.value);
 					}
 				}
@@ -2840,12 +2838,14 @@ jQuery.sheet = {
 				);
 			},
 			context: {},
+			calcLast: 0,
 			calc: function(tableI) { /* harnesses calculations engine's calculation function
 												tableI: int, the current table integer;
 												fuel: variable holder, used to prevent memory leaks, and for calculations;
 											*/
 				tableI = (tableI ? tableI : jS.i);
 				jS.log('Calculation Started');
+				jS.calcLast = new Date();
 				jSE.calc(tableI, jS.spreadsheetsToArray()[tableI], jS.updateCellValue);
 				origParent.trigger('calculation');
 				jS.isSheetEdit = false;
@@ -4353,7 +4353,7 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 			data: [0],
 			legend: "",
 			chart: jQuery('<div class="' + jS.cl.chart + '" />')
-				.click(function() {
+				.mousedown(function() {
 					jS.cellEdit(jQuery(this).parent(), null, true);
 				})
 		}, o);
@@ -4604,10 +4604,11 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		var r = jFN.FIXED(v, decimals, false);
 		
 		if (v >= 0) {
-			return symbol + r; 
+			this.cell.html = symbol + r;
 		} else {
-			return '-' + symbol + r.slice(1);
+			this.cell.html = '-' + symbol + r.slice(1);
 		}
+		return v;
 	},
 	VALUE: function(v) { return parseFloat(v); },
 	N: function(v) {
@@ -4634,7 +4635,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			var jS = this.jS;
 			var id = "dropdown" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
 			var o = jQuery('<select style="width: 100%;" name="' + id + '" id="' + id + '" />')
-				.click(function() {
+				.mousedown(function() {
 					jS.cellEdit(jQuery(this).parent(), null, true);
 				});
 		
@@ -4671,7 +4672,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			var id = "radio" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
 			var jS = this.jS;
 			var o = jQuery('<span />')
-				.click(function() {
+				.mousedown(function() {
 					jS.cellEdit(jQuery(this).parent());
 				});
 			for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
@@ -4716,7 +4717,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			var o = jQuery('<span />')
 				.append(checkbox)
 				.append('<span>' + v + '</span><br />')
-				.click(function() {
+				.mousedown(function() {
 					jS.cellEdit(jQuery(this).parent());
 				});
 			
