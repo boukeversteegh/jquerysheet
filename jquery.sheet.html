@@ -56,14 +56,13 @@
                     urlGet: 'sheets/numberstesting.html',
                     autoFiller: true
                 });
-                
-                
+				
                 $('#jQuerySheet1').sheet({
                     title: 'Enduser Documentation <a href="#" onclick="jQuery.sheet.instance[1].toggleState(); return false;">EDIT</a>',
                     inlineMenu: inlineMenu($.sheet.instance),
                     editable: false
                 });
-                
+				
                 $('#jQuerySheet2').sheet({
                     title: 'Developer Documentation <a href="#" onclick="jQuery.sheet.instance[2].toggleState(); return false;">EDIT</a>',
                     inlineMenu: inlineMenu($.sheet.instance),
@@ -74,7 +73,7 @@
                 //examples of how to use jQuery.sheet
                 /*
                  //Inline sheet(s), non-editable (like a gridview)
-                 $('#jQuerySheet').sheet({
+                 $('.jQuerySheet').sheet({
                  title: 'jQuery.sheet - The Web Based Spreadsheet Demo',
                  buildSheet: true, //will turn object #jQuerySheet's child tables into sheets
                  editable: false,
@@ -243,15 +242,15 @@
                 </tr>
                 <tr>
                     <td colspan="2" style="vertical-align: top;">
-                        <div id="jQuerySheet0" style="height: 450px;">
+                        <div id="jQuerySheet0" class="jQuerySheet" style="height: 450px;">
                         </div>
                         <br/>
                         <br/>
-                        <div id="jQuerySheet1" style="height: 450px;">
+                        <div id="jQuerySheet1" class="jQuerySheet" style="height: 450px;">
                         </div>
                         <br/>
                         <br/>
-                        <div id="jQuerySheet2" style="height: 450px;">
+                        <div id="jQuerySheet2" class="jQuerySheet" style="height: 450px;">
                             <table title="Spreeadsheet 1">
                                 <tr>
                                     <td>
