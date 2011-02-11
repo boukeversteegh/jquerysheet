@@ -1117,7 +1117,7 @@ jQuery.sheet = {
 				
 				var loc = {row: jS.cellLast.row,col: jS.cellLast.col};								
 				var val = formula.val(); //once ctrl+v is hit formula now has the data we need
-				var firstValue = '';
+				var firstValue = val;
 		
 				if (loc.row == -1 && loc.col == -1) return false; //at this point we need to check if there is even a cell selected, if not, we can't save the information, so clear formula editor
 		
@@ -1130,44 +1130,44 @@ jQuery.sheet = {
 					var col = row[i].split(/\t/g); //break at columns
 					for (var j = 0; j < col.length; j++) {
 						newValCount++;
-						if (col[j]) {
-							var td = jQuery(jS.getTd(jS.i, i + loc.row, j + loc.col));
+						var td = jQuery(jS.getTd(jS.i, i + loc.row, j + loc.col));
 
-							if (td.length) {
-								var cell = jS.spreadsheets[jS.i][i + loc.row][j + loc.col];
-								tdsBefore.append(td.clone());
+						if (td.length) {
+							var cell = jS.spreadsheets[jS.i][i + loc.row][j + loc.col];
+							tdsBefore.append(td.clone());
+				
+							if ((col[j] + '').charAt(0) == '=') { //we need to know if it's a formula here
+								cell.formula = col[j];
+								td.attr('formula', col[j]);
+							} else {
+								cell.formula = null;
+								cell.value = col[j];
 					
-								if ((col[j] + '').charAt(0) == '=') { //we need to know if it's a formula here
-									cell.formula = col[j];
-									td.attr('formula', col[j]);
-								} else {
-									cell.formula = null;
-									cell.value = col[j];
-						
-									td
-										.html(col[j])
-										.removeAttr('formula');
-								}
-					
-								tdsAfter.append(td.clone());
-					
-								if (i == 0 && j == 0) { //we have to finish the current edit
-									firstValue = col[j];
-								}
+								td
+									.html(col[j])
+									.removeAttr('formula');
+							}
+				
+							tdsAfter.append(td.clone());
+				
+							if (i == 0 && j == 0) { //we have to finish the current edit
+								firstValue = col[j];
 							}
 						}
 					}
 				}
 		
-				jS.cellUndoable.add(tdsBefore.children());
-				jS.cellUndoable.add(tdsAfter.children());
-		
-				formula.val(firstValue);
-		
-				if (newValCount == 1) {//minimum is 2 for index of 1x1
-					jS.fillUpOrDown(false, false, firstValue);
-					return true;
+				
+				
+				if (val != firstValue) {
+					formula.val(firstValue);
 				}
+				
+				if (newValCount = 1) return false;
+				
+				jS.cellUndoable.add(tdsBefore.children());
+				jS.fillUpOrDown(false, false, firstValue);
+				jS.cellUndoable.add(tdsAfter.children());
 		
 				jS.setDirty(true);
 				jS.evt.cellEditDone(true);
@@ -1271,13 +1271,21 @@ jQuery.sheet = {
 				},
 				pasteOverCells: function(e) { //used for pasting from other spreadsheets
 					if (e.ctrlKey || e.type == "paste") {
-						var formula = jS.obj.formula(); //so we don't have to keep calling the function and wasting memory
-						var oldVal = formula.val();
-						formula.val('');  //we use formula to catch the pasted data
+						var fnAfter = function() {
+							jS.updateCellsAfterPasteToFormula();
+						};
 						
-						jQuery(document).one('keyup', function() {
-							jS.updateCellsAfterPasteToFormula(oldVal);
-						});
+						var doc = jQuery(document)
+							.one('keyup', function() {
+								fnAfter();
+								fnAfter = function() {};
+								doc.mouseup();
+							})
+							.one('mouseup', function() {
+								fnAfter();
+								fnAfter = function() {};
+								doc.keyup();
+							});
 						
 						return true;
 					}
