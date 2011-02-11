@@ -4469,9 +4469,15 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 					})
 					.hoverColumn(function () {
 						this.tags = r.set();
-						for (var i = 0, ii = this.y.length; i < ii; i++) {
-							this.tags.push(r.g.tag(this.x, this.y[i], this.values[i], 160, 10).insertBefore(this).attr([{fill: "#fff"}, {fill: this.symbols[i].attr("fill")}]));
-						}
+						try {
+							for (var i = 0; i < this.y.length; i++) {
+								this.tags.push(r.g.tag(this.x, this.y[i], this.values[i], 0, 10).insertBefore(this).attr([{
+									fill: "#fff"
+								}, {
+									fill: this.symbols[i].attr("fill")
+								}]));
+							}
+						} catch (e) {}
 					}, function () {
 						this.tags && this.tags.remove();
 					});
