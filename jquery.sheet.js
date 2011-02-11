@@ -1156,14 +1156,10 @@ jQuery.sheet = {
 						}
 					}
 				}
-		
-				
 				
 				if (val != firstValue) {
 					formula.val(firstValue);
 				}
-				
-				if (newValCount = 1) return false;
 				
 				jS.cellUndoable.add(tdsBefore.children());
 				jS.fillUpOrDown(false, false, firstValue);
@@ -1240,7 +1236,7 @@ jQuery.sheet = {
 							case key.LEFT:
 							case key.UP:
 							case key.RIGHT:
-							case key.DOWN:		return jS.evt.cellSetFocusFromKeyCode(e);
+							case key.DOWN:		return (e.shiftKey ? jS.evt.cellSetHighlightFromKeyCode(e) : jS.evt.cellSetFocusFromKeyCode(e));
 								break;
 							case key.PAGE_UP:	return jS.evt.keyDownHandler.pageUpDown(true);
 								break;
@@ -1414,11 +1410,38 @@ jQuery.sheet = {
 						return true;
 					}
 				},
+				cellSetHighlightFromKeyCode: function(e) {
+					var c = jS.highlightedLast.colLast;
+					var r = jS.highlightedLast.rowLast;
+					var size = jS.sheetSize();
+					jQuery(jS.cellLast.td).mousedown();
+					
+					switch (e.keyCode) {
+						case key.UP: 		r--; break;
+						case key.DOWN: 		r++; break;
+						case key.LEFT: 		c--; break;
+						case key.RIGHT: 	c++; break;
+					}
+					
+					function keepInSize(i, size) {
+						if (i < 0) return 0;
+						if (i > size) return size;
+						return i;
+					}
+					r = keepInSize(r, size.height);
+					c = keepInSize(c, size.width);
+					
+					td = jS.getTd(jS.i, r, c);
+					jQuery(td).mousemove().mouseup();
+					
+					jS.highlightedLast.rowLast = r;
+					jS.highlightedLast.colLast = c;
+					return false;
+				},
 				cellSetFocusFromKeyCode: function(e) { /* invoke a click on next/prev cell */
 					var c = jS.cellLast.col; //we don't set the cellLast.col here so that we never go into indexes that don't exist
 					var r = jS.cellLast.row;
 					var overrideIsEdit = false;
-					
 					switch (e.keyCode) {
 						case key.UP: 		r--; break;
 						case key.DOWN: 		r++; break;
@@ -4492,7 +4515,7 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 			
 					break;
 				case "pie":
-					r.g.piechart(width / 2, height / 2, (width < height ? width : height) / 2, o.data, {legend: o.legend})
+					var pie = r.g.piechart(width / 2, height / 2, (width < height ? width : height) / 2, o.data, {legend: o.legend})
 						.hover(function () {
 							this.sector.stop();
 							this.sector.scale(1.1, 1.1, this.cx, this.cy);
