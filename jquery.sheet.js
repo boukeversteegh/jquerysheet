@@ -1267,18 +1267,7 @@ jQuery.sheet = {
 							case key.ESCAPE: 	jS.evt.cellEditAbandon();
 								break;
 							case key.ENTER:		jS.evt.cellSetFocusFromKeyCode(e); return false;
-								break;
-							case key.F:			return jS.evt.keyDownHandler.findCell(e);
-							case key.CONTROL: //we need to filter these to keep cell state
-							case key.CAPS_LOCK:
-							case key.SHIFT:
-							case key.ALT:
-							case key.UP:
-							case key.DOWN:
-							case key.LEFT:
-							case key.RIGHT:
-								break;
-							
+								break;							
 							default: 			jS.cellLast.isEdit = true;
 						}
 					},
@@ -1293,21 +1282,29 @@ jQuery.sheet = {
 								case key.RIGHT:
 								case key.DOWN:		(e.shiftKey ? jS.evt.cellSetHighlightFromKeyCode(e) : jS.evt.cellSetFocusFromKeyCode(e));
 									break;
-								case key.PAGE_UP:	return jS.evt.keyDownHandler.pageUpDown(true);
+								case key.PAGE_UP:	jS.evt.keyDownHandler.pageUpDown(true);
 									break;
-								case key.PAGE_DOWN:	return jS.evt.keyDownHandler.pageUpDown();
+								case key.PAGE_DOWN:	jS.evt.keyDownHandler.pageUpDown();
 									break;
 								case key.HOME:
 								case key.END:		jS.evt.cellSetFocusFromKeyCode(e);
 									break;
-								case key.V:			return jS.evt.pasteOverCells(e);
+								case key.V:		jS.evt.pasteOverCells(e);
 									break;
-								case key.Y:			return jS.evt.keyDownHandler.redo(e);
+								case key.Y:		jS.evt.keyDownHandler.redo(e);
 									break;
-								case key.Z:			return jS.evt.keyDownHandler.undo(e);
+								case key.Z:		jS.evt.keyDownHandler.undo(e);
 									break;
 								case key.ESCAPE: 	jS.evt.cellEditAbandon();
 									break;
+								case key.F:		jS.evt.keyDownHandler.findCell(e);
+									break;
+								case key.CONTROL: //we need to filter these to keep cell state
+								case key.CAPS_LOCK:
+								case key.SHIFT:
+								case key.ALT:
+									break;
+								default:		jS.obj.cellActive().dblclick(); return true;
 							}
 							return false;
 						}
@@ -2566,35 +2563,12 @@ jQuery.sheet = {
 						}
 					});
 			},
-			manageHtmlToText: function(v) { /* converts html to text for use in textareas
-												v: string, value to convert;
-											*/
-				v = jQuery.trim(v);
-				if (v.charAt(0) != "=") {
-					v = v.replace(/&nbsp;/g, ' ')
-						.replace(/&gt;/g, '>')
-						.replace(/&lt;/g, '<')
-						.replace(/\t/g, '')
-						.replace(/\n/g, '')
-						.replace(/<br>/g, '\r')
-						.replace(/<BR>/g, '\n');
-
-					//jS.log("from html to text");
-				}
-				return v;
-			},
 			manageTextToHtml: function(v) {	/* converts text to html for use in any object, probably a td/cell
 												v: string, value to convert;
 											*/
 				v = jQuery.trim(v);
 				if (v.charAt(0) != "=") {
-					v = v.replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;')
-						.replace(/ /g, '&nbsp;')
-						.replace(/>/g, '&gt;')
-
-						.replace(/</g, '&lt;')
-						.replace(/\n/g, '<br>')
-						.replace(/\r/g, '<br>');
+					v = v.replace(/>/g, '&gt;').replace(/</g, '&lt;');
 					
 					//jS.log("from text to html");
 				}
@@ -2648,7 +2622,7 @@ jQuery.sheet = {
 				
 				var v = td.attr('formula');
 				if (!v) {
-					v = jS.manageHtmlToText(td.html());
+					v = td.text();
 				}
 				
 				var formula = jS.obj.formula()
