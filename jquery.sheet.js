@@ -49,11 +49,11 @@ jQuery.fn.extend({
 				colMargin: 			18, 							//int, the height and the width of all bar items, and new rows
 				fnBefore: 			function() {}, 					//fn, called just before jQuery.sheet loads
 				fnAfter: 			function() {},	 				//fn, called just after all sheets load
-				fnSave: 			function() { o.sheetInstance.saveSheet(); }, //fn, default save function, more of a proof of concept
+				fnSave: 			function() { o.getSheet().saveSheet(); }, //fn, default save function, more of a proof of concept
 				fnOpen: 			function() { 					//fn, by default allows you to paste table html into a javascript prompt for you to see what it looks likes if you where to use sheet
 										var t = prompt('Paste your table html here');
 										if (t) {
-											o.sheetInstance.openSheet(t);
+											o.getSheet().openSheet(t);
 										}
 				},
 				fnClose: 			function() {}, 					//fn, default clase function, more of a proof of concept
@@ -279,13 +279,15 @@ jQuery.sheet = {
 				jS.obj.tabContainer().remove();
 				jS.obj.fullScreen().remove();
 				jS.obj.inPlaceEdit().remove();
-				origParent.removeClass(jS.cl.uiParent).html('');
-				cE = s = jQuery.sheet.instance[I] = jS = origParent.sheetInstance = null;
+				origParent
+					.removeClass(jS.cl.uiParent)
+					.html('')
+					.removeAttr('sheetInstance');
+				cE = s = jQuery.sheet.instance[I] = jS = null;
 				delete cE;
 				delete s;
 				delete jQuery.sheet.instance[I];
 				delete jS;
-				delete origParent.sheetInstance;
 			},
 			spreadsheetsToArray: function(forceRebuild) {
 				if (forceRebuild || jS.spreadsheets.length == 0) {
@@ -302,6 +304,14 @@ jQuery.sheet = {
 					});
 				}
 				return jS.spreadsheets;
+			},
+			nav: false,
+			setNav: function(nav) {
+				jQuery(jQuery.sheet.instance).each(function() {
+					this.nav = false;
+				});
+			
+				jS.nav = nav;
 			},
 			controlFactory: { /* controlFactory creates the different objects requied by sheet */
 				addRowMulti: function(qty, isBefore, skipFormulaReparse) { /* creates multi rows
@@ -926,15 +936,33 @@ jQuery.sheet = {
 									'</td>' +
 								'</tr>' +
 							'</table>')
-							.keydown(jS.evt.keyDownHandler.formulaOnKeyDown)
-							.keyup(function() {
-								jS.obj.inPlaceEdit().val(jS.obj.formula().val());
-							})
-							.change(function() {
-								jS.obj.inPlaceEdit().val(jS.obj.formula().val());
-							})
-							.bind('paste', jS.evt.pasteOverCells)
-							.appendTo(header);
+							.appendTo(header)
+							.find('textarea')
+								.keydown(jS.evt.keyDownHandler.formulaKeydown)
+								.keyup(function() {
+									jS.obj.inPlaceEdit().val(jS.obj.formula().val());
+								})
+								.change(function() {
+									jS.obj.inPlaceEdit().val(jS.obj.formula().val());
+								})
+								.bind('paste', jS.evt.pasteOverCells)
+								.focus(function() {
+									jS.setNav(false);
+								})
+								.focusout(function() {
+									jS.setNav(true);
+								})
+								.blur(function() {
+									jS.setNav(true);
+								});
+						
+						jQuery(jQuery.sheet.instance).each(function() {
+							this.nav = false;
+						});
+						
+						jS.setNav(true);
+						
+						jQuery(document).keydown(jS.evt.keyDownHandler.documentKeydown);
 					}
 					
 					firstRowTr.appendTo(firstRow);
@@ -1073,6 +1101,15 @@ jQuery.sheet = {
 						})
 						.change(function() {
 							formula.val(textarea.val());
+						})
+						.focus(function() {
+							jS.setNav(false);
+						})
+						.focusout(function() {
+							jS.setNav(true);
+						})
+						.blur(function() {
+							jS.setNav(true);
 						})
 						.bind('paste', jS.evt.pasteOverCells)
 						.appendTo('body')
@@ -1225,28 +1262,11 @@ jQuery.sheet = {
 						
 						return jS.evt.cellSetFocusFromXY(left, top);
 					},
-					formulaOnKeyDown: function(e) {
+					formulaKeydown: function(e) {
 						switch (e.keyCode) {
 							case key.ESCAPE: 	jS.evt.cellEditAbandon();
 								break;
-							case key.TAB: 		return jS.evt.keyDownHandler.tab(e);
-								break;
-							case key.ENTER: 	return jS.evt.keyDownHandler.enter(e);
-								break;
-							case key.LEFT:
-							case key.UP:
-							case key.RIGHT:
-							case key.DOWN:		return (e.shiftKey ? jS.evt.cellSetHighlightFromKeyCode(e) : jS.evt.cellSetFocusFromKeyCode(e));
-								break;
-							case key.PAGE_UP:	return jS.evt.keyDownHandler.pageUpDown(true);
-								break;
-							case key.PAGE_DOWN:	return jS.evt.keyDownHandler.pageUpDown();
-								break;
-							case key.V:			return jS.evt.pasteOverCells(e);
-								break;
-							case key.Y:			return jS.evt.keyDownHandler.redo(e);
-								break;
-							case key.Z:			return jS.evt.keyDownHandler.undo(e);
+							case key.ENTER:		jS.evt.cellSetFocusFromKeyCode(e); return false;
 								break;
 							case key.F:			return jS.evt.keyDownHandler.findCell(e);
 							case key.CONTROL: //we need to filter these to keep cell state
@@ -1258,10 +1278,38 @@ jQuery.sheet = {
 							case key.LEFT:
 							case key.RIGHT:
 								break;
-							case key.HOME:
-							case key.END:		jS.evt.cellSetFocusFromKeyCode(e);
-								break;
+							
 							default: 			jS.cellLast.isEdit = true;
+						}
+					},
+					documentKeydown: function(e) {
+						if (jS.nav) {
+							switch (e.keyCode) {
+								case key.TAB: 		jS.evt.keyDownHandler.tab(e);
+									break;
+								case key.ENTER:
+								case key.LEFT:
+								case key.UP:
+								case key.RIGHT:
+								case key.DOWN:		(e.shiftKey ? jS.evt.cellSetHighlightFromKeyCode(e) : jS.evt.cellSetFocusFromKeyCode(e));
+									break;
+								case key.PAGE_UP:	return jS.evt.keyDownHandler.pageUpDown(true);
+									break;
+								case key.PAGE_DOWN:	return jS.evt.keyDownHandler.pageUpDown();
+									break;
+								case key.HOME:
+								case key.END:		jS.evt.cellSetFocusFromKeyCode(e);
+									break;
+								case key.V:			return jS.evt.pasteOverCells(e);
+									break;
+								case key.Y:			return jS.evt.keyDownHandler.redo(e);
+									break;
+								case key.Z:			return jS.evt.keyDownHandler.undo(e);
+									break;
+								case key.ESCAPE: 	jS.evt.cellEditAbandon();
+									break;
+							}
+							return false;
 						}
 					}
 				},
@@ -1309,7 +1357,7 @@ jQuery.sheet = {
 						case true:
 							jS.obj.inPlaceEdit().remove();
 							var formula = jS.obj.formula();
-							formula.unbind('keydown'); //remove any lingering events from inPlaceEdit
+							//formula.unbind('keydown'); //remove any lingering events from inPlaceEdit
 							var td = jS.cellLast.td;
 							switch(jS.isFormulaEditable(td)) {
 								case true:
@@ -1348,7 +1396,7 @@ jQuery.sheet = {
 										//Save the newest version of that cell
 										jS.cellUndoable.add(td);
 										
-										formula.focus().select();
+										//formula.focus().select();
 										jS.cellLast.isEdit = false;
 										
 										jS.setDirty(true);
@@ -1519,6 +1567,7 @@ jQuery.sheet = {
 					return true;
 				},
 				cellOnMouseDown: function(e) {
+					jS.obj.formula().blur();
 					if (e.shiftKey) {
 						jS.getTdRange(e, jS.obj.formula().val());
 					} else {
@@ -2603,12 +2652,13 @@ jQuery.sheet = {
 				}
 				
 				var formula = jS.obj.formula()
-					.val(v);
+					.val(v)
+					.blur();
 				
 				if (!skipFocus) {
-					formula
-						.focus()
-						.select();
+					//formula
+						//.focus()
+						//.select();
 				}
 				
 				jS.cellSetActive(td, loc, isDrag);
@@ -2742,9 +2792,9 @@ jQuery.sheet = {
 				
 				jS.cellUndoable.add(uiCell);
 				
-				jS.obj.formula()
-					.focus()
-					.select();
+				//jS.obj.formula()
+					//.focus()
+					//.select();
 				return false;
 			},
 			fontReSize: function (direction) { /* resizes fonts in a cell by 1 pixel
