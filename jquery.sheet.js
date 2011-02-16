@@ -386,11 +386,14 @@ jQuery.sheet = {
 								},
 								col: function() { return ''; },
 								newBar: '<div class="' + jS.cl.uiBar + '" style="height: ' + (s.colMargin - s.boxModelCorrection) + 'px;" />',
-								loc: function() {
+								size: function() {
 									return jS.getTdLocation(o.cells().find('td:last'));
 								},
+								loc: function() {
+									return jS.getTdLocation(o.cells().find('td:first'));
+								},
 								newCells: function() {
-									var j = o.loc().col;
+									var j = o.size().col;
 									var newCells = '';
 									
 									for (var i = 0; i <= j; i++) {
@@ -405,7 +408,7 @@ jQuery.sheet = {
 										jQuery(this).text(i + 1);
 									});
 								},
-								dimensions: function(loc, bar, cell, col) {
+								dimensions: function(bar, cell, col) {
 									bar.height(cell.height(s.colMargin).outerHeight() - s.boxModelCorrection);
 								},
 								offset: {row: qty,col: 0}
@@ -447,7 +450,7 @@ jQuery.sheet = {
 										jQuery(this).text(jSE.columnLabelString(i + 1));
 									});
 								},
-								dimensions: function(loc, bar, cell, col) {								
+								dimensions: function(bar, cell, col) {								
 									var w = s.newColumnWidth;
 									col
 										.width(w)
@@ -501,14 +504,14 @@ jQuery.sheet = {
 					
 					jS.setTdIds(sheet);
 					
-					o.dimensions(loc, newBars, newCells, newCols);
+					o.dimensions(newBars, newCells, newCols);
 					o.reLabel();
 
 					jS.obj.pane().scroll();
 					
 					if (!skipFormulaReparse && eq != ':last') {
 						//offset formulas
-						jS.offsetFormulaRange(loc.row, loc.col, o.offset, isBefore);
+						jS.offsetFormulaRange(loc, o.offset, isBefore);
 					}
 					
 					//Because the line numbers get bigger, it is possible that the bars have changed in size, lets sync them
@@ -2093,20 +2096,14 @@ jQuery.sheet = {
 				//Make it redoable
 				jS.cellUndoable.add(cells);
 			},
-			offsetFormulaRange: function(row, col, offset, isBefore) {/* makes cell formulas increment in a range
-																						row: int;
-																						col: int;
+			offsetFormulaRange: function(loc, offset, isBefore) {/* makes cell formulas increment in a range
+																						loc: {row: int, col: int}
 																						offset: {row: int,col: int} offsets increment;
 																						isBefore: bool, makes increment backward;
 																					*/
-				row = (row ? row : 0);
-				col = (col ? col : 0);
 				var size = jS.sheetSize();
 				var shiftedRange = {
-					first: {
-						row: (row >= 0? row : 0),
-						col: (col >= 0? col : 0)
-					},
+					first: loc,
 					last: {
 						row: size.height,
 						col: size.width
@@ -2124,20 +2121,21 @@ jQuery.sheet = {
 				};
 				
 				if (!isBefore && offset.row) { //this shift is from a row
-					shiftedRange.first.col++;
-					shiftedRange.last.col++;
+					//shiftedRange.first.col++;
+					//shiftedRange.last.col++;
 				}
 				
 				if (!isBefore && offset.col) { //this shift is from a col
-					shiftedRange.first.row++;
-					shiftedRange.last.row++;
+					//shiftedRange.first.row++;
+					//shiftedRange.last.row++;
 				}
 				
 				function isInFormula(loc) {
-					if ((loc.row) >= shiftedRange.first.row &&
-						(loc.col) >= shiftedRange.first.col &&
-						(loc.row) <= shiftedRange.last.row &&
-						(loc.col) <= shiftedRange.last.col
+					if (
+						loc.row >= shiftedRange.first.row &&
+						loc.col >= shiftedRange.first.col &&
+						loc.row <= shiftedRange.last.row &&
+						loc.col <= shiftedRange.last.col
 					) {
 						return true;
 					} else {
@@ -2148,17 +2146,17 @@ jQuery.sheet = {
 				function isInFormulaRange(startLoc, endLoc) {
 					if (
 						(
-							(startLoc.row - 1) >= shiftedRange.first.row &&
-							(startLoc.col - 1) >= shiftedRange.first.col
+							startLoc.row >= shiftedRange.first.row &&
+							startLoc.col >= shiftedRange.first.col
 						) && (
-							(startLoc.row - 1) <= shiftedRange.last.row &&
-							(startLoc.col - 1) <= shiftedRange.last.col
+							startLoc.row <= shiftedRange.last.row &&
+							startLoc.col <= shiftedRange.last.col
 						) && (
-							(endLoc.row - 1) >= shiftedRange.first.row &&
-							(endLoc.col - 1) >= shiftedRange.first.col
+							endLoc.row >= shiftedRange.first.row &&
+							endLoc.col >= shiftedRange.first.col
 						) && (
-							(endLoc.row - 1) <= shiftedRange.last.row &&
-							(endLoc.col - 1) <= shiftedRange.last.col
+							endLoc.row <= shiftedRange.last.row &&
+							endLoc.col <= shiftedRange.last.col
 						)
 					) {
 						return true;
@@ -2990,7 +2988,10 @@ jQuery.sheet = {
 					jS.refreshLabelsRows();
 					jS.obj.pane().scroll();
 					
-					jS.offsetFormulaRange(jS.rowLast, 0, {
+					jS.offsetFormulaRange({
+						row: jS.rowLast,
+						col: 0
+					}, {
 						row: -1,
 						col: 0
 					});
@@ -3016,7 +3017,10 @@ jQuery.sheet = {
 					jS.obj.sheet().width(w);
 					jS.obj.pane().scroll();
 					
-					jS.offsetFormulaRange(0, jS.colLast, {
+					jS.offsetFormulaRange({
+						row: 0,
+						col: jS.colLast
+					}, {
 						row: 0,
 						col: -1
 					});
