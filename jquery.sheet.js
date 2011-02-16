@@ -2241,16 +2241,18 @@ jQuery.sheet = {
 			},
 			makeFormula: function(loc, offset) {
 				offset = (offset ? offset : {row:0,col:0});
-				return ( //A1
-					jSE.columnLabelString(loc.col + offset.col) + (loc.row + offset.row)
-				);
+				//A1 
+				loc.col = loc.col + offset.col;
+				loc.row = loc.row + offset.row;
+				
+				if (!loc.col) loc.col = 1;
+				if (!loc.row) loc.row = 1;
+					
+				return jSE.columnLabelString(loc.col) + loc.row;
 			},
 			makeFormulaRange: function(startLoc, endLoc, offset) {
-				offset = (offset ? offset : {row:0,col:0});
-				return ( //A1:B4
-					(jSE.columnLabelString(startLoc.col + offset.col) + (startLoc.row + offset.row)) + ':' + 
-					(jSE.columnLabelString(endLoc.col + offset.col) + (endLoc.row + offset.row))
-				);
+				//A1:B2
+				return jS.makeFormula(startLoc, offset) + ':' + jS.makeFormula(endLoc, offset); 
 			},
 			cycleCells: function(fn, firstLoc, lastLoc, sheet) { /* cylces through a certain group of cells in a spreadsheet and applies a function to them
 															fn: function, the function to apply to a cell;
