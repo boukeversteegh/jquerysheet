@@ -2034,63 +2034,58 @@ jQuery.sheet = {
 				jS.cellUndoable.add(cells);
 				
 				var startFromActiveCell = cellActive.hasClass(jS.cl.uiCellHighlighted);
-				var locFirst = jS.getTdLocation(cells.first());
-				var locLast = jS.getTdLocation(cells.last());
+				var startLoc = jS.getTdLocation(cells.first());
+				var endLoc = jS.getTdLocation(cells.last());
 				
 				v = (v ? v : jS.obj.formula().val()); //allow value to be overridden
 				
+				var offset = {
+					row: 0,
+					col: 0
+				};
+				var td;
+				var newV = v;
 				var fn;
-				
-				var formulaOffset = (startFromActiveCell ? 0 : 1);
-				
-				if ((v + '').charAt(0) == '=') {
-					fn = function(o, i, row, col) {
-						v = (skipOffsetForumals ? v : jS.offsetFormula(v, i + formulaOffset, 0));
+				if (v.charAt(0) == '=') {
+					fn = function(sheet, row, col){
+						td = jQuery(this);
 						
-						jS.spreadsheets[jS.i][row][col].formula = v;
+						if (goUp) {
+							offset.row = -endLoc.row + row;
+							offset.col = -endLoc.col + col;
+						}
+						else {
+							offset.row = row - startLoc.row;
+							offset.col = col - startLoc.col;
+						}
 						
-						o
-							.attr('formula', v)
-							.html('');
+						newV = jS.reparseFormula(v, offset);
+						newV = jS.reparseFormulaRange(newV, offset);
+						
+						jS.spreadsheets[sheet][row][col].formula = newV;
+						
+						td.attr('formula', newV).html('');
 					};
 				} else {
-					fn = function (o, i, r, c) {
-						if (!isNaN(v)) {
-							v = (v * 1) + i;
-						}
-						jS.spreadsheets[jS.i][r][c].formula = null;
-						jS.spreadsheets[jS.i][r][c].value = v;
+					if (goUp && !isNaN(newV)) {
+						newV *= 1;
+						newV -= endLoc.row;
+						newV -= endLoc.col;
+					}
+					fn = function(sheet, row, col){
+						td = jQuery(this);
 						
-						o
-							.removeAttr('formula')
-							.html(v);
+						jS.spreadsheets[sheet][row][col].formula = null;
+						jS.spreadsheets[sheet][row][col].value = newV;
+						
+						td.removeAttr('formula').html(newV);
+						
+						if (!isNaN(newV)) 
+							newV++;
 					};
 				}
 				
-				function fill(i, row, col) {
-					var td = jQuery(jS.getTd(jS.i, row, col));
-					//make sure the formula isn't locked for this cell
-					if (jS.isFormulaEditable(td)) {
-						fn(td, i, row, col);
-					}
-				}
-				
-				var i = 0;
-				if (goUp) {
-					for (var row = locLast.row; row >= locFirst.row; row--) {
-						for (var col = locLast.col; col >= locFirst.col; col--) {
-							fill(i, row, col);
-							i--;
-						}
-					}
-				} else {
-					for (var row = locFirst.row; row <= locLast.row; row++) {
-						for (var col = locFirst.col; col <= locLast.col; col++) {
-							fill(i, row, col);
-							i++;
-						}
-					}
-				}
+				jS.cycleCells(fn, startLoc, endLoc);
 				
 				jS.setDirty(true);
 				jS.calc();
@@ -2171,86 +2166,21 @@ jQuery.sheet = {
 						return false;
 					}
 				}
-				
-				function reparseFormula(loc) {
-					return ( //A1
-						jSE.columnLabelString(loc.col + offset.col) + (loc.row + offset.row)
-					);
-				}
-				
-				function reparseFormulaRange(startLoc, endLoc) {
-					return ( //A1:B4
-						(jSE.columnLabelString(startLoc.col + offset.col) + (startLoc.row + offset.row)) + ':' + 
-						(jSE.columnLabelString(endLoc.col + offset.col) + (endLoc.row + offset.row))
-					);
-				}
 
 				jS.cycleCells(function (sheet, row, col) {
 					var td = jQuery(this);
 					var formula = td.attr('formula');
 
 					if (formula && jS.isFormulaEditable(td)) {
-						formula = formula.replace(jSE.regEx.cell, 
-							function(ignored, colStr, rowStr, pos) {
-								var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
-								if (!colStr.match(jSE.regEx.sheet) &&
-									charAt[0] != ':' &&
-									charAt[1] != ':'
-								) { //verify it's not a range or an exact location
-									
-									var colI = jSE.columnLabelIndex(colStr);
-									var rowI = parseInt(rowStr);
-									
-									if (isInFormula({
-											row: rowI,
-											col: colI
-										})
-									) {
-										return reparseFormula({
-											row: rowI,
-											col: colI
-										});
-									} else {
-										return ignored;
-									}
-								} else {
-									return ignored;
-								}
+						formula = jS.reparseFormula(formula, offset, function(loc) {
+							if (!isInFormula(loc)) {
+								return formula;
+							}
 						});
-						formula = formula.replace(jSE.regEx.range, 
-							function(ignored, startColStr, startRowStr, endColStr, endRowStr, pos) {
-								var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
-								if (!startColStr.match(jSE.regEx.sheet) &&
-									charAt[0] != ':'
-								) {
-									
-									var startRowI = parseInt(startRowStr);
-									var startColI = jSE.columnLabelIndex(startColStr);
-									
-									var endRowI = parseInt(endRowStr);
-									var endColI = jSE.columnLabelIndex(endColStr);
-									
-									if (isInFormulaRange({
-											row: startRowI,
-											col: startColI
-										}, {
-											row: endRowI,
-											col: endColI
-										})
-									) {
-										return reparseFormulaRange({
-											row: startRowI,
-											col: startColI
-										}, {
-											row: endRowI,
-											col: endColI
-										});
-									} else {
-										return ignored;
-									}
-								} else {
-									return ignored;
-								}
+						formula = jS.reparseFormulaRange(formula, offset, function(startLoc, endLoc) {
+							if (!isInFormulaRange(startLoc, endLoc)) {
+								return formula;
+							}
 						});
 						
 						jS.spreadsheets[sheet][row][col].formula = formula;
@@ -2260,6 +2190,69 @@ jQuery.sheet = {
 				}, affectedRange.first, affectedRange.last);
 
 				jS.calc();
+			},
+			reparseFormula: function(formula, offset, fn) {
+				return formula.replace(jSE.regEx.cell, function(ignored, col, row, pos) {
+						var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
+						if (!col.match(jSE.regEx.sheet) &&
+							charAt[0] != ':' &&
+							charAt[1] != ':'
+						) {
+							
+							var loc = {
+								col: jSE.columnLabelIndex(col),
+								row: parseInt(row)
+							};
+							
+							if (jQuery.isFunction(fn)) {
+								var result = fn(loc);
+								if (result) { return ignored; }
+							}
+							
+							return jS.makeFormula(loc, offset);
+						}
+						return ignored;
+				});
+			},
+			reparseFormulaRange: function(formula, offset, fn) {
+				return formula.replace(jSE.regEx.range, function(ignored, startCol, startRow, endCol, endRow, pos) {
+						var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
+						if (!startCol.match(jSE.regEx.sheet) &&
+							charAt[0] != ':'
+						) {
+							
+							var startLoc = {
+								row: parseInt(startRow),
+								col: jSE.columnLabelIndex(startCol)
+							};
+							var endLoc = {
+								row: parseInt(endRow),
+								col: jSE.columnLabelIndex(endCol)
+							};
+							
+							if (jQuery.isFunction(fn)) {
+								var result = fn(startLoc, endLoc);
+								if (result) { return ignored; }
+							}
+							
+							return jS.makeFormulaRange(startLoc, endLoc, offset);
+							
+						}
+						return ignored;
+				});
+			},
+			makeFormula: function(loc, offset) {
+				offset = (offset ? offset : {row:0,col:0});
+				return ( //A1
+					jSE.columnLabelString(loc.col + offset.col) + (loc.row + offset.row)
+				);
+			},
+			makeFormulaRange: function(startLoc, endLoc, offset) {
+				offset = (offset ? offset : {row:0,col:0});
+				return ( //A1:B4
+					(jSE.columnLabelString(startLoc.col + offset.col) + (startLoc.row + offset.row)) + ':' + 
+					(jSE.columnLabelString(endLoc.col + offset.col) + (endLoc.row + offset.row))
+				);
 			},
 			cycleCells: function(fn, firstLoc, lastLoc, sheet) { /* cylces through a certain group of cells in a spreadsheet and applies a function to them
 															fn: function, the function to apply to a cell;
