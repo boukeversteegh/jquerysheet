@@ -2102,6 +2102,7 @@ jQuery.sheet = {
 																						isBefore: bool, makes increment backward;
 																					*/
 				var size = jS.sheetSize();
+				//shifted range is the range of cells that are moved
 				var shiftedRange = {
 					first: loc,
 					last: {
@@ -2109,6 +2110,7 @@ jQuery.sheet = {
 						col: size.width
 					}
 				};
+				//effected range is the entire spreadsheet
 				var affectedRange = {
 					first: {
 						row: 0,
@@ -2120,49 +2122,12 @@ jQuery.sheet = {
 					}
 				};
 				
-				if (!isBefore && offset.row) { //this shift is from a row
-					//shiftedRange.first.col++;
-					//shiftedRange.last.col++;
-				}
-				
-				if (!isBefore && offset.col) { //this shift is from a col
-					//shiftedRange.first.row++;
-					//shiftedRange.last.row++;
-				}
-				
 				function isInFormula(loc) {
-					if (
-						loc.row >= shiftedRange.first.row &&
-						loc.col >= shiftedRange.first.col &&
-						loc.row <= shiftedRange.last.row &&
-						loc.col <= shiftedRange.last.col
-					) {
-						return true;
-					} else {
-						return false;
-					}
+					
 				}
 				
 				function isInFormulaRange(startLoc, endLoc) {
-					if (
-						(
-							startLoc.row >= shiftedRange.first.row &&
-							startLoc.col >= shiftedRange.first.col
-						) && (
-							startLoc.row <= shiftedRange.last.row &&
-							startLoc.col <= shiftedRange.last.col
-						) && (
-							endLoc.row >= shiftedRange.first.row &&
-							endLoc.col >= shiftedRange.first.col
-						) && (
-							endLoc.row <= shiftedRange.last.row &&
-							endLoc.col <= shiftedRange.last.col
-						)
-					) {
-						return true;
-					} else {
-						return false;
-					}
+					
 				}
 
 				jS.cycleCells(function (sheet, row, col) {
@@ -2196,18 +2161,14 @@ jQuery.sheet = {
 							charAt[0] != ':' &&
 							charAt[1] != ':'
 						) {
+							var loc = jS.parseLocation(col + row);
 							
-							var loc = {
-								col: jSE.columnLabelIndex(col),
-								row: parseInt(row)
-							};
-							
+							var goOn = true;
 							if (jQuery.isFunction(fn)) {
-								var result = fn(loc);
-								if (result) { return ignored; }
+								goOn = fn(startLoc, endLoc);
 							}
 							
-							return jS.makeFormula(loc, offset);
+							return (goOn ? jS.makeFormula(loc, offset) : ignored);
 						}
 						return ignored;
 				});
@@ -2218,22 +2179,15 @@ jQuery.sheet = {
 						if (!startCol.match(jSE.regEx.sheet) &&
 							charAt[0] != ':'
 						) {
+							var startLoc = jS.parseLocation(startCol + startRow);
+							var endLoc = jS.parseLocation(endCol + endRow);
 							
-							var startLoc = {
-								row: parseInt(startRow),
-								col: jSE.columnLabelIndex(startCol)
-							};
-							var endLoc = {
-								row: parseInt(endRow),
-								col: jSE.columnLabelIndex(endCol)
-							};
-							
+							var goOn = true;
 							if (jQuery.isFunction(fn)) {
-								var result = fn(startLoc, endLoc);
-								if (result) { return ignored; }
+								goOn = fn(startLoc, endLoc);
 							}
 							
-							return jS.makeFormulaRange(startLoc, endLoc, offset);
+							return (goOn ? jS.makeFormulaRange(startLoc, endLoc, offset) : ignored);
 							
 						}
 						return ignored;
