@@ -510,7 +510,7 @@ jQuery.sheet = {
 					
 					if (!skipFormulaReparse && eq != ':last') {
 						//offset formulas
-						jS.offsetFormulaRange(loc, o.offset, isBefore);
+						jS.offsetFormulaRange(loc, o.offset);
 					}
 					
 					//Because the line numbers get bigger, it is possible that the bars have changed in size, lets sync them
@@ -969,10 +969,23 @@ jQuery.sheet = {
 					
 					firstRowTr.appendTo(firstRow);
 					
-					var tabParent = jQuery('<div id="' + jS.id.tabContainer + '" class="' + jS.cl.tabContainer + '">' + 
-									(s.editable ? '<span class="' + jS.cl.uiTab + ' ui-corner-bottom" title="Add a spreadsheet" i="-1">+</span>' : '<span />') + 
-								'</div>')
-							.mousedown(jS.evt.tabOnMouseDown);
+					var tabParent = jQuery('<div id="' + jS.id.tabContainer + '" class="' + jS.cl.tabContainer + '" />')
+						.mousedown(function(e) {
+							origParent.trigger('switchSpreadsheet', [jQuery(e.target).attr('i') * 1]);
+							return false;
+						})
+						.dblclick(function(e) {
+							origParent.trigger('renameSpreadsheet', [jQuery(e.target).attr('i') * 1]);
+							return 
+						});
+						//.mousedown(jS.evt.tabOnMouseDown)
+						//.dblclick(jS.evt.tabOnDblClick);
+					
+					if (s.editable) {
+						jQuery('<span class="' + jS.cl.uiTab + ' ui-corner-bottom" title="Add a spreadsheet" i="-1">+</span>').appendTo(tabParent);
+					} else {
+						jQuery('<span />').appendTo(tabParent);
+					}
 
 					s.parent
 						.html('')
@@ -1578,16 +1591,20 @@ jQuery.sheet = {
 					jS.controlFactory.inPlaceEdit(jS.cellLast.td);
 					jS.log('click, in place edit activated');
 				},
-				tabOnMouseDown: function(e) {
-					var i = jQuery(e.target).attr('i');
+				renameSpreadsheet: function(e, i) {
+					if (isNaN(i)) return false;
 					
-					if (i != '-1' && i != jS.i) {
+					if (i > -1)
+						jS.sheetTab();
+				},
+				switchSpreadsheet: function(e, i) {
+					if (isNaN(i)) return false;
+					
+					if (i == -1) {
+						jS.addSheet('5x10');
+					} else if (i != jS.i) {
 						jS.setActiveSheet(i);
 						jS.calc(i);
-					} else if (i != '-1' && jS.i == i) {
-						jS.sheetTab();
-					} else {
-						jS.addSheet('5x10');
 					}
 					
 					s.fnSwitchSheet(i);
@@ -2095,10 +2112,9 @@ jQuery.sheet = {
 				//Make it redoable
 				jS.cellUndoable.add(cells);
 			},
-			offsetFormulaRange: function(loc, offset, isBefore) {/* makes cell formulas increment in a range
+			offsetFormulaRange: function(loc, offset) {/* makes cell formulas increment in a range
 																						loc: {row: int, col: int}
 																						offset: {row: int,col: int} offsets increment;
-																						isBefore: bool, makes increment backward;
 																					*/
 				var size = jS.sheetSize();
 				//shifted range is the range of cells that are moved
@@ -3975,6 +3991,10 @@ jQuery.sheet = {
 		s.parent
 			.html('')
 			.addClass(jS.cl.parent);
+		
+		origParent
+			.bind('switchSpreadsheet', jS.evt.switchSpreadsheet)
+			.bind('renameSpreadsheet', jS.evt.renameSpreadsheet);
 		
 		//Use the setting height/width if they are there, otherwise use parent's
 		s.width = (s.width ? s.width : s.parent.width());
