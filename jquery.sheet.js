@@ -320,7 +320,8 @@ jQuery.sheet = {
 						qty = prompt(jS.msg.addRowMulti);
 					}
 					if (qty) {
-						jS.controlFactory.addCells(null, isBefore, null, qty, 'row', skipFormulaReparse);
+						if (!isNaN(qty))
+							jS.controlFactory.addCells(null, isBefore, null, parseInt(qty), 'row', skipFormulaReparse);
 					}
 				},
 				addColumnMulti: function(qty, isBefore, skipFormulaReparse) { /* creates multi columns
@@ -332,7 +333,8 @@ jQuery.sheet = {
 						qty = prompt(jS.msg.addColumnMulti);
 					}
 					if (qty) {
-						jS.controlFactory.addCells(null, isBefore, null, qty, 'col', skipFormulaReparse);
+						if (!isNaN(qty))
+							jS.controlFactory.addCells(null, isBefore, null, parseInt(qty), 'col', skipFormulaReparse);
 					}
 				},
 				addCells: function(eq, isBefore, eqO, qty, type, skipFormulaReparse) { /*creates cells for sheet and the bars that go along with them

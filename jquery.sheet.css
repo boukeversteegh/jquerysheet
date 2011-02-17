@@ -13,14 +13,6 @@
     height: 17px;
 }
 
-.jSheetLog
-{
-	height: 100px;
-	width: 100%;
-	overflow-y: scroll;
-	position: relative;
-}
-
 .jSheetControls, .jSheetControls table
 {
 	padding: 0px ! important;
