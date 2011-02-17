@@ -978,8 +978,6 @@ jQuery.sheet = {
 							origParent.trigger('renameSpreadsheet', [jQuery(e.target).attr('i') * 1]);
 							return 
 						});
-						//.mousedown(jS.evt.tabOnMouseDown)
-						//.dblclick(jS.evt.tabOnDblClick);
 					
 					if (s.editable) {
 						jQuery('<span class="' + jS.cl.uiTab + ' ui-corner-bottom" title="Add a spreadsheet" i="-1">+</span>').appendTo(tabParent);
@@ -1591,25 +1589,6 @@ jQuery.sheet = {
 					jS.controlFactory.inPlaceEdit(jS.cellLast.td);
 					jS.log('click, in place edit activated');
 				},
-				renameSpreadsheet: function(e, i) {
-					if (isNaN(i)) return false;
-					
-					if (i > -1)
-						jS.sheetTab();
-				},
-				switchSpreadsheet: function(e, i) {
-					if (isNaN(i)) return false;
-					
-					if (i == -1) {
-						jS.addSheet('5x10');
-					} else if (i != jS.i) {
-						jS.setActiveSheet(i);
-						jS.calc(i);
-					}
-					
-					s.fnSwitchSheet(i);
-					return false;
-				},
 				scrollBars: function(pane) { /* makes the bars scroll as the sheet is scrolled
 												pane: object, the sheet's pane;
 											*/
@@ -1808,6 +1787,25 @@ jQuery.sheet = {
 					
 					jS.sheetSyncSize();
 				}
+			},
+			renameSpreadsheet: function(i) {
+				if (isNaN(i)) return false;
+				
+				if (i > -1)
+					jS.sheetTab();
+			},
+			switchSpreadsheet: function(i) {
+				if (isNaN(i)) return false;
+				
+				if (i == -1) {
+					jS.addSheet('5x10');
+				} else if (i != jS.i) {
+					jS.setActiveSheet(i);
+					jS.calc(i);
+				}
+				
+				s.fnSwitchSheet(i);
+				return false;
 			},
 			tuneTableForSheetUse: function(o) { /* makes table object usable by sheet
 													o: object, table object;
@@ -3993,8 +3991,12 @@ jQuery.sheet = {
 			.addClass(jS.cl.parent);
 		
 		origParent
-			.bind('switchSpreadsheet', jS.evt.switchSpreadsheet)
-			.bind('renameSpreadsheet', jS.evt.renameSpreadsheet);
+			.bind('switchSpreadsheet', function(e, i){
+				jS.switchSpreadsheet(i);
+			})
+			.bind('renameSpreadsheet', function(e, i){
+				jS.renameSpreadsheet(i);
+			});
 		
 		//Use the setting height/width if they are there, otherwise use parent's
 		s.width = (s.width ? s.width : s.parent.width());
