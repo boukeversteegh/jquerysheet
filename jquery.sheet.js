@@ -138,7 +138,6 @@ jQuery.sheet = {
 				inlineMenu:			function() { return jQuery('#' + jS.id.inlineMenu); },
 				inPlaceEdit:		function() { return jQuery('#' + jS.id.inPlaceEdit); },
 				label: 				function() { return jQuery('#' + jS.id.label); },
-				log: 				function() { return jQuery('#' + jS.id.log); },
 				menu:				function() { return jQuery('#' + jS.id.menu); },
 				pane: 				function() { return jQuery('#' + jS.id.pane + jS.i); },
 				paneAll:			function() { return s.parent.find('div.' + jS.cl.pane); },
@@ -178,7 +177,6 @@ jQuery.sheet = {
 				inlineMenu:			'jSheetInlineMenu_' + I,
 				inPlaceEdit:		'jSheetInPlaceEdit_' + I,
 				label: 				'jSheetControls_loc_' + I,
-				log: 				'jSheetLog_' + I,
 				menu:				'jSheetMenu_' + I,
 				pane: 				'jSheetEditPane_' + I + '_',
 				sheet: 				'jSheet_' + I + '_',
@@ -220,7 +218,6 @@ jQuery.sheet = {
 				sheet: 					'jSheet',
 				sheetPaneTd:			'sheetPane',
 				label: 					'jSheetControls_loc',
-				log: 					'jSheetLog',
 				pane: 					'jSheetEditPane',
 				tab:					'jSheetTab',
 				tabContainer:			'jSheetTabContainer',
@@ -2122,12 +2119,18 @@ jQuery.sheet = {
 					}
 				};
 				
-				function isInFormula(loc) {
+				function isInFormula(startLoc) {
+					var colMoved = false;
+					var rowMoved = false;
 					
+					if (startLoc.row >= loc.row) rowMoved = true;
+					if (startLoc.col >= loc.col) colMoved = true;
+					
+					return (colMoved || rowMoved ? true : false);
 				}
 				
 				function isInFormulaRange(startLoc, endLoc) {
-					
+					return (isInFormula(startLoc) || isInFormula(endLoc) ? true : false);
 				}
 
 				jS.cycleCells(function (sheet, row, col) {
@@ -2135,16 +2138,8 @@ jQuery.sheet = {
 					var formula = td.attr('formula');
 
 					if (formula && jS.isFormulaEditable(td)) {
-						formula = jS.reparseFormula(formula, offset, function(loc) {
-							if (!isInFormula(loc)) {
-								return formula;
-							}
-						});
-						formula = jS.reparseFormulaRange(formula, offset, function(startLoc, endLoc) {
-							if (!isInFormulaRange(startLoc, endLoc)) {
-								return formula;
-							}
-						});
+						formula = jS.reparseFormula(formula, offset, isInFormula);
+						formula = jS.reparseFormulaRange(formula, offset, isInFormulaRange);
 						
 						jS.spreadsheets[sheet][row][col].formula = formula;
 						td.attr('formula', formula);
@@ -2161,14 +2156,14 @@ jQuery.sheet = {
 							charAt[0] != ':' &&
 							charAt[1] != ':'
 						) {
-							var loc = jS.parseLocation(col + row);
+							var loc = jSE.parseLocation(col + row);
 							
 							var goOn = true;
 							if (jQuery.isFunction(fn)) {
-								goOn = fn(startLoc, endLoc);
+								goOn = fn(loc);
 							}
 							
-							return (goOn ? jS.makeFormula(loc, offset) : ignored);
+							return (goOn ? jS.makeFormula(loc, offset, true) : ignored);
 						}
 						return ignored;
 				});
@@ -2179,34 +2174,38 @@ jQuery.sheet = {
 						if (!startCol.match(jSE.regEx.sheet) &&
 							charAt[0] != ':'
 						) {
-							var startLoc = jS.parseLocation(startCol + startRow);
-							var endLoc = jS.parseLocation(endCol + endRow);
+							var startLoc = jSE.parseLocation(startCol + startRow);
+							var endLoc = jSE.parseLocation(endCol + endRow);
 							
 							var goOn = true;
 							if (jQuery.isFunction(fn)) {
 								goOn = fn(startLoc, endLoc);
 							}
-							
-							return (goOn ? jS.makeFormulaRange(startLoc, endLoc, offset) : ignored);
-							
+
+							return (goOn ? jS.makeFormulaRange(startLoc, endLoc, offset, true) : ignored);
 						}
 						return ignored;
 				});
 			},
-			makeFormula: function(loc, offset) {
+			makeFormula: function(loc, offset, isIndex) {
 				offset = (offset ? offset : {row:0,col:0});
-				//A1 
-				loc.col = loc.col + offset.col;
-				loc.row = loc.row + offset.row;
+				//A1
+				loc.col += offset.col;
+				loc.row += offset.row;
+				
+				if (isIndex) { //indexs are 0 based, formulas are 1 based
+					loc.col++;
+					loc.row++;
+				}
 				
 				if (!loc.col) loc.col = 1;
 				if (!loc.row) loc.row = 1;
 					
 				return jSE.columnLabelString(loc.col) + loc.row;
 			},
-			makeFormulaRange: function(startLoc, endLoc, offset) {
+			makeFormulaRange: function(startLoc, endLoc, offset, isIndex) {
 				//A1:B2
-				return jS.makeFormula(startLoc, offset) + ':' + jS.makeFormula(endLoc, offset); 
+				return jS.makeFormula(startLoc, offset, isIndex) + ':' + jS.makeFormula(endLoc, offset, isIndex); 
 			},
 			cycleCells: function(fn, firstLoc, lastLoc, sheet) { /* cylces through a certain group of cells in a spreadsheet and applies a function to them
 															fn: function, the function to apply to a cell;
@@ -3816,7 +3815,7 @@ jQuery.sheet = {
 			},
 			log: function(msg) {  //The log prints: {Current Time}, {Seconds from last log};{msg}
 				jS.time.set();
-				jS.obj.log().prepend(jS.time.get() + ', ' + jS.time.diff() + '; ' + msg + '<br />\n');
+				console.log(jS.time.get() + ', ' + jS.time.diff() + '; ' + msg);
 			},
 			replaceWithSafeImg: function(o) {  //ensures all pictures will load and keep their respective bar the same size.
 				(o ? o : jS.obj.sheet().find('img')).each(function() {			
@@ -3981,9 +3980,7 @@ jQuery.sheet = {
 		
 		
 		// Drop functions if they are not needed & save time in recursion
-		if (s.log) {
-			s.parent.after('<textarea id="' + jS.id.log + '" class="' + jS.cl.log + '" />');
-		} else {
+		if (!s.log) {
 			jS.log = emptyFN;
 		}
 		
