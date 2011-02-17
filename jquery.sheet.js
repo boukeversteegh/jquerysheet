@@ -43,7 +43,7 @@ jQuery.fn.extend({
 																		//string  - '{number_of_cols}x{number_of_rows} (5x100)
 																		//object - table
 				calcOff: 			false, 							//bool, turns calculationEngine off (no spreadsheet, just grid)
-				log: 				false, 							//bool, turns some debugging logs on (jS.log('msg'))
+				log: 				true, 							//bool, turns some debugging logs on (jS.log('msg'))
 				lockFormulas: 		false, 							//bool, turns the ability to edit any formula off
 				parent: 			parent, 					//object, sheet's parent, DON'T CHANGE
 				colMargin: 			18, 							//int, the height and the width of all bar items, and new rows
@@ -371,7 +371,7 @@ jQuery.sheet = {
 							eq = ':eq(' + cellLastBar + ')';
 						}
 					} else if (!isNaN(eq)){
-						eq = ':eq(' + (eq - 1) + ')';
+						eq = ':eq(' + (eq) + ')';
 					}
 					
 					var o;
@@ -446,7 +446,7 @@ jQuery.sheet = {
 								},
 								reLabel: function() {
 									o.barParent.children().each(function(i) {
-										jQuery(this).text(jSE.columnLabelString(i + 1));
+										jQuery(this).text(jSE.columnLabelString(i));
 									});
 								},
 								dimensions: function(bar, cell, col) {								
@@ -510,7 +510,7 @@ jQuery.sheet = {
 					
 					if (!skipFormulaReparse && eq != ':last') {
 						//offset formulas
-						jS.offsetFormulaRange(loc, o.offset);
+						jS.offsetFormulas(loc, o.offset, isBefore);
 					}
 					
 					//Because the line numbers get bigger, it is possible that the bars have changed in size, lets sync them
@@ -586,7 +586,7 @@ jQuery.sheet = {
 					}
 					
 					parents.each(function(i) {
-						var v = jSE.columnLabelString(i + 1);
+						var v = jSE.columnLabelString(i);
 						var w = widthFn(this);
 						
 						var child = jQuery("<div>" + v + "</div>")
@@ -1053,7 +1053,7 @@ jQuery.sheet = {
 						fn(objContainer, pane);
 					}
 					
-					jS.log('Sheet Initialized');
+					//jS.log('Sheet Initialized');
 					
 					return objContainer;
 				},
@@ -1587,7 +1587,7 @@ jQuery.sheet = {
 				cellOnDblClick: function(e) {
 					jS.cellLast.isEdit = jS.isSheetEdit = true;
 					jS.controlFactory.inPlaceEdit(jS.cellLast.td);
-					jS.log('click, in place edit activated');
+					//jS.log('click, in place edit activated');
 				},
 				scrollBars: function(pane) { /* makes the bars scroll as the sheet is scrolled
 												pane: object, the sheet's pane;
@@ -1703,7 +1703,7 @@ jQuery.sheet = {
 								if (jQuery(e.target).attr('id')) return false;
 								var i = jS.getBarTopIndex(e.target);
 								if (i == -1) return false;
-								
+								//jS.log('Column: ' +i);
 								jS.resizeBarTop(e);
 								
 								if (s.editable) {
@@ -2077,7 +2077,6 @@ jQuery.sheet = {
 						}
 						
 						newV = jS.reparseFormula(v, offset);
-						newV = jS.reparseFormulaRange(newV, offset);
 						
 						jS.spreadsheets[sheet][row][col].formula = newV;
 						
@@ -2110,9 +2109,10 @@ jQuery.sheet = {
 				//Make it redoable
 				jS.cellUndoable.add(cells);
 			},
-			offsetFormulaRange: function(loc, offset) {/* makes cell formulas increment in a range
+			offsetFormulas: function(loc, offset, isBefore) {/* makes cell formulas increment in a range
 																						loc: {row: int, col: int}
 																						offset: {row: int,col: int} offsets increment;
+																						isBefore: bool, inserted before location
 																					*/
 				var size = jS.sheetSize();
 				//shifted range is the range of cells that are moved
@@ -2135,18 +2135,22 @@ jQuery.sheet = {
 					}
 				};
 				
-				function isInFormula(startLoc) {
-					var colMoved = false;
-					var rowMoved = false;
-					
-					if (startLoc.row >= loc.row) rowMoved = true;
-					if (startLoc.col >= loc.col) colMoved = true;
-					
-					return (colMoved || rowMoved ? true : false);
-				}
+				jS.log("offsetFormulas from - Col:" + loc.col + ',Row:' + loc.row);
+				jS.log("Is before loc:" + (isBefore ? 'true' : 'false'));
+				jS.log("Offset: - Col:" + offset.col + ',Row:' + offset.row);
 				
-				function isInFormulaRange(startLoc, endLoc) {
-					return (isInFormula(startLoc) || isInFormula(endLoc) ? true : false);
+				function isInFormula(thisLoc, rowOrCol) {
+					var move = false;
+					
+					if (isBefore) {
+						if (thisLoc >= rowOrCol)
+							move = true;
+					} else {
+						if (thisLoc > rowOrCol) 
+							move = true;
+					}
+					
+					return move;
 				}
 
 				jS.cycleCells(function (sheet, row, col) {
@@ -2154,74 +2158,57 @@ jQuery.sheet = {
 					var formula = td.attr('formula');
 
 					if (formula && jS.isFormulaEditable(td)) {
-						formula = jS.reparseFormula(formula, offset, isInFormula);
-						formula = jS.reparseFormulaRange(formula, offset, isInFormulaRange);
+						formula = jS.reparseFormula(formula, offset, function(thisLoc){
+							return {
+								row: isInFormula(thisLoc.row, loc.row),
+								col: isInFormula(thisLoc.col, loc.col)
+							};
+						});
 						
 						jS.spreadsheets[sheet][row][col].formula = formula;
 						td.attr('formula', formula);
 					}
 
 				}, affectedRange.first, affectedRange.last);
-
+				
+				jS.evt.cellEditDone();
 				jS.calc();
 			},
 			reparseFormula: function(formula, offset, fn) {
 				return formula.replace(jSE.regEx.cell, function(ignored, col, row, pos) {
-						var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
-						if (!col.match(jSE.regEx.sheet) &&
-							charAt[0] != ':' &&
-							charAt[1] != ':'
-						) {
-							var loc = jSE.parseLocation(col + row);
+						var loc = jSE.parseLocation(ignored);
 							
-							var goOn = true;
-							if (jQuery.isFunction(fn)) {
-								goOn = fn(loc);
+						var goOn = true;
+						var result = ignored;
+						
+						if (jQuery.isFunction(fn)) {
+							var move = fn(loc);
+							
+							
+							if (move.col || move.row) {
+								if (move.col) loc.col += offset.col;
+								if (move.row) loc.row += offset.row;
+								
+								result = jS.makeFormula(loc);
+								jS.log('Changing: ' + ignored + ' (col: ' + loc.col + ',row: ' + loc.row + '),to: ' + result + ', offset: (row:' + offset.row + ',col:' + offset.col + ')');
 							}
-							
-							return (goOn ? jS.makeFormula(loc, offset, true) : ignored);
 						}
-						return ignored;
+												
+						return result;
 				});
 			},
-			reparseFormulaRange: function(formula, offset, fn) {
-				return formula.replace(jSE.regEx.range, function(ignored, startCol, startRow, endCol, endRow, pos) {
-						var charAt = [formula.charAt(pos - 1), formula.charAt(ignored.length + pos)]; //find what is exactly before and after formula
-						if (!startCol.match(jSE.regEx.sheet) &&
-							charAt[0] != ':'
-						) {
-							var startLoc = jSE.parseLocation(startCol + startRow);
-							var endLoc = jSE.parseLocation(endCol + endRow);
-							
-							var goOn = true;
-							if (jQuery.isFunction(fn)) {
-								goOn = fn(startLoc, endLoc);
-							}
-
-							return (goOn ? jS.makeFormulaRange(startLoc, endLoc, offset, true) : ignored);
-						}
-						return ignored;
-				});
-			},
-			makeFormula: function(loc, offset, isIndex) {
+			makeFormula: function(loc, offset) {
 				offset = (offset ? offset : {row:0,col:0});
-				//A1
+				
+				//set offsets
 				loc.col += offset.col;
 				loc.row += offset.row;
 				
-				if (isIndex) { //indexs are 0 based, formulas are 1 based
-					loc.col++;
-					loc.row++;
-				}
+				//0 based now
+				if (!loc.col) loc.col = 0;
+				if (!loc.row) loc.row = 0;
 				
-				if (!loc.col) loc.col = 1;
-				if (!loc.row) loc.row = 1;
-					
-				return jSE.columnLabelString(loc.col) + loc.row;
-			},
-			makeFormulaRange: function(startLoc, endLoc, offset, isIndex) {
-				//A1:B2
-				return jS.makeFormula(startLoc, offset, isIndex) + ':' + jS.makeFormula(endLoc, offset, isIndex); 
+				return jSE.parseCellName(loc.col, loc.row);
 			},
 			cycleCells: function(fn, firstLoc, lastLoc, sheet) { /* cylces through a certain group of cells in a spreadsheet and applies a function to them
 															fn: function, the function to apply to a cell;
@@ -2258,40 +2245,6 @@ jQuery.sheet = {
 					}
 				}
 				return o;
-			},
-			offsetFormula: function(formula, rowOffset, colOffset) { /* makes cell formulas increment
-																			formula: string, a cell's formula;
-																			rowOffset: int, offsets row increment;
-																			colOffset: int, offsets col increment;
-																	*/
-				//Cell References Fixed
-				var charAt = [];
-				var col = '';
-				var row = '';
-				formula = formula.replace(jSE.regEx.cell, 
-					function(ignored, colStr, rowStr, pos) {
-						charAt[0] = formula.charAt(pos - 1);
-						charAt[1] = formula.charAt(ignored.length + pos);
-						
-						charAt[0] = (charAt[0] ? charAt[0] : '');
-						charAt[1] = (charAt[1] ? charAt[1] : '');
-						
-						if (colStr.match(jSE.regEx.sheet) || 
-							charAt[0] == ':' || 
-							charAt[1] == ':'
-						) { //verify it's not a range or an exact location
-							return ignored;
-						} else {
-							row = parseInt(rowStr) + rowOffset;
-							col = jSE.columnLabelIndex(colStr) + colOffset;
-							row = (row > 0 ? row : '1'); //table rows are never negative
-							col = (col > 0 ? col : '1'); //table cols are never negative
-							
-							return jSE.columnLabelString(col) + row;
-						}
-					}
-				);
-				return formula;
 			},
 			addTab: function() { /* Adds a tab for navigation to a spreadsheet */
 				jQuery('<span class="' + jS.cl.uiTab + ' ui-corner-bottom">' + 
@@ -2562,7 +2515,7 @@ jQuery.sheet = {
 													setDirect: bool, converts the array of a1 or [0,0] to "A1";
 												*/
 				if (!setDirect) {
-					jS.obj.label().html(jSE.columnLabelString(v.col + 1) + (v.row + 1));
+					jS.obj.label().html(jSE.parseCellName(v.col, v.row));
 				} else {
 					jS.obj.label().html(v);
 				}
@@ -2904,17 +2857,17 @@ jQuery.sheet = {
 												fuel: variable holder, used to prevent memory leaks, and for calculations;
 											*/
 				tableI = (tableI ? tableI : jS.i);
-				jS.log('Calculation Started');
+				//jS.log('Calculation Started');
 				jS.calcLast = new Date();
 				jSE.calc(tableI, jS.spreadsheetsToArray()[tableI], jS.updateCellValue);
 				origParent.trigger('calculation');
 				jS.isSheetEdit = false;
-				jS.log('Calculation Ended');
+				//jS.log('Calculation Ended');
 			},
 			refreshLabelsColumns: function(){ /* reset values inside bars for columns */
 				var w = 0;
 				jS.obj.barTop().children().each(function(i) {
-					jQuery(this).text(jSE.columnLabelString(i+1));
+					jQuery(this).text(jSE.columnLabelString(i));
 					w += jQuery(this).width();
 				});
 				return w;
@@ -2959,7 +2912,7 @@ jQuery.sheet = {
 					jS.refreshLabelsRows();
 					jS.obj.pane().scroll();
 					
-					jS.offsetFormulaRange({
+					jS.offsetFormulas({
 						row: jS.rowLast,
 						col: 0
 					}, {
@@ -2988,7 +2941,7 @@ jQuery.sheet = {
 					jS.obj.sheet().width(w);
 					jS.obj.pane().scroll();
 					
-					jS.offsetFormulaRange({
+					jS.offsetFormulas({
 						row: 0,
 						col: jS.colLast
 					}, {
@@ -2999,7 +2952,7 @@ jQuery.sheet = {
 					jS.setDirty(true);
 					
 					jS.evt.cellEditAbandon();
-				}		
+				}
 			},
 			sheetTab: function(get) { /* manages a tabs inner value
 											get: bool, makes return the current value of the tab;
@@ -3667,13 +3620,13 @@ jQuery.sheet = {
 						loc.first.row > loc.last.row
 					) {
 						return {
-							first: jSE.columnLabelString(loc.last.col + 1) + (loc.last.row + 1),
-							last: jSE.columnLabelString(loc.first.col + 1) + (loc.first.row + 1)
+							first: jSE.parseCellName(loc.last.col, loc.last.row),
+							last: jSE.parseCellName(loc.first.col, loc.first.row)
 						};
 					} else {
 						return {
-							first: jSE.columnLabelString(loc.first.col + 1) + (loc.first.row + 1),
-							last: jSE.columnLabelString(loc.last.col + 1) + (loc.last.row + 1)
+							first: jSE.parseCellName(loc.first.col, loc.first.row),
+							last: jSE.parseCellName(loc.last.col, loc.last.row)
 						};
 					}
 				};
@@ -3806,12 +3759,16 @@ jQuery.sheet = {
 				}
 			},
 			getBarTopIndex: function(o) { /* get's index from object */
-				var i = jSE.columnLabelIndex(jQuery.trim(jQuery(o).text()));
+				var v = jQuery.trim(jQuery(o).text());
+				if (!v) return -1;
+				
+				var i = jSE.columnLabelIndex(v);
 				i = parseInt(i);
+				
 				if (isNaN(i)) {
 					return -1;
 				} else {
-					return i - 1;
+					return i;
 				}
 			},
 			EMPTY_VALUE: {},
@@ -4036,7 +3993,7 @@ jQuery.sheet = {
 			jSE.chart = emptyFN;
 		}
 		
-		jS.log('Startup');
+		//jS.log('Startup');
 		
 		$window
 			.resize(function() {
@@ -4320,23 +4277,23 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 		}
 		return {
 			row: parseInt(locStr.substring(firstNum)) - 1, 
-			col: this.columnLabelIndex(locStr.substring(0, firstNum)) - 1
+			col: this.columnLabelIndex(locStr.substring(0, firstNum))
 		};
 	},
+	parseCellName: function(col, row){
+		return jSE.columnLabelString(col) + (row + 1);
+	},
 	columnLabelIndex: function(str) {
-		// Converts A to 1, B to 2, Z to 26, AA to 27.
+		// Converts A to 0, B to 1, Z to 25, AA to 26.
 		var num = 0;
 		for (var i = 0; i < str.length; i++) {
-			var digit = str.toUpperCase().charCodeAt(i) - 65 + 1;	   // 65 == 'A'.
+			var digit = str.toUpperCase().charCodeAt(i) - 65;	   // 65 == 'A'.
 			num = (num * 26) + digit;
 		}
-		return num;
+		return (num >= 0 ? num : 0);
 	},
-	columnLabelString: function(index) {
-		// The index is 1 based.  Convert 1 to A, 2 to B, 25 to Y, 26 to Z, 27 to AA, 28 to AB.
-		// TODO: Got a bug when index > 676.  675==YZ.  676==YZ.  677== AAA, which skips ZA series.
-		//	   In the spirit of billg, who needs more than 676 columns anyways?
-		var b = (index - 1).toString(26).toUpperCase();   // Radix is 26.
+	columnLabelString: function(index) {//0 = A, 1 = B
+		var b = (index).toString(26).toUpperCase();   // Radix is 26.
 		var c = [];
 		for (var i = 0; i < b.length; i++) {
 			var x = b.charCodeAt(i);
