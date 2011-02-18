@@ -2186,7 +2186,6 @@ jQuery.sheet = {
 								if (move.col) loc.col += offset.col;
 								if (move.row) loc.row += offset.row;
 								
-								jS.log('Changing: ' + ignored + ' (col: ' + loc.col + ',row: ' + loc.row + '),to: ' + result + ', offset: (row:' + offset.row + ',col:' + offset.col + ')');
 								return jS.makeFormula(loc);
 							}
 						} else {
