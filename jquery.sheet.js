@@ -43,7 +43,7 @@ jQuery.fn.extend({
 																		//string  - '{number_of_cols}x{number_of_rows} (5x100)
 																		//object - table
 				calcOff: 			false, 							//bool, turns calculationEngine off (no spreadsheet, just grid)
-				log: 				true, 							//bool, turns some debugging logs on (jS.log('msg'))
+				log: 				false, 							//bool, turns some debugging logs on (jS.log('msg'))
 				lockFormulas: 		false, 							//bool, turns the ability to edit any formula off
 				parent: 			parent, 					//object, sheet's parent, DON'T CHANGE
 				colMargin: 			18, 							//int, the height and the width of all bar items, and new rows
@@ -2177,11 +2177,8 @@ jQuery.sheet = {
 			reparseFormula: function(formula, offset, fn) {
 				return formula.replace(jSE.regEx.cell, function(ignored, col, row, pos) {
 						var loc = jSE.parseLocation(ignored);
-							
-						var goOn = true;
-						var result = ignored;
 						
-						if (jQuery.isFunction(fn)) {
+						if (fn) {
 							var move = fn(loc);
 							
 							
@@ -2189,24 +2186,26 @@ jQuery.sheet = {
 								if (move.col) loc.col += offset.col;
 								if (move.row) loc.row += offset.row;
 								
-								result = jS.makeFormula(loc);
 								jS.log('Changing: ' + ignored + ' (col: ' + loc.col + ',row: ' + loc.row + '),to: ' + result + ', offset: (row:' + offset.row + ',col:' + offset.col + ')');
+								return jS.makeFormula(loc);
 							}
+						} else {
+							return jS.makeFormula(loc, offset);
 						}
 												
-						return result;
+						return ignored;
 				});
 			},
 			makeFormula: function(loc, offset) {
-				offset = (offset ? offset : {row:0,col:0});
+				offset = jQuery.extend({row: 0, col: 0}, offset);
 				
 				//set offsets
 				loc.col += offset.col;
 				loc.row += offset.row;
 				
 				//0 based now
-				if (!loc.col) loc.col = 0;
-				if (!loc.row) loc.row = 0;
+				if (loc.col < 0) loc.col = 0;
+				if (loc.row < 0) loc.row = 0;
 				
 				return jSE.parseCellName(loc.col, loc.row);
 			},
