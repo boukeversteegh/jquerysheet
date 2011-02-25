@@ -255,8 +255,6 @@ jQuery.sheet = {
 				addRowMulti: 			"How many rows would you like to add?",
 				addColumnMulti: 		"How many columns would you like to add?",
 				newSheet: 				"What size would you like to make your spreadsheet? Example: '5x10' creates a sheet that is 5 columns by 10 rows.",
-				deleteRow: 				"Are you sure that you want to delete that row?",
-				deleteColumn: 			"Are you sure that you want to delete that column?",
 				openSheet: 				"Are you sure you want to open a different sheet?  All unsaved changes will be lost.",
 				cellFind: 				"No results found.",
 				toggleHideRow:			"No row selected.",
@@ -290,17 +288,32 @@ jQuery.sheet = {
 				if (forceRebuild || jS.spreadsheets.length == 0) {
 					jS.cycleCellsAll(function(sheet, row, col) {
 						var td = jQuery(this);
-						if (!jS.spreadsheets[sheet]) jS.spreadsheets[sheet] = [];
-						if (!jS.spreadsheets[sheet][row]) jS.spreadsheets[sheet][row] = [];
-						jS.spreadsheets[sheet][row][col] = {
-							formula: td.attr('formula'),
-							value: td.html(),
-							calcCount: 0,
-							calcLast: -1
-						};
+						jS.createCell(sheet, row, col, td.text(), td.attr('formula'));
 					});
 				}
 				return jS.spreadsheets;
+			},
+			spreadsheetToArray: function(forceRebuild, i) {
+				i = (i ? i : jS.i);
+				if (forceRebuild || !jS.spreadsheets[i]) {
+					jS.cycleCells(function(sheet, row, col) {
+						var td = jQuery(this);
+						jS.createCell(sheet, row, col, td.text(), td.attr('formula'));
+					});
+				}
+			},
+			createCell: function(sheet, row, col, value, formula, calcCount, calcLast) {
+				if (!jS.spreadsheets[sheet]) jS.spreadsheets[sheet] = [];
+				if (!jS.spreadsheets[sheet][row]) jS.spreadsheets[sheet][row] = [];
+				
+				jS.spreadsheets[sheet][row][col] = {
+					formula: formula,
+					value: value,
+					calcCount: (calcCount ? calcCount : 0),
+					calcLast: (calcLast ? calcLast : -1)
+				};
+				
+				return jS.spreadsheets[sheet][row][col];
 			},
 			nav: false,
 			setNav: function(nav) {
@@ -501,7 +514,7 @@ jQuery.sheet = {
 						jQuery(col).after(newCols);
 					}
 					
-					jS.setTdIds(sheet);
+					jS.setTdIds(sheet, jS.i);
 					
 					o.dimensions(newBars, newCells, newCols);
 					o.reLabel();
@@ -1041,7 +1054,7 @@ jQuery.sheet = {
 					
 					jS.themeRoller.start(i);
 
-					jS.setTdIds(o);
+					jS.setTdIds(o, jS.i);
 					
 					jS.checkMinSize(o);
 					
@@ -1876,17 +1889,23 @@ jQuery.sheet = {
 					return o;
 				}
 			},
-			setTdIds: function(o) { /* cycles through all the td in a sheet and sets their id so it can be quickly referenced later
-										o: object, cell object;
+			setTdIds: function(sheet, i) { /* cycles through all the td in a sheet and sets their id & virtual spreadsheet so it can be quickly referenced later
+										sheet: object, table object;
+										i: integer, sheet index
 									*/
-				o = (o ? o : jS.obj.sheet());
-				o.find('tr').each(function(row) {
+				if (!o || !sheet) {
+					sheet = jS.obj.sheet();
+					i = jS.i;
+				}
+				
+				jS.spreadsheets[i] = []; //reset the sheet's spreadsheet
+				
+				sheet.find('tr').each(function(row) {
 					jQuery(this).children().each(function(col) {
-						jQuery(this).attr('id', jS.getTdId(jS.i, row, col));
+						var td = jQuery(this).attr('id', jS.getTdId(i, row, col));
+						jS.createCell(i, row, col, td.html(), td.attr('formula'));
 					});
 				});
-				
-				jS.spreadsheetsToArray(true);
 			},
 			setControlIds: function() { /* resets the control ids, useful for when adding new sheets/controls between sheets/controls :) */
 				var resetIds = function(o, id) {
@@ -1895,8 +1914,8 @@ jQuery.sheet = {
 					});
 				};
 				
-				resetIds(jS.obj.sheetAll().each(function() {
-					jS.setTdIds(jQuery(this));
+				resetIds(jS.obj.sheetAll().each(function(i) {
+					jS.setTdIds(jQuery(this), i);
 				}), jS.id.sheet);
 				
 				resetIds(jS.obj.barTopAll(), jS.id.barTop);
@@ -1981,16 +2000,15 @@ jQuery.sheet = {
 				
 				if (cells.length > 1 && cellFirstLoc.row) {
 					for (var i = cellFirstLoc.col; i <= cellLastLoc.col; i++) {
-						var cell = jQuery(jS.getTd(jS.i, cellFirstLoc.row, i)).hide();
-						formula = cell.attr('formula');
-						cellValue = cell.html();
+						var td = jQuery(jS.getTd(jS.i, cellFirstLoc.row, i)).hide();
+						var cell = jS.spreadsheets[jS.i][cellFirstLoc.row][i];
 						
-						cellValue = (cellValue ? cellValue + ' ' : '');
-						
-						cellsValue = (formula ? "(" + formula.replace('=', '') + ")" : cellValue) + cellsValue;
+						cellsValue = (cell.formula ? "(" + cell.formula.replace('=', '') + ")" : cell.value) + cellsValue;
 						
 						if (i != cellFirstLoc.col) {
-							cell
+							cell.formula = null;
+							cell.value;
+							td
 								.attr('formula', '')
 								.html('')
 								.hide();
@@ -2171,6 +2189,7 @@ jQuery.sheet = {
 
 				}, affectedRange.first, affectedRange.last);
 				
+				
 				jS.evt.cellEditDone();
 				jS.calc();
 			},
@@ -2214,6 +2233,13 @@ jQuery.sheet = {
 															lastLoc: array of int - [col, row], the group to end;
 														*/
 				sheet = (sheet ? sheet : jS.i);
+				firstLoc = (firstLoc ? firstLoc : {row: 0, col: 0});
+				
+				if (!lastLoc) {
+					var size = jS.sheetSize(jQuery('#' + jS.id.sheet + sheet));
+					lastLoc = {row: size.height, col: size.width};
+				}
+				
 				for (var row = firstLoc.row; row <= lastLoc.row; row++) {
 					for (var col = firstLoc.col; col <= lastLoc.col; col++) {
 						var td = jS.getTd(sheet, row, col);
@@ -2348,14 +2374,20 @@ jQuery.sheet = {
 						jS.obj.cellActive()
 							.removeClass(jS.cl.cellActive);
 					},
+					isHighlighted: function() {
+						return (jS.highlightedLast.td ? true : false);
+					},
 					clearHighlighted: function() {
-						jS.obj.cellHighlighted()
-							.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
+						if (jS.themeRoller.cell.isHighlighted()) {
+							jS.obj.cellHighlighted()
+								.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
+						}
 						
 						jS.highlightedLast.rowStart = -1;
 						jS.highlightedLast.colStart = -1;
 						jS.highlightedLast.rowEnd = -1;
 						jS.highlightedLast.colEnd = -1;
+						jS.highlightedLast.td = jQuery('<td />');
 					}
 				},
 				bar: {
@@ -2391,6 +2423,7 @@ jQuery.sheet = {
 					jS.resizable(s.parent, {
 						minWidth: s.width * 0.5,
 						minHeight: s.height * 0.5,
+
 						start: function() {
 							jS.obj.ui().hide();
 						},
@@ -2901,56 +2934,50 @@ jQuery.sheet = {
 				jS.setDirty(true);
 			},
 			deleteRow: function(skipCalc) { /* removes the currently selected row */
-				var v = confirm(jS.msg.deleteRow);
-				if (v) {
-					jS.obj.barLeft().children().eq(jS.rowLast).remove();
-					jQuery(jS.getTd(jS.i, jS.rowLast, 0)).parent().remove();
-					
-					jS.setTdIds();
-					jS.refreshLabelsRows();
-					jS.obj.pane().scroll();
-					
-					jS.offsetFormulas({
-						row: jS.rowLast,
-						col: 0
-					}, {
-						row: -1,
-						col: 0
-					});
-					
-					jS.setDirty(true);
-					
-					jS.evt.cellEditAbandon();
-				}		
+				jS.obj.barLeft().children().eq(jS.rowLast).remove();
+				jQuery(jS.getTd(jS.i, jS.rowLast, 0)).parent().remove();
+				
+				jS.setTdIds();
+				jS.refreshLabelsRows();
+				jS.obj.pane().scroll();
+				
+				jS.offsetFormulas({
+					row: jS.rowLast,
+					col: 0
+				}, {
+					row: -1,
+					col: 0
+				});
+				
+				jS.setDirty(true);
+				
+				jS.evt.cellEditAbandon();	
 			},
 			deleteColumn: function(skipCalc) { /* removes the currently selected column */
-				var v = confirm(jS.msg.deleteColumn);
-				if (v) {
-					jS.obj.barHelper().remove();
-					jS.obj.barTop().children().eq(jS.colLast).remove();
-					jS.obj.sheet().find('colgroup col').eq(jS.colLast).remove();
-					
-					for (var i = 0; i < jS.sheetSize().height; i++) {
-						jQuery(jS.getTd(jS.i, i, jS.colLast)).remove();
-					}
-					
-					var w = jS.refreshLabelsColumns();
-					jS.setTdIds();
-					jS.obj.sheet().width(w);
-					jS.obj.pane().scroll();
-					
-					jS.offsetFormulas({
-						row: 0,
-						col: jS.colLast
-					}, {
-						row: 0,
-						col: -1
-					});
-					
-					jS.setDirty(true);
-					
-					jS.evt.cellEditAbandon();
+				jS.obj.barHelper().remove();
+				jS.obj.barTop().children().eq(jS.colLast).remove();
+				jS.obj.sheet().find('colgroup col').eq(jS.colLast).remove();
+				
+				for (var i = 0; i < jS.sheetSize().height; i++) {
+					jQuery(jS.getTd(jS.i, i, jS.colLast)).remove();
 				}
+				
+				var w = jS.refreshLabelsColumns();
+				jS.setTdIds();
+				jS.obj.sheet().width(w);
+				jS.obj.pane().scroll();
+				
+				jS.offsetFormulas({
+					row: 0,
+					col: jS.colLast
+				}, {
+					row: 0,
+					col: -1
+				});
+				
+				jS.setDirty(true);
+				
+				jS.evt.cellEditAbandon();
 			},
 			sheetTab: function(get) { /* manages a tabs inner value
 											get: bool, makes return the current value of the tab;
@@ -4391,7 +4418,11 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 			legend: "",
 			chart: jQuery('<div class="' + jS.cl.chart + '" />')
 				.mousedown(function() {
-					jS.cellEdit(jQuery(this).parent(), null, true);
+					jQuery(this).parent().mousedown();
+				})
+				.mousemove(function() {
+					jQuery(this).parent().mousemove();
+					return false;
 				})
 		}, o);
 	
@@ -4931,5 +4962,13 @@ var arrHelpers = {
 			}
 		}
 		return flat;
+	},
+	insertAt: function(arr, val, index){
+		jQuery(val).each(function(){
+			if (index > -1 && index <= arr.length) {
+				arr.splice(index, 0, this);
+			}
+		});
+		return arr;
 	}
 };
