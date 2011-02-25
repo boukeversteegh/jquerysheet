@@ -43,7 +43,7 @@ jQuery.fn.extend({
 																		//string  - '{number_of_cols}x{number_of_rows} (5x100)
 																		//object - table
 				calcOff: 			false, 							//bool, turns calculationEngine off (no spreadsheet, just grid)
-				log: 				false, 							//bool, turns some debugging logs on (jS.log('msg'))
+				log: 				true, 							//bool, turns some debugging logs on (jS.log('msg'))
 				lockFormulas: 		false, 							//bool, turns the ability to edit any formula off
 				parent: 			parent, 					//object, sheet's parent, DON'T CHANGE
 				colMargin: 			18, 							//int, the height and the width of all bar items, and new rows
@@ -1390,8 +1390,8 @@ jQuery.sheet = {
 										jS.cellUndoable.add(td);
 										
 										//This should return either a val from textbox or formula, but if fails it tries once more from formula.
-										var v = jS.manageTextToHtml(formula.val());
-										var prevVal = td.html();
+										var v = formula.val();
+										var prevVal = td.text();
 										var cell = jS.spreadsheets[jS.i][jS.cellLast.row][jS.cellLast.col];
 										if (v.charAt(0) == '=') {
 											td
@@ -1903,7 +1903,7 @@ jQuery.sheet = {
 				sheet.find('tr').each(function(row) {
 					jQuery(this).children().each(function(col) {
 						var td = jQuery(this).attr('id', jS.getTdId(i, row, col));
-						jS.createCell(i, row, col, td.html(), td.attr('formula'));
+						jS.createCell(i, row, col, td.text(), td.attr('formula'));
 					});
 				});
 			},
@@ -2030,7 +2030,7 @@ jQuery.sheet = {
 				var cell = jS.obj.cellHighlighted().first();
 				var loc = jS.getTdLocation(cell);
 				var formula = cell.attr('formula');
-				var v = cell.html();
+				var v = cell.text();
 				v = (formula ? formula : v);
 				
 				var rowI = cell.attr('rowspan');
@@ -2509,17 +2509,6 @@ jQuery.sheet = {
 						}
 					});
 			},
-			manageTextToHtml: function(v) {	/* converts text to html for use in any object, probably a td/cell
-												v: string, value to convert;
-											*/
-				v = jQuery.trim(v);
-				if (v.charAt(0) != "=") {
-					v = v.replace(/>/g, '&gt;').replace(/</g, '&lt;');
-					
-					//jS.log("from text to html");
-				}
-				return v;
-			},
 			sheetDecorateRemove: function(makeClone) { /* removes sheet decorations
 															makesClone: bool, creates a clone rather than the actual object;
 														*/
@@ -2888,12 +2877,12 @@ jQuery.sheet = {
 												fuel: variable holder, used to prevent memory leaks, and for calculations;
 											*/
 				tableI = (tableI ? tableI : jS.i);
-				//jS.log('Calculation Started');
+				jS.log('Calculation Started');
 				jS.calcLast = new Date();
 				jSE.calc(tableI, jS.spreadsheetsToArray()[tableI], jS.updateCellValue);
 				origParent.trigger('calculation');
 				jS.isSheetEdit = false;
-				//jS.log('Calculation Ended');
+				jS.log('Calculation Ended');
 			},
 			refreshLabelsColumns: function(){ /* reset values inside bars for columns */
 				var w = 0;
@@ -4550,9 +4539,6 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	VERSION: function() {
 		return this.jS.version;
 	},
-	HTML: function(v) {
-		return jQuery(v);
-	},
 	IMG: function(v) {
 		return jQuery('<img />')
 			.attr('src', v);
@@ -4862,6 +4848,14 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	},
 	CELLREF: function(v) {
 		return (this.jS.spreadsheets[v] ? this.jS.spreadsheets[v] : 'Cell Reference Not Found');
+	},
+	CALCTIME: function() {
+		var owner = this;
+		this.s.origParent.one('calculation', function() {
+			jQuery(owner.jS.getTd(owner.sheet, owner.row, owner.col))
+				.text(owner.jS.time.diff());
+		});
+		return "";
 	}
 };
 
