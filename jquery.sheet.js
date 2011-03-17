@@ -196,20 +196,21 @@ jQuery.sheet = {
 				barCorner:				'jSheetBarCorner',
 				barCornerParent:		'jSheetBarCornerParent',
 				barHelper:				'jSheetBarHelper',
-				barLeftTd:				'barLeft',
+				barLeftTd:				'jSheetBarLeftTd',
 				barLeft: 				'jSheetBarLeft',
 				barLeftHandle:			'jSheetBarLeftHandle',
 				barLeftParent: 			'jSheetBarLeftParent',
 				barTop: 				'jSheetBarTop',
 				barTopHandle:			'jSheetBarTopHandle',
 				barTopParent: 			'jSheetBarTopParent',
-				barTopTd:				'barTop',
+				barTopTd:				'jSheetBarTopTd',
 				cellActive:				'jSheetCellActive',
 				cellHighlighted: 		'jSheetCellHighighted',
 				chart:					'jSheetChart',
 				controls:				'jSheetControls',
 				error:					'jSheetError',
 				formula: 				'jSheetControls_formula',
+				formulaParent:			'jSheetControls_formulaParent',
 				inlineMenu:				'jSheetInlineMenu',
 				fullScreen:				'jSheetFullScreen',
 				inPlaceEdit:			'jSheetInPlaceEdit',
@@ -946,7 +947,7 @@ jQuery.sheet = {
 						var secondRow = jQuery('<table cellpadding="0" cellspacing="0" border="0">' +
 								'<tr>' +
 									'<td id="' + jS.id.label + '" class="' + jS.cl.label + '"></td>' +
-									'<td>' +
+									'<td class="' + jS.cl.formulaParent + '">' +
 										'<textarea id="' + jS.id.formula + '" class="' + jS.cl.formula + '"></textarea>' +
 									'</td>' +
 								'</tr>' +

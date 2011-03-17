@@ -13,6 +13,11 @@
     height: 17px;
 }
 
+.jSheetControls_formulaParent 
+{
+	border: none ! important;
+}
+
 .jSheetControls, .jSheetControls table
 {
 	padding: 0px ! important;
@@ -37,6 +42,7 @@
 .jSheetMenu {
 	padding: 3px;
 	background: none;
+	border: none ! important;
 }
 .jSheetMenu *
 {
@@ -243,6 +249,11 @@
 	overflow: hidden ! important;
 }
 
+.sheetPane
+{
+	border: none ! important;
+}
+
 .jSheetEditPane
 {
     overflow: auto ! important;
@@ -281,6 +292,12 @@
 	top: 50%;
 	
 }
+
+.jSheetBarLeftTd
+{
+	border: none ! important;
+}
+
 .jSheetBarLeft > div
 {
 	text-align: center;
@@ -294,6 +311,13 @@
 	z-index; 999;
 	position: relative;
 }
+
+.jSheetBarTopTd
+{
+	border: none ! important;	
+	
+}
+
 .jSheetBarTop > div
 {
 	text-align: center ! important;
@@ -369,6 +393,7 @@
 {
 	width: auto;
 	text-align: center;
+	border: none ! important;
 }
 
 .jSheetChart
