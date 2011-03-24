@@ -43,7 +43,7 @@ jQuery.fn.extend({
 																		//string  - '{number_of_cols}x{number_of_rows} (5x100)
 																		//object - table
 				calcOff: 			false, 							//bool, turns calculationEngine off (no spreadsheet, just grid)
-				log: 				true, 							//bool, turns some debugging logs on (jS.log('msg'))
+				log: 				false, 							//bool, turns some debugging logs on (jS.log('msg'))
 				lockFormulas: 		false, 							//bool, turns the ability to edit any formula off
 				parent: 			parent, 					//object, sheet's parent, DON'T CHANGE
 				colMargin: 			18, 							//int, the height and the width of all bar items, and new rows
@@ -623,7 +623,6 @@ jQuery.sheet = {
 					var pos = target.position();
 
 					var barTopHandle = jQuery('<div id="' + jS.id.barTopHandle + '" class="' + jS.cl.uiBarTopHandle + ' ' + jS.cl.barHelper + ' ' + jS.cl.barTopHandle + '" />')
-						.width(s.colMargin / 3)
 						.height(s.colMargin - 2)
 						.css('left', pos.left + 'px')
 						.appendTo(bar);
@@ -770,7 +769,6 @@ jQuery.sheet = {
 							.blur(function() {
 								if (menu) menu.hide();
 							})
-							.width(s.colMargin)
 							.height(s.colMargin);
 					}
 					

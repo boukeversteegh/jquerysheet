@@ -37,7 +37,13 @@
 }
 .jSheetBarHelper *:hover
 {
-	background-color: inherit;
+	background-color: inherit ! important;
+	-moz-border-radius-topleft: inherit;
+	-webkit-border-top-left-radius: inherit;
+	border-top-left-radius: inherit;
+	-moz-border-radius-topright: inherit;
+	-webkit-border-top-right-radius: inherit;
+	border-top-right-radius: inherit;
 }
 .jSheetMenu {
 	padding: 3px;
