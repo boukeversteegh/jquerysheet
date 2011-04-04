@@ -2,973 +2,976 @@
 /* Jison generated parser */
 class parser {
 	function parser() {
-	$Parser = array(
-		"trace"=> function() {},
-		"yy"=> array(),
-		"symbols_"=> array(
-			"error"=> 2,
-			"expressions"=> 3,
-			"e"=> 4,
-			"EOF"=> 5,
-			"<="=> 6,
-			">="=> 7,
-			"<>"=> 8,
-			"NOT"=> 9,
-			">"=> 10,
-			"<"=> 11,
-			"+"=> 12,
-			"-"=> 13,
-			"*"=> 14,
-			"/"=> 15,
-			"^"=> 16,
-			"("=> 17,
-			")"=> 18,
-			"PERCENT"=> 19,
-			"DATE"=> 20,
-			"NUMBER"=> 21,
-			"E"=> 22,
-			"FIXEDCELL"=> 23,
-			"FIXEDCELLRANGE"=> 24,
-			"CELL"=> 25,
-			"CELLRANGE"=> 26,
-			"REMOTECELL"=> 27,
-			"REMOTECELLRANGE"=> 28,
-			"STRING"=> 29,
-			"IDENTIFIER"=> 30,
-			"expseq"=> 31,
-			";"=> 32,
-			","=> 33,
-			'$accept'=> 0,
-			'$end'=> 1
-		),
-		"terminals_"=> array(
-			"2"=> "error",
-			"5"=> "EOF",
-			"6"=> "<=",
-			"7"=> ">=",
-			"8"=> "<>",
-			"9"=> "NOT",
-			"10"=> ">",
-			"11"=> "<",
-			"12"=> "+",
-			"13"=> "-",
-			"14"=> "*",
-			"15"=> "/",
-			"16"=> "^",
-			"17"=> "(",
-			"18"=> ")",
-			"19"=> "PERCENT",
-			"20"=> "DATE",
-			"21"=> "NUMBER",
-			"22"=> "E",
-			"23"=> "FIXEDCELL",
-			"24"=> "FIXEDCELLRANGE",
-			"25"=> "CELL",
-			"26"=> "CELLRANGE",
-			"27"=> "REMOTECELL",
-			"28"=> "REMOTECELLRANGE",
-			"29"=> "STRING",
-			"30"=> "IDENTIFIER",
-			"32"=> ";",
-			"33"=> ","
-		),
-		"productions_"=> array(0,
-			array(3, 2),
-			array(4, 3),
-			array(4, 3),
-			array(4, 3),
-			array(4, 3),
-			array(4, 3),
-			array(4, 3),
-			array(4, 3),
-			array(4, 3),
-			array(4, 3),
-			array(4, 3),
-			array(4, 3),
-			array(4, 2),
-			array(4, 3),
-			array(4, 1),
-			array(4, 1),
-			array(4, 1),
-			array(4, 1),
-			array(4, 1),
-			array(4, 1),
-			array(4, 1),
-			array(4, 1),
-			array(4, 1),
-			array(4, 1),
-			array(4, 1),
-			array(4, 3),
-			array(4, 4),
-			array(31, 1),
-			array(31, 3),
-			array(31, 3)
-		),
-		"performAction"=> function($yytext, $yyleng, $yylineno, $yy) {
-			$arguments = func_num_args();
-			$S = $arguments[5];
-			$O = strlen($arguments[5]);
+		$this->parser = (object)array(
+			"trace"=> function() {},
+			"yy"=> array(),
+			"symbols_"=> array(
+				"error"=> 2,
+				"expressions"=> 3,
+				"e"=> 4,
+				"EOF"=> 5,
+				"<="=> 6,
+				">="=> 7,
+				"<>"=> 8,
+				"NOT"=> 9,
+				">"=> 10,
+				"<"=> 11,
+				"+"=> 12,
+				"-"=> 13,
+				"*"=> 14,
+				"/"=> 15,
+				"^"=> 16,
+				"("=> 17,
+				")"=> 18,
+				"PERCENT"=> 19,
+				"DATE"=> 20,
+				"NUMBER"=> 21,
+				"E"=> 22,
+				"FIXEDCELL"=> 23,
+				"FIXEDCELLRANGE"=> 24,
+				"CELL"=> 25,
+				"CELLRANGE"=> 26,
+				"REMOTECELL"=> 27,
+				"REMOTECELLRANGE"=> 28,
+				"STRING"=> 29,
+				"IDENTIFIER"=> 30,
+				"expseq"=> 31,
+				";"=> 32,
+				","=> 33,
+				'$accept'=> 0,
+				'$end'=> 1
+			),
+			"terminals_"=> array(
+				"2"=> "error",
+				"5"=> "EOF",
+				"6"=> "<=",
+				"7"=> ">=",
+				"8"=> "<>",
+				"9"=> "NOT",
+				"10"=> ">",
+				"11"=> "<",
+				"12"=> "+",
+				"13"=> "-",
+				"14"=> "*",
+				"15"=> "/",
+				"16"=> "^",
+				"17"=> "(",
+				"18"=> ")",
+				"19"=> "PERCENT",
+				"20"=> "DATE",
+				"21"=> "NUMBER",
+				"22"=> "E",
+				"23"=> "FIXEDCELL",
+				"24"=> "FIXEDCELLRANGE",
+				"25"=> "CELL",
+				"26"=> "CELLRANGE",
+				"27"=> "REMOTECELL",
+				"28"=> "REMOTECELLRANGE",
+				"29"=> "STRING",
+				"30"=> "IDENTIFIER",
+				"32"=> ";",
+				"33"=> ","
+			),
+			"productions_"=> array(0,
+				array(3, 2),
+				array(4, 3),
+				array(4, 3),
+				array(4, 3),
+				array(4, 3),
+				array(4, 3),
+				array(4, 3),
+				array(4, 3),
+				array(4, 3),
+				array(4, 3),
+				array(4, 3),
+				array(4, 3),
+				array(4, 2),
+				array(4, 3),
+				array(4, 1),
+				array(4, 1),
+				array(4, 1),
+				array(4, 1),
+				array(4, 1),
+				array(4, 1),
+				array(4, 1),
+				array(4, 1),
+				array(4, 1),
+				array(4, 1),
+				array(4, 1),
+				array(4, 3),
+				array(4, 4),
+				array(31, 1),
+				array(31, 3),
+				array(31, 3)
+			),
+			"performAction"=> function($yytext, $yyleng, $yylineno, $yy) {
+				$arguments = func_num_args();
+				$S = $arguments[5];
+				$O = strlen($arguments[5]);
 			
-			switch ($arguments[4]) {
-				case 1:
-					return $S[$O- 2 + 1 - 1];
-					break;
-				case 2:
-					$this->S = ($S[$O- 3 + 1 - 1] * 1) <= ($S[$O- 3 + 3 - 1] * 1);
-					break;
-				case 3:
-					$this->S = ($S[$O- 3 + 1 - 1] * 1) >= ($S[$O- 3 + 3 - 1] * 1);
-					break;
-				case 4:
-					$this->S = ($S[$O- 3 + 1 - 1] * 1) != ($S[$O- 3 + 3 - 1] * 1);
-					break;
-				case 5:
-					$this->S = ($S[$O- 3 + 1 - 1] * 1) != ($S[$O- 3 + 3 - 1] * 1);
-					break;
-				case 6:
-					$this->S = ($S[$O- 3 + 1 - 1] * 1) > ($S[$O- 3 + 3 - 1] * 1);
-					break;
-				case 7:
-					$this->S = ($S[$O- 3 + 1 - 1] * 1) < ($S[$O- 3 + 3 - 1] * 1);
-					break;
-				case 8:
-					$this->S = jSE.cFN.sanitize($S[$O- 3 + 1 - 1]) + jSE.cFN.sanitize($S[$O- 3 + 3 - 1]);
-					break;
-				case 9:
-					$this->S = ($S[$O- 3 + 1 - 1] * 1) - ($S[$O- 3 + 3 - 1] * 1);
-					break;
-				case 10:
-					$this->S = ($S[$O- 3 + 1 - 1] * 1) * ($S[$O- 3 + 3 - 1] * 1);
-					break;
-				case 11:
-					$this->S = ($S[$O- 3 + 1 - 1] * 1) / ($S[$O- 3 + 3 - 1] * 1);
-					break;
-				case 12:
-					$this->S = Math.pow(($S[$O- 3 + 1 - 1] * 1), ($S[$O- 3 + 3 - 1] * 1));
-					break;
-				case 13:
-					$this->S = $S[$O- 2 + 2 - 1] * -1;
-					break;
-				case 14:
-					$this->S = $S[$O- 3 + 2 - 1];
-					break;
-				case 15:
-					$this->S = (str_replace("%", "", $S[$O- 1 + 1 - 1]) * 1) / 100;
-					break;
-				case 16:
-					/*this.$ = new Date($S[$0-1+1-1]).toString();*/
-					break;
-				case 17:
-					$this->S = Number(yytext);
-					break;
-				case 18:
-					$this->S = Math.E;
-					break;
-				case 19:
-					//$this->S = $arguments[6].fixedCellValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
-					break;
-				case 20:
-					//$this->S = $arguments[6].fixedCellRangeValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
-					break;
-				case 21:
-					//$this->S = $arguments[6].cellValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
-					break;
-				case 22:
-					//$this->S = $arguments[6].cellRangeValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
-					break;
-				case 23:
-					//$this->S = $arguments[6].remoteCellValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
-					break;
-				case 24:
-					//$this->S = $arguments[6].remoteCellRangeValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
-					break;
-				case 25:
-					//$this->S = $S[$O- 1 + 1 - 1].substring(1, $S[$O- 1 + 1 - 1].length - 1);
-					break;
-				case 26:
-					//$this->S = $arguments[6].callFunction($S[$O- 3 + 1 - 1], '', arguments[7]);
-					break;
-				case 27:
-					//$this->S = $arguments[6].callFunction($S[$O- 4 + 1 - 1], $S[$O- 4 + 3 - 1], arguments[7]);
-					break;
-				case 29:
-					$this->S = (is_array($S[$O- 3 + 3 - 1]) ? $S[$O- 3 + 3 - 1] : array($S[$O- 3 + 3 - 1]));
-					$this->S.push($S[$O- 3 + 1 - 1]);
+				switch ($arguments[4]) {
+					case 1:
+						return $S[$O- 2 + 1 - 1];
+						break;
+					case 2:
+						$this->S = ($S[$O- 3 + 1 - 1] * 1) <= ($S[$O- 3 + 3 - 1] * 1);
+						break;
+					case 3:
+						$this->S = ($S[$O- 3 + 1 - 1] * 1) >= ($S[$O- 3 + 3 - 1] * 1);
+						break;
+					case 4:
+						$this->S = ($S[$O- 3 + 1 - 1] * 1) != ($S[$O- 3 + 3 - 1] * 1);
+						break;
+					case 5:
+						$this->S = ($S[$O- 3 + 1 - 1] * 1) != ($S[$O- 3 + 3 - 1] * 1);
+						break;
+					case 6:
+						$this->S = ($S[$O- 3 + 1 - 1] * 1) > ($S[$O- 3 + 3 - 1] * 1);
+						break;
+					case 7:
+						$this->S = ($S[$O- 3 + 1 - 1] * 1) < ($S[$O- 3 + 3 - 1] * 1);
+						break;
+					case 8:
+						$this->S = jSE.cFN.sanitize($S[$O- 3 + 1 - 1]) + jSE.cFN.sanitize($S[$O- 3 + 3 - 1]);
+						break;
+					case 9:
+						$this->S = ($S[$O- 3 + 1 - 1] * 1) - ($S[$O- 3 + 3 - 1] * 1);
+						break;
+					case 10:
+						$this->S = ($S[$O- 3 + 1 - 1] * 1) * ($S[$O- 3 + 3 - 1] * 1);
+						break;
+					case 11:
+						$this->S = ($S[$O- 3 + 1 - 1] * 1) / ($S[$O- 3 + 3 - 1] * 1);
+						break;
+					case 12:
+						$this->S = Math.pow(($S[$O- 3 + 1 - 1] * 1), ($S[$O- 3 + 3 - 1] * 1));
+						break;
+					case 13:
+						$this->S = $S[$O- 2 + 2 - 1] * -1;
+						break;
+					case 14:
+						$this->S = $S[$O- 3 + 2 - 1];
+						break;
+					case 15:
+						$this->S = (str_replace("%", "", $S[$O- 1 + 1 - 1]) * 1) / 100;
+						break;
+					case 16:
+						/*this.$ = new Date($S[$0-1+1-1]).toString();*/
+						break;
+					case 17:
+						$this->S = Number(yytext);
+						break;
+					case 18:
+						$this->S = Math.E;
+						break;
+					case 19:
+						//$this->S = $arguments[6].fixedCellValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
+						break;
+					case 20:
+						//$this->S = $arguments[6].fixedCellRangeValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
+						break;
+					case 21:
+						//$this->S = $arguments[6].cellValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
+						break;
+					case 22:
+						//$this->S = $arguments[6].cellRangeValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
+						break;
+					case 23:
+						//$this->S = $arguments[6].remoteCellValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
+						break;
+					case 24:
+						//$this->S = $arguments[6].remoteCellRangeValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
+						break;
+					case 25:
+						//$this->S = $S[$O- 1 + 1 - 1].substring(1, $S[$O- 1 + 1 - 1].length - 1);
+						break;
+					case 26:
+						//$this->S = $arguments[6].callFunction($S[$O- 3 + 1 - 1], '', arguments[7]);
+						break;
+					case 27:
+						//$this->S = $arguments[6].callFunction($S[$O- 4 + 1 - 1], $S[$O- 4 + 3 - 1], arguments[7]);
+						break;
+					case 29:
+						$this->S = (is_array($S[$O- 3 + 3 - 1]) ? $S[$O- 3 + 3 - 1] : array($S[$O- 3 + 3 - 1]));
+						$this->S.push($S[$O- 3 + 1 - 1]);
 	
-					break;
-				case 30:
-					$this->S = (is_array($S[$O- 3 + 3 - 1]) ? $S[$O- 3 + 3 - 1] : array($S[$O- 3 + 3 - 1]));
-					$this->S.push($S[$O- 3 + 1 - 1]);
+						break;
+					case 30:
+						$this->S = (is_array($S[$O- 3 + 3 - 1]) ? $S[$O- 3 + 3 - 1] : array($S[$O- 3 + 3 - 1]));
+						$this->S.push($S[$O- 3 + 1 - 1]);
 	
-					break;
-			}
-		},
-		"table"=> array(array(
-			"3"=> 1,
-			"4"=> 2,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"1"=> array(3)
-		), array(
-			"5"=> array(1, 17),
-			"6"=> array(1, 18),
-			"7"=> array(1, 19),
-			"8"=> array(1, 20),
-			"9"=> array(1, 21),
-			"10"=> array(1, 22),
-			"11"=> array(1, 23),
-			"12"=> array(1, 24),
-			"13"=> array(1, 25),
-			"14"=> array(1, 26),
-			"15"=> array(1, 27),
-			"16"=> array(1, 28)
-		), array(
-			"4"=> 29,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"4"=> 30,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"5"=> array(2, 15),
-			"6"=> array(2, 15),
-			"7"=> array(2, 15),
-			"8"=> array(2, 15),
-			"9"=> array(2, 15),
-			"10"=> array(2, 15),
-			"11"=> array(2, 15),
-			"12"=> array(2, 15),
-			"13"=> array(2, 15),
-			"14"=> array(2, 15),
-			"15"=> array(2, 15),
-			"16"=> array(2, 15),
-			"18"=> array(2, 15),
-			"32"=> array(2, 15),
-			"33"=> array(2, 15)
-		), array(
-			"5"=> array(2, 16),
-			"6"=> array(2, 16),
-			"7"=> array(2, 16),
-			"8"=> array(2, 16),
-			"9"=> array(2, 16),
-			"10"=> array(2, 16),
-			"11"=> array(2, 16),
-			"12"=> array(2, 16),
-			"13"=> array(2, 16),
-			"14"=> array(2, 16),
-			"15"=> array(2, 16),
-			"16"=> array(2, 16),
-			"18"=> array(2, 16),
-			"32"=> array(2, 16),
-			"33"=> array(2, 16)
-		), array(
-			"5"=> array(2, 17),
-			"6"=> array(2, 17),
-			"7"=> array(2, 17),
-			"8"=> array(2, 17),
-			"9"=> array(2, 17),
-			"10"=> array(2, 17),
-			"11"=> array(2, 17),
-			"12"=> array(2, 17),
-			"13"=> array(2, 17),
-			"14"=> array(2, 17),
-			"15"=> array(2, 17),
-			"16"=> array(2, 17),
-			"18"=> array(2, 17),
-			"32"=> array(2, 17),
-			"33"=> array(2, 17)
-		), array(
-			"5"=> array(2, 18),
-			"6"=> array(2, 18),
-			"7"=> array(2, 18),
-			"8"=> array(2, 18),
-			"9"=> array(2, 18),
-			"10"=> array(2, 18),
-			"11"=> array(2, 18),
-			"12"=> array(2, 18),
-			"13"=> array(2, 18),
-			"14"=> array(2, 18),
-			"15"=> array(2, 18),
-			"16"=> array(2, 18),
-			"18"=> array(2, 18),
-			"32"=> array(2, 18),
-			"33"=> array(2, 18)
-		), array(
-			"5"=> array(2, 19),
-			"6"=> array(2, 19),
-			"7"=> array(2, 19),
-			"8"=> array(2, 19),
-			"9"=> array(2, 19),
-			"10"=> array(2, 19),
-			"11"=> array(2, 19),
-			"12"=> array(2, 19),
-			"13"=> array(2, 19),
-			"14"=> array(2, 19),
-			"15"=> array(2, 19),
-			"16"=> array(2, 19),
-			"18"=> array(2, 19),
-			"32"=> array(2, 19),
-			"33"=> array(2, 19)
-		), array(
-			"5"=> array(2, 20),
-			"6"=> array(2, 20),
-			"7"=> array(2, 20),
-			"8"=> array(2, 20),
-			"9"=> array(2, 20),
-			"10"=> array(2, 20),
-			"11"=> array(2, 20),
-			"12"=> array(2, 20),
-			"13"=> array(2, 20),
-			"14"=> array(2, 20),
-			"15"=> array(2, 20),
-			"16"=> array(2, 20),
-			"18"=> array(2, 20),
-			"32"=> array(2, 20),
-			"33"=> array(2, 20)
-		), array(
-			"5"=> array(2, 21),
-			"6"=> array(2, 21),
-			"7"=> array(2, 21),
-			"8"=> array(2, 21),
-			"9"=> array(2, 21),
-			"10"=> array(2, 21),
-			"11"=> array(2, 21),
-			"12"=> array(2, 21),
-			"13"=> array(2, 21),
-			"14"=> array(2, 21),
-			"15"=> array(2, 21),
-			"16"=> array(2, 21),
-			"18"=> array(2, 21),
-			"32"=> array(2, 21),
-			"33"=> array(2, 21)
-		), array(
-			"5"=> array(2, 22),
-			"6"=> array(2, 22),
-			"7"=> array(2, 22),
-			"8"=> array(2, 22),
-			"9"=> array(2, 22),
-			"10"=> array(2, 22),
-			"11"=> array(2, 22),
-			"12"=> array(2, 22),
-			"13"=> array(2, 22),
-			"14"=> array(2, 22),
-			"15"=> array(2, 22),
-			"16"=> array(2, 22),
-			"18"=> array(2, 22),
-			"32"=> array(2, 22),
-			"33"=> array(2, 22)
-		), array(
-			"5"=> array(2, 23),
-			"6"=> array(2, 23),
-			"7"=> array(2, 23),
-			"8"=> array(2, 23),
-			"9"=> array(2, 23),
-			"10"=> array(2, 23),
-			"11"=> array(2, 23),
-			"12"=> array(2, 23),
-			"13"=> array(2, 23),
-			"14"=> array(2, 23),
-			"15"=> array(2, 23),
-			"16"=> array(2, 23),
-			"18"=> array(2, 23),
-			"32"=> array(2, 23),
-			"33"=> array(2, 23)
-		), array(
-			"5"=> array(2, 24),
-			"6"=> array(2, 24),
-			"7"=> array(2, 24),
-			"8"=> array(2, 24),
-			"9"=> array(2, 24),
-			"10"=> array(2, 24),
-			"11"=> array(2, 24),
-			"12"=> array(2, 24),
-			"13"=> array(2, 24),
-			"14"=> array(2, 24),
-			"15"=> array(2, 24),
-			"16"=> array(2, 24),
-			"18"=> array(2, 24),
-			"32"=> array(2, 24),
-			"33"=> array(2, 24)
-		), array(
-			"5"=> array(2, 25),
-			"6"=> array(2, 25),
-			"7"=> array(2, 25),
-			"8"=> array(2, 25),
-			"9"=> array(2, 25),
-			"10"=> array(2, 25),
-			"11"=> array(2, 25),
-			"12"=> array(2, 25),
-			"13"=> array(2, 25),
-			"14"=> array(2, 25),
-			"15"=> array(2, 25),
-			"16"=> array(2, 25),
-			"18"=> array(2, 25),
-			"32"=> array(2, 25),
-			"33"=> array(2, 25)
-		), array(
-			"17"=> array(1, 31)
-		), array(
-			"1"=> array(2, 1)
-		), array(
-			"4"=> 32,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"4"=> 33,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"4"=> 34,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"4"=> 35,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"4"=> 36,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"4"=> 37,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"4"=> 38,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"4"=> 39,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"4"=> 40,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"4"=> 41,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"4"=> 42,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16)
-		), array(
-			"5"=> array(2, 13),
-			"6"=> array(2, 13),
-			"7"=> array(2, 13),
-			"8"=> array(2, 13),
-			"9"=> array(2, 13),
-			"10"=> array(2, 13),
-			"11"=> array(2, 13),
-			"12"=> array(2, 13),
-			"13"=> array(2, 13),
-			"14"=> array(1, 26),
-			"15"=> array(1, 27),
-			"16"=> array(1, 28),
-			"18"=> array(2, 13),
-			"32"=> array(2, 13),
-			"33"=> array(2, 13)
-		), array(
-			"6"=> array(1, 18),
-			"7"=> array(1, 19),
-			"8"=> array(1, 20),
-			"9"=> array(1, 21),
-			"10"=> array(1, 22),
-			"11"=> array(1, 23),
-			"12"=> array(1, 24),
-			"13"=> array(1, 25),
-			"14"=> array(1, 26),
-			"15"=> array(1, 27),
-			"16"=> array(1, 28),
-			"18"=> array(1, 43)
-		), array(
-			"4"=> 46,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"18"=> array(1, 44),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16),
-			"31"=> 45
-		), array(
-			"5"=> array(2, 2),
-			"6"=> array(2, 2),
-			"7"=> array(2, 2),
-			"8"=> array(2, 2),
-			"9"=> array(2, 2),
-			"10"=> array(1, 22),
-			"11"=> array(1, 23),
-			"12"=> array(1, 24),
-			"13"=> array(1, 25),
-			"14"=> array(1, 26),
-			"15"=> array(1, 27),
-			"16"=> array(1, 28),
-			"18"=> array(2, 2),
-			"32"=> array(2, 2),
-			"33"=> array(2, 2)
-		), array(
-			"5"=> array(2, 3),
-			"6"=> array(2, 3),
-			"7"=> array(2, 3),
-			"8"=> array(2, 3),
-			"9"=> array(2, 3),
-			"10"=> array(1, 22),
-			"11"=> array(1, 23),
-			"12"=> array(1, 24),
-			"13"=> array(1, 25),
-			"14"=> array(1, 26),
-			"15"=> array(1, 27),
-			"16"=> array(1, 28),
-			"18"=> array(2, 3),
-			"32"=> array(2, 3),
-			"33"=> array(2, 3)
-		), array(
-			"5"=> array(2, 4),
-			"6"=> array(2, 4),
-			"7"=> array(2, 4),
-			"8"=> array(2, 4),
-			"9"=> array(2, 4),
-			"10"=> array(1, 22),
-			"11"=> array(1, 23),
-			"12"=> array(1, 24),
-			"13"=> array(1, 25),
-			"14"=> array(1, 26),
-			"15"=> array(1, 27),
-			"16"=> array(1, 28),
-			"18"=> array(2, 4),
-			"32"=> array(2, 4),
-			"33"=> array(2, 4)
-		), array(
-			"5"=> array(2, 5),
-			"6"=> array(2, 5),
-			"7"=> array(2, 5),
-			"8"=> array(2, 5),
-			"9"=> array(2, 5),
-			"10"=> array(1, 22),
-			"11"=> array(1, 23),
-			"12"=> array(1, 24),
-			"13"=> array(1, 25),
-			"14"=> array(1, 26),
-			"15"=> array(1, 27),
-			"16"=> array(1, 28),
-			"18"=> array(2, 5),
-			"32"=> array(2, 5),
-			"33"=> array(2, 5)
-		), array(
-			"5"=> array(2, 6),
-			"6"=> array(2, 6),
-			"7"=> array(2, 6),
-			"8"=> array(2, 6),
-			"9"=> array(2, 6),
-			"10"=> array(2, 6),
-			"11"=> array(2, 6),
-			"12"=> array(1, 24),
-			"13"=> array(1, 25),
-			"14"=> array(1, 26),
-			"15"=> array(1, 27),
-			"16"=> array(1, 28),
-			"18"=> array(2, 6),
-			"32"=> array(2, 6),
-			"33"=> array(2, 6)
-		), array(
-			"5"=> array(2, 7),
-			"6"=> array(2, 7),
-			"7"=> array(2, 7),
-			"8"=> array(2, 7),
-			"9"=> array(2, 7),
-			"10"=> array(2, 7),
-			"11"=> array(2, 7),
-			"12"=> array(1, 24),
-			"13"=> array(1, 25),
-			"14"=> array(1, 26),
-			"15"=> array(1, 27),
-			"16"=> array(1, 28),
-			"18"=> array(2, 7),
-			"32"=> array(2, 7),
-			"33"=> array(2, 7)
-		), array(
-			"5"=> array(2, 8),
-			"6"=> array(2, 8),
-			"7"=> array(2, 8),
-			"8"=> array(2, 8),
-			"9"=> array(2, 8),
-			"10"=> array(2, 8),
-			"11"=> array(2, 8),
-			"12"=> array(2, 8),
-			"13"=> array(2, 8),
-			"14"=> array(1, 26),
-			"15"=> array(1, 27),
-			"16"=> array(1, 28),
-			"18"=> array(2, 8),
-			"32"=> array(2, 8),
-			"33"=> array(2, 8)
-		), array(
-			"5"=> array(2, 9),
-			"6"=> array(2, 9),
-			"7"=> array(2, 9),
-			"8"=> array(2, 9),
-			"9"=> array(2, 9),
-			"10"=> array(2, 9),
-			"11"=> array(2, 9),
-			"12"=> array(2, 9),
-			"13"=> array(2, 9),
-			"14"=> array(1, 26),
-			"15"=> array(1, 27),
-			"16"=> array(1, 28),
-			"18"=> array(2, 9),
-			"32"=> array(2, 9),
-			"33"=> array(2, 9)
-		), array(
-			"5"=> array(2, 10),
-			"6"=> array(2, 10),
-			"7"=> array(2, 10),
-			"8"=> array(2, 10),
-			"9"=> array(2, 10),
-			"10"=> array(2, 10),
-			"11"=> array(2, 10),
-			"12"=> array(2, 10),
-			"13"=> array(2, 10),
-			"14"=> array(2, 10),
-			"15"=> array(2, 10),
-			"16"=> array(1, 28),
-			"18"=> array(2, 10),
-			"32"=> array(2, 10),
-			"33"=> array(2, 10)
-		), array(
-			"5"=> array(2, 11),
-			"6"=> array(2, 11),
-			"7"=> array(2, 11),
-			"8"=> array(2, 11),
-			"9"=> array(2, 11),
-			"10"=> array(2, 11),
-			"11"=> array(2, 11),
-			"12"=> array(2, 11),
-			"13"=> array(2, 11),
-			"14"=> array(2, 11),
-			"15"=> array(2, 11),
-			"16"=> array(1, 28),
-			"18"=> array(2, 11),
-			"32"=> array(2, 11),
-			"33"=> array(2, 11)
-		), array(
-			"5"=> array(2, 12),
-			"6"=> array(2, 12),
-			"7"=> array(2, 12),
-			"8"=> array(2, 12),
-			"9"=> array(2, 12),
-			"10"=> array(2, 12),
-			"11"=> array(2, 12),
-			"12"=> array(2, 12),
-			"13"=> array(2, 12),
-			"14"=> array(2, 12),
-			"15"=> array(2, 12),
-			"16"=> array(2, 12),
-			"18"=> array(2, 12),
-			"32"=> array(2, 12),
-			"33"=> array(2, 12)
-		), array(
-			"5"=> array(2, 14),
-			"6"=> array(2, 14),
-			"7"=> array(2, 14),
-			"8"=> array(2, 14),
-			"9"=> array(2, 14),
-			"10"=> array(2, 14),
-			"11"=> array(2, 14),
-			"12"=> array(2, 14),
-			"13"=> array(2, 14),
-			"14"=> array(2, 14),
-			"15"=> array(2, 14),
-			"16"=> array(2, 14),
-			"18"=> array(2, 14),
-			"32"=> array(2, 14),
-			"33"=> array(2, 14)
-		), array(
-			"5"=> array(2, 26),
-			"6"=> array(2, 26),
-			"7"=> array(2, 26),
-			"8"=> array(2, 26),
-			"9"=> array(2, 26),
-			"10"=> array(2, 26),
-			"11"=> array(2, 26),
-			"12"=> array(2, 26),
-			"13"=> array(2, 26),
-			"14"=> array(2, 26),
-			"15"=> array(2, 26),
-			"16"=> array(2, 26),
-			"18"=> array(2, 26),
-			"32"=> array(2, 26),
-			"33"=> array(2, 26)
-		), array(
-			"18"=> array(1, 47)
-		), array(
-			"6"=> array(1, 18),
-			"7"=> array(1, 19),
-			"8"=> array(1, 20),
-			"9"=> array(1, 21),
-			"10"=> array(1, 22),
-			"11"=> array(1, 23),
-			"12"=> array(1, 24),
-			"13"=> array(1, 25),
-			"14"=> array(1, 26),
-			"15"=> array(1, 27),
-			"16"=> array(1, 28),
-			"18"=> array(2, 28),
-			"32"=> array(1, 48),
-			"33"=> array(1, 49)
-		), array(
-			"5"=> array(2, 27),
-			"6"=> array(2, 27),
-			"7"=> array(2, 27),
-			"8"=> array(2, 27),
-			"9"=> array(2, 27),
-			"10"=> array(2, 27),
-			"11"=> array(2, 27),
-			"12"=> array(2, 27),
-			"13"=> array(2, 27),
-			"14"=> array(2, 27),
-			"15"=> array(2, 27),
-			"16"=> array(2, 27),
-			"18"=> array(2, 27),
-			"32"=> array(2, 27),
-			"33"=> array(2, 27)
-		), array(
-			"4"=> 46,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16),
-			"31"=> 50
-		), array(
-			"4"=> 46,
-			"13"=> array(1, 3),
-			"17"=> array(1, 4),
-			"19"=> array(1, 5),
-			"20"=> array(1, 6),
-			"21"=> array(1, 7),
-			"22"=> array(1, 8),
-			"23"=> array(1, 9),
-			"24"=> array(1, 10),
-			"25"=> array(1, 11),
-			"26"=> array(1, 12),
-			"27"=> array(1, 13),
-			"28"=> array(1, 14),
-			"29"=> array(1, 15),
-			"30"=> array(1, 16),
-			"31"=> 51
-		), array(
-			"18"=> array(2, 29)
-		), array(
-			"18"=> array(2, 30)
-		)),
-		"defaultActions"=> array(
-			"17"=> array(2, 1),
-			"50"=> array(2, 29),
-			"51"=> array(2, 30)
-		)
-	);
+						break;
+				}
+			},
+			"table"=> array(
+				array(
+					"3"=> 1,
+					"4"=> 2,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"1"=> array(3)
+				), array(
+					"5"=> array(1, 17),
+					"6"=> array(1, 18),
+					"7"=> array(1, 19),
+					"8"=> array(1, 20),
+					"9"=> array(1, 21),
+					"10"=> array(1, 22),
+					"11"=> array(1, 23),
+					"12"=> array(1, 24),
+					"13"=> array(1, 25),
+					"14"=> array(1, 26),
+					"15"=> array(1, 27),
+					"16"=> array(1, 28)
+				), array(
+					"4"=> 29,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"4"=> 30,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"5"=> array(2, 15),
+					"6"=> array(2, 15),
+					"7"=> array(2, 15),
+					"8"=> array(2, 15),
+					"9"=> array(2, 15),
+					"10"=> array(2, 15),
+					"11"=> array(2, 15),
+					"12"=> array(2, 15),
+					"13"=> array(2, 15),
+					"14"=> array(2, 15),
+					"15"=> array(2, 15),
+					"16"=> array(2, 15),
+					"18"=> array(2, 15),
+					"32"=> array(2, 15),
+					"33"=> array(2, 15)
+				), array(
+					"5"=> array(2, 16),
+					"6"=> array(2, 16),
+					"7"=> array(2, 16),
+					"8"=> array(2, 16),
+					"9"=> array(2, 16),
+					"10"=> array(2, 16),
+					"11"=> array(2, 16),
+					"12"=> array(2, 16),
+					"13"=> array(2, 16),
+					"14"=> array(2, 16),
+					"15"=> array(2, 16),
+					"16"=> array(2, 16),
+					"18"=> array(2, 16),
+					"32"=> array(2, 16),
+					"33"=> array(2, 16)
+				), array(
+					"5"=> array(2, 17),
+					"6"=> array(2, 17),
+					"7"=> array(2, 17),
+					"8"=> array(2, 17),
+					"9"=> array(2, 17),
+					"10"=> array(2, 17),
+					"11"=> array(2, 17),
+					"12"=> array(2, 17),
+					"13"=> array(2, 17),
+					"14"=> array(2, 17),
+					"15"=> array(2, 17),
+					"16"=> array(2, 17),
+					"18"=> array(2, 17),
+					"32"=> array(2, 17),
+					"33"=> array(2, 17)
+				), array(
+					"5"=> array(2, 18),
+					"6"=> array(2, 18),
+					"7"=> array(2, 18),
+					"8"=> array(2, 18),
+					"9"=> array(2, 18),
+					"10"=> array(2, 18),
+					"11"=> array(2, 18),
+					"12"=> array(2, 18),
+					"13"=> array(2, 18),
+					"14"=> array(2, 18),
+					"15"=> array(2, 18),
+					"16"=> array(2, 18),
+					"18"=> array(2, 18),
+					"32"=> array(2, 18),
+					"33"=> array(2, 18)
+				), array(
+					"5"=> array(2, 19),
+					"6"=> array(2, 19),
+					"7"=> array(2, 19),
+					"8"=> array(2, 19),
+					"9"=> array(2, 19),
+					"10"=> array(2, 19),
+					"11"=> array(2, 19),
+					"12"=> array(2, 19),
+					"13"=> array(2, 19),
+					"14"=> array(2, 19),
+					"15"=> array(2, 19),
+					"16"=> array(2, 19),
+					"18"=> array(2, 19),
+					"32"=> array(2, 19),
+					"33"=> array(2, 19)
+				), array(
+					"5"=> array(2, 20),
+					"6"=> array(2, 20),
+					"7"=> array(2, 20),
+					"8"=> array(2, 20),
+					"9"=> array(2, 20),
+					"10"=> array(2, 20),
+					"11"=> array(2, 20),
+					"12"=> array(2, 20),
+					"13"=> array(2, 20),
+					"14"=> array(2, 20),
+					"15"=> array(2, 20),
+					"16"=> array(2, 20),
+					"18"=> array(2, 20),
+					"32"=> array(2, 20),
+					"33"=> array(2, 20)
+				), array(
+					"5"=> array(2, 21),
+					"6"=> array(2, 21),
+					"7"=> array(2, 21),
+					"8"=> array(2, 21),
+					"9"=> array(2, 21),
+					"10"=> array(2, 21),
+					"11"=> array(2, 21),
+					"12"=> array(2, 21),
+					"13"=> array(2, 21),
+					"14"=> array(2, 21),
+					"15"=> array(2, 21),
+					"16"=> array(2, 21),
+					"18"=> array(2, 21),
+					"32"=> array(2, 21),
+					"33"=> array(2, 21)
+				), array(
+					"5"=> array(2, 22),
+					"6"=> array(2, 22),
+					"7"=> array(2, 22),
+					"8"=> array(2, 22),
+					"9"=> array(2, 22),
+					"10"=> array(2, 22),
+					"11"=> array(2, 22),
+					"12"=> array(2, 22),
+					"13"=> array(2, 22),
+					"14"=> array(2, 22),
+					"15"=> array(2, 22),
+					"16"=> array(2, 22),
+					"18"=> array(2, 22),
+					"32"=> array(2, 22),
+					"33"=> array(2, 22)
+				), array(
+					"5"=> array(2, 23),
+					"6"=> array(2, 23),
+					"7"=> array(2, 23),
+					"8"=> array(2, 23),
+					"9"=> array(2, 23),
+					"10"=> array(2, 23),
+					"11"=> array(2, 23),
+					"12"=> array(2, 23),
+					"13"=> array(2, 23),
+					"14"=> array(2, 23),
+					"15"=> array(2, 23),
+					"16"=> array(2, 23),
+					"18"=> array(2, 23),
+					"32"=> array(2, 23),
+					"33"=> array(2, 23)
+				), array(
+					"5"=> array(2, 24),
+					"6"=> array(2, 24),
+					"7"=> array(2, 24),
+					"8"=> array(2, 24),
+					"9"=> array(2, 24),
+					"10"=> array(2, 24),
+					"11"=> array(2, 24),
+					"12"=> array(2, 24),
+					"13"=> array(2, 24),
+					"14"=> array(2, 24),
+					"15"=> array(2, 24),
+					"16"=> array(2, 24),
+					"18"=> array(2, 24),
+					"32"=> array(2, 24),
+					"33"=> array(2, 24)
+				), array(
+					"5"=> array(2, 25),
+					"6"=> array(2, 25),
+					"7"=> array(2, 25),
+					"8"=> array(2, 25),
+					"9"=> array(2, 25),
+					"10"=> array(2, 25),
+					"11"=> array(2, 25),
+					"12"=> array(2, 25),
+					"13"=> array(2, 25),
+					"14"=> array(2, 25),
+					"15"=> array(2, 25),
+					"16"=> array(2, 25),
+					"18"=> array(2, 25),
+					"32"=> array(2, 25),
+					"33"=> array(2, 25)
+				), array(
+					"17"=> array(1, 31)
+				), array(
+					"1"=> array(2, 1)
+				), array(
+					"4"=> 32,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"4"=> 33,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"4"=> 34,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"4"=> 35,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"4"=> 36,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"4"=> 37,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"4"=> 38,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"4"=> 39,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"4"=> 40,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"4"=> 41,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"4"=> 42,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16)
+				), array(
+					"5"=> array(2, 13),
+					"6"=> array(2, 13),
+					"7"=> array(2, 13),
+					"8"=> array(2, 13),
+					"9"=> array(2, 13),
+					"10"=> array(2, 13),
+					"11"=> array(2, 13),
+					"12"=> array(2, 13),
+					"13"=> array(2, 13),
+					"14"=> array(1, 26),
+					"15"=> array(1, 27),
+					"16"=> array(1, 28),
+					"18"=> array(2, 13),
+					"32"=> array(2, 13),
+					"33"=> array(2, 13)
+				), array(
+					"6"=> array(1, 18),
+					"7"=> array(1, 19),
+					"8"=> array(1, 20),
+					"9"=> array(1, 21),
+					"10"=> array(1, 22),
+					"11"=> array(1, 23),
+					"12"=> array(1, 24),
+					"13"=> array(1, 25),
+					"14"=> array(1, 26),
+					"15"=> array(1, 27),
+					"16"=> array(1, 28),
+					"18"=> array(1, 43)
+				), array(
+					"4"=> 46,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"18"=> array(1, 44),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16),
+					"31"=> 45
+				), array(
+					"5"=> array(2, 2),
+					"6"=> array(2, 2),
+					"7"=> array(2, 2),
+					"8"=> array(2, 2),
+					"9"=> array(2, 2),
+					"10"=> array(1, 22),
+					"11"=> array(1, 23),
+					"12"=> array(1, 24),
+					"13"=> array(1, 25),
+					"14"=> array(1, 26),
+					"15"=> array(1, 27),
+					"16"=> array(1, 28),
+					"18"=> array(2, 2),
+					"32"=> array(2, 2),
+					"33"=> array(2, 2)
+				), array(
+					"5"=> array(2, 3),
+					"6"=> array(2, 3),
+					"7"=> array(2, 3),
+					"8"=> array(2, 3),
+					"9"=> array(2, 3),
+					"10"=> array(1, 22),
+					"11"=> array(1, 23),
+					"12"=> array(1, 24),
+					"13"=> array(1, 25),
+					"14"=> array(1, 26),
+					"15"=> array(1, 27),
+					"16"=> array(1, 28),
+					"18"=> array(2, 3),
+					"32"=> array(2, 3),
+					"33"=> array(2, 3)
+				), array(
+					"5"=> array(2, 4),
+					"6"=> array(2, 4),
+					"7"=> array(2, 4),
+					"8"=> array(2, 4),
+					"9"=> array(2, 4),
+					"10"=> array(1, 22),
+					"11"=> array(1, 23),
+					"12"=> array(1, 24),
+					"13"=> array(1, 25),
+					"14"=> array(1, 26),
+					"15"=> array(1, 27),
+					"16"=> array(1, 28),
+					"18"=> array(2, 4),
+					"32"=> array(2, 4),
+					"33"=> array(2, 4)
+				), array(
+					"5"=> array(2, 5),
+					"6"=> array(2, 5),
+					"7"=> array(2, 5),
+					"8"=> array(2, 5),
+					"9"=> array(2, 5),
+					"10"=> array(1, 22),
+					"11"=> array(1, 23),
+					"12"=> array(1, 24),
+					"13"=> array(1, 25),
+					"14"=> array(1, 26),
+					"15"=> array(1, 27),
+					"16"=> array(1, 28),
+					"18"=> array(2, 5),
+					"32"=> array(2, 5),
+					"33"=> array(2, 5)
+				), array(
+					"5"=> array(2, 6),
+					"6"=> array(2, 6),
+					"7"=> array(2, 6),
+					"8"=> array(2, 6),
+					"9"=> array(2, 6),
+					"10"=> array(2, 6),
+					"11"=> array(2, 6),
+					"12"=> array(1, 24),
+					"13"=> array(1, 25),
+					"14"=> array(1, 26),
+					"15"=> array(1, 27),
+					"16"=> array(1, 28),
+					"18"=> array(2, 6),
+					"32"=> array(2, 6),
+					"33"=> array(2, 6)
+				), array(
+					"5"=> array(2, 7),
+					"6"=> array(2, 7),
+					"7"=> array(2, 7),
+					"8"=> array(2, 7),
+					"9"=> array(2, 7),
+					"10"=> array(2, 7),
+					"11"=> array(2, 7),
+					"12"=> array(1, 24),
+					"13"=> array(1, 25),
+					"14"=> array(1, 26),
+					"15"=> array(1, 27),
+					"16"=> array(1, 28),
+					"18"=> array(2, 7),
+					"32"=> array(2, 7),
+					"33"=> array(2, 7)
+				), array(
+					"5"=> array(2, 8),
+					"6"=> array(2, 8),
+					"7"=> array(2, 8),
+					"8"=> array(2, 8),
+					"9"=> array(2, 8),
+					"10"=> array(2, 8),
+					"11"=> array(2, 8),
+					"12"=> array(2, 8),
+					"13"=> array(2, 8),
+					"14"=> array(1, 26),
+					"15"=> array(1, 27),
+					"16"=> array(1, 28),
+					"18"=> array(2, 8),
+					"32"=> array(2, 8),
+					"33"=> array(2, 8)
+				), array(
+					"5"=> array(2, 9),
+					"6"=> array(2, 9),
+					"7"=> array(2, 9),
+					"8"=> array(2, 9),
+					"9"=> array(2, 9),
+					"10"=> array(2, 9),
+					"11"=> array(2, 9),
+					"12"=> array(2, 9),
+					"13"=> array(2, 9),
+					"14"=> array(1, 26),
+					"15"=> array(1, 27),
+					"16"=> array(1, 28),
+					"18"=> array(2, 9),
+					"32"=> array(2, 9),
+					"33"=> array(2, 9)
+				), array(
+					"5"=> array(2, 10),
+					"6"=> array(2, 10),
+					"7"=> array(2, 10),
+					"8"=> array(2, 10),
+					"9"=> array(2, 10),
+					"10"=> array(2, 10),
+					"11"=> array(2, 10),
+					"12"=> array(2, 10),
+					"13"=> array(2, 10),
+					"14"=> array(2, 10),
+					"15"=> array(2, 10),
+					"16"=> array(1, 28),
+					"18"=> array(2, 10),
+					"32"=> array(2, 10),
+					"33"=> array(2, 10)
+				), array(
+					"5"=> array(2, 11),
+					"6"=> array(2, 11),
+					"7"=> array(2, 11),
+					"8"=> array(2, 11),
+					"9"=> array(2, 11),
+					"10"=> array(2, 11),
+					"11"=> array(2, 11),
+					"12"=> array(2, 11),
+					"13"=> array(2, 11),
+					"14"=> array(2, 11),
+					"15"=> array(2, 11),
+					"16"=> array(1, 28),
+					"18"=> array(2, 11),
+					"32"=> array(2, 11),
+					"33"=> array(2, 11)
+				), array(
+					"5"=> array(2, 12),
+					"6"=> array(2, 12),
+					"7"=> array(2, 12),
+					"8"=> array(2, 12),
+					"9"=> array(2, 12),
+					"10"=> array(2, 12),
+					"11"=> array(2, 12),
+					"12"=> array(2, 12),
+					"13"=> array(2, 12),
+					"14"=> array(2, 12),
+					"15"=> array(2, 12),
+					"16"=> array(2, 12),
+					"18"=> array(2, 12),
+					"32"=> array(2, 12),
+					"33"=> array(2, 12)
+				), array(
+					"5"=> array(2, 14),
+					"6"=> array(2, 14),
+					"7"=> array(2, 14),
+					"8"=> array(2, 14),
+					"9"=> array(2, 14),
+					"10"=> array(2, 14),
+					"11"=> array(2, 14),
+					"12"=> array(2, 14),
+					"13"=> array(2, 14),
+					"14"=> array(2, 14),
+					"15"=> array(2, 14),
+					"16"=> array(2, 14),
+					"18"=> array(2, 14),
+					"32"=> array(2, 14),
+					"33"=> array(2, 14)
+				), array(
+					"5"=> array(2, 26),
+					"6"=> array(2, 26),
+					"7"=> array(2, 26),
+					"8"=> array(2, 26),
+					"9"=> array(2, 26),
+					"10"=> array(2, 26),
+					"11"=> array(2, 26),
+					"12"=> array(2, 26),
+					"13"=> array(2, 26),
+					"14"=> array(2, 26),
+					"15"=> array(2, 26),
+					"16"=> array(2, 26),
+					"18"=> array(2, 26),
+					"32"=> array(2, 26),
+					"33"=> array(2, 26)
+				), array(
+					"18"=> array(1, 47)
+				), array(
+					"6"=> array(1, 18),
+					"7"=> array(1, 19),
+					"8"=> array(1, 20),
+					"9"=> array(1, 21),
+					"10"=> array(1, 22),
+					"11"=> array(1, 23),
+					"12"=> array(1, 24),
+					"13"=> array(1, 25),
+					"14"=> array(1, 26),
+					"15"=> array(1, 27),
+					"16"=> array(1, 28),
+					"18"=> array(2, 28),
+					"32"=> array(1, 48),
+					"33"=> array(1, 49)
+				), array(
+					"5"=> array(2, 27),
+					"6"=> array(2, 27),
+					"7"=> array(2, 27),
+					"8"=> array(2, 27),
+					"9"=> array(2, 27),
+					"10"=> array(2, 27),
+					"11"=> array(2, 27),
+					"12"=> array(2, 27),
+					"13"=> array(2, 27),
+					"14"=> array(2, 27),
+					"15"=> array(2, 27),
+					"16"=> array(2, 27),
+					"18"=> array(2, 27),
+					"32"=> array(2, 27),
+					"33"=> array(2, 27)
+				), array(
+					"4"=> 46,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16),
+					"31"=> 50
+				), array(
+					"4"=> 46,
+					"13"=> array(1, 3),
+					"17"=> array(1, 4),
+					"19"=> array(1, 5),
+					"20"=> array(1, 6),
+					"21"=> array(1, 7),
+					"22"=> array(1, 8),
+					"23"=> array(1, 9),
+					"24"=> array(1, 10),
+					"25"=> array(1, 11),
+					"26"=> array(1, 12),
+					"27"=> array(1, 13),
+					"28"=> array(1, 14),
+					"29"=> array(1, 15),
+					"30"=> array(1, 16),
+					"31"=> 51
+				), array(
+					"18"=> array(2, 29)
+				), array(
+					"18"=> array(2, 30)
+				)
+			),
+			"defaultActions"=> array(
+				"17"=> array(2, 1),
+				"50"=> array(2, 29),
+				"51"=> array(2, 30)
+			)
+		);
+		
+		$this->lexer();
 	}
 	
 	function parseError($str, $hash) {
 		throw new Error($str);
 	}
+	
 	function parse($input, $fn, $cell) {
-		//$self = $this;
+		$self = $this;
 		$stack = array(0);
 		$vstack = array(null);
 		// semantic value stack
-		print_r($this);
-		die;
-		//$table = self['table'];
+		$table = $this->parser->table;
 		$yytext = '';
 		$yylineno = 0;
 		$yyleng = 0;
@@ -999,7 +1002,7 @@ class parser {
 				$token = $self->symbols_[$token] || $token;
 			}
 			return $token;
-		};
+		}
 
 		//$symbol, $preErrorSymbol, $state, $action, $a, $r, $yyval = array();
 		//$p, $len, $newState, $expected, $recovered = false;
@@ -1144,8 +1147,8 @@ class parser {
 	}
 	
 	/* Jison generated lexer */
-	$lexer = function() {
-		$Lexer = array(
+	function lexer() {
+		$this->lexer = (object)array(
 			"EOF"=> "",
 			"parseError"=> function ($str, $hash) {
 				if ($this->yy->parseError) {
@@ -1155,10 +1158,12 @@ class parser {
 				}
 			},
 			"setInput"=> function ($input) {
-				$this->_input = $input;
-				$this->_more = $this->_less = $this->done = false;
-				$this->yylineno = $this->yyleng = 0;
-				$this->yytext = $this->matched = $this->match = '';
+				print_r($this->lexer);
+				die;
+				$this->lexer->_input = $input;
+				$this->lexer->_more = $this->lexer->_less = $this->lexer->done = false;
+				$this->lexer->yylineno = $this->lexer->yyleng = 0;
+				$this->lexer->yytext = $this->lexer->matched = $this->lexer->match = '';
 				return $this;
 			},
 			"input"=> function () {
@@ -1244,7 +1249,8 @@ class parser {
 				}
 			}
 		);
-		$lexer->performAction = function ($yy, $yy_) {
+		
+		$this->lexer->performAction = function ($yy, $yy_) {
 	
 			switch ($arguments[2]) {
 				case 0:
@@ -1367,7 +1373,7 @@ class parser {
 			}
 		};
 		
-		$Lexer->rules = array(
+		$this->lexer->rules = array(
 			'^\s+/,/^"(\\["]|[^"])*"',
 			"^'(\\[']|[^'])*'",
 			'^\$[A-Za-z]+\$[0-9]+[:]\$[A-Za-z]+\$[0-9]+',
@@ -1407,11 +1413,6 @@ class parser {
 			'^$',
 			"^="
 		);
-		return $Lexer;
-	};
-	
-	//$parse->lexer = $lexer;
-	return $Parser;
 	}
 }
 
@@ -1440,7 +1441,5 @@ if (isset($require)) {
 	}
 }
 
-$p = new parser;
-$d = $p->parser();
-
-print_r($d['parse']("100+100", "", ""));
+$parser = new parser;
+print_r($parser->parse("100+100","",""));
