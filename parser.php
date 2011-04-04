@@ -111,65 +111,65 @@ class parser {
 		array(31, 3)
 	);
 	
-	function performAction($yytext, $yyleng, $yylineno, $yy) {
+	function performAction($thisS, $yytext, $yyleng, $yylineno, $yy) {
 		$arguments = func_num_args();
-		$S = $arguments[5];
-		$O = strlen($arguments[5]);
+		$S = $arguments[6];
+		$O = strlen($arguments[6]);
 	
 		switch ($arguments[4]) {
 			case 1:
 				return $S[$O- 2 + 1 - 1];
 				break;
 			case 2:
-				$this->S = ($S[$O- 3 + 1 - 1] * 1) <= ($S[$O- 3 + 3 - 1] * 1);
+				$thisS = ($S[$O- 3 + 1 - 1] * 1) <= ($S[$O- 3 + 3 - 1] * 1);
 				break;
 			case 3:
-				$this->S = ($S[$O- 3 + 1 - 1] * 1) >= ($S[$O- 3 + 3 - 1] * 1);
+				$thisS = ($S[$O- 3 + 1 - 1] * 1) >= ($S[$O- 3 + 3 - 1] * 1);
 				break;
 			case 4:
-				$this->S = ($S[$O- 3 + 1 - 1] * 1) != ($S[$O- 3 + 3 - 1] * 1);
+				$thisS = ($S[$O- 3 + 1 - 1] * 1) != ($S[$O- 3 + 3 - 1] * 1);
 				break;
 			case 5:
-				$this->S = ($S[$O- 3 + 1 - 1] * 1) != ($S[$O- 3 + 3 - 1] * 1);
+				$thisS = ($S[$O- 3 + 1 - 1] * 1) != ($S[$O- 3 + 3 - 1] * 1);
 				break;
 			case 6:
-				$this->S = ($S[$O- 3 + 1 - 1] * 1) > ($S[$O- 3 + 3 - 1] * 1);
+				$thisS = ($S[$O- 3 + 1 - 1] * 1) > ($S[$O- 3 + 3 - 1] * 1);
 				break;
 			case 7:
-				$this->S = ($S[$O- 3 + 1 - 1] * 1) < ($S[$O- 3 + 3 - 1] * 1);
+				$thisS = ($S[$O- 3 + 1 - 1] * 1) < ($S[$O- 3 + 3 - 1] * 1);
 				break;
 			case 8:
-				$this->S = jSE.cFN.sanitize($S[$O- 3 + 1 - 1]) + jSE.cFN.sanitize($S[$O- 3 + 3 - 1]);
+				//$thisS = jSE.cFN.sanitize($S[$O- 3 + 1 - 1]) + jSE.cFN.sanitize($S[$O- 3 + 3 - 1]);
 				break;
 			case 9:
-				$this->S = ($S[$O- 3 + 1 - 1] * 1) - ($S[$O- 3 + 3 - 1] * 1);
+				$thisS = ($S[$O- 3 + 1 - 1] * 1) - ($S[$O- 3 + 3 - 1] * 1);
 				break;
 			case 10:
-				$this->S = ($S[$O- 3 + 1 - 1] * 1) * ($S[$O- 3 + 3 - 1] * 1);
+				$thisS = ($S[$O- 3 + 1 - 1] * 1) * ($S[$O- 3 + 3 - 1] * 1);
 				break;
 			case 11:
-				$this->S = ($S[$O- 3 + 1 - 1] * 1) / ($S[$O- 3 + 3 - 1] * 1);
+				$thisS = ($S[$O- 3 + 1 - 1] * 1) / ($S[$O- 3 + 3 - 1] * 1);
 				break;
 			case 12:
-				$this->S = Math.pow(($S[$O- 3 + 1 - 1] * 1), ($S[$O- 3 + 3 - 1] * 1));
+				//$thisS = Math.pow(($S[$O- 3 + 1 - 1] * 1), ($S[$O- 3 + 3 - 1] * 1));
 				break;
 			case 13:
-				$this->S = $S[$O- 2 + 2 - 1] * -1;
+				$thisS = $S[$O- 2 + 2 - 1] * -1;
 				break;
 			case 14:
-				$this->S = $S[$O- 3 + 2 - 1];
+				$thisS = $S[$O- 3 + 2 - 1];
 				break;
 			case 15:
-				$this->S = (str_replace("%", "", $S[$O- 1 + 1 - 1]) * 1) / 100;
+				//$thisS = (str_replace("%", "", $S[$O- 1 + 1 - 1]) * 1) / 100;
 				break;
 			case 16:
 				/*this.$ = new Date($S[$0-1+1-1]).toString();*/
 				break;
 			case 17:
-				$this->S = Number(yytext);
+				//$thisS = Number(yytext);
 				break;
 			case 18:
-				$this->S = Math.E;
+				//$thisS = Math.E;
 				break;
 			case 19:
 				//$this->S = $arguments[6].fixedCellValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
@@ -199,13 +199,13 @@ class parser {
 				//$this->S = $arguments[6].callFunction($S[$O- 4 + 1 - 1], $S[$O- 4 + 3 - 1], arguments[7]);
 				break;
 			case 29:
-				$this->S = (is_array($S[$O- 3 + 3 - 1]) ? $S[$O- 3 + 3 - 1] : array($S[$O- 3 + 3 - 1]));
-				$this->S.push($S[$O- 3 + 1 - 1]);
+				$thisS = (is_array($S[$O- 3 + 3 - 1]) ? $S[$O- 3 + 3 - 1] : array($S[$O- 3 + 3 - 1]));
+				$this.push($S[$O- 3 + 1 - 1]);
 
 				break;
 			case 30:
-				$this->S = (is_array($S[$O- 3 + 3 - 1]) ? $S[$O- 3 + 3 - 1] : array($S[$O- 3 + 3 - 1]));
-				$this->S.push($S[$O- 3 + 1 - 1]);
+				$thisS = (is_array($S[$O- 3 + 3 - 1]) ? $S[$O- 3 + 3 - 1] : array($S[$O- 3 + 3 - 1]));
+				$thisS.push($S[$O- 3 + 1 - 1]);
 
 				break;
 		}
@@ -967,8 +967,24 @@ class parser {
 		"51"=> array(2, 30)
 	);
 	
+	function popStack($n, $stack, $vstack) {
+		array_slice($stack, 0, 2 * $n);
+		array_slice($vstack, 0, $n);
+		//$stack.length = $stack.length - 2 * $n;
+		//$vstack.length = $vstack.length - $n;
+	}
+	
+	function lex() {
+		$token = $this->lexer->lex() || 1; // $end = 1
+		// if token isn't its numeric value, convert
+		if (is_numeric($token)) {
+			$token = $this->symbols_[$token] || $token;
+		}
+		return $token;
+	}
+	
 	function parseError($str, $hash) {
-		throw new Error($str);
+		throw new Exception($str);
 	}
 	
 	function parse($input, $fn, $cell) {
@@ -993,22 +1009,6 @@ class parser {
 
 		//$parseError = $this->lexer->parseError;
 
-		function popStack($n, $stack, $vstack) {
-			array_slice($stack, 0, 2 * $n);
-			array_slice($vstack, 0, $n);
-			//$stack.length = $stack.length - 2 * $n;
-			//$vstack.length = $vstack.length - $n;
-		}
-
-		function lex() {
-			$token = $this->lexer->lex() || 1; // $end = 1
-			// if token isn't its numeric value, convert
-			if (is_numeric($token)) {
-				$token = $this->symbols_[$token] || $token;
-			}
-			return $token;
-		}
-
 		//$symbol, $preErrorSymbol, $state, $action, $a, $r, $yyval = array();
 		//$p, $len, $newState, $expected, $recovered = false;
 		
@@ -1020,10 +1020,10 @@ class parser {
 			$state = $stack[count($stack) - 1];
 	
 			// use default actions if available
-			if ($this->defaultActions[$state]) {
+			if (array_key_exists($state, $this->defaultActions)) {
 				$action = $this->defaultActions[$state];
 			} else {
-				if ($symbol == null) $symbol = lex();
+				if (!isset($symbol)) $symbol = $this->lex();
 				// read action for current state and first input
 				$action = $table[$state] && $table[$state][$symbol];
 			}
@@ -1055,14 +1055,14 @@ class parser {
 				// just recovered from another error
 				if ($recovering == 3) {
 					if ($symbol == $EOF) {
-						throw new Error($errStr || 'Parsing halted.');
+						throw new Exception($errStr || 'Parsing halted.');
 					}
 		
 					// discard current lookahead and grab another
 					$yyleng = $this->lexer->yyleng;
 					$yytext = $this->lexer->yytext;
 					$yylineno = $this->lexer->yylineno;
-					$symbol = lex();
+					$symbol = $this->lex();
 				}
 	
 				// try to recover from error
@@ -1072,7 +1072,7 @@ class parser {
 						break;
 					}*/
 					if ($state == 0) {
-						throw new Error($errStr || 'Parsing halted.');
+						throw new Exception($errStr || 'Parsing halted.');
 					}
 					popStack(1, $stack, $vstack);
 					$state = $stack[count($stack) - 1];
@@ -1087,7 +1087,7 @@ class parser {
 	
 			// this shouldn't happen, unless resolve defaults are off
 			if (is_array($action[0]) && count($action) > 1) {
-				throw new Error('Parse Error: multiple actions possible at state: ' . state . ', token: ' . symbol);
+				throw new Exception('Parse Error: multiple actions possible at state: ' . state . ', token: ' . symbol);
 			}
 	
 			$a = $action;
@@ -1120,7 +1120,7 @@ class parser {
 		
 					// perform semantic action
 					$yyval->S = $vstack[count($vstack) - $len]; // default to $S = $1
-					$r = $this->performAction.call($yyval, $yytext, $yyleng, $yylineno, $this->yy, $a[1], $vstack, $fn, $cell);
+					$r = $this->performAction($yyval->S, $yytext, $yyleng, $yylineno, $this->yy, $a[1], $vstack, $fn, $cell);
 		
 					if (!isset($r)) {
 						return $r;
@@ -1159,10 +1159,10 @@ class lexer {
 	}
 	
 	function parseError($str, $hash) {
-		if ($this->yy->parseError) {
+		if ($this->yy && $this->yy->parseError) {
 			$this->yy->parseError($str, $hash);
 		} else {
-			throw new Error($str);
+			throw new Exception($str);
 		}
 	}
 	
@@ -1197,8 +1197,8 @@ class lexer {
 	}
 	
 	function pastInput() {
-		$past = substr($this->matched, 0, count($this->matched) - count($this.match));
-		return (strlen($past) > 20 ? '...' : '') . preg_replace("\n", "", substr($past, -20));
+		$past = substr($this->matched, 0, count($this->matched) - count($this->match));
+		return (strlen($past) > 20 ? '...' : '') . preg_replace("/\n/", "", substr($past, -20));
 	}
 	
 	function upcomingInput() {
@@ -1206,13 +1206,13 @@ class lexer {
 		if (strlen($next) < 20) {
 			$next .= substr($this->_input, 0, 20 - strlen($next));
 		}
-		return preg_replace("\n", "", substr($next, 0, 20) . (strlen($next) > 20 ? '...' : ''));
+		return preg_replace("/\n/", "", substr($next, 0, 20) . (strlen($next) > 20 ? '...' : ''));
 	}
 	
 	function showPosition() {
 		$pre = $this->pastInput();
 		$c = implode(array(strlen($pre) + 1), "-");
-		return $pre . $this->upcomingInput() . "\n" . c . "^";
+		return $pre . $this->upcomingInput() . "\n" . $c . "^";
 	}
 	
 	function next() {
@@ -1229,16 +1229,16 @@ class lexer {
 		for ($i = 0; $i < count($this->rules); $i++) {
 			$match = preg_match($this->rules[$i], $this->_input);
 			if ($match) {
-				$lines = preg_match("\n", $match[0]);
+				$lines = preg_match("/\n/", $match[0]);
 				if ($lines) $this->yylineno += strlen($lines);
 				$this->yytext .= $match[0];
 				$this->match .= $match[0];
 				$this->matches = $match;
 				$this->yyleng = strlen($this->yytext);
 				$this->_more = false;
-				$this->_input = array_slice($this->_input, count($match[0]));
+				$this->_input = array_slice($this->_input, $match);
 				$this->matched .= $match[0];
-				$token = $this->performAction.call($this, $this->yy, $this, $i);
+				$token = $this->performAction($this->S, $this->yy, $this, $i);
 				if ($token) return $token;
 				else
 				return;
@@ -1248,9 +1248,9 @@ class lexer {
 			return $this->EOF;
 		} else {
 			$this->parseError('Lexical error on line ' . ($this->yylineno + 1) . '. Unrecognized text.\n' . $this->showPosition(), array(
-				text=> "",
-				token=> null,
-				line=> $this->yylineno
+				"text"=> "",
+				"token"=> null,
+				"line"=> $this->yylineno
 			));
 		}
 	}
@@ -1388,44 +1388,45 @@ class lexer {
 	}
 	
 	var $rules = array(
-		'^\s+/,/^"(\\["]|[^"])*"',
-		"^'(\\[']|[^'])*'",
-		'^\$[A-Za-z]+\$[0-9]+[:]\$[A-Za-z]+\$[0-9]+',
-		'^\$[A-Za-z]+\$[0-9]+',
-		"^SHEET[0-9]+[:!][A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+",
-		"^SHEET[0-9]+[:!][A-Za-z]+[0-9]+",
-		"^[A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+",
-		"^[A-Za-z]+[0-9]+",
-		"^[A-Za-z]+",
-		"^[0-9]([0-9]?)[-/][0-9]([0-9]?)[-/][0-9]([0-9]?)([0-9]?)([0-9]?)",
-		"^[0-9]+[%]",
-		"^[0-9]+(\.[0-9]+)?",
-		'^\$',
-		"^ ",
-		"^\.",
-		"^:",
-		"^;",
-		"^,",
-		"^\*",
-		"^\/",
-		"^-",
-		"^\+",
-		"^\^",
-		"^\(",
-		"^\)",
-		"^>",
-		"^<",
-		"^>=",
-		"^<=",
-		"^<>",
-		"^NOT\b",
-		"^PI\b",
-		"^E\b",
-		'^"',
-		"^'",
-		"^!",
-		'^$',
-		"^="
+		'/^\s+/',
+		'/^"(\\["]|[^"])*"/',
+		"/^'(\\[']|[^'])*'/",
+		'/^\$[A-Za-z]+\$[0-9]+[:]\$[A-Za-z]+\$[0-9]+/',
+		'/^\$[A-Za-z]+\$[0-9]+/',
+		"/^SHEET[0-9]+[:!][A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+/",
+		"/^SHEET[0-9]+[:!][A-Za-z]+[0-9]+/",
+		"/^[A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+/",
+		"/^[A-Za-z]+[0-9]+/",
+		"/^[A-Za-z]+/",
+		"/^[0-9]([0-9]?)[-][0-9]([0-9]?)[-][0-9]([0-9]?)([0-9]?)([0-9]?)/",
+		"/^[0-9]+[%]/",
+		"/^[0-9]+(\.[0-9]+)?/",
+		'/^\$/',
+		"/^ /",
+		"/^\./",
+		"/^:/",
+		"/^;/",
+		"/^,/",
+		"/^\*/",
+		"/^\//",
+		"/^-/",
+		"/^\+/",
+		"/^\^/",
+		"/^\(/",
+		"/^\)/",
+		"/^>/",
+		"/^</",
+		"/^>=/",
+		"/^<=/",
+		"/^<>/",
+		"/^NOT\b/",
+		"/^PI\b/",
+		"/^E\b/",
+		'/^"/',
+		"/^'/",
+		"/^!/",
+		'/^$/',
+		"/^=/"
 	);
 }
 
@@ -1436,7 +1437,7 @@ if (isset($require)) {
 			return $parser->parse.apply($parser, $arguments);
 		},
 		"main"=> function ($args) {
-			if (!$args[1]) throw new Error('Usage: ' + $args[0] + ' FILE');
+			if (!$args[1]) throw new Exception('Usage: ' + $args[0] + ' FILE');
 			if (isset($process)) {
 				$source = require('fs').readFileSync(require('path').join($process.cwd(), $args[1]), "utf8");
 			} else {
