@@ -1,7 +1,8 @@
 <?php
 /* Jison generated parser */
-$parser = function() {
-	$parser = array(
+class parser {
+	function parser() {
+	$Parser = array(
 		"trace"=> function() {},
 		"yy"=> array(),
 		"symbols_"=> array(
@@ -109,7 +110,7 @@ $parser = function() {
 			$O = strlen($arguments[5]);
 			
 			switch ($arguments[4]) {
-				/*case 1:
+				case 1:
 					return $S[$O- 2 + 1 - 1];
 					break;
 				case 2:
@@ -152,11 +153,11 @@ $parser = function() {
 					$this->S = $S[$O- 3 + 2 - 1];
 					break;
 				case 15:
-					$this->S = ($S[$O- 1 + 1 - 1].replace(/%/, '') * 1) / 100;
+					$this->S = (str_replace("%", "", $S[$O- 1 + 1 - 1]) * 1) / 100;
 					break;
 				case 16:
 					/*this.$ = new Date($S[$0-1+1-1]).toString();*/
-					/*break;
+					break;
 				case 17:
 					$this->S = Number(yytext);
 					break;
@@ -164,42 +165,42 @@ $parser = function() {
 					$this->S = Math.E;
 					break;
 				case 19:
-					$this->S = $arguments[6].fixedCellValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
+					//$this->S = $arguments[6].fixedCellValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
 					break;
 				case 20:
-					$this->S = $arguments[6].fixedCellRangeValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
+					//$this->S = $arguments[6].fixedCellRangeValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
 					break;
 				case 21:
-					$this->S = $arguments[6].cellValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
+					//$this->S = $arguments[6].cellValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
 					break;
 				case 22:
-					$this->S = $arguments[6].cellRangeValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
+					//$this->S = $arguments[6].cellRangeValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
 					break;
 				case 23:
-					$this->S = $arguments[6].remoteCellValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
+					//$this->S = $arguments[6].remoteCellValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
 					break;
 				case 24:
-					$this->S = $arguments[6].remoteCellRangeValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
+					//$this->S = $arguments[6].remoteCellRangeValue.apply(arguments[7], [$S[$O- 1 + 1 - 1]]);
 					break;
 				case 25:
-					$this->S = $S[$O- 1 + 1 - 1].substring(1, $S[$O- 1 + 1 - 1].length - 1);
+					//$this->S = $S[$O- 1 + 1 - 1].substring(1, $S[$O- 1 + 1 - 1].length - 1);
 					break;
 				case 26:
-					$this->S = $arguments[6].callFunction($S[$O- 3 + 1 - 1], '', arguments[7]);
+					//$this->S = $arguments[6].callFunction($S[$O- 3 + 1 - 1], '', arguments[7]);
 					break;
 				case 27:
-					$this->S = $arguments[6].callFunction($S[$O- 4 + 1 - 1], $S[$O- 4 + 3 - 1], arguments[7]);
+					//$this->S = $arguments[6].callFunction($S[$O- 4 + 1 - 1], $S[$O- 4 + 3 - 1], arguments[7]);
 					break;
 				case 29:
-					$this->S = ($.isArray($S[$O- 3 + 3 - 1]) ? $S[$O- 3 + 3 - 1] : [$S[$O- 3 + 3 - 1]]);
+					$this->S = (is_array($S[$O- 3 + 3 - 1]) ? $S[$O- 3 + 3 - 1] : array($S[$O- 3 + 3 - 1]));
 					$this->S.push($S[$O- 3 + 1 - 1]);
 	
 					break;
 				case 30:
-					$this->S = ($.isArray($S[$O- 3 + 3 - 1]) ? $S[$O- 3 + 3 - 1] : [$S[$O- 3 + 3 - 1]]);
+					$this->S = (is_array($S[$O- 3 + 3 - 1]) ? $S[$O- 3 + 3 - 1] : array($S[$O- 3 + 3 - 1]));
 					$this->S.push($S[$O- 3 + 1 - 1]);
 	
-					break;*/
+					break;
 			}
 		},
 		"table"=> array(array(
@@ -953,194 +954,198 @@ $parser = function() {
 			"17"=> array(2, 1),
 			"50"=> array(2, 29),
 			"51"=> array(2, 30)
-		),
-		"parseError"=> function($str, $hash) {
-			throw new Error($str);
-		},
-		"parse"=> function($input, $fn, $cell) {
-			$self = $this;
-			$stack = array(0);
-			$vstack = array(null);
-			// semantic value stack
-			$table = $this->table;
-			$yytext = '';
-			$yylineno = 0;
-			$yyleng = 0;
-			$shifts = 0;
-			$reductions = 0;
-			$recovering = 0;
-			$TERROR = 2;
-			$EOF = 1;
+		)
+	);
+	}
 	
-			$this->lexer->setInput($input);
-			$this->lexer->yy = $this->yy;
-			$this->yy->lexer = $this->lexer;
+	function parseError($str, $hash) {
+		throw new Error($str);
+	}
+	function parse($input, $fn, $cell) {
+		//$self = $this;
+		$stack = array(0);
+		$vstack = array(null);
+		// semantic value stack
+		print_r($this);
+		die;
+		//$table = self['table'];
+		$yytext = '';
+		$yylineno = 0;
+		$yyleng = 0;
+		$shifts = 0;
+		$reductions = 0;
+		$recovering = 0;
+		$TERROR = 2;
+		$EOF = 1;
+
+		$this->lexer->setInput($input);
+		$this->lexer->yy = $this->yy;
+		$this->yy->lexer = $this->lexer;
+
+		$parseError = $this->yy->parseError = (function_exists($this->yy->parseError) ? $this->yy->parseError : $this->parseError);
+
+		function popStack($n) {
+			global $stack, $vstack;
+			array_slice($stack, 0, 2 * $n);
+			array_slice($vstack, 0, $n);
+			//$stack.length = $stack.length - 2 * $n;
+			//$vstack.length = $vstack.length - $n;
+		}
+
+		function lex() {
+			$token = $self->lexer->lex() || 1; // $end = 1
+			// if token isn't its numeric value, convert
+			if (is_numeric($token)) {
+				$token = $self->symbols_[$token] || $token;
+			}
+			return $token;
+		};
+
+		//$symbol, $preErrorSymbol, $state, $action, $a, $r, $yyval = array();
+		//$p, $len, $newState, $expected, $recovered = false;
+		
+		$yyval = array();
+		$recovered = false;
+		
+		while (true) {
+			// retreive state number from top of stack
+			$state = $stack[count($stack) - 1];
 	
-			$parseError = $this->yy->parseError = (function_exists($this->yy->parseError) ? $this->yy->parseError : $this->parseError);
-	
-			function popStack($n) {
-				global $stack, $vstack;
-				array_slice($stack, 0, 2 * $n);
-				array_slice($vstack, 0, $n);
-				//$stack.length = $stack.length - 2 * $n;
-				//$vstack.length = $vstack.length - $n;
+			// use default actions if available
+			if ($this->defaultActions[$state]) {
+				$action = $this->defaultActions[$state];
+			} else {
+				if ($symbol == null) $symbol = lex();
+				// read action for current state and first input
+				$action = $table[$state] && $table[$state][$symbol];
 			}
 	
-			function lex() {
-				$token = $self->lexer->lex() || 1; // $end = 1
-				// if token isn't its numeric value, convert
-				if (is_numeric($token)) {
-					$token = $self->symbols_[$token] || $token;
-				}
-				return $token;
-			};
+			// handle parse error
+			if (!isset($action) || !count($action) || !$action[0]) {
 	
-			//$symbol, $preErrorSymbol, $state, $action, $a, $r, $yyval = array();
-			//$p, $len, $newState, $expected, $recovered = false;
-			
-			$yyval = array();
-			$recovered = false;
-			
-			while (true) {
-				// retreive state number from top of stack
-				$state = $stack[count($stack) - 1];
-		
-				// use default actions if available
-				if ($this->defaultActions[$state]) {
-					$action = $this->defaultActions[$state];
-				} else {
-					if ($symbol == null) $symbol = lex();
-					// read action for current state and first input
-					$action = $table[$state] && $table[$state][$symbol];
+				if (!$recovering) {
+					// Report error
+					$expected = array();
+					foreach($table[$state] as $p) if ($this->terminals_[$p] && $p > 2) {
+						array_push($expected, "'" + $this->terminals_[$p] + "'");
+					}
+					$errStr = '';
+					if ($this->lexer->showPosition) {
+						$errStr = 'Parse error on line ' . ($yylineno + 1) . ":\n" . $this->lexer->showPosition() . '\nExpecting ' . expected.join(', ');
+					} else {
+						$errStr = 'Parse error on line ' . ($yylineno + 1) . ": Unexpected " . ($symbol == 1 /*EOF*/ ? "end of input" : ("'" . ($this->terminals_[$symbol] || $symbol) . "'"));
+					}
+					
+					$parseError->call($this, $errStr, array(
+						text=> $this->lexer->match,
+						token=> $this->terminals_[$symbol] || $symbol,
+						line=> $this->lexer->yylineno,
+						expected=> $expected
+					));
 				}
-		
-				// handle parse error
-				if (!isset($action) || !count($action) || !$action[0]) {
-		
-					if (!$recovering) {
-						// Report error
-						$expected = array();
-						foreach($table[$state] as $p) if ($this->terminals_[$p] && $p > 2) {
-							array_push($expected, "'" + $this->terminals_[$p] + "'");
-						}
-						$errStr = '';
-						if ($this->lexer->showPosition) {
-							$errStr = 'Parse error on line ' . ($yylineno + 1) . ":\n" . $this->lexer->showPosition() . '\nExpecting ' . expected.join(', ');
-						} else {
-							$errStr = 'Parse error on line ' . ($yylineno + 1) . ": Unexpected " . ($symbol == 1 /*EOF*/ ? "end of input" : ("'" . ($this->terminals_[$symbol] || $symbol) . "'"));
-						}
-						
-						$parseError->call($this, $errStr, array(
-							text=> $this->lexer->match,
-							token=> $this->terminals_[$symbol] || $symbol,
-							line=> $this->lexer->yylineno,
-							expected=> $expected
-						));
+	
+				// just recovered from another error
+				if ($recovering == 3) {
+					if ($symbol == $EOF) {
+						throw new Error($errStr || 'Parsing halted.');
 					}
 		
-					// just recovered from another error
-					if ($recovering == 3) {
-						if ($symbol == $EOF) {
-							throw new Error($errStr || 'Parsing halted.');
-						}
-			
-						// discard current lookahead and grab another
+					// discard current lookahead and grab another
+					$yyleng = $this->lexer->yyleng;
+					$yytext = $this->lexer->yytext;
+					$yylineno = $this->lexer->yylineno;
+					$symbol = lex();
+				}
+	
+				// try to recover from error
+				while (1) {
+					// check for error recovery rule in this state
+					/*if ((string)$TERROR in $table[$state]) {
+						break;
+					}*/
+					if ($state == 0) {
+						throw new Error($errStr || 'Parsing halted.');
+					}
+					popStack(1);
+					$state = $stack[count($stack) - 1];
+				}
+	
+				$preErrorSymbol = $symbol; // save the lookahead token
+				$symbol = $TERROR; // insert generic error symbol as new lookahead
+				$state = $stack[count($stack) - 1];
+				$action = $table[$state] && $table[$state][$TERROR];
+				$recovering = 3; // allow 3 real symbols to be shifted before reporting a new error
+			}
+	
+			// this shouldn't happen, unless resolve defaults are off
+			if (is_array($action[0]) && count($action) > 1) {
+				throw new Error('Parse Error: multiple actions possible at state: ' . state . ', token: ' . symbol);
+			}
+	
+			$a = $action;
+	
+			switch ($a[0]) {
+				case 1:
+					// shift
+					$shifts++;
+		
+					array_push($stack, $symbol);
+					array_push($vstack, $this->lexer->yytext); // semantic values or junk only, no terminals
+					array_push($stack, $a[1]); // push state
+					$symbol = null;
+					if (!$preErrorSymbol) { // normal execution/no error
 						$yyleng = $this->lexer->yyleng;
 						$yytext = $this->lexer->yytext;
 						$yylineno = $this->lexer->yylineno;
-						$symbol = lex();
+						if ($recovering > 0) $recovering--;
+					} else { // error just occurred, resume old lookahead f/ before error
+						$symbol = $preErrorSymbol;
+						$preErrorSymbol = null;
+					}
+					break;
+		
+				case 2:
+					// reduce
+					$reductions++;
+		
+					$len = $this->productions_[$a[1]][1];
+		
+					// perform semantic action
+					$yyval->S = $vstack[count($vstack) - $len]; // default to $S = $1
+					$r = $this->performAction.call($yyval, $yytext, $yyleng, $yylineno, $this->yy, $a[1], $vstack, $fn, $cell);
+		
+					if (!isset($r)) {
+						return $r;
 					}
 		
-					// try to recover from error
-					while (1) {
-						// check for error recovery rule in this state
-						/*if ((string)$TERROR in $table[$state]) {
-							break;
-						}*/
-						if ($state == 0) {
-							throw new Error($errStr || 'Parsing halted.');
-						}
-						popStack(1);
-						$state = $stack[count($stack) - 1];
+					// pop off stack
+					if ($len) {
+						$stack = $stack->slice(0, -1 * $len * 2);
+						$vstack = $vstack->slice(0, -1 * $len);
 					}
 		
-					$preErrorSymbol = $symbol; // save the lookahead token
-					$symbol = $TERROR; // insert generic error symbol as new lookahead
-					$state = $stack[count($stack) - 1];
-					$action = $table[$state] && $table[$state][$TERROR];
-					$recovering = 3; // allow 3 real symbols to be shifted before reporting a new error
-				}
+					array_push($stack, $this->productions_[$a[1]][0]); // push nonterminal (reduce)
+					array_push($vstack, $yyval.S);
+					// goto new state = table[STATE][NONTERMINAL]
+					$newState = $table[$stack[count($stack) - 2]][$stack[count($stack) - 1]];
+					array_push($stack, $newState);
+					break;
 		
-				// this shouldn't happen, unless resolve defaults are off
-				if (is_array($action[0]) && count($action) > 1) {
-					throw new Error('Parse Error: multiple actions possible at state: ' . state . ', token: ' . symbol);
-				}
-		
-				$a = $action;
-		
-				switch ($a[0]) {
-					case 1:
-						// shift
-						$shifts++;
-			
-						array_push($stack, $symbol);
-						array_push($vstack, $this->lexer->yytext); // semantic values or junk only, no terminals
-						array_push($stack, $a[1]); // push state
-						$symbol = null;
-						if (!$preErrorSymbol) { // normal execution/no error
-							$yyleng = $this->lexer->yyleng;
-							$yytext = $this->lexer->yytext;
-							$yylineno = $this->lexer->yylineno;
-							if ($recovering > 0) $recovering--;
-						} else { // error just occurred, resume old lookahead f/ before error
-							$symbol = $preErrorSymbol;
-							$preErrorSymbol = null;
-						}
-						break;
-			
-					case 2:
-						// reduce
-						$reductions++;
-			
-						$len = $this->productions_[$a[1]][1];
-			
-						// perform semantic action
-						$yyval->S = $vstack[count($vstack) - $len]; // default to $S = $1
-						$r = $this->performAction.call($yyval, $yytext, $yyleng, $yylineno, $this->yy, $a[1], $vstack, $fn, $cell);
-			
-						if (!isset($r)) {
-							return $r;
-						}
-			
-						// pop off stack
-						if ($len) {
-							$stack = $stack->slice(0, -1 * $len * 2);
-							$vstack = $vstack->slice(0, -1 * $len);
-						}
-			
-						array_push($stack, $this->productions_[$a[1]][0]); // push nonterminal (reduce)
-						array_push($vstack, $yyval.S);
-						// goto new state = table[STATE][NONTERMINAL]
-						$newState = $table[$stack[count($stack) - 2]][$stack[count($stack) - 1]];
-						array_push($stack, $newState);
-						break;
-			
-					case 3:
-						// accept
-						$this->reductionCount = $reductions;
-						$this->shiftCount = $shifts;
-						return true;
-				}
-	
+				case 3:
+					// accept
+					$this->reductionCount = $reductions;
+					$this->shiftCount = $shifts;
+					return true;
 			}
-	
-			return true;
+
 		}
-	);
+
+		return true;
+	}
 	
 	/* Jison generated lexer */
 	$lexer = function() {
-		$lexer = array(
+		$Lexer = array(
 			"EOF"=> "",
 			"parseError"=> function ($str, $hash) {
 				if ($this->yy->parseError) {
@@ -1362,12 +1367,52 @@ $parser = function() {
 			}
 		};
 		
-		//lexer->rules = array(); //[/^\s+/, /^"(\\["]|[^"])*"/, /^'(\\[']|[^'])*'/, /^\$[A-Za-z]+\$[0-9]+[:]\$[A-Za-z]+\$[0-9]+/, /^\$[A-Za-z]+\$[0-9]+/, /^SHEET[0-9]+[:!][A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+/, /^SHEET[0-9]+[:!][A-Za-z]+[0-9]+/, /^[A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+/, /^[A-Za-z]+[0-9]+/, /^[A-Za-z]+/, /^[0-9]([0-9]?)[-/][0-9]([0-9]?)[-/][0-9]([0-9]?)([0-9]?)([0-9]?)/, /^[0-9]+[%]/, /^[0-9]+(\.[0-9]+)?/, /^\$/, /^ /, /^\./, /^:/, /^;/, /^,/, /^\*/, /^\//, /^-/, /^\+/, /^\^/, /^\(/, /^\)/, /^>/, /^</, /^>=/, /^<=/, /^<>/, /^NOT\b/, /^PI\b/, /^E\b/, /^"/, /^'/, /^!/, /^$/, /^=/];
-		return $lexer;
-	}
+		$Lexer->rules = array(
+			'^\s+/,/^"(\\["]|[^"])*"',
+			"^'(\\[']|[^'])*'",
+			'^\$[A-Za-z]+\$[0-9]+[:]\$[A-Za-z]+\$[0-9]+',
+			'^\$[A-Za-z]+\$[0-9]+',
+			"^SHEET[0-9]+[:!][A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+",
+			"^SHEET[0-9]+[:!][A-Za-z]+[0-9]+",
+			"^[A-Za-z]+[0-9]+[:][A-Za-z]+[0-9]+",
+			"^[A-Za-z]+[0-9]+",
+			"^[A-Za-z]+",
+			"^[0-9]([0-9]?)[-/][0-9]([0-9]?)[-/][0-9]([0-9]?)([0-9]?)([0-9]?)",
+			"^[0-9]+[%]",
+			"^[0-9]+(\.[0-9]+)?",
+			'^\$',
+			"^ ",
+			"^\.",
+			"^:",
+			"^;",
+			"^,",
+			"^\*",
+			"^\/",
+			"^-",
+			"^\+",
+			"^\^",
+			"^\(",
+			"^\)",
+			"^>",
+			"^<",
+			"^>=",
+			"^<=",
+			"^<>",
+			"^NOT\b",
+			"^PI\b",
+			"^E\b",
+			'^"',
+			"^'",
+			"^!",
+			'^$',
+			"^="
+		);
+		return $Lexer;
+	};
 	
 	//$parse->lexer = $lexer;
-	return $parser;
+	return $Parser;
+	}
 }
 
 if (isset($require)) {
@@ -1395,5 +1440,7 @@ if (isset($require)) {
 	}
 }
 
+$p = new parser;
+$d = $p->parser();
 
-parser();
+print_r($d['parse']("100+100", "", ""));
