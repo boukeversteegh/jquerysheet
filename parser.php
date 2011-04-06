@@ -1004,8 +1004,8 @@ class parser {
 		
 		
 		$this->lexer->setInput($input);
-		$this->lexer->yy = $this->yy;
-		$this->yy->lexer = $this->lexer;
+		//$this->lexer->yy = $this->yy;
+		//$this->yy->lexer = $this->lexer;
 
 		//$parseError = $this->lexer->parseError;
 
@@ -1017,15 +1017,17 @@ class parser {
 		
 		while (true) {
 			// retreive state number from top of stack
+			print_r($stack);
 			$state = $stack[count($stack) - 1];
-	
+			
 			// use default actions if available
 			if (array_key_exists($state, $this->defaultActions)) {
 				$action = $this->defaultActions[$state];
 			} else {
 				if (!isset($symbol)) $symbol = $this->lex();
 				// read action for current state and first input
-				$action = $table[$state] && $table[$state][$symbol];
+				
+				$action =  (isset($table[$state]) && isset($table[$state][$symbol]));
 			}
 	
 			// handle parse error
@@ -1034,21 +1036,30 @@ class parser {
 				if (!$recovering) {
 					// Report error
 					$expected = array();
-					foreach($table[$state] as $p) if ($this->terminals_[$p] && $p > 2) {
-						array_push($expected, "'" + $this->terminals_[$p] + "'");
-					}
-					$errStr = '';
-					if ($this->lexer->showPosition) {
-						$errStr = 'Parse error on line ' . ($yylineno + 1) . ":\n" . $this->lexer->showPosition() . '\nExpecting ' . expected.join(', ');
-					} else {
-						$errStr = 'Parse error on line ' . ($yylineno + 1) . ": Unexpected " . ($symbol == 1 /*EOF*/ ? "end of input" : ("'" . ($this->terminals_[$symbol] || $symbol) . "'"));
+					foreach($table[$state] as $p) {
+						//print_r( $p );
+						//print_r($this->terminals_);
+						//echo "PPPPP";
+						if ($p) {
+							//echo $p . '<br />';
+							if ($p > 2) {
+								array_push($expected, implode($p));
+							}
+						}
 					}
 					
-					$parseError->call($this, $errStr, array(
-						text=> $this->lexer->match,
-						token=> $this->terminals_[$symbol] || $symbol,
-						line=> $this->lexer->yylineno,
-						expected=> $expected
+					$errStr = '';
+					//if (function_exists('$this->lexer->showPosition')) {
+						$errStr = 'Parse error on line ' . ($yylineno + 1) . ":\n" . $this->lexer->showPosition() . '\nExpecting ' . implode(', ', $expected);
+					//} else {
+					//	$errStr = 'Parse error on line ' . ($yylineno + 1) . ": Unexpected " . ($symbol == 1 /*EOF*/ ? "end of input" : ("'" . ($this->terminals_[$symbol] || $symbol) . "'"));
+					//}
+			
+					$this->lexer->parseError($errStr, array(
+						"text"=> $this->lexer->match,
+						"token"=> $symbol,
+						"line"=> $this->lexer->yylineno,
+						"expected"=> $expected
 					));
 				}
 	
@@ -1068,6 +1079,9 @@ class parser {
 				// try to recover from error
 				while (1) {
 					// check for error recovery rule in this state
+					foreach($table[$state] as $TERROR) {
+						break;
+					}
 					/*if ((string)$TERROR in $table[$state]) {
 						break;
 					}*/
@@ -1087,7 +1101,7 @@ class parser {
 	
 			// this shouldn't happen, unless resolve defaults are off
 			if (is_array($action[0]) && count($action) > 1) {
-				throw new Exception('Parse Error: multiple actions possible at state: ' . state . ', token: ' . symbol);
+				throw new Exception('Parse Error: multiple actions possible at state: ' . $state . ', token: ' . $symbol);
 			}
 	
 			$a = $action;
@@ -1154,15 +1168,24 @@ class parser {
 
 /* Jison generated lexer */
 class lexer {
-	function lexer() {
-		$this->EOF = "";
-	}
+	var $EOF = "";
+	var $S = "";
+	var $yy = "";
+	var $yylineno = "";
+	var $yyleng = "";
+	var $yytext = "";
+	var $matched = "";
+	var $match = "";
+	
+	function lexer() {}
 	
 	function parseError($str, $hash) {
-		if ($this->yy && $this->yy->parseError) {
-			$this->yy->parseError($str, $hash);
+		if ($this->yy && $this->parseError) {
+			$this->parseError($str, $hash);
 		} else {
-			throw new Exception($str);
+			print_r($str);
+			die;
+			//throw new Exception($str);
 		}
 	}
 	
@@ -1227,18 +1250,18 @@ class lexer {
 			$this->match = '';
 		}
 		for ($i = 0; $i < count($this->rules); $i++) {
-			$match = preg_match($this->rules[$i], $this->_input);
-			if ($match) {
-				$lines = preg_match("/\n/", $match[0]);
-				if ($lines) $this->yylineno += strlen($lines);
-				$this->yytext .= $match[0];
-				$this->match .= $match[0];
-				$this->matches = $match;
+			preg_match_all($this->rules[$i], $this->_input, $match, PREG_PATTERN_ORDER);
+			if (isset($match[0][0])) {
+				preg_match_all("/\n/", $match[0][0], $lines, PREG_PATTERN_ORDER);
+				if (count($lines) > 0) $this->yylineno += count($lines);
+				$this->yytext .= $match[0][0];
+				$this->match .= $match[0][0];
+				$this->matches = $match[0];
 				$this->yyleng = strlen($this->yytext);
 				$this->_more = false;
-				$this->_input = array_slice($this->_input, $match);
-				$this->matched .= $match[0];
-				$token = $this->performAction($this->S, $this->yy, $this, $i);
+				$this->_input = substr($this->_input, strlen($match[0][0]), strlen($this->_input));
+				$this->matched .= $match[0][0];
+				$token = $this->performAction($this->S, $this->yy, $this->yyleng, $i);
 				if ($token) return $token;
 				else
 				return;
@@ -1266,7 +1289,7 @@ class lexer {
 	
 	function performAction($yy, $yy_) {
 
-		switch ($arguments[2]) {
+		switch (func_get_args(2)) {
 			case 0:
 			/* skip whitespace */
 			break;
@@ -1457,4 +1480,4 @@ if (isset($require)) {
 
 $parser = new parser;
 
-print_r($parser->parse("100+100","",""));
+print_r($parser->parse("100+98","",""));
