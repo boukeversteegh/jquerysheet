@@ -111,14 +111,13 @@ class parser {
 		array(31, 3)
 	);
 	
-	function performAction($thisS, $yytext, $yyleng, $yylineno, $yy, $S, $S2) {
-		$result = (object)array("r"=> false, "S"=> false);
-		
-		$O = count($S2);
-		
-		switch ($S) {
+	function performAction($thisSS, $yytext, $yyleng, $yylineno, $yy, $SS, $S) {
+		$O = count($S);
+		$r = 0;
+		$thisS = 0;
+		switch ($SS) {
 			case 1:
-				$result->r = $S[$O- 2 + 1 - 1];
+				$r = $S[$O- 2 + 1 - 1];
 				break;
 			case 2:
 				$thisS = ($S[$O- 3 + 1 - 1] * 1) <= ($S[$O- 3 + 3 - 1] * 1);
@@ -139,6 +138,9 @@ class parser {
 				$thisS = ($S[$O- 3 + 1 - 1] * 1) < ($S[$O- 3 + 3 - 1] * 1);
 				break;
 			case 8:
+				$F = $S[$O- 3 + 1 - 1];
+				$FF = $S[$O- 3 + 3 - 1];
+				$FFF = $F + $FF;
 				$thisS = $S[$O- 3 + 1 - 1] + $S[$O- 3 + 3 - 1];
 				//$thisS = jSE.cFN.sanitize($S[$O- 3 + 1 - 1]) + jSE.cFN.sanitize($S[$O- 3 + 3 - 1]);
 				break;
@@ -211,9 +213,7 @@ class parser {
 				break;
 		}
 		
-		$result->S = $thisS;
-		
-		return $result;
+		return (object)array("r" => $r, "S" => $thisS);
 	}
 		
 	var $table = array(
@@ -981,6 +981,7 @@ class parser {
 	
 	function lex() {
 		$token = $this->lexer->lex(); // $end = 1
+		$token = (empty($token) ? 1 : $token);
 		// if token isn't its numeric value, convert
 		if (!is_numeric($token)) {
 			$token = (array_key_exists($token, $this->symbols_) ? $this->symbols_[$token] : $token);
@@ -1025,13 +1026,11 @@ class parser {
 			$state = $stack[count($stack) - 1];
 			// use default actions if available
 			if (array_key_exists($state, $this->defaultActions)) {
-				$action = $this->defaultActions[$state];
-				
+				$action = $this->defaultActions[$state];		
 			} else {
 				if (empty($symbol))
 					$symbol = $this->lex();
 				
-				$action = "";
 				// read action for current state and first input
 				if (array_key_exists($state, $table)) {
 					if (array_key_exists($symbol, $table[$state])) {
@@ -1040,8 +1039,8 @@ class parser {
 				}
 			}
 			
-			if (empty($action)) {
-				if (!empty($recovering)) {
+			if (empty($action) == true) {
+				if (empty($recovering) == false) {
 					// Report error
 					$expected = array();
 					foreach($table[$state] as $p) {
@@ -1074,11 +1073,10 @@ class parser {
 				}
 	
 				// try to recover from error
-				while (1) {
+				while (true) {
 					// check for error recovery rule in this state
 					if (array_key_exists($TERROR, $table[$state])) {
-						echo "break";
-						break;
+						break 2;
 					}
 					if ($state == 0) {
 						throw new Exception($errStr || 'Parsing halted.');
@@ -1087,6 +1085,8 @@ class parser {
 					
 					array_slice($stack, 0, 2 * 1);
 					array_slice($vstack, 0, 1);
+					
+					$lenn = count($stack) - 1;
 					
 					$state = $stack[count($stack) - 1];
 				}
@@ -1115,15 +1115,15 @@ class parser {
 					array_push($stack, $symbol);
 					array_push($vstack, $this->lexer->yytext); // semantic values or junk only, no terminals
 					array_push($stack, $a[1]); // push state
-					$symbol = 0;
-					if (!isset($preErrorSymbol)) { // normal execution/no error
+					$symbol = "";
+					if (empty($preErrorSymbol)) { // normal execution/no error
 						$yyleng = $this->lexer->yyleng;
 						$yytext = $this->lexer->yytext;
 						$yylineno = $this->lexer->yylineno;
 						if ($recovering > 0) $recovering--;
 					} else { // error just occurred, resume old lookahead f/ before error
 						$symbol = $preErrorSymbol;
-						$preErrorSymbol = null;
+						$preErrorSymbol = "";
 					}
 					break;
 		
@@ -1135,7 +1135,7 @@ class parser {
 					$yyval->S = $vstack[count($vstack) - $len]; // default to $S = $1					
 					$r = $this->performAction($yyval->S, $yytext, $yyleng, $yylineno, $this->yy, $a[1], $vstack, $fn, $cell);
 					
-					if ($r->r) {
+					if (empty($r->r) == false) {
 						return $r->r;
 					}
 					
@@ -1153,7 +1153,6 @@ class parser {
 					// goto new state = table[STATE][NONTERMINAL]
 					$newState = $table[$stack[count($stack) - 2]][$stack[count($stack) - 1]];
 					array_push($stack, $newState);
-					//print_r($stack);
 					break;
 		
 				case 3:
@@ -1183,11 +1182,7 @@ class lexer {
 	function lexer() {}
 	
 	function parseError($str, $hash) {
-		if ($this->yy && $this->parseError) {
-			$this->parseError($str, $hash);
-		} else {
-			throw new Exception($str);
-		}
+		throw new Exception($str);
 	}
 	
 	function setInput($input) {
@@ -1244,7 +1239,8 @@ class lexer {
 			return $this->EOF;
 		}
 		
-		if (empty($this->_input) || $this->_input == false) $this->done = true;
+		if ($this->_input == false) $this->_input = "";
+		if (empty($this->_input)) $this->done = true;
 
 		if ($this->_more == false) {
 			$this->yytext = '';
@@ -1252,31 +1248,29 @@ class lexer {
 		}
 		
 		for ($i = 0; $i < count($this->rules); $i++) {
-			preg_match_all($this->rules[$i], $this->_input, $match, PREG_PATTERN_ORDER);
-			if (!empty($match[0][0])) {
-				preg_match_all("/\n/", $match[0][0], $lines, PREG_PATTERN_ORDER);
+			preg_match($this->rules[$i], $this->_input, $match);
+			
+			if ( isset($match) && isset($match[0]) ) {
+				preg_match_all("/\n/", $match[0], $lines, PREG_PATTERN_ORDER);
 				if (count($lines) > 1) $this->yylineno += count($lines);
-				//print_r($this);
-				$this->yytext .= $match[0][0];
-				$this->match .= $match[0][0];
+				$this->yytext .= $match[0];
+				$this->match .= $match[0];
 				$this->matches = $match[0];
 				$this->yyleng = strlen($this->yytext);
 				$this->_more = false;
-				$this->_input = substr($this->_input, strlen($match[0][0]), strlen($this->_input));
-				$this->matched .= $match[0][0];
+				$this->_input = substr($this->_input, strlen($match[0]), strlen($this->_input));
+				$this->matched .= $match[0];
 				$token = $this->performAction($this->S, $this->yy, $this->yyleng, $i);
-				//print_r($this);
-				//print_r($token);
 				
-				if (!empty($token)) {
+				if (empty($token) == false) {
 					return $token;
 				} else {
 					return;
 				}
 			}
 		}
-
-		if ($this->_input == $this->EOF) {
+		
+		if (empty($this->_input)) {
 			return $this->EOF;
 		} else {
 			$this->parseError('Lexical error on line ' . ($this->yylineno + 1) . '. Unrecognized text.\n' . $this->showPosition(), array(
@@ -1289,9 +1283,9 @@ class lexer {
 	
 	function lex() {
 		$r = $this->next();
-		if (!empty($r) || $r == false) {
+		if (empty($r) == false) {
 			return $r;
-		} else {
+		} else if ($this->done != true) {
 			return $this->lex();
 		}
 	}
@@ -1487,6 +1481,7 @@ if (isset($require)) {
 	}
 }
 
+//this is for testing, and should be removed when it goes production
 $parser = new parser;
 
 print_r($parser->parse("100+98","",""));
