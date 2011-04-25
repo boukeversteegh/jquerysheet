@@ -944,7 +944,7 @@ jQuery.sheet = {
 						}
 						
 						if (s.menu) {
-							makeMenu = s.menu;
+							makeMenu(s.menu);
 						} else {
 							jQuery('<div />').load(s.urlMenu, function() {
 								makeMenu(jQuery(this).html());
@@ -3181,6 +3181,7 @@ jQuery.sheet = {
 						duration: 50
 					});
 				}
+
 				
 				jS.autoFillerGoToTd(td, tdHeight, tdWidth);
 			},
@@ -4803,6 +4804,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 					});
 			});
 			
+
 			this.cell.html = o;
 		}
 		return cell.selectedValue;
