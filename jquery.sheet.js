@@ -4136,6 +4136,8 @@ jQuery.sheet = {
 			
 			var tables = jQuery('<div />');
 			
+			sheet = (jQuery.isArray(sheet) ? sheet : [sheet]);
+			
 			for (var i = 0; i < sheet.length; i++) {
 				var colCount = parseInt(sheet[i].metadata.columns);
 				var rowCount = parseInt(sheet[i].metadata.rows);
