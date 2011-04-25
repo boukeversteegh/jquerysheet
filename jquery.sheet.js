@@ -33,7 +33,8 @@ jQuery.fn.extend({
 				barMenus:			true,							//bool, if sheet is editable, this will show the mini menu in barTop and barLeft for sheet manipulation
 				freezableCells:		false,							//bool, if sheet is editable, this will show the barHandles and allow user to drag them to freeze cells, not yet working.
 				allowToggleState: 	true,							//allows the function that changes the spreadsheet's state from static to editable and back
-				urlMenu: 			"menu.html", 					//local url, for the menu to the right of title
+				urlMenu: 			"menu.html", 					//local url, for the menu to the left of title
+				menu:			'',							//menu AS STRING!, overrides urlMenu
 				newColumnWidth: 	120, 							//int, the width of new columns or columns that have no width assigned
 				title: 				null, 							//html, general title of the sheet group
 				inlineMenu:			null, 							//html, menu for editing sheet
@@ -307,6 +308,7 @@ jQuery.sheet = {
 				if (!jS.spreadsheets[sheet]) jS.spreadsheets[sheet] = [];
 				if (!jS.spreadsheets[sheet][row]) jS.spreadsheets[sheet][row] = [];
 				
+
 				jS.spreadsheets[sheet][row][col] = {
 					formula: formula,
 					value: value,
@@ -913,11 +915,11 @@ jQuery.sheet = {
 					}
 					
 					if (s.editable) {
-						//Sheet Menu Control	
-						jQuery('<div />').load(s.urlMenu, function() {
+						//Sheet Menu Control
+						function makeMenu(ulMenu) {
 							var menu = jQuery('<td id="' + jS.id.menu + '" class="' + jS.cl.menu + '" />')
 								.html(
-									jQuery(this).html()
+									ulMenu
 										.replace(/sheetInstance/g, "jQuery.sheet.instance[" + I + "]")
 										.replace(/menuInstance/g, I));
 										
@@ -938,8 +940,16 @@ jQuery.sheet = {
 											jQuery(this).find('ul:first')
 												.hide();
 										});
-						});
+							return menu;
+						}
 						
+						if (s.menu) {
+							makeMenu = s.menu;
+						} else {
+							jQuery('<div />').load(s.urlMenu, function() {
+								makeMenu(jQuery(this).html());
+							});
+						}
 						
 						//Edit box menu
 						var secondRow = jQuery('<table cellpadding="0" cellspacing="0" border="0">' +
@@ -1589,6 +1599,8 @@ jQuery.sheet = {
 					return true;
 				},
 				cellOnMouseDown: function(e) {
+
+
 					jS.obj.formula().blur();
 					if (e.shiftKey) {
 						jS.getTdRange(e, jS.obj.formula().val());
@@ -2385,6 +2397,7 @@ jQuery.sheet = {
 						jS.highlightedLast.rowStart = -1;
 						jS.highlightedLast.colStart = -1;
 						jS.highlightedLast.rowEnd = -1;
+
 						jS.highlightedLast.colEnd = -1;
 						jS.highlightedLast.td = jQuery('<td />');
 					}
@@ -2987,7 +3000,7 @@ jQuery.sheet = {
 						sheetTab = newTitle;
 					}
 				}
-				return sheetTab;
+				return jQuery('<div />').text(sheetTab).html();
 			},
 			print: function(o) { /* prints a value in a new window
 									o: string, any string;
