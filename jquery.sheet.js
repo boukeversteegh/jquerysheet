@@ -270,7 +270,9 @@ jQuery.sheet = {
 				menuInsertRowAfter: 	"Insert row after",
 				menuInsertRowBefore:	"Insert row before",
 				menuAddRowEnd:			"Add row to end",
-				menuDeleteRow:			"Delete this row"
+				menuDeleteRow:			"Delete this row",
+				menuAddSheet:			"Add spreadsheet",
+				menuDeleteSheet:		"Delete spreadsheet"
 			},
 			kill: function() { /* For ajax manipulation, kills this instance of sheet entirley */
 				jS.obj.tabContainer().remove();
@@ -877,6 +879,18 @@ jQuery.sheet = {
 									jS.deleteRow();
 									return false;
 								}
+							}, {
+								msg: 'line'
+							}, {
+								msg: jS.msg.menuAddSheet,
+								fn: function() {
+									jS.addSheet('5x10');
+								}
+							}, {
+								msg: jS.msg.menuDeleteSheet,
+								fn: function() {
+									jS.deleteSheet();
+								}
 							}]);
 					}
 					
@@ -1010,10 +1024,10 @@ jQuery.sheet = {
 							tolerance: 'pointer',
 							opacity: 0.6,
 							start: function(e, ui) {
-								origParent.trigger('tabSortStart', [e, ui]);
+								origParent.trigger('tabSortStart', [e, ui, jQuery(e.target).attr('i') * 1]);
 							},
 							stop: function(e, ui) {
-								origParent.trigger('tabSortStop', [e, ui]);
+								origParent.trigger('tabSortStop', [e, ui, jQuery(e.target).attr('i') * 1]);
 							}
 						});
 					}
