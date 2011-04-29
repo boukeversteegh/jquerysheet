@@ -1461,8 +1461,10 @@ jQuery.sheet = {
 					}
 					
 					jS.cellLast.td = jQuery('<td />');
-					jS.cellLast.row = jS.cellLast.col = -1;
-					jS.rowLast = jS.colLast = -1;
+					jS.cellLast.row = -1;
+					jS.cellLast.col = -1;
+					jS.rowLast = -1;
+					jS.colLast = -1;
 					
 					jS.labelUpdate('', true);
 					jS.obj.formula()
@@ -2938,8 +2940,8 @@ jQuery.sheet = {
 				jS.obj.barLeft().children().eq(jS.rowLast).remove();
 				jQuery(jS.getTd(jS.i, jS.rowLast, 0)).parent().remove();
 				
-				jS.setTdIds();
 				jS.refreshLabelsRows();
+				jS.setTdIds();
 				jS.obj.pane().scroll();
 				
 				jS.offsetFormulas({
@@ -2959,8 +2961,9 @@ jQuery.sheet = {
 				jS.obj.barTop().children().eq(jS.colLast).remove();
 				jS.obj.sheet().find('colgroup col').eq(jS.colLast).remove();
 				
-				for (var i = 0; i < jS.sheetSize().height; i++) {
-					jQuery(jS.getTd(jS.i, i, jS.colLast)).remove();
+				var size = jS.sheetSize();
+				for (var i = 0; i <= size.height; i++) {
+					jQuery(jS.getTd(jS.i, i, size.width)).remove();
 				}
 				
 				var w = jS.refreshLabelsColumns();
@@ -3559,7 +3562,7 @@ jQuery.sheet = {
 																start: int, int to start highlighting from;
 																start: int, int to end highlighting to;
 															*/
-				var size = jS.sheetSize();
+				var size = jS.sheetSize(jQuery('#' + jS.id.sheet + jS.i));
 				var first = (start < end ? start : end);
 				var last = (start < end ? end : start);
 				
