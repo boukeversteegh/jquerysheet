@@ -1001,6 +1001,23 @@ jQuery.sheet = {
 							return 
 						});
 					
+					if (jQuery.fn.sortable) {
+						tabParent.sortable({
+							containment: 'parent',
+							placeholder: 'ui-state-highlight',
+							axis: 'x',
+							forceHelperSize: true,
+							tolerance: 'pointer',
+							opacity: 0.6,
+							start: function(e, ui) {
+								origParent.trigger('tabSortStart', [e, ui]);
+							},
+							stop: function(e, ui) {
+								origParent.trigger('tabSortStop', [e, ui]);
+							}
+						});
+					}
+					
 					if (s.editable) {
 						jQuery('<span class="' + jS.cl.uiTab + ' ui-corner-bottom" title="Add a spreadsheet" i="-1">+</span>').appendTo(tabParent);
 					} else {
