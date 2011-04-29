@@ -2963,7 +2963,7 @@ jQuery.sheet = {
 				
 				var size = jS.sheetSize();
 				for (var i = 0; i <= size.height; i++) {
-					jQuery(jS.getTd(jS.i, i, size.width)).remove();
+					jQuery(jS.getTd(jS.i, i, jS.colLast)).remove();
 				}
 				
 				var w = jS.refreshLabelsColumns();
