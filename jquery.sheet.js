@@ -1015,7 +1015,7 @@ jQuery.sheet = {
 							return 
 						});
 					
-					if (jQuery.fn.sortable) {
+					if (jQuery.fn.sortable && s.editable) {
 						tabParent.sortable({
 							containment: 'parent',
 							placeholder: 'ui-state-highlight',
