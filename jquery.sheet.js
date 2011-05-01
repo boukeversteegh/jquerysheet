@@ -1015,25 +1015,29 @@ jQuery.sheet = {
 							return 
 						});
 					
-					if (jQuery.fn.sortable && s.editable) {
-						tabParent.sortable({
-							containment: 'parent',
-							placeholder: 'ui-state-highlight',
-							axis: 'x',
-							forceHelperSize: true,
-							tolerance: 'pointer',
-							opacity: 0.6,
-							start: function(e, ui) {
-								origParent.trigger('tabSortStart', [e, ui, jQuery(e.target).attr('i') * 1]);
-							},
-							stop: function(e, ui) {
-								origParent.trigger('tabSortStop', [e, ui, jQuery(e.target).attr('i') * 1]);
-							}
-						});
-					}
 					
 					if (s.editable) {
-						jQuery('<span class="' + jS.cl.uiTab + ' ui-corner-bottom" title="Add a spreadsheet" i="-1">+</span>').appendTo(tabParent);
+						var addSheet = jQuery('<span class="' + jS.cl.uiTab + ' ui-corner-bottom" title="Add a spreadsheet" i="-1">+</span>').appendTo(tabParent);
+						
+						if (jQuery.fn.sortable) {
+							var startPosition;
+							
+							tabParent.sortable({
+								placeholder: 'ui-state-highlight',
+								axis: 'x',
+								forceHelperSize: true,
+								forcePlaceholderSize: true,
+								opacity: 0.6,
+								cancel: 'span[i="-1"]',
+								start: function(e, ui) {
+									startPosition = ui.item.index();
+									origParent.trigger('tabSortstart', [e, ui]);
+								},
+								update: function(e, ui) {
+									origParent.trigger('tabSortupdate', [e, ui, startPosition]);
+								}
+							});
+						}
 					} else {
 						jQuery('<span />').appendTo(tabParent);
 					}
