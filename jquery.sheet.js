@@ -4760,6 +4760,12 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				}
 			}
 			
+			
+			//here we find out if it is on initial calc, if it is, the value we an use to set the dropdown
+			if (jQuery(jS.getTd(this.sheet, this.row, this.col)).find('#' + id).length == 0) {
+				cell.selectedValue = jS.spreadsheets[this.sheet][this.row][this.col].value;
+			}
+			
 			jS.s.origParent.one('calculation', function() {
 				jQuery('#' + id)
 					.change(function() {
@@ -4786,6 +4792,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				.mousedown(function() {
 					jS.cellEdit(jQuery(this).parent());
 				});
+			
 			for (var i = 0; i < (v.length <= 25 ? v.length : 25); i++) {
 				if (v[i]) {
 					var input = jQuery('<input type="radio" name="' + id + '" class="' + id + '" />')
@@ -4809,6 +4816,11 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 						jS.attrH.setHeight(jS.getTdLocation(o.parent()).row, 'cell', false);
 					});
 				}
+			}
+			
+			//here we find out if it is on initial calc, if it is, the value we an use to set the radio
+			if (jQuery(jS.getTd(this.sheet, this.row, this.col)).find('.' + id).length == 0) {
+				cell.selectedValue = jS.spreadsheets[this.sheet][this.row][this.col].value;
 			}
 			
 			this.cell.html = o;
@@ -4836,6 +4848,13 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				checkbox.attr('checked', true);
 			}
 			
+			var td = jQuery(jS.getTd(this.sheet, this.row, this.col));
+			if (!td.children().length) {
+				if (td.text() == cell.selectedValue) {
+					checkbox.attr('checked', true);
+				}
+			}
+			
 			jS.s.origParent.one('calculation', function() {
 				jQuery('.' + id)
 					.change(function() {
@@ -4844,6 +4863,11 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 					});
 			});
 			
+			//here we find out if it is on initial calc, if it is, the value we an use to set the checkbox
+			if (jQuery(jS.getTd(this.sheet, this.row, this.col)).find('.' + id).length == 0) {
+				var checked = jS.spreadsheets[this.sheet][this.row][this.col].value;
+				cell.selectedValue = (checked == 'true' || checked == true ? v : '');
+			}
 
 			this.cell.html = o;
 		}
