@@ -918,7 +918,7 @@ jQuery.sheet = {
 						firstRowTr.append(jQuery('<td id="' + jS.id.title + '" class="' + jS.cl.title + '" />').html(title));
 					}
 					
-					if (s.inlineMenu && s.editable) {
+					if (s.inlineMenu && jS.isSheetEditable()) {
 						var inlineMenu;
 						if (jQuery.isFunction(s.inlineMenu)) {
 							inlineMenu = s.inlineMenu(jS);
@@ -928,7 +928,7 @@ jQuery.sheet = {
 						firstRowTr.append(jQuery('<td id="' + jS.id.inlineMenu + '" class="' + jS.cl.inlineMenu + '" />').html(inlineMenu));
 					}
 					
-					if (s.editable) {
+					if (jS.isSheetEditable()) {
 						//Sheet Menu Control
 						function makeMenu(ulMenu) {
 							var menu = jQuery('<td id="' + jS.id.menu + '" class="' + jS.cl.menu + '" />')
@@ -1016,7 +1016,7 @@ jQuery.sheet = {
 						});
 					
 					
-					if (s.editable) {
+					if (jS.isSheetEditable()) {
 						var addSheet = jQuery('<span class="' + jS.cl.uiTab + ' ui-corner-bottom" title="Add a spreadsheet" i="-1">+</span>').appendTo(tabParent);
 						
 						if (jQuery.fn.sortable) {
@@ -1062,15 +1062,17 @@ jQuery.sheet = {
 						jS.i = jS.sheetCount;
 						i = jS.i;
 					}
-
+					
+					o = jS.tuneTableForSheetUse(o);
+					
+					jS.readOnly[i] = o.attr('readonly');
+					
 					var objContainer = jS.controlFactory.table().appendTo(jS.obj.ui());
 					var pane = jS.obj.pane().html(o);
 					
-					if (s.autoFiller && s.editable) {
+					if (s.autoFiller && jS.isSheetEditable()) {
 						pane.append(jS.controlFactory.autoFiller());
 					}
-					
-					o = jS.tuneTableForSheetUse(o);
 								
 					jS.sheetDecorate(o);
 					
@@ -1079,7 +1081,7 @@ jQuery.sheet = {
 				
 					jS.sheetTab(true);
 					
-					if (s.editable) {
+					if (jS.isSheetEditable()) {
 						var formula = jS.obj.formula();
 						pane
 							.mousedown(function(e) {
@@ -1119,7 +1121,7 @@ jQuery.sheet = {
 						'<tbody>' +
 							'<tr>' + 
 								'<td id="' + jS.id.barCornerParent + jS.i + '" class="' + jS.cl.barCornerParent + '">' + //corner
-									'<div style="height: ' + s.colMargin + '; width: ' + s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="' + jS.cl.barCorner +'"' + (s.editable ? ' onClick="jQuery.sheet.instance[' + I + '].cellSetActiveBar(\'all\');"' : '') + ' title="Select All">&nbsp;</div>' +
+									'<div style="height: ' + s.colMargin + '; width: ' + s.colMargin + ';" id="' + jS.id.barCorner + jS.i + '" class="' + jS.cl.barCorner +'"' + (jS.isSheetEditable() ? ' onClick="jQuery.sheet.instance[' + I + '].cellSetActiveBar(\'all\');"' : '') + ' title="Select All">&nbsp;</div>' +
 								'</td>' + 
 								'<td class="' + jS.cl.barTopTd + '">' + //barTop
 									'<div id="' + jS.id.barTopParent + jS.i + '" class="' + jS.cl.barTopParent + '"></div>' +
@@ -1699,6 +1701,8 @@ jQuery.sheet = {
 								return false;
 							})
 							.bind('contextmenu', function(e) {
+								if (!jS.isSheetEditable()) return false;
+								
 								var i = jS.getBarLeftIndex(e.target);
 								if (i == -1) return false;
 								
@@ -1707,6 +1711,7 @@ jQuery.sheet = {
 									.mouseup();
 								
 								jS.controlFactory.barLeftMenu(e, i);
+								
 								return false;
 							})
 							.parent()
@@ -1717,11 +1722,11 @@ jQuery.sheet = {
 								
 								jS.resizeBarLeft(e);
 								
-								if (s.editable)
+								if (jS.isSheetEditable())
 									jS.controlFactory.barLeftHandle(o, i);
 							});
 							
-						if (s.editable) { //only let editable select
+						if (jS.isSheetEditable()) { //only let editable select
 							selectRow = function(o) {
 								if (!o) return false;
 								if (jQuery(o).attr('id')) return false;
@@ -1750,6 +1755,8 @@ jQuery.sheet = {
 								return false;
 							})
 							.bind('contextmenu', function(e) {
+								if (!jS.isSheetEditable()) return false;
+								
 								var i = jS.getBarTopIndex(e.target);
 								if (i == -1) return false;
 								o.parent()
@@ -1757,6 +1764,7 @@ jQuery.sheet = {
 									.mouseup();
 									
 								jS.controlFactory.barTopMenu(e, i);
+								
 								return false;
 							})
 							.parent()
@@ -1767,14 +1775,14 @@ jQuery.sheet = {
 								//jS.log('Column: ' +i);
 								jS.resizeBarTop(e);
 								
-								if (s.editable) {
+								if (jS.isSheetEditable()) {
 									jS.controlFactory.barTopHandle(o, i);
 									jS.controlFactory.barTopMenu(e, i, jQuery(e.target));
 								}
 								
 								return false;
 							});
-						if (s.editable) { //only let editable select
+						if (jS.isSheetEditable()) { //only let editable select
 							selectColumn = function(o) {
 								if (!o) return false;
 								if (jQuery(o).attr('id')) return false;
@@ -1800,6 +1808,17 @@ jQuery.sheet = {
 					}
 				}
 				return false;
+			},
+			readOnly: [],
+			isSheetEditable: function(i) {
+				i = (i == null ? jS.i : i);
+				return (
+					s.editable == true && (
+						jS.readOnly[i] != 'true' &&
+						jS.readOnly[i] != true &&
+						jS.readOnly[i] != 1
+					)
+				);
 			},
 			isFormulaEditable: function(o) { /* ensures that formula attribute of an object is editable
 													o: object, td object being used as cell
@@ -3025,7 +3044,7 @@ jQuery.sheet = {
 				if (get) {
 					sheetTab = jS.obj.sheet().attr('title');
 					sheetTab = (sheetTab ? sheetTab : 'Spreadsheet ' + (jS.i + 1));
-				} else if (s.editable && s.editableTabs) { //ensure that the sheet is editable, then let them change the sheet's name
+				} else if (jS.isSheetEditable() && s.editableTabs) { //ensure that the sheet is editable, then let them change the sheet's name
 					var newTitle = prompt("What would you like the sheet's title to be?", jS.sheetTab(true));
 					if (!newTitle) { //The user didn't set the new tab name
 						sheetTab = jS.obj.sheet().attr('title');
@@ -3265,6 +3284,8 @@ jQuery.sheet = {
 						*/
 					});
 				}
+				
+				jS.readOnly[i] = jS.obj.sheet().attr('readonly');
 				
 				jS.sheetSyncSize();
 				//jS.replaceWithSafeImg();
@@ -4741,9 +4762,11 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	},
 	DROPDOWN: function(v, noBlank) {
 		v = arrHelpers.foldPrepare(v, arguments, true);
-		if (this.editable) {
-			var cell = this.cell;
-			var jS = this.jS;
+		var cell = this.cell;
+		var jS = this.jS;
+		
+		if (this.s.editable) {
+			
 			var id = "dropdown" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
 			var o = jQuery('<select style="width: 100%;" name="' + id + '" id="' + id + '" />')
 				.mousedown(function() {
@@ -4784,10 +4807,11 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	RADIO: function(v) {
 		v = arrHelpers.foldPrepare(v, arguments, true);
 		var cell = this.cell;
+		var jS = this.jS;
 		
-		if (this.editable) {
+		if (this.s.editable) {
 			var id = "radio" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
-			var jS = this.jS;
+			
 			var o = jQuery('<span />')
 				.mousedown(function() {
 					jS.cellEdit(jQuery(this).parent());
@@ -4830,9 +4854,10 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	CHECKBOX: function(v) {
 		v = arrHelpers.foldPrepare(v, arguments)[0];
 		var cell = this.cell;
+		var jS = this.jS;
 		
-		if (this.editable) {
-			var jS = this.jS;
+		if (this.s.editable) {
+			
 			var id = "checkbox" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
 			var checkbox = jQuery('<input type="checkbox" name="' + id + '" class="' + id + '" />')
 				.val(v);
