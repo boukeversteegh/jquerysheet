@@ -97,6 +97,15 @@ jQuery.fn.extend({
 			return jQuery.sheet.instance[I];
 		}
 		return false;
+	},
+	getCellValue: function(row, col, sheet) {
+		var jS = $(this).getSheet();
+		sheet = (sheet ? sheet : 0);
+		try {
+			return jS.spreadsheets[sheet][row][col].value;
+		} catch(e) {
+			return "";
+		}
 	}
 });
 
