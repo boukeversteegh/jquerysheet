@@ -100,23 +100,23 @@ e
 	| E
 		{$$ = Math.E;}
 	| FIXEDCELL
-		{$$ = arguments[6].fixedCellValue.apply(arguments[7], [$1]);}
+		{$$ = yy.lexer.cellHandler.fixedCellValue.apply(yy.lexer.cell, [$1]);}
 	| FIXEDCELLRANGE
-		{$$ = arguments[6].fixedCellRangeValue.apply(arguments[7], [$1]);}
+		{$$ = yy.lexer.cellHandler.fixedCellRangeValue.apply(yy.lexer.cell, [$1]);}
 	| CELL
-		{$$ = arguments[6].cellValue.apply(arguments[7], [$1]);}
+		{$$ = yy.lexer.cellHandler.cellValue.apply(yy.lexer.cell, [$1]);}
 	| CELLRANGE
-		{$$ = arguments[6].cellRangeValue.apply(arguments[7], [$1]);}
+		{$$ = yy.lexer.cellHandler.cellRangeValue.apply(yy.lexer.cell, [$1]);}
 	| REMOTECELL
-		{$$ = arguments[6].remoteCellValue.apply(arguments[7], [$1]);}
+		{$$ = yy.lexer.cellHandler.remoteCellValue.apply(yy.lexer.cell, [$1]);}
 	| REMOTECELLRANGE
-		{$$ = arguments[6].remoteCellRangeValue.apply(arguments[7], [$1]);}
+		{$$ = yy.lexer.cellHandler.remoteCellRangeValue.apply(yy.lexer.cell, [$1]);}
 	| STRING
 		{$$ = $1.substring(1, $1.length - 1);}	
 	| IDENTIFIER '(' ')'
-		{$$ = arguments[6].callFunction($1, '', arguments[7]);}
+		{$$ = yy.lexer.cellHandler.callFunction($1, '', yy.lexer.cell);}
 	| IDENTIFIER '(' expseq ')'
-		{$$ = arguments[6].callFunction($1, $3, arguments[7]);}
+		{$$ = yy.lexer.cellHandler.callFunction($1, $3, yy.lexer.cell);}
  ;
 
 expseq

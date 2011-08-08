@@ -2843,7 +2843,7 @@ jQuery.sheet = {
 							}
 							
 							jS.callStack++
-							cell.value = Parser.parse(cell.formula, jS.cellIdHandlers, {
+							Parser.lexer.cell = {
 								sheet: sheet,
 								row: row,
 								col: col,
@@ -2851,7 +2851,9 @@ jQuery.sheet = {
 								s: s,
 								editable: s.editable,
 								jS: jS
-							});
+							};
+							Parser.lexer.cellHandler = jS.cellHandlers;
+							cell.value = Parser.parse(cell.formula);
 						} catch(e) {
 							cell.value = e.toString().replace(/\n/g, '<br />'); //error
 							
@@ -2876,7 +2878,7 @@ jQuery.sheet = {
 				
 				return cell.value;
 			},
-			cellIdHandlers: {
+			cellHandlers: {
 				cellValue: function(id) { //Example: A1
 					var loc = jSE.parseLocation(id);
 					return jS.updateCellValue(this.sheet, loc.row, loc.col);
@@ -2895,10 +2897,10 @@ jQuery.sheet = {
 					return [result];
 				},
 				fixedCellValue: function(id) {
-					return jS.cellIdHandlers.cellValue.apply(this, [(id + '').replace(/[$]/g, '')]);
+					return jS.cellHandlers.cellValue.apply(this, [(id + '').replace(/[$]/g, '')]);
 				},
 				fixedCellRangeValue: function(ids) {
-					return jS.cellIdHandlers.cellRangeValue.apply(this, [(ids + '').replace(/[$]/g, '')]);
+					return jS.cellHandlers.cellRangeValue.apply(this, [(ids + '').replace(/[$]/g, '')]);
 				},
 				remoteCellValue: function(id) {//Example: SHEET1:A1
 					var sheet, loc;
