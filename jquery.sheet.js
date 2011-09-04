@@ -1897,7 +1897,6 @@ jQuery.sheet = {
 				}
 				
 				jS.trigger('switchSheet', [i]);
-				s.fnSwitchSheet(i);
 				return false;
 			},
 			tuneTableForSheetUse: function(o) { /* makes table object usable by sheet
@@ -4351,7 +4350,7 @@ jQuery.sheet = {
 				.scrollTop(obj.scrollTop());
 		});
 	},
-	switchSheetLocker: function(I) { //This can be used with setting fnSwitchSheet to locks sheets together when switching, useful in history viewing
+	switchSheetLocker: function(I) { //This can be used with event switchSheet to locks sheets together when switching, useful in history viewing
 		jQuery(jQuery.sheet.instance).each(function(i) {
 			this.setActiveSheet(I);
 		});
