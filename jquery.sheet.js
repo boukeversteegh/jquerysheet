@@ -1077,7 +1077,7 @@ jQuery.sheet = {
 					
 					o = jS.tuneTableForSheetUse(o);
 					
-					jS.readOnly[i] = o.attr('readonly');
+					jS.readOnly[i] = o.hasClass('readonly');
 					
 					var objContainer = jS.controlFactory.table().appendTo(jS.obj.ui());
 					var pane = jS.obj.pane().html(o);
@@ -1825,11 +1825,7 @@ jQuery.sheet = {
 			isSheetEditable: function(i) {
 				i = (i == null ? jS.i : i);
 				return (
-					s.editable == true && (
-						jS.readOnly[i] != 'true' &&
-						jS.readOnly[i] != true &&
-						jS.readOnly[i] != 1
-					)
+					s.editable == true && !jS.readOnly[i]
 				);
 			},
 			isFormulaEditable: function(o) { /* ensures that formula attribute of an object is editable
@@ -2959,6 +2955,8 @@ jQuery.sheet = {
 												fuel: variable holder, used to prevent memory leaks, and for calculations;
 											*/
 				tableI = (tableI ? tableI : jS.i);
+				if (jS.readOnly[tableI]) return; //readonly is no calc at all
+				
 				jS.log('Calculation Started');
 				jS.calcLast = new Date();
 				jSE.calc(tableI, jS.spreadsheetsToArray()[tableI], jS.updateCellValue);
@@ -3311,7 +3309,7 @@ jQuery.sheet = {
 					});
 				}
 				
-				jS.readOnly[i] = jS.obj.sheet().attr('readonly');
+				jS.readOnly[i] = jS.obj.sheet().hasClass('readonly');
 				
 				jS.sheetSyncSize();
 				//jS.replaceWithSafeImg();
