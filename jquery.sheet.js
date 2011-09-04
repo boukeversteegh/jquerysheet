@@ -48,19 +48,15 @@ jQuery.fn.extend({
 				lockFormulas: 		false, 							//bool, turns the ability to edit any formula off
 				parent: 			parent, 					//object, sheet's parent, DON'T CHANGE
 				colMargin: 			18, 							//int, the height and the width of all bar items, and new rows
-				fnBefore: 			function() {}, 					//fn, called just before jQuery.sheet loads
-				fnAfter: 			function() {},	 				//fn, called just after all sheets load
-				fnSave: 			function() { o.getSheet().saveSheet(); }, //fn, default save function, more of a proof of concept
+				fnSave: 			function() { parent.getSheet().saveSheet(); }, //fn, default save function, more of a proof of concept
 				fnOpen: 			function() { 					//fn, by default allows you to paste table html into a javascript prompt for you to see what it looks likes if you where to use sheet
 										var t = prompt('Paste your table html here');
 										if (t) {
-											o.getSheet().openSheet(t);
+											parent.getSheet().openSheet(t);
 										}
 				},
 				fnClose: 			function() {}, 					//fn, default clase function, more of a proof of concept
-				fnAfterCellEdit:	function() {},					//fn, called just after someone edits a cell
-				fnSwitchSheet:		function() {},					//fn, called when a spreadsheet is switched inside of an instance of sheet
-				fnPaneScroll:		function() {},					//fn, called when a spreadsheet is scrolled
+				
 				boxModelCorrection: 2, 								//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
 				calculations:		{},								//object, used to extend the standard functions that come with sheet
 				cellSelectModel: 	'excel',						//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
@@ -296,6 +292,11 @@ jQuery.sheet = {
 				delete s;
 				delete jQuery.sheet.instance[I];
 				delete jS;
+			},
+			trigger: function(eventType, extraParameters) {
+				//wrapper for jQuery trigger of origParent, in case of further mods in the future
+				extraParameters = (extraParameters ? extraParameters : []);
+				origParent.trigger(eventType, [jS].concat(extraParameters));
 			},
 			spreadsheetsToArray: function(forceRebuild) {
 				if (forceRebuild || jS.spreadsheets.length == 0) {
@@ -551,12 +552,14 @@ jQuery.sheet = {
 															isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end
 														*/
 					jS.controlFactory.addCells(atRow, isBefore, atRowQ, 1, 'row');
+					jS.trigger('addRow', [atRow, isBefore, atRowQ, 1]);
 				},
 				addColumn: function(atColumn, isBefore, atColumnQ) {/* creates single column
 															qty: int, the number of cells you'd like to add, if not specified, a dialog will ask; 
 															isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end
 														*/
 					jS.controlFactory.addCells(atColumn, isBefore, atColumnQ, 1, 'col');
+					jS.trigger('addColumn', [atRow, isBefore, atRowQ, 1]);
 				},
 				barLeft: function(reloadHeights, o) { /* creates all the bars to the left of the spreadsheet
 															reloadHeights: bool, reloads all the heights of each bar from the cells of the sheet;
@@ -1016,11 +1019,11 @@ jQuery.sheet = {
 					
 					var tabParent = jQuery('<div id="' + jS.id.tabContainer + '" class="' + jS.cl.tabContainer + '" />')
 						.mousedown(function(e) {
-							origParent.trigger('switchSpreadsheet', [jQuery(e.target).attr('i') * 1]);
+							jS.trigger('switchSpreadsheet', [jQuery(e.target).attr('i') * 1]);
 							return false;
 						})
 						.dblclick(function(e) {
-							origParent.trigger('renameSpreadsheet', [jQuery(e.target).attr('i') * 1]);
+							jS.trigger('renameSpreadsheet', [jQuery(e.target).attr('i') * 1]);
 							return 
 						});
 					
@@ -1040,10 +1043,10 @@ jQuery.sheet = {
 								cancel: 'span[i="-1"]',
 								start: function(e, ui) {
 									startPosition = ui.item.index();
-									origParent.trigger('tabSortstart', [e, ui]);
+									jS.trigger('tabSortstart', [e, ui]);
 								},
 								update: function(e, ui) {
-									origParent.trigger('tabSortupdate', [e, ui, startPosition]);
+									jS.trigger('tabSortupdate', [e, ui, startPosition]);
 								}
 							});
 						}
@@ -1480,13 +1483,13 @@ jQuery.sheet = {
 										jS.setDirty(true);
 										
 										//perform final function call
-										s.fnAfterCellEdit({
+										jS.trigger('afterCellEdit', [{
 											td: jS.cellLast.td,
 											row: jS.cellLast.row,
 											col: jS.cellLast.col,
 											spreadsheetIndex: jS.i,
 											sheetIndex: I
-										});
+										}]);
 									}
 							}
 							break;
@@ -1673,7 +1676,7 @@ jQuery.sheet = {
 						o.barTop.scrollLeft(pane.scrollLeft());//2 lines of beautiful jQuery js
 						o.barLeft.scrollTop(pane.scrollTop());
 						
-						s.fnPaneScroll(pane, jS.i);
+						jS.trigger('paneScroll');
 					});
 				},
 				barMouseDown: { /* handles bar events, including resizing */
@@ -1893,6 +1896,7 @@ jQuery.sheet = {
 					jS.calc(i);
 				}
 				
+				jS.trigger('switchSheet', [i]);
 				s.fnSwitchSheet(i);
 				return false;
 			},
@@ -2959,7 +2963,7 @@ jQuery.sheet = {
 				jS.log('Calculation Started');
 				jS.calcLast = new Date();
 				jSE.calc(tableI, jS.spreadsheetsToArray()[tableI], jS.updateCellValue);
-				origParent.trigger('calculation');
+				jS.trigger('calculation');
 				jS.isSheetEdit = false;
 				jS.log('Calculation Ended');
 			},
@@ -2986,9 +2990,13 @@ jQuery.sheet = {
 					var newSheetControl = jS.controlFactory.sheetUI(jQuery.sheet.makeTable.fromSize(size), jS.sheetCount + 1, function(o) { 
 						jS.setActiveSheet(jS.sheetCount);
 					}, true);
+					
+					jS.trigger('addSheet', [jS.i]);
 				}
 			},
 			deleteSheet: function() { /* removes the currently selected sheet */
+				var oldI = jS.i;
+				
 				jS.obj.barHelper().remove();
 
 				jS.obj.tableControl().remove();
@@ -3000,8 +3008,11 @@ jQuery.sheet = {
 				
 				jS.setActiveSheet(jS.i);
 				jS.setDirty(true);
+				
+				jS.trigger('deleteSheet', [oldI]);
 			},
 			deleteRow: function(skipCalc) { /* removes the currently selected row */
+				var lastRow = jS.rowLast;
 				jS.obj.barLeft().children().eq(jS.rowLast).remove();
 				jQuery(jS.getTd(jS.i, jS.rowLast, 0)).parent().remove();
 				
@@ -3019,9 +3030,12 @@ jQuery.sheet = {
 				
 				jS.setDirty(true);
 				
-				jS.evt.cellEditAbandon();	
+				jS.evt.cellEditAbandon();
+				
+				jS.trigger('deleteRow', lastRow);
 			},
 			deleteColumn: function(skipCalc) { /* removes the currently selected column */
+				var colLast = jS.colLast;
 				jS.obj.barHelper().remove();
 				jS.obj.barTop().children().eq(jS.colLast).remove();
 				jS.obj.sheet().find('colgroup col').eq(jS.colLast).remove();
@@ -3047,6 +3061,8 @@ jQuery.sheet = {
 				jS.setDirty(true);
 				
 				jS.evt.cellEditAbandon();
+				
+				jS.trigger('deleteColumn', lastCol);
 			},
 			sheetTab: function(get) { /* manages a tabs inner value
 											get: bool, makes return the current value of the tab;
@@ -3106,7 +3122,7 @@ jQuery.sheet = {
 					dataType: 'html',
 					success: function(data) {
 						jS.setDirty(false);
-						alert('Success! - ' + data);
+						jS.trigger('saveSheet');
 					}
 				});
 			},
@@ -3323,7 +3339,7 @@ jQuery.sheet = {
 								jS.calc(i);
 							}
 							
-							s.fnAfter();
+							jS.trigger('sheetOpened', [i]);
 						}
 					};
 					
@@ -4011,9 +4027,6 @@ jQuery.sheet = {
 
 		var $window = jQuery(window);
 		
-		//initialize this instance of sheet
-		s.fnBefore();
-		
 		var o; var emptyFN = function() {};
 		
 		//ready the sheet's parser
@@ -4045,10 +4058,10 @@ jQuery.sheet = {
 			.addClass(jS.cl.parent);
 		
 		origParent
-			.bind('switchSpreadsheet', function(e, i){
+			.bind('switchSpreadsheet', function(e, js, i){
 				jS.switchSpreadsheet(i);
 			})
-			.bind('renameSpreadsheet', function(e, i){
+			.bind('renameSpreadsheet', function(e, js, i){
 				jS.renameSpreadsheet(i);
 			});
 		
