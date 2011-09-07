@@ -102,6 +102,27 @@ jQuery.fn.extend({
 		} catch(e) {
 			return "";
 		}
+	},
+	setCellValue: function(value, row, col, sheet) {
+		var jS = $(this).getSheet();
+		sheet = (sheet ? sheet : 0);
+		try {
+			jS.spreadsheets[sheet][row][col].value = value;
+		} catch(e) {}
+	},
+	setCellFormula: function(formula, row, col, sheet) {
+		var jS = $(this).getSheet();
+		sheet = (sheet ? sheet : 0);
+		try {
+			jS.spreadsheets[sheet][row][col].formula = formula;
+		} catch(e) {}
+	},
+	setCellHtml: function(html, row, col, sheet) {
+		var jS = $(this).getSheet();
+		sheet = (sheet ? sheet : 0);
+		try {
+			jS.spreadsheets[sheet][row][col].html = html;
+		} catch(e) {}
 	}
 });
 
