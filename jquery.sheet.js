@@ -2895,7 +2895,7 @@ jQuery.sheet = {
 								editable: s.editable,
 								jS: jS
 							};
-							Parser.lexer.cellHandler = jS.cellHandlers;
+							Parser.lexer.cellHandlers = jS.cellHandlers;
 							cell.value = Parser.parse(cell.formula);
 						} catch(e) {
 							cell.value = e.toString().replace(/\n/g, '<br />'); //error
@@ -2977,6 +2977,17 @@ jQuery.sheet = {
 					}
 						
 					return (jQuery.sheet.fn[fn] ? jQuery.sheet.fn[fn].apply(cell, args) : "Error: Function Not Found");
+				},
+				handler: function() {
+					var lexer = arguments[0];
+					var fn = arguments[1];
+					var cell = arguments[2];
+					var args = [arguments[3]];
+					for(var i = arguments[4]; i < arguments.length; i++) {
+						args.push(arguments[i]);
+					}
+					
+					return lexer[fn].apply(cell, args);
 				}
 			},
 			alertFormulaError: function(msg) {
@@ -4437,7 +4448,7 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 		}
 		return {
 			row: parseInt(locStr.substring(firstNum)) - 1, 
-			col: this.columnLabelIndex(locStr.substring(0, firstNum))
+			col: jSE.columnLabelIndex(locStr.substring(0, firstNum))
 		};
 	},
 	parseCellName: function(col, row){

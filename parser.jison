@@ -74,7 +74,7 @@ e
 	| e '<' e
 		{$$ = ($1 * 1) < ($3 * 1);}
 	| e '+' e
-		{$$ = jSE.cFN.sanitize($1) + jSE.cFN.sanitize($3);}
+		{$$ = ($1 * 1) + ($3 * 1);}
 	| e '-' e
 		{$$ = ($1 * 1) - ($3 * 1);}
 	| e '*' e
@@ -93,39 +93,39 @@ e
 		{$$ = $1 * 0.01;}
 	
 	| NUMBER
-		{$$ = Number(yytext);}
+		{$$ = yytext;}
 	| E
-		{$$ = Math.E;}
+		{/*$$ = Math.E;*/;}
 	| FIXEDCELL
-		{$$ = yy.lexer.cellHandler.fixedCellValue.apply(yy.lexer.cell, [$1]);}
+		{$$ = yy.lexer.cellHandlers.fixedCellValue.apply(yy.lexer.cell, new Array($1));}
 	| FIXEDCELL ':' FIXEDCELL
-		{$$ = yy.lexer.cellHandler.fixedCellRangeValue.apply(yy.lexer.cell, [$1, $3]);}
+		{$$ = yy.lexer.cellHandlers.fixedCellRangeValue.apply(yy.lexer.cell, new Array($1, $3));}
 	| CELL
-		{$$ = yy.lexer.cellHandler.cellValue.apply(yy.lexer.cell, [$1]);}
+		{$$ = yy.lexer.cellHandlers.cellValue.apply(yy.lexer.cell, new Array($1));}
 	| CELL ':' CELL
-		{$$ = yy.lexer.cellHandler.cellRangeValue.apply(yy.lexer.cell, [$1, $3]);}
+		{$$ = yy.lexer.cellHandlers.cellRangeValue.apply(yy.lexer.cell, new Array($1, $3));}
 	| SHEET '!' CELL
-		{$$ = yy.lexer.cellHandler.remoteCellValue.apply(yy.lexer.cell, [$1, $3]);}
+		{$$ = yy.lexer.cellHandlers.remoteCellValue.apply(yy.lexer.cell, new Array($1, $3));}
 	| SHEET '!' CELL ':' CELL
-		{$$ = yy.lexer.cellHandler.remoteCellRangeValue.apply(yy.lexer.cell, [$1, $3, $5]);}
+		{$$ = yy.lexer.cellHandlers.remoteCellRangeValue.apply(yy.lexer.cell, new Array($1, $3, $5));}
 	| STRING
 		{$$ = $1.substring(1, $1.length - 1);}	
 	| IDENTIFIER '(' ')'
-		{$$ = yy.lexer.cellHandler.callFunction($1, '', yy.lexer.cell);}
+		{$$ = yy.lexer.cellHandlers.callFunction($1, '', yy.lexer.cell);}
 	| IDENTIFIER '(' expseq ')'
-		{$$ = yy.lexer.cellHandler.callFunction($1, $3, yy.lexer.cell);}
+		{$$ = yy.lexer.cellHandlers.callFunction($1, $3, yy.lexer.cell);}
  ;
 
 expseq
  : e
 	| e ';' expseq
  	{
- 		$$ = ($.isArray($3) ? $3 : [$3]);
+ 		$$ = ($.isArray($3) ? $3 : new Array($3));
 	 	$$.push($1);
  	}
  	| e ',' expseq
 	{
- 		$$ = ($.isArray($3) ? $3 : [$3]);
+ 		$$ = ($.isArray($3) ? $3 : new Array($3));
 	 	$$.push($1);
  	}
  ;
