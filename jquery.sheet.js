@@ -70,8 +70,9 @@ jQuery.fn.extend({
 			
 			var jS = parent.getSheet();
 			if (jS) {
+				parent.html(jS.obj.sheetAll()); //degrade to just sheets in parent
 				jS.obj.tabContainer().remove();
-				parent.html('');
+				delete jS;
 			}
 			
 			if (jQuery.sheet.instance) {
@@ -4078,7 +4079,7 @@ jQuery.sheet = {
 					if (typeof(jS.s.buildSheet) == 'object') {
 						return jS.s.buildSheet;
 					} else if (jS.s.buildSheet == true || jS.s.buildSheet == 'true') {
-						return jQuery(jS.s.parent.html());
+						return jQuery(jS.s.origHtml);
 					} else if (jS.s.buildSheet.match(/x/i)) {
 						return jQuery.sheet.makeTable.fromSize(jS.s.buildSheet);
 					}
@@ -4104,6 +4105,7 @@ jQuery.sheet = {
 		//We need to take the sheet out of the parent in order to get an accurate reading of it's height and width
 		//jQuery(this).html(s.loading);
 		s.origParent = origParent;
+		s.origHtml = origParent.html();
 		s.parent
 			.html('')
 			.addClass(jS.cl.parent);
