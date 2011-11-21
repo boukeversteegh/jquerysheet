@@ -587,7 +587,7 @@ jQuery.sheet = {
 															isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end
 														*/
 					jS.controlFactory.addCells(atColumn, isBefore, atColumnQ, 1, 'col');
-					jS.trigger('addColumn', [atRow, isBefore, atRowQ, 1]);
+					jS.trigger('addColumn', [atColumn, isBefore, atColumnQ, 1]);
 				},
 				barLeft: function(reloadHeights, o) { /* creates all the bars to the left of the spreadsheet
 															reloadHeights: bool, reloads all the heights of each bar from the cells of the sheet;
@@ -2315,23 +2315,25 @@ jQuery.sheet = {
 			},
 			reparseFormula: function(formula, offset, fn) {
 				return formula.replace(jSE.regEx.cell, function(ignored, col, row, pos) {
-						var loc = jSE.parseLocation(ignored);
+					if (col == "SHEET") return ignored;
+					
+					var loc = jSE.parseLocation(ignored);
+					
+					if (fn) {
+						var move = fn(loc);
 						
-						if (fn) {
-							var move = fn(loc);
+						
+						if (move.col || move.row) {
+							if (move.col) loc.col += offset.col;
+							if (move.row) loc.row += offset.row;
 							
-							
-							if (move.col || move.row) {
-								if (move.col) loc.col += offset.col;
-								if (move.row) loc.row += offset.row;
-								
-								return jS.makeFormula(loc);
-							}
-						} else {
-							return jS.makeFormula(loc, offset);
+							return jS.makeFormula(loc);
 						}
-												
-						return ignored;
+					} else {
+						return jS.makeFormula(loc, offset);
+					}
+											
+					return ignored;
 				});
 			},
 			makeFormula: function(loc, offset) {
