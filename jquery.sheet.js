@@ -353,7 +353,8 @@ jQuery.sheet = {
 					formula: formula,
 					value: value,
 					calcCount: (calcCount ? calcCount : 0),
-					calcLast: (calcLast ? calcLast : -1)
+					calcLast: (calcLast ? calcLast : -1),
+					html: []
 				};
 				
 				return jS.spreadsheets[sheet][row][col];
@@ -2867,7 +2868,10 @@ jQuery.sheet = {
 				cell.oldValue = cell.value; //we detect the last value, so that we don't have to update all cell, thus saving resources
 				
 				if (cell.state) throw("Error: Loop Detected");
+				
 				cell.state = "red";
+				cell.html = [];
+				cell.fnCount = 0;
 				
 				if (cell.calcCount < 1 && cell.calcLast != jS.calcLast) {
 					cell.calcLast = jS.calcLast;
@@ -2912,8 +2916,8 @@ jQuery.sheet = {
 						jS.callStack--;
 					}
 				
-					if (cell.html) { //if cell has an html front bring that to the value but preserve it's value
-						jQuery(jS.getTd(sheet, row, col)).html(cell.html);					
+					if (cell.fnCount == cell.html.length) { //if cell has an html front bring that to the value but preserve it's value
+						jQuery(jS.getTd(sheet, row, col)).html(cell.html[0]);					
 					} else {
 						jQuery(jS.getTd(sheet, row, col)).html(cell.value);
 					}
@@ -2952,11 +2956,11 @@ jQuery.sheet = {
 				},
 				remoteCellValue: function(sheet, id) {//Example: SHEET1:A1
 					var loc = jSE.parseLocation(id);
-					sheet = ((sheet + '').replace('SHEET','') * 1) - 1;
+					sheet = jSE.parseSheetLocation(sheet);
 					return jS.updateCellValue(sheet, loc.row, loc.col);
 				},
 				remoteCellRangeValue: function(sheet, start, end) {//Example: SHEET1:A1:B2
-					sheet = ((sheet + '').replace('SHEET','') * 1) - 1;
+					sheet = jSE.parseSheetLocation(sheet);
 					start = jSE.parseLocation(start);
 					end = jSE.parseLocation(end);
 					
@@ -2978,20 +2982,59 @@ jQuery.sheet = {
 					} else {
 						args = [args];
 					}
-						
-					return (jQuery.sheet.fn[fn] ? jQuery.sheet.fn[fn].apply(cell, args) : "Error: Function Not Found");
-				},
-				handler: function() {
-					var lexer = arguments[0];
-					var fn = arguments[1];
-					var cell = arguments[2];
-					var args = [arguments[3]];
-					for(var i = arguments[4]; i < arguments.length; i++) {
-						args.push(arguments[i]);
-					}
 					
-					return lexer[fn].apply(cell, args);
+					if (jQuery.sheet.fn[fn]) {
+						jS.spreadsheets[cell.sheet][cell.row][cell.col].fnCount++;
+						return jQuery.sheet.fn[fn].apply(cell, args);
+					} else {
+						return "Error: Function Not Found";
+					}
 				}
+			},
+			cellLookupHandlers: {
+				fixedCellValue: function(id) {
+					return [jS.sheet, jSE.parseLocation(id), jSE.parseLocation(id)];
+				},
+				fixedCellRangeValue: function(sheet, start, end) {
+					return [jSE.parseSheetLocation(sheet), jSE.parseLocation(start), jSE.parseLocation(end)];
+				},
+				cellValue: function(id) {
+					
+				},
+				cellRangeValue: function(sheet, start, end) {
+					return [jS.sheet, jSE.parseLocation(start), jSE.parseLocation(end)];
+				},
+				remoteCellValue: function(sheet, id) {
+					return [jS.sheet, jSE.parseLocation(id), jSE.parseLocation(id)];
+				},
+				remoteCellRangeValue: function(sheet, start, end) {
+					return [jSE.parseSheetLocation(sheet), jSE.parseLocation(start), jSE.parseLocation(end)];
+				},
+				callFunction: function() {
+					if (arguments[0] == "VLOOKUP" || arguments[0] == "HLOOKUP" && arguments[1]) {
+						return arguments[1].reverse()[1];
+					}
+				}
+			},
+			cellLookup: function() {
+				var parser = (new jS.parser);
+				parser.lexer.cell = this.cell;
+				parser.lexer.cellHandlers = jQuery.extend(parser.lexer.cellHandlers, jS.cellLookupHandlers);
+				
+				var args = parser.parse(this.cell.formula);
+				var lookupTable = [];
+				
+				for(var row = args[1].row; row <= args[2].row; row++) {
+					for(var col = args[1].col; col <= args[2].col; col++) {
+						lookupTable.push({
+							sheet: args[0],
+							row: row,
+							col: col
+						});
+					}
+				}
+				
+				return lookupTable;
 			},
 			alertFormulaError: function(msg) {
 				alert(
@@ -4455,6 +4498,9 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 			col: jSE.columnLabelIndex(locStr.substring(0, firstNum))
 		};
 	},
+	parseSheetLocation: function(locStr) {
+		return ((locStr + '').replace('SHEET','') * 1) - 1;
+	},
 	parseCellName: function(col, row){
 		return jSE.columnLabelString(col) + (row + 1);
 	},
@@ -4735,8 +4781,44 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	RND: 		function() { return Math.random(); },
 	TRUE: 		function() { return 'TRUE'; },
 	FALSE: 		function() { return 'FALSE'; },
-	NOW: 		function() { return new Date ( ); },
-	TODAY: 		function() { return Date( Math.floor( new Date ( ) ) ); },
+	NOW: 		function() {
+		var today = new Date();
+		this.cell.html.push(Globalize.format(today));
+		return today;
+	},
+	TODAY: 		function() {
+		var today = new Date();
+		this.cell.html.push(Globalize.format(today, Globalize.culture().calendar.patterns.d));
+		return today;
+	},
+	WEEKENDING: function(weeksBack) {
+		var date = new Date();
+		date = new Date( 
+			date.getFullYear(), 
+			date.getMonth(), 
+			date.getDate() + 5 - date.getDay() - ((weeksBack || 0) * 7)
+		);
+		
+		this.cell.html.push(Globalize.format(date, Globalize.culture().calendar.patterns.d));
+		console.log(Globalize.culture());
+		return date;
+	},
+	WEEKDAY: 	function(date, returnValue) {
+		date = (date ? date : new Date()).toString();
+		date = (new Date(Globalize.parseDate( date ))).getDay() + 1;
+		console.log(date);
+		returnValue = (returnValue ? returnValue : 1);
+		switch (returnValue) {
+			case 2:
+				date = date - 1;
+				if (date == 0) date = 7;
+			case 3:
+				date = date - 2;
+				if (date == -1) date = 6;
+		}
+		
+		return date;
+	},
 	DAYSFROM: 	function(year, month, day) { 
 		return Math.floor( (new Date() - new Date (year, (month - 1), day)) / 86400000);
 	},
@@ -4821,9 +4903,9 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		var r = jFN.FIXED(v, decimals, false);
 		
 		if (v >= 0) {
-			this.cell.html = symbol + r;
+			this.cell.html.push(symbol + r);
 		} else {
-			this.cell.html = '-' + symbol + r.slice(1);
+			this.cell.html.push('-' + symbol + r.slice(1));
 		}
 		return v;
 	},
@@ -4885,7 +4967,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 					
 			o.val(cell.selectedValue);
 			
-			this.cell.html = o;
+			this.cell.html.push(o);
 		}
 		return cell.selectedValue;
 	},
@@ -4932,7 +5014,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				cell.selectedValue = jS.spreadsheets[this.sheet][this.row][this.col].value;
 			}
 			
-			this.cell.html = o;
+			this.cell.html.push(o);
 		}
 		return cell.selectedValue;
 	},
@@ -4979,7 +5061,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				cell.selectedValue = (checked == 'true' || checked == true ? v : '');
 			}
 
-			this.cell.html = o;
+			this.cell.html.push(o);
 		}
 		return cell.selectedValue;
 	},
@@ -5044,6 +5126,29 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				.text(owner.jS.time.diff());
 		});
 		return "";
+	},
+	HLOOKUP: function ( value, tableArray, indexNumber, notExactMatch ) {
+		var lookupTable = this.jS.cellLookup.apply(this);
+		
+		for(var i = 0; i < tableArray[0].length; i++) {
+			if (tableArray[0][i] == value) {
+				return this.jS.updateCellValue(lookupTable[i].sheet, indexNumber - 1, lookupTable[i].col);
+			}
+		}
+		
+		return notExactMatch;
+	},
+	VLOOKUP: function ( value, tableArray, indexNumber, notExactMatch ) {
+		var lookupTable = this.jS.cellLookup.apply(this);
+		console.log(this);
+		
+		for(var i = 0; i < tableArray[0].length; i++) {
+			if (tableArray[0][i] == value) {
+				return this.jS.updateCellValue(lookupTable[i].sheet, lookupTable[i].row, indexNumber - 1);
+			}
+		}
+		
+		return notExactMatch;
 	}
 };
 
