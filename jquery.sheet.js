@@ -4528,32 +4528,6 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 		}
 		return c.join("");
 	},
-	cFN: {//cFN = compiler functions, usually mathmatical
-		sum: 	function(x, y) { return x + y; },
-		max: 	function(x, y) { return x > y ? x: y; },
-		min: 	function(x, y) { return x < y ? x: y; },
-		count: 	function(x, y) { return (y != null) ? x + 1: x; },
-		divide: function(x, y) { return x / y; },
-		clean: function(v) {
-			if (typeof(v) == 'string') {
-				v = v.replace(jSE.regEx.amp, '&')
-					.replace(jSE.regEx.nbsp, ' ')
-					.replace(/\n/g,'')
-					.replace(/\r/g,'');
-			}
-			return v;
-		},
-		sanitize: function(v) {
-			if (v) {
-				if (isNaN(v)) {
-					return v;
-				} else {
-					return v * 1;
-				}
-			}
-			return "";
-		}
-	},
 	regEx: {
 		n: 			/[\$,\s]/g,
 		cell: 			/\$?([a-zA-Z]+)\$?([0-9]+)/gi, //a1
@@ -4565,12 +4539,6 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 		gt: 			/</g,
 		lt: 			/>/g,
 		nbsp: 			/&nbsp;/g
-	},
-	str: {
-		amp: 	'&amp;',
-		lt: 	'&lt;',
-		gt: 	'&gt;',
-		nbsp: 	'&nbps;'
 	},
 	chart: function(o) { /* creates a chart for use inside of a cell
 													piggybacks RaphealJS
@@ -4750,14 +4718,19 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		return jQuery('<img />')
 			.attr('src', v);
 	},
-	AVERAGE:	function(values) { 
-		var arr = arrHelpers.foldPrepare(values, arguments);
-		return jFN.SUM(arr) / jFN.COUNT(arr); 
+	AVERAGE:	function(v) { 
+		return jFN.SUM(v) / jFN.COUNT(v); 
 	},
-	AVG: 		function(values) { 
-		return jFN.AVERAGE(values);
+	AVG: 		function(v) { 
+		return jFN.AVERAGE(v);
 	},
-	COUNT: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.count, 0); },
+	COUNT: 		function(v) {
+		var count = 0;
+		for(i in v) {
+			if (v[i] != NULL) count++;
+		}
+		return count;
+	},
 	COUNTA:		function() {
 		var count = 0;
 		var args = arrHelpers.flatten(arguments);
@@ -4768,16 +4741,28 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		}
 		return count;
 	},
-	SUM: 		function(values) {
+	SUM: 		function(v) {
 		var sum = 0;
-		for(i in values) {
-			sum += values[i];
+		for(i in v) {
+			sum += v[i] * 1;
 		}
 		return sum;
 	},
-	MAX: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.max, Number.MIN_VALUE, true, jFN.N); },
-	MIN: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.min, Number.MAX_VALUE, true, jFN.N); },
-	MEAN:		function(values) { return this.SUM(values) / values.length; },
+	MAX: 		function(v) {
+		var max = v[0];
+		for(i in v) {
+			max = (v[i] > max ? v[i]: max);
+		}
+		return max;
+	},
+	MIN: 		function(v) {
+		var min = v[0];
+		for(i in v) {
+			min = (v[i] < min ? v[i]: min);
+		}
+		return min;
+	},
+	MEAN:		function(v) { return (v.length ? jFN.SUM(v) / v.length : v); },
 	ABS	: 		function(v) { return Math.abs(jFN.N(v)); },
 	CEILING: 	function(v) { return Math.ceil(jFN.N(v)); },
 	FLOOR: 		function(v) { return Math.floor(jFN.N(v)); },
@@ -4936,7 +4921,6 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		return Math.sqrt(v);
 	},
 	DROPDOWN: function(v, noBlank) {
-		v = arrHelpers.foldPrepare(v, arguments, true);
 		var cell = this.cell;
 		var jS = this.jS;
 		
@@ -4980,7 +4964,6 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		return cell.selectedValue;
 	},
 	RADIO: function(v) {
-		v = arrHelpers.foldPrepare(v, arguments, true);
 		var cell = this.cell;
 		var jS = this.jS;
 		
@@ -5027,7 +5010,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		return cell.selectedValue;
 	},
 	CHECKBOX: function(v) {
-		v = arrHelpers.foldPrepare(v, arguments)[0];
+		v = arrHelpers.unique(v);
 		var cell = this.cell;
 		var jS = this.jS;
 		
