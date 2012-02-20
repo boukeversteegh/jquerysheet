@@ -1,5 +1,6 @@
 /* Jison generated parser */
 var parser = (function(){
+
 var parser = {trace: function trace() { },
 yy: {},
 symbols_: {"error":2,"expressions":3,"e":4,"EOF":5,"=":6,"<":7,">":8,"NOT":9,"+":10,"-":11,"*":12,"/":13,"^":14,"(":15,")":16,"%":17,"NUMBER":18,"E":19,"FIXEDCELL":20,":":21,"CELL":22,"SHEET":23,"!":24,"STRING":25,"IDENTIFIER":26,"expseq":27,";":28,",":29,"$accept":0,"$end":1},
@@ -25,7 +26,7 @@ case 7:this.$ = ($$[$0-2] * 1) > ($$[$0] * 1);
 break;
 case 8:this.$ = ($$[$0-2] * 1) < ($$[$0] * 1);
 break;
-case 9:this.$ = ($$[$0-2] * 1) + ($$[$0] * 1);
+case 9:this.$ = ($$[$0-2]) + ($$[$0]);
 break;
 case 10:this.$ = ($$[$0-2] * 1) - ($$[$0] * 1);
 break;
@@ -122,7 +123,7 @@ parse: function parse(input) {
             token = self.symbols_[token] || token;
         }
         return token;
-    };
+    }
 
     var symbol, preErrorSymbol, state, action, a, r, yyval={},p,len,newState, expected;
     while (true) {
@@ -140,6 +141,7 @@ parse: function parse(input) {
         }
 
         // handle parse error
+        _handle_error:
         if (typeof action === 'undefined' || !action.length || !action[0]) {
 
             if (!recovering) {
@@ -150,7 +152,7 @@ parse: function parse(input) {
                 }
                 var errStr = '';
                 if (this.lexer.showPosition) {
-                    errStr = 'Parse error on line '+(yylineno+1)+":\n"+this.lexer.showPosition()+'\nExpecting '+expected.join(', ');
+                    errStr = 'Parse error on line '+(yylineno+1)+":\n"+this.lexer.showPosition()+"\nExpecting "+expected.join(', ') + ", got '" + this.terminals_[symbol]+ "'";
                 } else {
                     errStr = 'Parse error on line '+(yylineno+1)+": Unexpected " +
                                   (symbol == 1 /*EOF*/ ? "end of input" :
@@ -265,7 +267,9 @@ parse: function parse(input) {
 
     return true;
 }};/* Jison generated lexer */
-var lexer = (function(){var lexer = ({EOF:1,
+var lexer = (function(){
+
+var lexer = ({EOF:1,
 parseError:function parseError(str, hash) {
         if (this.yy.parseError) {
             this.yy.parseError(str, hash);
@@ -376,6 +380,12 @@ popState:function popState() {
     },
 _currentRules:function _currentRules() {
         return this.conditions[this.conditionStack[this.conditionStack.length-1]].rules;
+    },
+topState:function () {
+        return this.conditionStack[this.conditionStack.length-2];
+    },
+pushState:function begin(condition) {
+        this.begin(condition);
     }});
 lexer.performAction = function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 

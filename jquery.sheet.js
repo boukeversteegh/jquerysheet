@@ -4768,7 +4768,13 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		}
 		return count;
 	},
-	SUM: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.sum, 0, true, jFN.N); },
+	SUM: 		function(values) {
+		var sum = 0;
+		for(i in values) {
+			sum += values[i];
+		}
+		return sum;
+	},
 	MAX: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.max, Number.MIN_VALUE, true, jFN.N); },
 	MIN: 		function(values) { return arrHelpers.fold(arrHelpers.foldPrepare(values, arguments), jSE.cFN.min, Number.MAX_VALUE, true, jFN.N); },
 	MEAN:		function(values) { return this.SUM(values) / values.length; },
