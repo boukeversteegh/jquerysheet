@@ -2916,13 +2916,12 @@ jQuery.sheet = {
 						jS.callStack--;
 					}
 				
-					if (cell.fnCount == cell.html.length) { //if cell has an html front bring that to the value but preserve it's value
+					if (cell.fnCount == cell.html.length && cell.html.length > 0) { //if cell has an html front bring that to the value but preserve it's value
 						jQuery(jS.getTd(sheet, row, col)).html(cell.html[0]);					
 					} else {
 						jQuery(jS.getTd(sheet, row, col)).html(cell.value);
 					}
 				}
-				
 				
 				cell.state = null;
 				
