@@ -87,11 +87,11 @@ jQuery.fn.extend({
 		return this;
 	},
 	disableSelectionSpecial : function() { 
-	        this.each(function() { 
-	                this.onselectstart = function() { return false; }; 
-	                this.unselectable = "on"; 
-	                jQuery(this).css('-moz-user-select', 'none'); 
-	        });
+			this.each(function() { 
+					this.onselectstart = function() { return false; }; 
+					this.unselectable = "on"; 
+					jQuery(this).css('-moz-user-select', 'none'); 
+			});
 			return this;
 	},
 	getSheet: function() {
@@ -2840,7 +2840,7 @@ jQuery.sheet = {
 						break;
 					case 'down':
 						resize=-1;
-						break;    
+						break;
 				}
 				
 				//Lets check to remove any style classes
@@ -4199,7 +4199,7 @@ jQuery.sheet = {
 			jS.calc = emptyFN;
 		}
 		
-		if (!Raphael) {
+		if (!window.Raphael) {
 			jSE.chart = emptyFN;
 		}
 		
@@ -4674,20 +4674,21 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 				r.linechart(width / 8, height / 8, width * 0.8, height * 0.8, o.x.data, o.y.data, {
 					nostroke: false, 
 					axis: "0 0 1 1", 
-					symbol: "o", 
+					symbol: "circle", 
 					smooth: true
 				})
 				.hoverColumn(function () {
 					this.tags = r.set();
-					try {
-						for (var i = 0; i < this.y.length; i++) {
-							this.tags.push(r.tag(this.x, this.y[i], this.values[i], 0, 10).insertBefore(this).attr([{
-								fill: "#fff"
-							}, {
-								fill: this.symbols[i].attr("fill")
-							}]));
+					if (this.symbols.length) {
+						for (var i = 0, ii = this.y.length; i < ii; i++) {
+							this.tags.push(
+								r
+									.tag(this.x, this.y[i], this.values[i], 160, 10)
+									.insertBefore(this)
+									.attr([{ fill: "#fff" }, { fill: this.symbols[i].attr("fill") }])
+							);
 						}
-					} catch (e) {}
+					}
 				}, function () {
 					this.tags && this.tags.remove();
 				});
@@ -4698,16 +4699,18 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 					.hover(function () {
 						this.sector.stop();
 						this.sector.scale(1.1, 1.1, this.cx, this.cy);
+						
 						if (this.label) {
 							this.label[0].stop();
-							this.label[0].scale(1.5);
-							this.label[1].attr({"font-weight": 800});
+							this.label[0].attr({ r: 7.5 });
+							this.label[1].attr({ "font-weight": 800 });
 						}
 					}, function () {
-						this.sector.animate({scale: [1, 1, this.cx, this.cy]}, 500, "bounce");
+						this.sector.animate({ transform: 's1 1 ' + this.cx + ' ' + this.cy }, 500, "bounce");
+					
 						if (this.label) {
-							this.label[0].animate({scale: 1}, 500, "bounce");
-							this.label[1].attr({"font-weight": 400});
+							this.label[0].animate({ r: 5 }, 500, "bounce");
+							this.label[1].attr({ "font-weight": 400 });
 						}
 					});
 				break;
