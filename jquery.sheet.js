@@ -1463,6 +1463,31 @@ jQuery.sheet = {
 						return true;
 					}
 				},
+				highlightedCellsToCsv: function(e) { // used for pasting from other spreadsheets
+					var copyVal="";
+					if (e.ctrlKey || e.type == "copy") {
+						var result = "";
+						
+						if(startingrow==undefined || startingrow=="") {
+							result = jS.getTd(jS.i, Srow, Scol).html() +"\t";
+							manageFlag = 1;
+						} else {
+							manageFlag = 0;
+							for(var Srow=Tempstarrow;Srow<=Tempendrow;Srow++) {
+								var temp1="";
+								for(var Scol=Tempstarcol;Scol<=Tempendcol;Scol++) {
+									temp1 = jS.getTd(jS.i, Srow, Scol).html();
+									
+									if(Scol!=Tempendcol) temp1 += "\t";
+								}
+								
+								temp2+=temp1;
+								
+								if(Srow!=Tempendrow) temp2 += "\n";
+							}
+						}
+					}
+				},
 				inPlaceEditOnKeyDown: function(e) {
 					switch (e.keyCode) {
 						case key.ENTER: 	return jS.evt.keyDownHandler.enterOnInPlaceEdit(e);
@@ -5057,23 +5082,23 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		return cell.selectedValue;
 	},
 	BARCHART:	function(values, legend, title) {
-		return jSE.chart.apply(this, [{
+		this.cell.html.push(jSE.chart.apply(this, [{
 			type: 'bar',
 			data: values,
 			legend: legend,
 			title: title
-		}]);
+		}]));
 	},
 	HBARCHART:	function(values, legend, title) {
-		return jSE.chart.apply(this, [{
+		this.cell.html.push(jSE.chart.apply(this, [{
 			type: 'hbar',
 			data: values,
 			legend: legend,
 			title: title
-		}]);
+		}]));
 	},
 	LINECHART:	function(valuesX, valuesY) {
-		return jSE.chart.apply(this, [{
+		this.cell.html.push(jSE.chart.apply(this, [{
 			type: 'line',
 			x: {
 				data: valuesX
@@ -5082,18 +5107,18 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				data: valuesY
 			},
 			title: ""
-		}]);
+		}]));
 	},
 	PIECHART:	function(values, legend, title) {
-		return jSE.chart.apply(this, [{
+		this.cell.html.push(jSE.chart.apply(this, [{
 			type: 'pie',
 			data: values,
 			legend: legend,
 			title: title
-		}]);
+		}]));
 	},
 	DOTCHART:	function(valuesX, valuesY, values, legendX, legendY, title) {
-		return jSE.chart.apply(this, [{
+		this.cell.html.push(jSE.chart.apply(this, [{
 			type: 'dot',
 			data: (values ? values : valuesX),
 			x: {
@@ -5105,7 +5130,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				legend: (legendY ? legendY : legendX)
 			},
 			title: title
-		}]);
+		}]));
 	},
 	CELLREF: function(v) {
 		return (this.jS.spreadsheets[v] ? this.jS.spreadsheets[v] : 'Cell Reference Not Found');
