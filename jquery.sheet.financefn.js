@@ -1,16 +1,15 @@
 jQuery.sheet.financefn = {
-	NPV: function(i) {
-		var values = [];
-		for(var j = 1; j < arguments.length; j++) {
-			values.push(arguments[j] * 1);
-		}
-		var result = 0;
+	NPV: function(rate) {
+		rate = rate * 1;
+		var factor = 1;
+		var sum = 0;
 		
-		for (var t = 0; t < values.length; t++) {
-			result += values[t] / Math.pow((i / 100) + 1, t + 1);
+		for(var i = 1; i < arguments.length; i++) {
+			var factor = factor * (1 + rate);
+			sum += arguments[i] / factor;
 		}
 		
-		return result;
+		return sum;
 	},
 	PMT: function(rate, nper, pv, fv, type){
 		fv = (fv ? fv : 0);
