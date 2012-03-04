@@ -271,9 +271,9 @@
 
 .jSheetBarTop
 {
-    position: relative ! important;
-	border-width: 0px ! important;
-	min-width: 100000px;
+	font-size: 0.8em ! important;
+	text-align: center;
+	vertical-align: middle;
 }
 .jSheetBarTopHandle
 {
@@ -288,56 +288,9 @@
 }
 .jSheetBarLeft
 {
-	position: relative ! important;
-	border-width: 0px ! important;
-	min-height: 100000px;
-}
-.jSheetBarLeft span
-{
-	position: absolute;
-	top: 50%;
-	
-}
-
-.jSheetBarLeftTd
-{
-	border: none ! important;
-}
-
-.jSheetBarLeft > div
-{
+	font-size: 0.8em ! important;
 	text-align: center;
-	font-size: .8em;
-	height: inherit;
-	border-left: none ! important;
-	border-right: none ! important;
-	position: relative ! important;
-	vertical-align: middle ! important;
-	min-width: 14px ! important;
-	z-index; 999;
-	position: relative;
-}
-
-.jSheetBarTopTd
-{
-	border: none ! important;	
-	
-}
-
-.jSheetBarTop > div
-{
-	text-align: center ! important;
-	font-size: .8em;
-	float: left;
-	display:block;
-	height: inherit ! important;
-	padding-top: 2px;
-	overflow: hidden;
-	border-top: none ! important;
-	border-bottom: none ! important;
-	min-width: 25px ! important;
-	z-index; 999;
-	position: relative;
+	vertical-align: middle;
 }
 
 .jSheetControls img
