@@ -31,23 +31,19 @@
 	float: right;
 	position: relative;
 	z-index: 99999;
-	cursor: pointer;
-	height: 14px;
+	height: 0px;
 	border: none ! important;
-	left: -8px;
-	margin-left: -12px;
-	width: 16px;
+	left: -20px;
+	width: 0px;
 	padding-left: 0px ! important;
 }
-.jSheetBarHelper *:hover
-{
+.jSheetBarHelper * {
+	position: absolute;
+	z-index: 99999;
+	cursor: pointer;
+	height: 12px;
+	width: 14px;
 	background-color: inherit ! important;
-	-moz-border-radius-topleft: inherit;
-	-webkit-border-top-left-radius: inherit;
-	border-top-left-radius: inherit;
-	-moz-border-radius-topright: inherit;
-	-webkit-border-top-right-radius: inherit;
-	border-top-right-radius: inherit;
 }
 .jSheetMenu {
 	padding: 3px;
@@ -255,12 +251,15 @@
 }
 /* Bar item styling */
 
-.jSheetBarTop
+.jSheetBarTopParent
 {
 	font-size: 0.8em ! important;
 	text-align: center;
 	cursor: pointer ! important;
 	height: 18px;
+}
+.jSheetBarTopParent .ui-resizable-handle {
+	height: 16px;
 }
 .jSheetBarHandleTop
 {

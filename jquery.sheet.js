@@ -149,7 +149,7 @@ jQuery.sheet = {
 				barCornerParent:	function() { return jQuery('#' + jS.id.barCornerParent + jS.i); },
 				barCornerParentAll: function() { return s.parent.find('td.' + jS.cl.barCornerParent); },
 				barHelper:			function() { return jQuery('div.' + jS.cl.barHelper); },
-				barLeft: 			function(i) { return jQuery('#' + jS.id.barLeft + '_' + i + '_' + jS.i); },
+				barLeft: 			function(i) { return jQuery('#' + jS.id.barLeft + i + '_' + jS.i); },
 				barLeftAll:			function() { return s.parent.find('td.' + jS.cl.barLeft + '_' + jS.i); },
 				barLeftParent: 		function() { return jQuery('#' + jS.id.barLeftParent + jS.i); },
 				barLeftParentAll:	function() { return s.parent.find('div.' + jS.cl.barLeftParent); },
@@ -459,9 +459,6 @@ jQuery.sheet = {
 									return '<tr style="height: ' + s.colMargin + 'px;">' + newCells + '</tr>';
 								},
 								newCol: '',
-								reLabel: function() {								
-									jS.refreshLabelsRows();
-								},
 								dimensions: function(cell, col) {},
 								offset: {row: qty,col: 0}
 							};
@@ -492,9 +489,6 @@ jQuery.sheet = {
 								},
 								newCells: function() {
 									return '<td />';
-								},
-								reLabel: function() {
-									jS.refreshLabelsColumns();
 								},
 								dimensions: function(cell, col) {								
 									var w = s.newColumnWidth;
@@ -542,7 +536,6 @@ jQuery.sheet = {
 					jS.setTdIds(sheet, jS.i);
 					
 					o.dimensions(newCells, newCols);
-					o.reLabel();
 
 					jS.obj.pane().scroll();
 					
@@ -1150,7 +1143,7 @@ jQuery.sheet = {
 					
 					jS.checkMinSize(o);
 					
-					//jS.evt.scrollBars(pane);
+					jS.evt.scrollBars(pane);
 					
 					jS.addTab();
 					
@@ -1711,11 +1704,8 @@ jQuery.sheet = {
 						barTop: jS.obj.barTopParent()
 					};
 					
-					pane.scroll(function() {
-						o.barTop.scrollLeft(pane.scrollLeft());//2 lines of beautiful jQuery js
-						o.barLeft.scrollTop(pane.scrollTop());
-						
-						jS.trigger('paneScroll');
+					pane.scroll(function(e) {
+						console.log("scroll");
 					});
 				},
 				barInteraction: { /* handles bar events, including resizing */
@@ -2985,22 +2975,6 @@ jQuery.sheet = {
 				jS.isSheetEdit = false;
 				jS.log('Calculation Ended');
 			},
-			refreshLabelsColumns: function(){ /* reset values inside bars for columns */
-				var w = 0;
-				jS.obj.barTopAll().each(function(i) {
-					jQuery(this).text(jSE.columnLabelString(i));
-					w += jQuery(this).width();
-				});
-				return w;
-			},
-			refreshLabelsRows: function(){ /* resets values inside bars for rows */
-				jS.obj.barLeftAll().each(function(i) {
-					jQuery(this)
-						.text((i + 1))
-						.attr('id', jS.id.barLeft + '_' + (i + 1) + '_' + jS.i)
-						.attr('class', jS.cl.barLeft + ' ' + jS.cl.barLeft + '_' + jS.i + ' ' + jS.cl.uiBar);
-				});
-			},
 			addSheet: function(size) { /* adds a spreadsheet
 											size: string example "10x100" which means 10 columns by 100 rows;
 										*/
@@ -3034,9 +3008,8 @@ jQuery.sheet = {
 			},
 			deleteRow: function(skipCalc) { /* removes the currently selected row */
 				var lastRow = jS.rowLast;
-				jQuery(jS.getTd(jS.i, jS.rowLast, 0)).parent().remove();
+				jQuery(jS.getTd(jS.i, jS.rowLast, 1)).parent().remove();
 				
-				jS.refreshLabelsRows();
 				jS.setTdIds();
 				jS.obj.pane().scroll();
 				
@@ -3060,13 +3033,11 @@ jQuery.sheet = {
 				jS.obj.sheet().find('colgroup col').eq(jS.colLast).remove();
 				
 				var size = jS.sheetSize();
-				for (var i = 0; i <= size.height; i++) {
+				for (var i = 1; i <= size.height; i++) {
 					jQuery(jS.getTd(jS.i, i, jS.colLast)).remove();
 				}
 				
-				var w = jS.refreshLabelsColumns();
 				jS.setTdIds();
-				jS.obj.sheet().width(w);
 				jS.obj.pane().scroll();
 				
 				jS.offsetFormulas({
