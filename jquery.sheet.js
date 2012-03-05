@@ -3718,7 +3718,7 @@ jQuery.sheet = {
 							}
 						};
 						break;
-					case 'all':
+					case 'corner': //all
 						cycleFn = function() {
 							setActive = function(td) {
 								jS.cellEdit(jQuery(td));
