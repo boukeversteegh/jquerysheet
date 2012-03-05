@@ -32,8 +32,10 @@
 	z-index: 99999;
 	font-size: .9em;
 	cursor: pointer;
-	right: .3em;
-	top: .2em;
+	height: inherit;
+	border: none ! important;
+	margin-left: 3px;
+	margin-top: -1px;
 }
 .jSheetBarHelper *:hover
 {
@@ -235,26 +237,6 @@
 	border: none ! important;
 }
 
-.jSheetBarTopParent
-{
-    position: relative ! important;
-	background-image: none ! important;
-	vertical-align: middle;
-	overflow: hidden ! important;
-	cursor: pointer;
-	overflow: hidden ! important;
-}
-
-.jSheetBarLeftParent
-{
-    position: relative ! important;
-	background-image: none ! important;
-	vertical-align: middle;
-	overflow: hidden ! important;
-	cursor: pointer;
-	overflow: hidden ! important;
-}
-
 .sheetPane
 {
 	border: none ! important;
@@ -274,14 +256,15 @@
 	font-size: 0.8em ! important;
 	text-align: center;
 	vertical-align: middle;
+	cursor: pointer ! important;
 }
-.jSheetBarTopHandle
+.jSheetBarHandleTop
 {
 	top: 0em ! important;
 	cursor: move ! important;
 }
 
-.jSheetBarLeftHandle
+.jSheetBarHandleLeft
 {
 	right: 0em ! important;
 	cursor: move ! important;
@@ -291,6 +274,7 @@
 	font-size: 0.8em ! important;
 	text-align: center;
 	vertical-align: middle;
+	cursor: pointer ! important;
 }
 
 .jSheetControls img
