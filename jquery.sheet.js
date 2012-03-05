@@ -679,18 +679,17 @@ jQuery.sheet = {
 					
 					switch (bar) {
 						case "top":
-							menu = jQuery('<div id="' + jS.id.barMenuTop + '" class="' + jS.cl.uiMenu + ' ' + jS.cl.barHelper + '" />');
+							menu = jQuery('<div id="' + jS.id.barMenuTop + '" class="' + jS.cl.uiMenu + ' ' + jS.cl.menu + '" />');
 							break;
 						case "left":
-							menu = jQuery('<div id="' + jS.id.barMenuLeft + '" class="' + jS.cl.uiMenu + ' ' + jS.cl.barHelper + '" />');
+							menu = jQuery('<div id="' + jS.id.barMenuLeft + '" class="' + jS.cl.uiMenu + ' ' + jS.cl.menu + '" />');
 							break;
 						case "cell":
-							menu = jQuery('<div id="' + jS.id.cellMenu + '" class="' + jS.cl.uiMenu + ' ' + jS.cl.barHelper + '" />');
+							menu = jQuery('<div id="' + jS.id.cellMenu + '" class="' + jS.cl.uiMenu + ' ' + jS.cl.menu + '" />');
 							break;
 					}
 					
 					menu
-						.width(s.newColumnWidth)
 						.mouseleave(function() {
 							menu.hide();
 						})
@@ -1086,15 +1085,22 @@ jQuery.sheet = {
 						var formula = jS.obj.formula();
 						pane
 							.mousedown(function(e) {
+								if (jS.busy) return false;
+								
 								if (jS.isTd(e.target)) {
 									jS.evt.cellOnMouseDown(e);
 									return false;
-								} else { //possibly a bar
-									return jS.evt.barInteraction.select(e.target);
+								}
+								
+								if (jS.isBar(e.target)){ //possibly a bar
+									jS.evt.barInteraction.select(e.target);
+									return false;
 								}
 							})
 							.mouseover(function(e) {
 								//This manages bar resize, bar menu, and bar selection
+								if (jS.busy) return false;
+								
 								if (!jS.isBar(e.target)) return;
 								var o = jQuery(e.target);
 								var entity = o.data('entity');
@@ -1106,7 +1112,7 @@ jQuery.sheet = {
 									
 									jS.cellSetActiveBar(entity, jS.evt.barInteraction.first, jS.evt.barInteraction.last);
 								} else {
-									jS.resizeBar[entity](o);
+									jS.resizeBar[entity](o, i);
 									
 									if (jS.isSheetEditable()) {
 										jS.controlFactory.barHandle[entity](o, i);
@@ -1118,6 +1124,8 @@ jQuery.sheet = {
 								}
 							})
 							.bind('contextmenu', function(e) {
+								if (jS.busy) return false;
+								
 								if (jS.isBar(e.target)) {
 									var o = jQuery(e.target);
 									var entity = o.data('entity');
@@ -1752,9 +1760,13 @@ jQuery.sheet = {
 				return false;
 			},
 			isBar: function(o) {
-				o = jQuery(o);
-				if (o.data('type') == "bar") {
-					return true;
+				o = (o[0] ? o[0] : [o]);
+				if (o[0]) {
+					if (!isNaN(o[0].cellIndex)) {
+						if (o[0].cellIndex == 0 || o[0].parentNode.rowIndex == 0) { 
+							return true;
+						}
+					}
 				}
 				return false;
 			},
@@ -2489,60 +2501,53 @@ jQuery.sheet = {
 													o: object, any object that neds resizing;
 													settings: object, the settings used with jQuery ui resizable;
 												*/
-				if (o.attr('resizable')) {
-					o.resizable("destroy");
+				if (!o.data('resizable')) {
+					o.resizable(settings);
 				}
-					
-				o
-					.resizable(settings)
-					.attr('resizable', true);
 			},
 			busy: false,
 			draggable: function(o, settings) {
-				if (o.attr('draggable')) {
-					o.resizable("destroy");
+				if (!o.data('draggable')) {
+					o
+						.draggable(settings)
+						.data('draggable', true)
 				}
-				
-				o
-					.draggable(settings)
-					.attr('draggable', true)
 			},
 			resizeBar: {
-				top: function(o) {
+				top: function(o, i) {
+					var col = jS.obj.sheet().find('col').eq(i);
 					jS.resizable(o, {
 						handles: 'e',
 						start: function() {
 							jS.busy = true;
-							jS.obj.barHelper().remove();
+						},
+						resize: function(e, ui) {
+							col.width(ui.size.width);
 						},
 						stop: function(e, ui) {
 							jS.busy = false;
-							var i = jS.getBarIndex.top(this);
-							jS.sheetSyncSizeToDivs();
-							var w = jS.attrH.width(this, true);
-							jS.obj.sheet().find('col').eq(i)
-								.width(w)
-								.css('width', w + 'px')
-								.attr('width', w + 'px');
 							
 							jS.followMe();
 							jS.obj.pane().scroll();
 						}
 					});
 				},
-				left: function(o) {
+				left: function(o, i) {
+					var parent = o.parent().add(o);
 					jS.resizable(o, {
 						handles: 's',
 						start: function() {
 							jS.busy = true;
-							jS.obj.barHelper().remove();
+						},
+						resize: function(e, ui) {
+							parent
+								.height(ui.size.height)
+								.attr('height', (ui.size.height))
+								.css('height', ui.size.height + 'px');
 						},
 						stop: function(e, ui) {
 							jS.busy = false;
-							var i = jS.getBarIndex.left(jQuery(this));
-							jS.attrH.setHeight(i, 'bar', true);
-							jS.attrH.setHeight(i, 'cell');
-							
+
 							jS.followMe();
 							jS.obj.pane().scroll();
 						}
@@ -2664,6 +2669,8 @@ jQuery.sheet = {
 						var lastLoc = loc; //we keep track of the most recent location because we don't want tons of recursion here
 						jS.obj.pane()
 							.mousemove(function(e) {
+								if (jS.busy) return false;
+								
 								var endLoc = jS.getTdLocation([e.target]);
 								var ok = true;
 								
