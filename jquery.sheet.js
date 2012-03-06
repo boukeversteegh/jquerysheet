@@ -1243,9 +1243,6 @@ jQuery.sheet = {
 				}
 			},
 			autoFillerNotGroup: true,
-			sizeSync: { /* future location of all deminsion sync/mods */
-			
-			},
 			updateCellsAfterPasteToFormula: function(oldVal) { /* oldVal is what formula should be when this is done working with all the values */
 				var newValCount = 0;
 				var formula = jS.obj.formula();
@@ -2326,7 +2323,7 @@ jQuery.sheet = {
 										*/
 				jS.formatSheet(o);
 				jS.sheetSyncSizeToCols(o);
-				jS.sheetDecorateRemove();
+				jS.sheetDecorateRemove(false, o);
 			},
 			formatSheet: function(o) { /* adds tbody, colgroup, heights and widths to different parts of a spreadsheet
 											o: object, table object;
@@ -2545,25 +2542,24 @@ jQuery.sheet = {
 				},
 				corner: function() {}
 			},
-			sheetDecorateRemove: function(makeClone) { /* removes sheet decorations
+			sheetDecorateRemove: function(makeClone, o) { /* removes sheet decorations
 															makesClone: bool, creates a clone rather than the actual object;
 														*/
-				var o = (makeClone ? jS.obj.sheetAll().clone() : jS.obj.sheetAll());
+				o = (o ? o : jS.obj.sheetAll());
+				o = (makeClone ? o.clone() : o);
 				
 				//Get rid of highlighted cells and active cells
-				jQuery(o).find('td.' + jS.cl.cellActive)
+				o.find('td.' + jS.cl.cellActive)
 					.removeClass(jS.cl.cellActive + ' ' + jS.cl.uiCellActive);
 					
-				jQuery(o).find('td.' + jS.cl.cellHighlighted)
+				o.find('td.' + jS.cl.cellHighlighted)
 					.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
-				/*
-				//IE Bug, match width with css width
-				jQuery(o).find('col').each(function(i) {
-					var v = jQuery(this).css('width');
-					v = ((v + '').match('px') ? v : v + 'px');
-					jQuery(o).find('col').eq(i).attr('width', v);
-				});
-				*/
+				return o;
+			},
+			sheetBarsRemove: function(o) {
+				o = jQuery(makeClone ? jS.obj.sheetAll().clone() : jS.obj.sheetAll());
+				o.find('tr.' + jS.cl.barTopParent).remove();
+				o.find('td.' + jS.cl.barLeft).remove();
 				return o;
 			},
 			labelUpdate: function(v, setDirect) { /* updates the label so that the user knows where they are currently positioned
@@ -3087,6 +3083,7 @@ jQuery.sheet = {
 												pretty: bool, makes html a bit easier for the user to see;
 											*/
 				var sheetClone = jS.sheetDecorateRemove(true);
+				sheetClone = jS.sheetBarsRemove(sheetClone);
 				
 				var s = "";
 				if (pretty) {
@@ -3103,6 +3100,7 @@ jQuery.sheet = {
 			},
 			saveSheet: function() { /* saves the sheet */
 				var v = jS.sheetDecorateRemove(true);
+				v = jS.sheetBarsRemove(v);
 				var d = jQuery('<div />').html(v).html();
 
 				jQuery.ajax({
@@ -3429,7 +3427,9 @@ jQuery.sheet = {
 			},
 			exportSheet: { /* exports sheets into xml, json, or html formats */
 				xml: function (skipCData) {
-					var sheetClone = jS.sheetDecorateRemove(true);			
+					var sheetClone = jS.sheetDecorateRemove(true);
+					sheetClone = jS.sheetBarsRemove(sheetClone);
+							
 					var document = "";
 					
 					var cdata = ['<![CDATA[',']]>'];
@@ -3495,6 +3495,7 @@ jQuery.sheet = {
 				},
 				json: function() {
 					var sheetClone = jS.sheetDecorateRemove(true);
+					sheetClone = jS.sheetBarsRemove(sheetClone);
 					var documents = []; //documents
 					
 					jQuery(sheetClone).each(function() {
@@ -3547,7 +3548,9 @@ jQuery.sheet = {
 					return documents;
 				},
 				html: function() {
-					return jS.sheetDecorateRemove(true);
+					var sheetClone = jS.sheetDecorateRemove(true);
+					sheetClone = jS.sheetBarsRemove(sheetClone);
+					return sheetClone;
 				}
 			},
 			sheetSyncSizeToDivs: function() { /* syncs a sheet's size from bars/divs */
@@ -5052,7 +5055,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		
 		for(var i = 0; i < tableArray[0].length; i++) {
 			if (tableArray[0][i] == value) {
-				return this.jS.updateCellValue(lookupTable[i].sheet, lookupTable[i].row, indexNumber - 1);
+				return this.jS.updateCellValue(lookupTable[i].sheet, lookupTable[i].row, indexNumber);
 			}
 		}
 		
