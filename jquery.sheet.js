@@ -4403,7 +4403,7 @@ var jSE = jQuery.sheet.engine = { //Calculations Engine
 		};
 	},
 	parseSheetLocation: function(locStr) {
-		return ((locStr + '').replace('SHEET','') * 1);
+		return ((locStr + '').replace('SHEET','') * 1) - 1;
 	},
 	parseCellName: function(col, row){
 		return jSE.columnLabelString(col) + (row);
@@ -5049,7 +5049,6 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	},
 	VLOOKUP: function ( value, tableArray, indexNumber, notExactMatch ) {
 		var lookupTable = this.jS.cellLookup.apply(this);
-		console.log(this);
 		
 		for(var i = 0; i < tableArray[0].length; i++) {
 			if (tableArray[0][i] == value) {
