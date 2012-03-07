@@ -1141,6 +1141,65 @@ jQuery.sheet = {
 
 					jS.setTdIds(o, jS.i);
 					
+					var size = jS.sheetSize(o);
+					
+					objContainer.find('.hslider').slider({
+						slide: function(e, ui) {
+							var widthCurrent = 0;
+							var widthMax = pane.width();
+							var widthReached = false;
+							var widthTable = 0;
+							o.find('col').each(function(i) {
+								var col = jQuery(this);
+								if(!i) {
+									var width = col.width();
+									widthCurrent += col.width();
+									return;
+								}
+								
+								
+								var oldWidth = col.data('oldWidth');
+								if (oldWidth) {
+									col.width(oldWidth);
+									col.data('oldWidth', '');
+								}
+								
+								var width = col.width();
+								widthCurrent += width;
+								
+								if (i >= ui.value) {
+									if (widthReached) {
+										col.width(0).data('oldWidth',width);
+									}
+									
+									if (widthCurrent > widthMax) {
+										widthTable = widthCurrent;
+										widthReached = true;
+									}
+								}
+								
+								if (i < ui.value) {
+									col.data('oldWidth', width);
+									col.width(0);
+								}
+							});
+							
+							jS.obj.sheet().width(widthTable);
+						},
+						step: 1,
+						min: 1,
+						max: size.width
+					});
+					objContainer.find('.vslider').slider({
+						orientation: 'vertical',
+						slide: function(e, ui) {
+							
+						},
+						step: 1,
+						min: 1,
+						max: size.height
+					});
+					
 					jS.checkMinSize(o);
 					
 					jS.evt.scrollBars(pane);
@@ -1162,6 +1221,10 @@ jQuery.sheet = {
 								'<td class="' + jS.cl.sheetPaneTd + '">' + //pane
 									'<div id="' + jS.id.pane + jS.i + '" class="' + jS.cl.pane + '"></div>' +
 								'</td>' +
+								'<td><div class="vslider" style="height: 100%; width: 15px; left: -15px; height: 300px;"></div></td>' +
+							'</tr>' +
+							'<tr>' +
+								'<td style="text-align: center;"><div class="hslider" style="height: 15px; top: -15px;"></div></td>' +
 							'</tr>' +
 						'</tbody>' +
 					'</table>');
@@ -2557,7 +2620,7 @@ jQuery.sheet = {
 				return o;
 			},
 			sheetBarsRemove: function(o) {
-				o = jQuery(makeClone ? jS.obj.sheetAll().clone() : jS.obj.sheetAll());
+				o = jQuery(o ? o : jS.obj.sheetAll());
 				o.find('tr.' + jS.cl.barTopParent).remove();
 				o.find('td.' + jS.cl.barLeft).remove();
 				return o;
