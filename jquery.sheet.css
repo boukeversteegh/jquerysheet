@@ -215,7 +215,7 @@
 	text-align: left;
 	width: inherit ! important;
 	height: inherit ! important;
-	overflow: auto;
+	overflow: hidden;
 	padding: 0px;
 	margin: 0px;
 }
@@ -244,7 +244,7 @@
 
 .jSheetEditPane
 {
-    overflow: auto ! important;
+    overflow: hidden ! important;
 	background-image: none ! important;
 	border-width: 0px;
 	position: relative ! important;

@@ -1145,59 +1145,97 @@ jQuery.sheet = {
 					
 					objContainer.find('.hslider').slider({
 						slide: function(e, ui) {
-							var widthCurrent = 0;
-							var widthMax = pane.width();
-							var widthReached = false;
-							var widthTable = 0;
-							o.find('col').each(function(i) {
-								var col = jQuery(this);
+							var widthSheet= 0;
+							var cols = o.find('col');
+							var i = 0;
+							while (i <= cols.length) {
+								var col = cols.eq(i);
+								
 								if(!i) {
-									var width = col.width();
-									widthCurrent += col.width();
-									return;
-								}
-								
-								
-								var oldWidth = col.data('oldWidth');
-								if (oldWidth) {
-									col.width(oldWidth);
-									col.data('oldWidth', '');
-								}
-								
-								var width = col.width();
-								widthCurrent += width;
-								
-								if (i >= ui.value) {
-									if (widthReached) {
-										col.width(0).data('oldWidth',width);
+									widthSheet += col.width();
+								} else {
+									var oldWidth = col.data('oldWidth');
+									if (oldWidth) {
+										col
+											.width(oldWidth)
+											.data('oldWidth', '');
 									}
 									
-									if (widthCurrent > widthMax) {
-										widthTable = widthCurrent;
-										widthReached = true;
+									if (i < ui.value) {
+										console.log(col.width());
+										col
+											.data('oldWidth', col.width())
+											.width(0);
+									} else {
+										//console.log([col.width(), i, widthSheet]);
+										widthSheet += col.width();
 									}
 								}
 								
-								if (i < ui.value) {
-									col.data('oldWidth', width);
-									col.width(0);
+								i++;
+							}
+							i = 0''
+							while (i <= cols.length) {
+								var col = cols.eq(i);
+								
+								if(!i) {
+									widthSheet += col.width();
+								} else {
+									var oldWidth = col.data('oldWidth');
+									if (oldWidth) {
+										col
+											.width(oldWidth)
+											.data('oldWidth', '');
+									}
+									
+									if (i < ui.value) {
+										console.log(col.width());
+										col
+											.data('oldWidth', col.width())
+											.width(0);
+									} else {
+										//console.log([col.width(), i, widthSheet]);
+										widthSheet += col.width();
+									}
 								}
-							});
-							
-							jS.obj.sheet().width(widthTable);
+								
+								i++;
+							}
+							//console.log(widthSheet);
+							o.width(widthSheet);
 						},
 						step: 1,
 						min: 1,
 						max: size.width
-					});
-					objContainer.find('.vslider').slider({
+					})
+					.css('margin-left', s.colMargin * 2);
+					
+					var vslider = objContainer.find('.vslider').slider({
 						orientation: 'vertical',
 						slide: function(e, ui) {
+							var rows = jS.sheetSize(o).height;
+							vslider.slider("option", "max", rows);
 							
+							var i = 1;
+							while (i <= rows) {
+								var row = jQuery(jS.getTd(jS.i, i, 1)).parent();
+								
+								if (!row.data('hidden')) {
+									console.log(rows - ui.value);
+									if (i <= (rows - ui.value)) {
+										row.hide();
+									} else {
+										row.show();
+									}
+								}
+								
+								i++;
+							}
 						},
 						step: 1,
 						min: 1,
-						max: size.height
+						max: size.height,
+						value: size.height
 					});
 					
 					jS.checkMinSize(o);
