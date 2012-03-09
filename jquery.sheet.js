@@ -176,6 +176,8 @@ jQuery.sheet = {
 				pane: 				function() { return jQuery('#' + jS.id.pane + jS.i); },
 				paneAll:			function() { return s.parent.find('div.' + jS.cl.pane); },
 				parent: 			function() { return s.parent; },
+				scrollerRight:		function() { return jQuery('#' + jS.id.scrollerRight + jS.i); },
+				scrollerBottom:		function() { return jQuery('#' + jS.id.scrollerBottom + jS.i); },
 				sheet: 				function() { return jQuery('#' + jS.id.sheet + jS.i); },
 				sheetAll: 			function() { return s.parent.find('table.' + jS.cl.sheet); },
 				tab:				function() { return jQuery('#' + jS.id.tab + jS.i); },
@@ -212,6 +214,8 @@ jQuery.sheet = {
 				label: 				'jSheetControls_loc_' + I,
 				menu:				'jSheetMenu_' + I,
 				pane: 				'jSheetEditPane_' + I + '_',
+				scrollerRight:		'jSheetScrollerRight_' + I + '_',
+				scrollerBottom:		'jSheetScrollerBottom_' + I + '_',
 				sheet: 				'jSheet_' + I + '_',
 				tableControl:		'tableControl_' + I + '_',
 				tab:				'jSheetTab_' + I + '_',
@@ -249,6 +253,10 @@ jQuery.sheet = {
 				inPlaceEdit:			'jSheetInPlaceEdit',
 				menu:					'jSheetMenu',
 				parent:					'jSheetParent',
+				scrollerRight:			'jSheetScrollerRight',
+				scrollerBottom:			'jSheetScrollerBottom',
+				scrollerParentRight:	'jSheetScrollerParentRight',
+				scrollerParentBottom:	'jSheetScrollerParentBottom',
 				sheet: 					'jSheet',
 				sheetPaneTd:			'sheetPane',
 				label: 					'jSheetControls_loc',
@@ -281,6 +289,8 @@ jQuery.sheet = {
 				uiMenuHighlighted: 		'ui-state-highlight',
 				uiPane: 				'ui-widget-content',
 				uiParent: 				'ui-widget-content ui-corner-all',
+				uiScroller:				'ui-state-default',
+				uiScrollerParent:		'ui-widget-content',
 				uiSheet:				'ui-widget-content',
 				uiTab:					'ui-widget-header',
 				uiTabActive:			'ui-state-highlight'
@@ -1041,6 +1051,105 @@ jQuery.sheet = {
 						.append('<div id="' + jS.id.ui + '" class="' + jS.cl.ui + '">') //add spreadsheet control
 						.after(tabParent);
 				},
+				scrollers: function(objContainer, pane, o) { /* makes the bars scroll as the sheet is scrolled
+												pane: object, the sheet's pane;
+											*/
+					jS.obj.scrollerBottom()
+						.draggable({
+							containment: 'parent',
+							axis: 'x',
+							start: function() {
+								jS.obj.autoFiller().hide();
+								this.v = [], this.p = [];
+								
+								var size = jS.sheetSize(o);
+								var width = objContainer.width();
+								var gridSize = parseInt(width / size.width);
+								for(var i = 0; i < size.width; i++) {
+									this.v[i] = gridSize * i;
+									this.p[gridSize * i] = i;
+								}
+							},
+							stop: function() {
+								jS.autoFillerGoToTd();
+							},
+							drag: function(e, ui) {
+								ui.value = this.p[arrHelpers.getClosestValues(this.v, ui.position.left)] + 1;
+								
+								if (!ui.value) return;
+								
+								var widthSheet = 0;
+								var cols = o.find('col');
+								var widths = [];
+								cols.each(function (i) {
+									var col = jQuery(this);
+									
+									var width = col.data('width');
+									
+									if (i < ui.value && i > 0) {
+										col.data('width', width || col.width());
+										width = 0;
+									} else {
+										col.data('width', '');
+										width = width || col.width();
+									}
+									
+									widths.push(width);
+								});
+								
+								cols.each(function (i) {
+									widthSheet += widths[i];
+									jQuery(this).width(widths[i]);
+								});
+								
+								o
+									.width(widthSheet)
+									.attr('width', widthSheet + 'px')
+									.css('width', widthSheet + 'px')
+							}
+						});
+					
+					jS.obj.scrollerRight()
+						.height(s.newColumnWidth)
+						.draggable({
+							containment: 'parent',
+							axis: 'y',
+							start: function() {
+								jS.obj.autoFiller().hide();
+								this.v = [], this.p = [];
+								
+								var size = jS.sheetSize(o);
+								var height = objContainer.height();
+								var gridSize = parseInt(height / size.height);
+								for(var i = 0; i < size.height; i++) {
+									this.v[i] = gridSize * i;
+									this.p[gridSize * i] = i;
+								}
+							},
+							stop: function() {
+								jS.autoFillerGoToTd();
+							},
+							drag: function(e, ui) {
+								ui.value = this.p[arrHelpers.getClosestValues(this.v, ui.position.top)];
+								var rows = jS.sheetSize(o).height;
+								
+								var i = 1;
+								while (i <= rows) {
+									var row = jQuery(jS.getTd(jS.i, i, 1)).parent();
+									
+									if (!row.data('hidden')) {
+										if (i < ui.value) {
+											row.hide();
+										} else {
+											row.show();
+										}
+									}
+									
+									i++;
+								}
+							}
+						});
+				},
 				sheetUI: function(o, i, fn, reloadBars) { /* creates the spreadsheet user interface
 															o: object, table object to be used as a spreadsheet;
 															i: int, the new count for spreadsheets in this instance;
@@ -1145,103 +1254,7 @@ jQuery.sheet = {
 					
 					jS.checkMinSize(o);
 					
-					var hslider = objContainer.find('.hslider')
-						.draggable({
-							containment: 'parent',
-							axis: 'x',
-							start: function() {
-								jS.obj.autoFiller().hide();
-								this.v = [], this.p = [];
-								
-								var size = jS.sheetSize(o);
-								var width = objContainer.width();
-								var gridSize = parseInt(width / size.width);
-								for(var i = 0; i < size.width; i++) {
-									this.v[i] = gridSize * i;
-									this.p[gridSize * i] = i;
-								}
-							},
-							stop: function() {
-								jS.autoFillerGoToTd();
-							},
-							drag: function(e, ui) {
-								ui.value = this.p[arrHelpers.getClosestValues(this.v, ui.position.left)] + 1;
-								console.log(ui.value);
-								if (!ui.value) return;
-								
-								var widthSheet = 0;
-								var cols = o.find('col');
-								var widths = [];
-								cols.each(function (i) {
-									var col = jQuery(this);
-									
-									var width = col.data('width');
-									
-									if (i < ui.value && i > 0) {
-										col.data('width', width || col.width());
-										width = 0;
-									} else {
-										col.data('width', '');
-										width = width || col.width();
-									}
-									
-									widths.push(width);
-								});
-								
-								cols.each(function (i) {
-									widthSheet += widths[i];
-									jQuery(this).width(widths[i]);
-								});
-								
-								o
-									.width(widthSheet)
-									.attr('width', widthSheet + 'px')
-									.css('width', widthSheet + 'px')
-							}
-						});
-					
-					var vslider = objContainer.find('.vslider')
-						.height(s.newColumnWidth)
-						.draggable({
-							containment: 'parent',
-							axis: 'y',
-							start: function() {
-								jS.obj.autoFiller().hide();
-								this.v = [], this.p = [];
-								
-								var size = jS.sheetSize(o);
-								var height = objContainer.height();
-								var gridSize = parseInt(height / size.height);
-								for(var i = 0; i < size.height; i++) {
-									this.v[i] = gridSize * i;
-									this.p[gridSize * i] = i;
-								}
-							},
-							stop: function() {
-								jS.autoFillerGoToTd();
-							},
-							drag: function(e, ui) {
-								ui.value = this.p[arrHelpers.getClosestValues(this.v, ui.position.top)];
-								var rows = jS.sheetSize(o).height;
-								
-								var i = 1;
-								while (i <= rows) {
-									var row = jQuery(jS.getTd(jS.i, i, 1)).parent();
-									
-									if (!row.data('hidden')) {
-										if (i <= ui.value) {
-											row.hide();
-										} else {
-											row.show();
-										}
-									}
-									
-									i++;
-								}
-							}
-						});
-					
-					jS.evt.scrollBars(pane);
+					jS.controlFactory.scrollers(objContainer, pane, o);
 					
 					jS.addTab();
 					
@@ -1260,10 +1273,10 @@ jQuery.sheet = {
 								'<td class="' + jS.cl.sheetPaneTd + '">' + //pane
 									'<div id="' + jS.id.pane + jS.i + '" class="' + jS.cl.pane + '"></div>' +
 								'</td>' +
-								'<td style="width: ' + s.colMargin + 'px" class="ui-widget-content vsliderParent"><div class="vslider ui-state-default"></div></td>' +
+								'<td style="width: ' + s.colMargin + 'px" class="' + jS.cl.uiScrollerParent + ' ' + jS.cl.scrollerParentRight + '"><div id="' + jS.id.scrollerRight + jS.i + '" class="' + jS.cl.scrollerRight + ' ' + jS.cl.uiScroller + '"></div></td>' +
 							'</tr>' +
 							'<tr style="height: ' + s.colMargin + 'px">' +
-								'<td style="text-align: right; height: ' + s.colMargin + 'px" class="ui-widget-content hsliderParent"><div style="height:' + s.colMargin + 'px" class="hslider ui-state-default ui-corner-bl"></div></td>' +
+								'<td style="height: ' + s.colMargin + 'px"  class="' + jS.cl.uiScrollerParent + ' ' + jS.cl.scrollerParentBottom + '"><div id="' + jS.id.scrollerBottom + jS.i + '"  style="height:' + s.colMargin + 'px"  class="' + jS.cl.scrollerBottom + ' ' + jS.cl.uiScroller + '"></div></td>' +
 							'</tr>' +
 						'</tbody>' +
 					'</table>');
@@ -1794,18 +1807,6 @@ jQuery.sheet = {
 					jS.cellLast.isEdit = jS.isSheetEdit = true;
 					jS.controlFactory.inPlaceEdit(jS.cellLast.td);
 					//jS.log('click, in place edit activated');
-				},
-				scrollBars: function(pane) { /* makes the bars scroll as the sheet is scrolled
-												pane: object, the sheet's pane;
-											*/
-					var o = { //cut down on recursion, grab them once
-						barLeft: jS.obj.barLeftParent(), 
-						barTop: jS.obj.barTopParent()
-					};
-					
-					pane.scroll(function(e) {
-						console.log("scroll");
-					});
 				},
 				barInteraction: { /* handles bar events, including resizing */
 					first: 0,
