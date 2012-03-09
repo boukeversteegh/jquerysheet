@@ -1145,89 +1145,101 @@ jQuery.sheet = {
 					
 					jS.checkMinSize(o);
 					
-					objContainer.find('.hslider').slider({
-						start: function() {
-							jS.obj.autoFiller().hide();
-						},
-						stop: function() {
-							jS.autoFillerGoToTd();
-						},
-						slide: function(e, ui) {
-							if (isNaN(ui.value)) return;
-							
-							var widthSheet = 0;
-							var cols = o.find('col');
-							var widths = [];
-							cols.each(function (i) {
-								var col = jQuery(this);
+					var hslider = objContainer.find('.hslider')
+						.draggable({
+							containment: 'parent',
+							axis: 'x',
+							start: function() {
+								jS.obj.autoFiller().hide();
+								this.v = [], this.p = [];
 								
-								var width = col.data('width');
-								
-								if (i < ui.value && i > 0) {
-									col.data('width', width || col.width());
-									width = 0;
-								} else {
-									col.data('width', '');
-									width = width || col.width();
+								var size = jS.sheetSize(o);
+								var width = objContainer.width();
+								var gridSize = parseInt(width / size.width);
+								for(var i = 0; i < size.width; i++) {
+									this.v[i] = gridSize * i;
+									this.p[gridSize * i] = i;
 								}
+							},
+							stop: function() {
+								jS.autoFillerGoToTd();
+							},
+							drag: function(e, ui) {
+								ui.value = this.p[arrHelpers.getClosestValues(this.v, ui.position.left)] + 1;
+								console.log(ui.value);
+								if (!ui.value) return;
 								
-								widths.push(width);
-							});
-							
-							cols.each(function (i) {
-								widthSheet += widths[i];
-								jQuery(this).width(widths[i]);
-							});
-							
-							o
-								.width(widthSheet)
-								.attr('width', widthSheet + 'px')
-								.css('width', widthSheet + 'px')
-						},
-						step: 1,
-						min: 1,
-						max: size.width
-					})
-					.css('margin-left', s.colMargin + 'px')
-					.css('top', '-' + s.colMargin + 'px')
-					.height(s.colMargin);
-					
-					var vslider = objContainer.find('.vslider').slider({
-						orientation: 'vertical',
-						start: function() {
-							jS.obj.autoFiller().hide();
-						},
-						stop: function() {
-							jS.autoFillerGoToTd();
-						},
-						slide: function(e, ui) {
-							var rows = jS.sheetSize(o).height;
-							vslider.slider("option", "max", rows);
-							
-							var i = 1;
-							while (i <= rows) {
-								var row = jQuery(jS.getTd(jS.i, i, 1)).parent();
-								
-								if (!row.data('hidden')) {
-									console.log(rows - ui.value);
-									if (i <= (rows - ui.value)) {
-										row.hide();
+								var widthSheet = 0;
+								var cols = o.find('col');
+								var widths = [];
+								cols.each(function (i) {
+									var col = jQuery(this);
+									
+									var width = col.data('width');
+									
+									if (i < ui.value && i > 0) {
+										col.data('width', width || col.width());
+										width = 0;
 									} else {
-										row.show();
+										col.data('width', '');
+										width = width || col.width();
 									}
-								}
+									
+									widths.push(width);
+								});
 								
-								i++;
+								cols.each(function (i) {
+									widthSheet += widths[i];
+									jQuery(this).width(widths[i]);
+								});
+								
+								o
+									.width(widthSheet)
+									.attr('width', widthSheet + 'px')
+									.css('width', widthSheet + 'px')
 							}
-						},
-						step: 1,
-						min: 1,
-						max: size.height,
-						value: size.height
-					})
-					.css('left', '-' + s.colMargin + 'px')
-					.width(s.colMargin)
-					.height(objContainer.height() - s.colMargin);
+						});
+					
+					var vslider = objContainer.find('.vslider')
+						.height(s.newColumnWidth)
+						.draggable({
+							containment: 'parent',
+							axis: 'y',
+							start: function() {
+								jS.obj.autoFiller().hide();
+								this.v = [], this.p = [];
+								
+								var size = jS.sheetSize(o);
+								var height = objContainer.height();
+								var gridSize = parseInt(height / size.height);
+								for(var i = 0; i < size.height; i++) {
+									this.v[i] = gridSize * i;
+									this.p[gridSize * i] = i;
+								}
+							},
+							stop: function() {
+								jS.autoFillerGoToTd();
+							},
+							drag: function(e, ui) {
+								ui.value = this.p[arrHelpers.getClosestValues(this.v, ui.position.top)] + 1;
+								var rows = jS.sheetSize(o).height;
+								
+								var i = 1;
+								while (i <= rows) {
+									var row = jQuery(jS.getTd(jS.i, i, 1)).parent();
+									
+									if (!row.data('hidden')) {
+										if (i <= ui.value) {
+											row.hide();
+										} else {
+											row.show();
+										}
+									}
+									
+									i++;
+								}
+							}
+						});
 					
 					jS.evt.scrollBars(pane);
 					
@@ -1248,10 +1260,10 @@ jQuery.sheet = {
 								'<td class="' + jS.cl.sheetPaneTd + '">' + //pane
 									'<div id="' + jS.id.pane + jS.i + '" class="' + jS.cl.pane + '"></div>' +
 								'</td>' +
-								'<td style="width: ' + s.colMargin + 'px"><div class="vslider"></div></td>' +
+								'<td style="width: ' + s.colMargin + 'px" class="ui-widget-content vsliderParent"><div class="vslider ui-state-default"></div></td>' +
 							'</tr>' +
-							'<tr>' +
-								'<td style="text-align: right; style="height: ' + s.colMargin + 'px""><div class="hslider"></div></td>' +
+							'<tr style="height: ' + s.colMargin + 'px">' +
+								'<td style="text-align: right; height: ' + s.colMargin + 'px" class="ui-widget-content hsliderParent"><div style="height:' + s.colMargin + 'px" class="hslider ui-state-default"></div></td>' +
 							'</tr>' +
 						'</tbody>' +
 					'</table>');
@@ -3643,18 +3655,6 @@ jQuery.sheet = {
 					return sheetClone;
 				}
 			},
-			sheetSyncSizeToDivs: function() { /* syncs a sheet's size from bars/divs */
-				return;
-				var newSheetWidth = 0;
-				jS.obj.barTopAll().each(function() {
-					newSheetWidth += jQuery(this).width() - s.boxModelCorrection;
-				});
-				jS.obj.sheet()
-					.width(newSheetWidth)
-					.attr('width', newSheetWidth + 'px')
-					.css('width', newSheetWidth + 'px');
-				return newSheetWidth;
-			},
 			sheetSyncSizeToCols: function(o) { /* syncs a sheet's size from it's col objects
 													o: object, sheet object;
 												*/
@@ -3676,9 +3676,9 @@ jQuery.sheet = {
 					.height(h)
 					.width(s.width);
 					
-				var w = s.width - jS.attrH.width(jS.obj.barLeftParent()) - (s.boxModelCorrection);
+				var w = s.width - jS.attrH.width(jS.obj.barLeftParent()) - (s.boxModelCorrection * 2) - s.colMargin;
 				
-				h = h - jS.attrH.height(jS.obj.controls()) - jS.attrH.height(jS.obj.barTopParent()) - (s.boxModelCorrection * 2);
+				h = h - jS.attrH.height(jS.obj.controls()) - jS.attrH.height(jS.obj.barTopParent()) - (s.boxModelCorrection * 3) - s.colMargin;
 				
 				jS.obj.pane()
 					.height(h)
@@ -5258,5 +5258,16 @@ var arrHelpers = {
 			}
 		});
 		return arr;
-	}
+	},
+	getClosestValues: function(a, x) {
+		var closest = null;
+
+		for (var i = 0; i < a.length;i++) {
+			if (closest == null || Math.abs(a[i] - x) < Math.abs(closest - x)) {
+				closest = a[i];
+			}
+		}
+		
+		return closest;
+    }
 };

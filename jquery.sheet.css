@@ -156,17 +156,32 @@
 {
 	border-collapse: collapse ! important;
 	border: none ! important;
-	margin: none ! important;
-	padding: none ! important;
+	margin: 0px ! important;
+	padding: 0px ! important;
 	position: absolute ! important;
 }
 
-.tableControl .vslider .ui-slider-handle {
-	left: 0 ! important;
+.hslider {
+	width: 100px ! important;
+	cursor: pointer;
+	border-width: 0px ! important;
 }
-.tableControl .hslider .ui-slider-handle {
-	top: 0 ! important;
+
+.vslider {
+	cursor: pointer;
+	border-width: 0px ! important;
+	height: 100px ! important;
 }
+.vsliderParent {
+	vertical-align: top;
+	border-right-width: 0px ! important;
+	border-bottom-width: 0px ! important;
+}
+.hsliderParent {
+	border-right-width: 0px ! important;
+	border-bottom-width: 0px ! important;
+}
+
 /* Sheet styling */
 .jSheet
 {
