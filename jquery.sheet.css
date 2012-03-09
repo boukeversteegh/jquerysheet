@@ -161,6 +161,12 @@
 	position: absolute ! important;
 }
 
+.tableControl .vslider .ui-slider-handle {
+	left: 0 ! important;
+}
+.tableControl .hslider .ui-slider-handle {
+	top: 0 ! important;
+}
 /* Sheet styling */
 .jSheet
 {

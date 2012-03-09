@@ -1143,75 +1143,63 @@ jQuery.sheet = {
 					
 					var size = jS.sheetSize(o);
 					
+					jS.checkMinSize(o);
+					
 					objContainer.find('.hslider').slider({
+						start: function() {
+							jS.obj.autoFiller().hide();
+						},
+						stop: function() {
+							jS.autoFillerGoToTd();
+						},
 						slide: function(e, ui) {
-							var widthSheet= 0;
+							if (isNaN(ui.value)) return;
+							
+							var widthSheet = 0;
 							var cols = o.find('col');
-							var i = 0;
-							while (i <= cols.length) {
-								var col = cols.eq(i);
+							var widths = [];
+							cols.each(function (i) {
+								var col = jQuery(this);
 								
-								if(!i) {
-									widthSheet += col.width();
+								var width = col.data('width');
+								
+								if (i < ui.value && i > 0) {
+									col.data('width', width || col.width());
+									width = 0;
 								} else {
-									var oldWidth = col.data('oldWidth');
-									if (oldWidth) {
-										col
-											.width(oldWidth)
-											.data('oldWidth', '');
-									}
-									
-									if (i < ui.value) {
-										console.log(col.width());
-										col
-											.data('oldWidth', col.width())
-											.width(0);
-									} else {
-										//console.log([col.width(), i, widthSheet]);
-										widthSheet += col.width();
-									}
+									col.data('width', '');
+									width = width || col.width();
 								}
 								
-								i++;
-							}
-							i = 0''
-							while (i <= cols.length) {
-								var col = cols.eq(i);
-								
-								if(!i) {
-									widthSheet += col.width();
-								} else {
-									var oldWidth = col.data('oldWidth');
-									if (oldWidth) {
-										col
-											.width(oldWidth)
-											.data('oldWidth', '');
-									}
-									
-									if (i < ui.value) {
-										console.log(col.width());
-										col
-											.data('oldWidth', col.width())
-											.width(0);
-									} else {
-										//console.log([col.width(), i, widthSheet]);
-										widthSheet += col.width();
-									}
-								}
-								
-								i++;
-							}
-							//console.log(widthSheet);
-							o.width(widthSheet);
+								widths.push(width);
+							});
+							
+							cols.each(function (i) {
+								widthSheet += widths[i];
+								jQuery(this).width(widths[i]);
+							});
+							
+							o
+								.width(widthSheet)
+								.attr('width', widthSheet + 'px')
+								.css('width', widthSheet + 'px')
 						},
 						step: 1,
 						min: 1,
 						max: size.width
 					})
-					.css('margin-left', s.colMargin * 2);
+					.css('margin-left', s.colMargin + 'px')
+					.css('top', '-' + s.colMargin + 'px')
+					.height(s.colMargin);
 					
 					var vslider = objContainer.find('.vslider').slider({
 						orientation: 'vertical',
+						start: function() {
+							jS.obj.autoFiller().hide();
+						},
+						stop: function() {
+							jS.autoFillerGoToTd();
+						},
 						slide: function(e, ui) {
 							var rows = jS.sheetSize(o).height;
 							vslider.slider("option", "max", rows);
@@ -1236,9 +1224,10 @@ jQuery.sheet = {
 						min: 1,
 						max: size.height,
 						value: size.height
-					});
-					
-					jS.checkMinSize(o);
+					})
+					.css('left', '-' + s.colMargin + 'px')
+					.width(s.colMargin)
+					.height(objContainer.height() - s.colMargin);
 					
 					jS.evt.scrollBars(pane);
 					
@@ -1259,10 +1248,10 @@ jQuery.sheet = {
 								'<td class="' + jS.cl.sheetPaneTd + '">' + //pane
 									'<div id="' + jS.id.pane + jS.i + '" class="' + jS.cl.pane + '"></div>' +
 								'</td>' +
-								'<td><div class="vslider" style="height: 100%; width: 15px; left: -15px; height: 300px;"></div></td>' +
+								'<td style="width: ' + s.colMargin + 'px"><div class="vslider"></div></td>' +
 							'</tr>' +
 							'<tr>' +
-								'<td style="text-align: center;"><div class="hslider" style="height: 15px; top: -15px;"></div></td>' +
+								'<td style="text-align: right; style="height: ' + s.colMargin + 'px""><div class="hslider"></div></td>' +
 							'</tr>' +
 						'</tbody>' +
 					'</table>');
