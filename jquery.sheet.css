@@ -176,10 +176,12 @@
 	vertical-align: top;
 	border-right-width: 0px ! important;
 	border-bottom-width: 0px ! important;
+	background: none ! important;
 }
 .hsliderParent {
 	border-right-width: 0px ! important;
 	border-bottom-width: 0px ! important;
+	background: none ! important;
 }
 
 /* Sheet styling */

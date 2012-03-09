@@ -1221,7 +1221,7 @@ jQuery.sheet = {
 								jS.autoFillerGoToTd();
 							},
 							drag: function(e, ui) {
-								ui.value = this.p[arrHelpers.getClosestValues(this.v, ui.position.top)] + 1;
+								ui.value = this.p[arrHelpers.getClosestValues(this.v, ui.position.top)];
 								var rows = jS.sheetSize(o).height;
 								
 								var i = 1;
@@ -1263,7 +1263,7 @@ jQuery.sheet = {
 								'<td style="width: ' + s.colMargin + 'px" class="ui-widget-content vsliderParent"><div class="vslider ui-state-default"></div></td>' +
 							'</tr>' +
 							'<tr style="height: ' + s.colMargin + 'px">' +
-								'<td style="text-align: right; height: ' + s.colMargin + 'px" class="ui-widget-content hsliderParent"><div style="height:' + s.colMargin + 'px" class="hslider ui-state-default"></div></td>' +
+								'<td style="text-align: right; height: ' + s.colMargin + 'px" class="ui-widget-content hsliderParent"><div style="height:' + s.colMargin + 'px" class="hslider ui-state-default ui-corner-bl"></div></td>' +
 							'</tr>' +
 						'</tbody>' +
 					'</table>');
@@ -3676,7 +3676,7 @@ jQuery.sheet = {
 					.height(h)
 					.width(s.width);
 					
-				var w = s.width - jS.attrH.width(jS.obj.barLeftParent()) - (s.boxModelCorrection * 2) - s.colMargin;
+				var w = s.width - jS.attrH.width(jS.obj.barLeftParent()) - (s.boxModelCorrection) - s.colMargin;
 				
 				h = h - jS.attrH.height(jS.obj.controls()) - jS.attrH.height(jS.obj.barTopParent()) - (s.boxModelCorrection * 3) - s.colMargin;
 				
