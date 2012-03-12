@@ -431,7 +431,7 @@ jQuery.sheet = {
 					var cellLastBar = (type == 'row' ? jS.cellLast.row : jS.cellLast.col);
 					
 					if (!eq) {
-						if (cellLastBar == -1) {
+						if (cellLastBar == 0) {
 							eq = ':last';
 						} else {
 							eq = ':eq(' + cellLastBar + ')';
@@ -546,8 +546,6 @@ jQuery.sheet = {
 					jS.setTdIds(sheet, jS.i);
 					
 					o.dimensions(newCells, newCols);
-
-					jS.obj.pane().scroll();
 					
 					if (!skipFormulaReparse && eq != ':last') {
 						//offset formulas
@@ -1051,61 +1049,23 @@ jQuery.sheet = {
 						.append('<div id="' + jS.id.ui + '" class="' + jS.cl.ui + '">') //add spreadsheet control
 						.after(tabParent);
 				},
-				scrollers: function(objContainer, pane, o) { /* makes the bars scroll as the sheet is scrolled
+				scrollers: function(table, pane, sheet) { /* makes the bars scroll as the sheet is scrolled
+												table: object, the sheet pane's table;
 												pane: object, the sheet's pane;
+												sheet: object, the current active sheet;
 											*/
 					jS.obj.scrollerBottom()
 						.draggable({
 							containment: 'parent',
 							axis: 'x',
 							start: function() {
-								jS.obj.autoFiller().hide();
-								this.v = [], this.p = [];
-								
-								var size = jS.sheetSize(o);
-								var width = objContainer.width();
-								var gridSize = parseInt(width / size.width);
-								for(var i = 0; i < size.width; i++) {
-									this.v[i] = gridSize * i;
-									this.p[gridSize * i] = i;
-								}
-							},
-							stop: function() {
-								jS.autoFillerGoToTd();
+								jS.evt.scrollHorizontal.start(pane, sheet);
 							},
 							drag: function(e, ui) {
-								ui.value = this.p[arrHelpers.getClosestValues(this.v, ui.position.left)] + 1;
-								
-								if (!ui.value) return;
-								
-								var widthSheet = 0;
-								var cols = o.find('col');
-								var widths = [];
-								cols.each(function (i) {
-									var col = jQuery(this);
-									
-									var width = col.data('width');
-									
-									if (i < ui.value && i > 0) {
-										col.data('width', width || col.width());
-										width = 0;
-									} else {
-										col.data('width', '');
-										width = width || col.width();
-									}
-									
-									widths.push(width);
-								});
-								
-								cols.each(function (i) {
-									widthSheet += widths[i];
-									jQuery(this).width(widths[i]);
-								});
-								
-								o
-									.width(widthSheet)
-									.attr('width', widthSheet + 'px')
-									.css('width', widthSheet + 'px')
+								jS.evt.scrollHorizontal.scroll({pixel: ui.position.left});
+							},
+							stop: function() {
+								jS.evt.scrollHorizontal.stop(jS.obj.cellActive());
 							}
 						});
 					
@@ -1115,38 +1075,13 @@ jQuery.sheet = {
 							containment: 'parent',
 							axis: 'y',
 							start: function() {
-								jS.obj.autoFiller().hide();
-								this.v = [], this.p = [];
-								
-								var size = jS.sheetSize(o);
-								var height = objContainer.height();
-								var gridSize = parseInt(height / size.height);
-								for(var i = 0; i < size.height; i++) {
-									this.v[i] = gridSize * i;
-									this.p[gridSize * i] = i;
-								}
-							},
-							stop: function() {
-								jS.autoFillerGoToTd();
+								jS.evt.scrollVertical.start(pane, sheet);
 							},
 							drag: function(e, ui) {
-								ui.value = this.p[arrHelpers.getClosestValues(this.v, ui.position.top)];
-								var rows = jS.sheetSize(o).height;
-								
-								var i = 1;
-								while (i <= rows) {
-									var row = jQuery(jS.getTd(jS.i, i, 1)).parent();
-									
-									if (!row.data('hidden')) {
-										if (i < ui.value) {
-											row.hide();
-										} else {
-											row.show();
-										}
-									}
-									
-									i++;
-								}
+								jS.evt.scrollVertical.scroll({pixel: ui.position.top});
+							},
+							stop: function() {
+								jS.evt.scrollVertical.stop(jS.obj.cellActive());
 							}
 						});
 				},
@@ -1169,7 +1104,7 @@ jQuery.sheet = {
 					
 					jS.readOnly[i] = o.hasClass('readonly');
 					
-					var objContainer = jS.controlFactory.table().appendTo(jS.obj.ui());
+					var table = jS.controlFactory.table().appendTo(jS.obj.ui());
 					var pane = jS.obj.pane().html(o);
 					
 					if (s.autoFiller && jS.isSheetEditable()) {
@@ -1207,7 +1142,7 @@ jQuery.sheet = {
 								var o = jQuery(e.target);
 								var entity = o.data('entity');
 								var i = jS.getBarIndex[entity](e.target);
-								if (i == -1) return false;
+								if (i == 0) return false;
 								
 								if (jS.evt.barInteraction.selecting) {
 									jS.evt.barInteraction.last = i;
@@ -1232,7 +1167,7 @@ jQuery.sheet = {
 									var o = jQuery(e.target);
 									var entity = o.data('entity');
 									var i = jS.getBarIndex[entity](e.target);
-									if (i == -1) return false;
+									if (i == 0) return false;
 									
 									if (jS.evt.barInteraction.first == jS.evt.barInteraction.last) {
 										jS.controlFactory.barMenu[entity](e, i);
@@ -1254,17 +1189,17 @@ jQuery.sheet = {
 					
 					jS.checkMinSize(o);
 					
-					jS.controlFactory.scrollers(objContainer, pane, o);
+					jS.controlFactory.scrollers(table, pane, o);
 					
 					jS.addTab();
 					
 					if (fn) {
-						fn(objContainer, pane);
+						fn(table, pane);
 					}
 					
 					//jS.log('Sheet Initialized');
 					
-					return objContainer;
+					return table;
 				},
 				table: function() { /* creates the table control the will contain all the other controls for this instance */
 					return jQuery('<table cellpadding="0" cellspacing="0" border="0" id="' + jS.id.tableControl + jS.i + '" class="' + jS.cl.tableControl + '">' +
@@ -1299,6 +1234,8 @@ jQuery.sheet = {
 				inPlaceEdit: function(td) { /* creates a teaxtarea for a user to put a value in that floats on top of the current selected cell
 												td: object, the cell to be edited
 											*/
+					if (!td) td = jS.obj.cellActive();
+					
 					jS.obj.inPlaceEdit().remove();
 					var formula = jS.obj.formula();					
 					var offset = td.offset();
@@ -1343,7 +1280,7 @@ jQuery.sheet = {
 									'<div class="' + jS.cl.autoFillerCover + '" />' +
 							'</div>')
 							.mousedown(function(e) {
-								var td = jS.cellLast.td;
+								var td = jS.obj.cellActive();
 								if (td) {
 									var loc = jS.getTdLocation(td);
 									jS.cellSetActive(td, loc, true, jS.autoFillerNotGroup, function() {										
@@ -1368,7 +1305,7 @@ jQuery.sheet = {
 				var val = formula.val(); //once ctrl+v is hit formula now has the data we need
 				var firstValue = val;
 		
-				if (loc.row == -1 && loc.col == -1) return false; //at this point we need to check if there is even a cell selected, if not, we can't save the information, so clear formula editor
+				if (loc.row == 0 && loc.col == 0) return false; //at this point we need to check if there is even a cell selected, if not, we can't save the information, so clear formula editor
 		
 				var tdsBefore = jQuery('<div />');
 				var tdsAfter = jQuery('<div />');
@@ -1428,7 +1365,7 @@ jQuery.sheet = {
 					},
 					enter: function(e) {
 						if (!jS.cellLast.isEdit && !e.ctrlKey) {
-							jS.cellLast.td.dblclick();
+							jS.obj.cellActive().dblclick();
 							return false;
 						} else {
 							return this.enterOnInPlaceEdit(e);
@@ -1459,21 +1396,28 @@ jQuery.sheet = {
 						return true;
 					},
 					pageUpDown: function(reverse) {
-						var pane = jS.obj.pane();
-						var left = jS.cellLast.td.position().left;
-						var top = 0;
+						var size = jS.sheetSize(),
+						pane = jS.obj.pane(),
+						paneHeight = pane.height(),
+						prevRowsHeights = 0,
+						thisRowHeight = 0,
+						td;
 						
-						if (reverse) {
-							top = 0;
-							pane.scrollTop(pane.scrollTop() - pane.height());
-							
-						} else {
-							top = pane.height() - (s.colMargin * 3);
-							pane.scrollTop(pane.scrollTop() + top);
-
+						if (reverse) { //go up
+							for(var i = jS.cellLast.row; i > 0 && prevRowsHeights < paneHeight; i--) {
+								td = jQuery(jS.getTd(jS.i, i, 1));
+								if (!td.data('hidden') && td.is(':hidden')) td.show();
+								prevRowsHeights += td.parent().height();
+							}
+						} else { //go down
+							for(var i = jS.cellLast.row; i < size.height && prevRowsHeights < paneHeight; i++) {
+								td = jQuery(jS.getTd(jS.i, i, 1));
+								prevRowsHeights += td.parent().height();
+							}
 						}
+						jS.cellEdit(td);
 						
-						return jS.evt.cellSetFocusFromXY(left, top);
+						return false;
 					},
 					formulaKeydown: function(e) {
 						if (jS.readOnly[jS.i]) return false;
@@ -1583,11 +1527,11 @@ jQuery.sheet = {
 							jS.obj.inPlaceEdit().remove();
 							var formula = jS.obj.formula();
 							//formula.unbind('keydown'); //remove any lingering events from inPlaceEdit
-							var td = jS.cellLast.td;
+							var td = jS.obj.cellActive();
 							switch(jS.isFormulaEditable(td)) {
 								case true:
 									//Lets ensure that the cell being edited is actually active
-									if (td && jS.cellLast.row > -1 && jS.cellLast.col > -1) {
+									if (td && jS.cellLast.row > 0 && jS.cellLast.col > 0) {
 										//first, let's make it undoable before we edit it
 										jS.cellUndoable.add(td);
 										
@@ -1653,11 +1597,11 @@ jQuery.sheet = {
 						jS.calc();
 					}
 					
-					jS.cellLast.td = jQuery('<td />');
-					jS.cellLast.row = -1;
-					jS.cellLast.col = -1;
-					jS.rowLast = -1;
-					jS.colLast = -1;
+					jS.cellLast.td = [];
+					jS.cellLast.row = 0;
+					jS.cellLast.col = 0;
+					jS.rowLast = 0;
+					jS.colLast = 0;
 					
 					jS.labelUpdate('', true);
 					jS.obj.formula()
@@ -1669,27 +1613,23 @@ jQuery.sheet = {
 					
 					return false;
 				},
-				cellSetFocusFromXY: function(left, top, skipOffset) { /* a handy function the will set a cell active by it's location on the browser;
+				cellSetFocusFromXY: function(left, top) { /* a handy function the will set a cell active by it's location on the browser;
 																		left: int, pixels left;
 																		top: int, pixels top;
-																		skipOffset: bool, skips offset;
 																	*/
-					var td = jS.getTdFromXY(left, top, skipOffset);
-					
+					var td = jS.getTdFromXY(left, top);
 					if (jS.isTd(td)) {
-						jS.themeRoller.cell.clearHighlighted();
-						
+						td = jQuery(td);
 						jS.cellEdit(td);
 						return false;
-					} else {
-						return true;
 					}
+					return true;
 				},
 				cellSetHighlightFromKeyCode: function(e) {
 					var c = jS.highlightedLast.colLast;
 					var r = jS.highlightedLast.rowLast;
 					var size = jS.sheetSize();
-					jQuery(jS.cellLast.td).mousedown();
+					jS.obj.cellActive().mousedown();
 					
 					switch (e.keyCode) {
 						case key.UP: 		r--; break;
@@ -1699,7 +1639,7 @@ jQuery.sheet = {
 					}
 					
 					function keepInSize(i, size) {
-						if (i < 0) return 0;
+						if (i < 1) return 1;
 						if (i > size) return size;
 						return i;
 					}
@@ -1724,7 +1664,7 @@ jQuery.sheet = {
 						case key.RIGHT: 	c++; break;
 						case key.ENTER:		r++;
 							overrideIsEdit = true;
-							if (jS.highlightedLast.td.length > 1) {
+							if (jS.highlightedLast.tNovd.length > 1) {
 								var inPlaceEdit = jS.obj.inPlaceEdit();
 								var v = inPlaceEdit.val();
 								inPlaceEdit.remove();
@@ -1749,24 +1689,24 @@ jQuery.sheet = {
 								}
 							}
 							break;
-						case key.HOME:		c = 0; break;
-						case key.END:		c = jS.cellLast.td.parent().find('td').length - 1; break;
+						case key.HOME:		c = 1; break;
+						case key.END:		c = jS.obj.cellActive().parent().find('td').length - 1; break;
 					}
 					
-					//we check here and make sure all values are above -1, so that we get a selected cell
-					c = (c < 0 ? 0 : c);
-					r = (r < 0 ? 0 : r);
+					//we check here and make sure all values are above 0, so that we get a selected cell
+					c = (c ? c : 1);
+					r = (r ? r : 1);
 					
 					//to get the td could possibly make keystrokes slow, we prevent it here so the user doesn't even know we are listening ;)
 					if (!jS.cellLast.isEdit || overrideIsEdit) {
 						//get the td that we want to go to
 						var td = jS.getTd(jS.i, r, c);
-					
+						
 						//if the td exists, lets go to it
 						if (td) {
 							jS.themeRoller.cell.clearHighlighted();
 							td = jQuery(td);
-							if (td.is(':hidden')) {
+							if (td.data('hidden')) {
 								function getNext(o, reverse) {
 									if (reverse) {
 										c++;
@@ -1777,7 +1717,7 @@ jQuery.sheet = {
 										o = o.prev();
 									}
 									
-									if (o.is(':hidden') && o.length) {
+									if (o.data('hidden') && o.length) {
 										return getNext(o, reverse);
 									}
 									return o;
@@ -1805,7 +1745,7 @@ jQuery.sheet = {
 				},
 				cellOnDblClick: function(e) {
 					jS.cellLast.isEdit = jS.isSheetEdit = true;
-					jS.controlFactory.inPlaceEdit(jS.cellLast.td);
+					jS.controlFactory.inPlaceEdit();
 					//jS.log('click, in place edit activated');
 				},
 				barInteraction: { /* handles bar events, including resizing */
@@ -1818,7 +1758,7 @@ jQuery.sheet = {
 						o = jQuery(o);
 						var entity = o.data('entity'); //returns "top" or "left";
 						var i = jS.getBarIndex[entity](o);
-						if (i == -1) return false;
+						if (!i) return false;
 						
 						jS[entity + 'Last'] = i; //keep track of last column for inserting new columns
 						jS.evt.barInteraction.last = jS.evt.barInteraction.first = i;
@@ -1833,6 +1773,129 @@ jQuery.sheet = {
 							});
 						
 						return false;
+					}
+				},
+				scrollVertical: {
+					start: function(pane, sheet) {
+						jS.obj.autoFiller().hide();
+						
+						if (!pane) pane = jS.obj.pane();
+						if (!sheet) sheet = jS.obj.sheet();
+						
+						this.pane = pane,
+						this.sheet = sheet,
+						this.v = [],
+						this.p = [],
+						this.size = jS.sheetSize(sheet),
+						this.offset = 0;
+						
+						var height = pane.height() - 100;
+						var gridSize = parseInt(height / this.size.height);
+						for(var i = 0; i < this.size.height; i++) {
+							this.v[i] = gridSize * i;
+							this.p[gridSize * i] = i;
+						}
+					},
+					scroll: function(pos, keepRight) {
+						if (!pos) pos = {};
+						if (!pos.pixel) pos.pixel = 1;
+						if (!pos.value) pos.value = this.p[arrHelpers.getClosestValues(this.v, pos.pixel)] + 1;
+						
+						var i = 1;
+						while (i <= this.size.height) {
+							var row = jQuery(jS.getTd(jS.i, i, 1)).parent();
+							
+							if (!row.data('hidden')) {
+								if (i < pos.value) {
+									row.hide();
+								} else {
+									row.show();
+								}
+							}
+							
+							i++;
+						}
+						
+						this.value = pos.value;
+					},
+					stop: function(td) {
+						if (this.value) {
+							jS.obj.scrollerRight()
+								.css('top', ((this.pane.height() / this.size.height) * (this.value - 1)) + 'px');
+						}
+						
+						if (td) {
+							jS.autoFillerGoToTd(td);
+						}
+					}
+				},
+				scrollHorizontal: {
+					start: function(pane, sheet) {
+						jS.obj.autoFiller().hide();
+						
+						if (!pane) pane = jS.obj.pane();
+						if (!sheet) sheet = jS.obj.sheet();
+						
+						this.pane = pane,
+						this.sheet = sheet,
+						this.cols = sheet.find('col'),
+						this.v = [],
+						this.p = [],
+						this.size = jS.sheetSize(sheet),
+						this.offset = 0;
+						
+						var width = pane.width();
+						var gridSize = parseInt(width / this.size.width);
+						for(var i = 0; i < this.size.width; i++) {
+							this.v[i] = gridSize * i;
+							this.p[gridSize * i] = i;
+						}
+					},
+					scroll: function(pos, keepBottom) {
+						if (!pos) pos = {pixel: 0, value: 0};
+						if (!pos.pixel) pos.pixel = 1;
+						if (!pos.value) pos.value = this.p[arrHelpers.getClosestValues(this.v, pos.pixel)] + 1;
+						
+						var widthSheet = 0;
+						var widths = [];
+						var widthsActual = [];
+						this.cols.each(function (i) {
+							var col = jQuery(this);
+							
+							var width = (col.data('width') || col.width());
+							
+							if (i < pos.value && i > 0) {
+								col.data('width', width);
+								width = 0;
+							} else {
+								col.data('width', '');
+							}
+							
+							widths.push(width);
+						});
+						
+						this.cols.each(function (i) {
+							widthSheet += widths[i];
+							if (i)
+								jQuery(this).width(widths[i]);
+						});
+						
+						this.sheet
+							.width(widthSheet)
+							.attr('width', widthSheet + 'px')
+							.css('width', widthSheet + 'px');
+						
+						this.value = pos.value;
+					},
+					stop: function(td) {
+						if (this.value) {
+							jS.obj.scrollerBottom()
+								.css('left', ((this.pane.width() / this.size.width) * (this.value - 1)) + 'px');
+						}
+						
+						if (td) {
+							jS.autoFillerGoToTd(td);
+						}
 					}
 				}
 			},
@@ -2501,7 +2564,7 @@ jQuery.sheet = {
 					setActive: function() {
 						this.clearActive();
 						this.setHighlighted(
-							jS.cellLast.td
+							jS.obj.cellActive()
 								.addClass(jS.cl.cellActive)
 						);
 					},
@@ -2522,12 +2585,12 @@ jQuery.sheet = {
 								.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
 						}
 						
-						jS.highlightedLast.rowStart = -1;
-						jS.highlightedLast.colStart = -1;
-						jS.highlightedLast.rowEnd = -1;
-
-						jS.highlightedLast.colEnd = -1;
-						jS.highlightedLast.td = jQuery('<td />');
+						jS.highlightedLast.rowStart = 0;
+						jS.highlightedLast.colStart = 0;
+						
+						jS.highlightedLast.rowEnd = 0;
+						jS.highlightedLast.colEnd = 0;
+						jS.highlightedLast.td = [];
 					}
 				},
 				bar: {
@@ -2618,7 +2681,6 @@ jQuery.sheet = {
 							jS.busy = false;
 							
 							jS.followMe();
-							jS.obj.pane().scroll();
 						}
 					});
 				},
@@ -2639,7 +2701,6 @@ jQuery.sheet = {
 							jS.busy = false;
 
 							jS.followMe();
-							jS.obj.pane().scroll();
 						}
 					});
 				},
@@ -2675,16 +2736,16 @@ jQuery.sheet = {
 					jS.obj.label().html(v);
 				}
 			},
-			cellEdit: function(td, isDrag, skipFocus) { /* starts cell to be edited
+			cellEdit: function(td, isDrag) { /* starts cell to be edited
 												td: object, td object;
-
 												isDrag: bool, should be determained by if the user is dragging their mouse around setting cells;
 												*/
 				jS.autoFillerNotGroup = true; //make autoFiller directional again.
 				//This finished up the edit of the last cell
 				jS.evt.cellEditDone();
+				
 				jS.followMe(td);
-				jS.obj.pane().scroll();
+				
 				var loc = jS.getTdLocation(td);
 				
 				//Show where we are to the user
@@ -2698,12 +2759,6 @@ jQuery.sheet = {
 				var formula = jS.obj.formula()
 					.val(v)
 					.blur();
-				
-				if (!skipFocus) {
-					//formula
-						//.focus()
-						//.select();
-				}
 				
 				jS.cellSetActive(td, loc, isDrag);
 			},
@@ -2805,17 +2860,17 @@ jQuery.sheet = {
 			colLast: 0, /* the most recent used column */
 			rowLast: 0, /* the most recent used row */
 			cellLast: { /* the most recent used cell */
-				td: jQuery('<td />'), //this is a dud td, so that we don't get errors
-				row: -1,
-				col: -1,
+				td: [], //this is a dud td, so that we don't get errors
+				row: 0,
+				col: 0,
 				isEdit: false
 			}, /* the most recent highlighted cells */
 			highlightedLast: {
-				td: jQuery('<td />'),
-				rowStart: -1,
-				colStart: -1,
-				rowEnd: -1,
-				colEnd: -1
+				td: [],
+				rowStart: 0,
+				colStart: 0,
+				rowEnd: 0,
+				colEnd: 0
 			},
 			cellStyleToggle: function(setClass, removeClass) { /* sets a cells class for styling
 																	setClass: string, class(es) to set cells to;
@@ -3110,7 +3165,6 @@ jQuery.sheet = {
 				jQuery(jS.getTd(jS.i, jS.rowLast, 1)).parent().remove();
 				
 				jS.setTdIds();
-				jS.obj.pane().scroll();
 				
 				jS.offsetFormulas({
 					row: jS.rowLast,
@@ -3137,7 +3191,6 @@ jQuery.sheet = {
 				}
 				
 				jS.setTdIds();
-				jS.obj.pane().scroll();
 				
 				jS.offsetFormulas({
 					row: 0,
@@ -3316,56 +3369,63 @@ jQuery.sheet = {
 			followMe: function(td) { /* scrolls the sheet to the selected cell
 										td: object, td object;
 									*/
-				td = (td ? td : jQuery(jS.cellLast.td));
-				var pane = jS.obj.pane();
-				var panePos = pane.offset();
-				var paneWidth = pane.width();
-				var paneHeight = pane.height();
-
-				var tdPos = td.offset();
-				var tdWidth = td.width();
-				var tdHeight = td.height();
+				td = (td ? td : jS.obj.cellActive());
 				
-				var margin = 20;
+				var wasHidden = false;
+				
+				if (td.parent().is(':hidden') && !td.parent().data('hidden')) {
+					td.parent().show();
+					wasHidden = true;
+				}
+				
+				var sheet = jS.obj.sheet(),
+				pane = jS.obj.pane(),
+				panePos = pane.offset(),
+				paneWidth = pane.width(),
+				paneHeight = pane.height(),
+				
+				tdLoc = jS.getTdLocation(td),
+				tdPos = td.offset(),
+				tdWidth = td.width(),
+				tdHeight = td.height(),
+				moveAutoFiller = true;
 				
 				//jS.log('td: [' + tdPos.left + ', ' + tdPos.top + ']');
 				//jS.log('pane: [' + panePos.left + ', ' + panePos.top + ']');
 				
-				if ((tdPos.left + tdWidth + margin) > (panePos.left + paneWidth)) { //right
-					pane.stop().scrollTo(td, {
-						axis: 'x',
-						duration: 50,
-						offset: - ((paneWidth - tdWidth) - margin)
-					});
-				} else if (tdPos.left < panePos.left) { //left
-					pane.stop().scrollTo(td, {
-						axis: 'x',
-						duration: 50
-					});
+				if ((tdPos.left + tdWidth) > (panePos.left + paneWidth)) { //right
+					jS.evt.scrollHorizontal.start(pane, sheet);
+					jS.evt.scrollHorizontal.scroll({value: tdLoc.col}, true);
+					jS.evt.scrollHorizontal.stop(td);
+					moveAutoFiller = false;
+				} else if (tdPos.left < (panePos.left)) { //left
+					jS.evt.scrollHorizontal.start(pane, sheet);
+					jS.evt.scrollHorizontal.scroll({value: tdLoc.col});
+					jS.evt.scrollHorizontal.stop(td);
+					moveAutoFiller = false;
 				}
 				
-				if ((tdPos.top + tdHeight + margin) > (panePos.top + paneHeight)) { //bottom
-					pane.stop().scrollTo(td, {
-						axis: 'y',
-						duration: 50,
-						offset: - ((paneHeight - tdHeight) - margin)
-					});
-				} else if (tdPos.top < panePos.top) { //top
-					pane.stop().scrollTo(td, {
-						axis: 'y',
-						duration: 50
-					});
+				if ((tdPos.top + tdHeight) > (panePos.top + paneHeight)) { //bottom
+					jS.evt.scrollVertical.start(pane, sheet);
+					jS.evt.scrollVertical.scroll({value: tdLoc.row}, true);
+					jS.evt.scrollVertical.stop(td);
+					moveAutoFiller = false;
+				} else if (tdPos.top <= panePos.top || wasHidden) { //top
+					jS.evt.scrollVertical.start(pane, sheet);
+					jS.evt.scrollVertical.scroll({value: tdLoc.row});
+					jS.evt.scrollVertical.stop(td);
+					moveAutoFiller = false;
 				}
-
 				
-				jS.autoFillerGoToTd(td, tdHeight, tdWidth);
+				if (moveAutoFiller)
+					jS.autoFillerGoToTd(td, tdHeight, tdWidth);
 			},
 			autoFillerGoToTd: function(td, tdHeight, tdWidth) { /* moves autoFiller to a selected cell
 																	td: object, td object;
 																	tdHeight: height of a td object;
 																	tdWidth: width of a td object;
 																*/
-				td = (td ? td : jQuery(jS.cellLast.td));
+				td = (td ? td : jS.obj.cellActive());
 				tdHeight = (tdHeight ? tdHeight : td.height());
 				tdWidth = (tdWidth ? tdWidth : td.width());
 				
@@ -3385,7 +3445,7 @@ jQuery.sheet = {
 											*/
 				i = (i ? i : 0);
 				
-				if (jS.cellLast.row > -1 || jS.cellLast.col > -1) {
+				if (jS.cellLast.row > 0 || jS.cellLast.col > 0) {
 					jS.evt.cellEditDone();
 					jS.obj.formula().val('');
 				}
@@ -3921,22 +3981,29 @@ jQuery.sheet = {
 					row: parseInt(td[0].parentNode.rowIndex)
 				}
 			},
-			getTdFromXY: function(left, top, skipOffset) { /* gets cell from point
+			getTdFromXY: function(left, top) { /* gets cell from point
 																left: int, pixels left;
 																top: int, pixels top;
-																skipOffset: bool, skips pane offset;
 															*/
 				var pane = jS.obj.pane();
-				var paneOffset = (skipOffset ? {left: 0, top: 0} : pane.offset());
+				var paneOffset = pane.offset();
 				
-				top += paneOffset.top + 2;
-				left += paneOffset.left + 2;
+				top += paneOffset.top;
+				left += paneOffset.left;
 				
 				//here we double check that the coordinates are inside that of the pane, if so then we can continue
-				if ((top >= paneOffset.top && top <= paneOffset.top + pane.height()) &&
-					(left >= paneOffset.left && left <= paneOffset.left + pane.width())) {
-					var td = jQuery(document.elementFromPoint(left - $window.scrollLeft(), top - $window.scrollTop()));
-					
+				if (
+						(
+							top >= paneOffset.top && 
+							top <= paneOffset.top + pane.height()
+						)
+							&&
+						(
+							left >= paneOffset.left && 
+							left <= paneOffset.left + pane.width()
+						)
+				) {
+					var td = document.elementFromPoint(left, top);
 					
 					//I use this snippet to help me know where the point was positioned
 					/*jQuery('<div class="ui-widget-content" style="position: absolute;">TESTING TESTING</div>')
@@ -3955,20 +4022,20 @@ jQuery.sheet = {
 				left: function(o) {/* get's index from object */
 					var i = jQuery.trim(jQuery(o).text());
 					if (isNaN(i)) {
-						return -1;
+						return 0;
 					} else {
 						return i;
 					}
 				},
 				top: function(o) {/* get's index from object */
 					var v = jQuery.trim(jQuery(o).text());
-					if (!v) return -1;
+					if (!v) return 0;
 					
 					var i = jSE.columnLabelIndex(v);
 					i = parseInt(i);
 					
 					if (isNaN(i)) {
-						return -1;
+						return 0;
 					} else {
 						return i;
 					}
@@ -4179,10 +4246,6 @@ jQuery.sheet = {
 		
 		if (!jQuery.support.boxModel) {
 			s.boxModelCorrection = 0;
-		}
-		
-		if (!jQuery.scrollTo) {
-			jS.followMe = emptyFN;
 		}
 		
 		if (!s.barMenus) {
