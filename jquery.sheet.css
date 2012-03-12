@@ -223,6 +223,7 @@
 	font-size: 1em;
 	color:  inherit;
 }
+
 .jSheetError {
 	text-align: left;
 	width: inherit ! important;
@@ -230,11 +231,6 @@
 	overflow: hidden;
 	padding: 0px;
 	margin: 0px;
-}
-
-.jSheet colgroup col
-{
-	border: none ! important;
 }
 
 /* Containers styleing*/

@@ -14,7 +14,7 @@ http://www.gnu.org/licenses/
 		attribute to use for bar sizing.  We try to use this as much as possible.  But because col's
 		don't have boarders, we subtract or add jS.s.boxModelCorrection for those browsers.
 	tr/td column and row Index VS cell/column/row index
-		DOM elements are all 0 based (tr/td/table)
+		DOM elements are all 0 based (tr/td/table), but first is cell bar, so A1 = tr[1] td[1]
 		Spreadsheet elements are all 1 based (A1, A1:B4, TABLE2:A1, TABLE2:A1:B4)
 		Column/Row/Cell
 	DOCTYPE:
@@ -130,6 +130,15 @@ jQuery.fn.extend({
 		try {
 			jS.spreadsheets[sheet][row][col].html = html;
 		} catch(e) {}
+	},
+	redraw: function(fn) {
+		var me = jQuery(this).hide();
+		setTimeout(function() {
+			me.show();
+			if (fn)
+				if (jQuery.isFunction(fn)) fn();
+		}, 0);
+		return this;
 	}
 });
 
@@ -1065,7 +1074,7 @@ jQuery.sheet = {
 								jS.evt.scrollHorizontal.scroll({pixel: ui.position.left});
 							},
 							stop: function() {
-								jS.evt.scrollHorizontal.stop(jS.obj.cellActive());
+								jS.evt.scrollHorizontal.stop();
 							}
 						});
 					
@@ -1081,7 +1090,7 @@ jQuery.sheet = {
 								jS.evt.scrollVertical.scroll({pixel: ui.position.top});
 							},
 							stop: function() {
-								jS.evt.scrollVertical.stop(jS.obj.cellActive());
+								jS.evt.scrollVertical.stop();
 							}
 						});
 				},
@@ -1818,14 +1827,14 @@ jQuery.sheet = {
 						
 						this.value = pos.value;
 					},
-					stop: function(td) {
+					stop: function() {
 						if (this.value) {
 							jS.obj.scrollerRight()
 								.css('top', ((this.pane.height() / this.size.height) * (this.value - 1)) + 'px');
 						}
 						
-						if (td) {
-							jS.autoFillerGoToTd(td);
+						if (this.td) {
+							jS.autoFillerGoToTd(this.td);
 						}
 					}
 				},
@@ -1842,7 +1851,10 @@ jQuery.sheet = {
 						this.v = [],
 						this.p = [],
 						this.size = jS.sheetSize(sheet),
-						this.offset = 0;
+						this.offset = 0,
+						this.td = jS.obj.cellActive(),
+						this.tdLoc = jS.getTdLocation(this.td),
+						this.widthSheet = 0;
 						
 						var width = pane.width();
 						var gridSize = parseInt(width / this.size.width);
@@ -1856,34 +1868,33 @@ jQuery.sheet = {
 						if (!pos.pixel) pos.pixel = 1;
 						if (!pos.value) pos.value = this.p[arrHelpers.getClosestValues(this.v, pos.pixel)] + 1;
 						
+						console.log(pos.value);
+						
 						var widthSheet = 0;
 						var widths = [];
 						var widthsActual = [];
+						var colgroup = '<colgroup>';
 						this.cols.each(function (i) {
 							var col = jQuery(this);
 							
 							var width = (col.data('width') || col.width());
+							var oldWidth = width;
+							col.data('width', width);
 							
-							if (i < pos.value && i > 0) {
-								col.data('width', width);
+							if (i < pos.value && i > 0) { //is hidden
 								width = 0;
-							} else {
-								col.data('width', '');
 							}
 							
-							widths.push(width);
+							widthSheet += width;
+							colgroup += '<col width="' + width + 'px" style="' + width + 'px" data-width="' + oldWidth + '"/>'
 						});
+						colgroup += '</colgroup>';
 						
-						this.cols.each(function (i) {
-							widthSheet += widths[i];
-							if (i)
-								jQuery(this).width(widths[i]);
-						});
 						
 						this.sheet
 							.width(widthSheet)
-							.attr('width', widthSheet + 'px')
-							.css('width', widthSheet + 'px');
+							.find('colgroup')
+								.replaceWith(colgroup);
 						
 						this.value = pos.value;
 					},
@@ -1893,8 +1904,14 @@ jQuery.sheet = {
 								.css('left', ((this.pane.width() / this.size.width) * (this.value - 1)) + 'px');
 						}
 						
-						if (td) {
-							jS.autoFillerGoToTd(td);
+						if (this.td) {
+							if (window.chrome) {//chrome hack to redraw table
+								this.td.parent().redraw(function() {
+									jS.autoFillerGoToTd(this.td);
+								});
+							} else {
+								jS.autoFillerGoToTd(this.td);
+							}
 						}
 					}
 				}
@@ -3371,11 +3388,12 @@ jQuery.sheet = {
 									*/
 				td = (td ? td : jS.obj.cellActive());
 				
-				var wasHidden = false;
+				var rowWasHidden = false;
+				var colWasHidden = false;
 				
 				if (td.parent().is(':hidden') && !td.parent().data('hidden')) {
 					td.parent().show();
-					wasHidden = true;
+					rowWasHidden = true;
 				}
 				
 				var sheet = jS.obj.sheet(),
@@ -3385,37 +3403,49 @@ jQuery.sheet = {
 				paneHeight = pane.height(),
 				
 				tdLoc = jS.getTdLocation(td),
+				col = sheet.find('col').eq(tdLoc.col),
+				colWidth = col.width(),
 				tdPos = td.offset(),
 				tdWidth = td.width(),
 				tdHeight = td.height(),
 				moveAutoFiller = true;
 				
+				if (colWidth == 0) {
+					colWasHidden = true;
+				}
 				//jS.log('td: [' + tdPos.left + ', ' + tdPos.top + ']');
 				//jS.log('pane: [' + panePos.left + ', ' + panePos.top + ']');
 				
 				if ((tdPos.left + tdWidth) > (panePos.left + paneWidth)) { //right
 					jS.evt.scrollHorizontal.start(pane, sheet);
 					jS.evt.scrollHorizontal.scroll({value: tdLoc.col}, true);
-					jS.evt.scrollHorizontal.stop(td);
+					jS.evt.scrollHorizontal.stop();
+					
 					moveAutoFiller = false;
-				} else if (tdPos.left < (panePos.left)) { //left
+					//console.log("right");
+				} else if (colWasHidden) { //left
 					jS.evt.scrollHorizontal.start(pane, sheet);
 					jS.evt.scrollHorizontal.scroll({value: tdLoc.col});
-					jS.evt.scrollHorizontal.stop(td);
+					jS.evt.scrollHorizontal.stop();
+					
 					moveAutoFiller = false;
+					//console.log("left");
 				}
 				
-				if ((tdPos.top + tdHeight) > (panePos.top + paneHeight)) { //bottom
+				if ((tdPos.top + tdHeight) > (panePos.top + paneHeight)) { //down
 					jS.evt.scrollVertical.start(pane, sheet);
 					jS.evt.scrollVertical.scroll({value: tdLoc.row}, true);
-					jS.evt.scrollVertical.stop(td);
+					jS.evt.scrollVertical.stop();
 					moveAutoFiller = false;
-				} else if (tdPos.top <= panePos.top || wasHidden) { //top
+					//console.log("down");
+				} else if (rowWasHidden) { //up
 					jS.evt.scrollVertical.start(pane, sheet);
 					jS.evt.scrollVertical.scroll({value: tdLoc.row});
-					jS.evt.scrollVertical.stop(td);
+					jS.evt.scrollVertical.stop();
 					moveAutoFiller = false;
+					//console.log("up");
 				}
+				
 				
 				if (moveAutoFiller)
 					jS.autoFillerGoToTd(td, tdHeight, tdWidth);
@@ -3797,7 +3827,7 @@ jQuery.sheet = {
 																start: int, int to start highlighting from;
 																start: int, int to end highlighting to;
 															*/
-				var size = jS.sheetSize(jQuery('#' + jS.id.sheet + jS.i));
+				var size = jS.sheetSize();
 				var first = (start < end ? start : end);
 				var last = (start < end ? end : start);
 				
