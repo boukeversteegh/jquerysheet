@@ -1148,8 +1148,8 @@ jQuery.sheet = {
 								if (jS.busy) return false;
 								
 								if (!jS.isBar(e.target)) return;
-								var o = jQuery(e.target);
-								var entity = o.data('entity');
+								var bar = jQuery(e.target);
+								var entity = bar.data('entity');
 								var i = jS.getBarIndex[entity](e.target);
 								if (i == 0) return false;
 								
@@ -1158,13 +1158,13 @@ jQuery.sheet = {
 									
 									jS.cellSetActiveBar(entity, jS.evt.barInteraction.first, jS.evt.barInteraction.last);
 								} else {
-									jS.resizeBar[entity](o, i);
+									jS.resizeBar[entity](bar, i, o);
 									
 									if (jS.isSheetEditable()) {
-										jS.controlFactory.barHandle[entity](o, i);
+										jS.controlFactory.barHandle[entity](bar, i, o);
 										
 										if (entity == "top") {
-											jS.controlFactory.barMenu[entity](e, i, o);
+											jS.controlFactory.barMenu[entity](e, i, bar);
 										}
 									}
 								}
@@ -1807,12 +1807,21 @@ jQuery.sheet = {
 						this.size = jS.sheetSize(sheet),
 						this.offset = 0,
 						this.max = this.size.height,
-						this.height = pane.height() - 100,
-						this.gridSize = parseInt(this.height / this.size.height);
+						this.height = pane.height() - 50;
 						
-						for(var i = 0; i <= this.size.height; i++) {
+						var alwaysShowRowHeight = 0;
+						
+						for(var i = this.size.height; i > 0; i--) {
+							alwaysShowRowHeight += jQuery(jS.getTd(jS.i, i, 1)).parent().andSelf().height();
+							if (alwaysShowRowHeight < this.height) this.max--;
+						}
+						this.max++;
+						
+						this.gridSize = parseInt(this.height / this.max);
+						
+						for(var i = 0; i <= this.max; i++) {
 							this.v[i] = this.gridSize * i;
-							this.p[this.gridSize * i] = i;
+							this.p[this.gridSize * i] = i + 1;
 						}
 					},
 					scroll: function(pos, keepRight) {
@@ -1823,14 +1832,14 @@ jQuery.sheet = {
 						if (pos.value > this.max) pos.value = this.max;
 
 						var i = 1;
-						while (i <= this.size.height) {
+						while (i <= this.max) {
 							var row = jQuery(jS.getTd(jS.i, i, 1)).parent();
 							
 							if (!row.data('hidden')) {
 								if (i < pos.value) {
-									row.hide();
+									row.addClass("rowHidden");
 								} else {
-									row.show();
+									row.removeClass("rowHidden");
 								}
 							}
 							
@@ -1840,10 +1849,7 @@ jQuery.sheet = {
 						this.value = pos.value;
 					},
 					stop: function() {
-						if (this.value) {
-							jS.obj.scrollerRight()
-								.css('top', (this.gridSize * this.value) + 'px');
-						}
+						jS.obj.scrollerRight().css('top', (this.gridSize * (this.value - 1)) + 'px');
 						
 						if (this.td) {
 							jS.autoFillerGoToTd(this.td);
@@ -1868,12 +1874,19 @@ jQuery.sheet = {
 						this.tdLoc = jS.getTdLocation(this.td),
 						this.widthSheet = 0,
 						this.max = this.size.width,
-						this.width = pane.width() - 100,
-						this.gridSize = parseInt(this.width / this.size.width);
+						this.width = pane.width() - 100;
 						
-						for(var i = 0; i <= this.size.width; i++) {
+						var alwaysShowColWidth = 0;
+						for(var i = this.cols.length - 1; i > 0; i--) {
+							alwaysShowColWidth += this.cols.eq(i).width();
+							if (alwaysShowColWidth < this.width) this.max--;
+						}
+						this.max++;
+						this.gridSize = parseInt(this.width / this.max);
+						
+						for(var i = 0; i < this.max; i++) {
 							this.v[i] = this.gridSize * i;
-							this.p[this.gridSize * i] = i;
+							this.p[this.gridSize * i] = i + 1;
 						}
 					},
 					scroll: function(pos, keepBottom) {
@@ -1911,11 +1924,8 @@ jQuery.sheet = {
 						
 						this.value = pos.value;
 					},
-					stop: function(td) {
-						if (this.value) {
-							jS.obj.scrollerBottom()
-								.css('left', (this.gridSize * this.value) + 'px');
-						}
+					stop: function() {
+						jS.obj.scrollerBottom().css('left', (this.gridSize * this.value) + 'px');
 						
 						if (this.td) {
 							if (window.chrome) {//chrome hack to redraw table
@@ -2056,15 +2066,6 @@ jQuery.sheet = {
 				},
 				heightReverse: function(o, skipCorrection) {
 					return jQuery(o).outerHeight() + (skipCorrection ? 0 : s.boxModelCorrection);
-				},
-				syncSheetWidthFromTds: function(o) {
-					var w = 0;
-					o = (o ? o : jS.obj.sheet());
-					o.find('col').each(function() {
-						w += jQuery(this).width();
-					});
-					o.width(w);
-					return w;
 				},
 				setHeight: function(i, from, skipCorrection, o) {
 					var correction = 0;
@@ -2697,26 +2698,40 @@ jQuery.sheet = {
 				}
 			},
 			resizeBar: {
-				top: function(o, i) {
-					var col = jS.obj.sheet().find('col').eq(i);
-					jS.resizable(o, {
+				top: function(bar, i, sheet) {
+					bar.find('.barController').remove();
+					var barController = jQuery('<div class="barController" />')
+						.width(bar.width())
+						.height(18)
+						.prependTo(bar);
+					
+					jS.resizable(barController, {
 						handles: 'e',
-						start: function() {
+						start: function(e, ui) {
 							jS.busy = true;
+							this.col = jS.obj.sheet().find('col').eq(i);
+							this.colWidth = this.col.width();
+							this.tableWidth = sheet.width();
 						},
 						resize: function(e, ui) {
-							col.width(ui.size.width);
+							this.col.width(ui.size.width);
+							sheet.width((this.tableWidth - this.colWidth) + ui.size.width);
 						},
 						stop: function(e, ui) {
 							jS.busy = false;
-							
 							jS.followMe();
 						}
 					});
 				},
-				left: function(o, i) {
-					var parent = o.parent().add(o);
-					jS.resizable(o, {
+				left: function(bar, i) {
+					bar.find('.barController').remove();
+					var barController = jQuery('<div class="barController" />')
+						.width(18)
+						.height(bar.height())
+						.prependTo(bar);
+					
+					var parent = bar.parent().add(bar);
+					jS.resizable(barController, {
 						handles: 's',
 						start: function() {
 							jS.busy = true;
@@ -3400,6 +3415,7 @@ jQuery.sheet = {
 										td: object, td object;
 									*/
 				td = (td ? td : jS.obj.cellActive());
+				if (!td.length) return;
 				
 				var rowWasHidden = false;
 				var colWasHidden = false;

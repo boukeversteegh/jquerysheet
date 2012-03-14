@@ -191,7 +191,7 @@
 	background-image: none ! important;
 	border-width: 1px ! important;
 	cursor: cell;
-	border-collapse: collapse;
+	*border-collapse: collapse; /* IE7 and below */ 
 }
 .jSheet tbody
 {
@@ -217,6 +217,12 @@
 	margin: 0px ! important;
 	font-size: 1em;
 	color:  inherit;
+}
+
+tr.rowHidden, tr.rowHidden td {
+	display: none;
+	opacity:0.01;
+	filter:alpha(opacity=01); /* For IE8 and earlier */
 }
 
 .jSheetError {
@@ -261,8 +267,16 @@
 	cursor: pointer ! important;
 	height: 18px;
 }
-.jSheetBarTopParent .ui-resizable-handle {
+
+.barController {
+	position: absolute !important;
+}
+.jSheetBarTopParent .barController .ui-resizable-handle {
 	height: 16px;
+}
+.jSheetBarLeft .barController .ui-resizable-handle {
+	width: 16px;
+	height: inherit ! important;
 }
 .jSheetBarHandleTop
 {
