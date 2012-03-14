@@ -912,7 +912,7 @@ jQuery.sheet = {
 					
 					var header = jQuery('<div id="' + jS.id.controls + '" class="' + jS.cl.controls + '"></div>');
 					
-					var firstRow = jQuery('<table cellpadding="0" cellspacing="0" border="0"><tr /></table>').prependTo(header);
+					var firstRow = jQuery('<table><tr /></table>').prependTo(header);
 					var firstRowTr = jQuery('<tr />');
 					
 					if (s.title) {
@@ -1188,6 +1188,15 @@ jQuery.sheet = {
 							})
 							.disableSelectionSpecial()
 							.dblclick(jS.evt.cellOnDblClick);
+							
+							if (jQuery.fn.mousewheel)
+								pane.mousewheel(function(e, delta) {
+									var dir = delta > 0 ? 'up' : 'down', vel = Math.abs(delta);
+									jS.evt.scrollVertical.start();
+									jS.evt.scrollVertical.scroll({value: (jS.evt.scrollVertical.value ? jS.evt.scrollVertical.value : 1) + (dir == 'down' ? 1 : -1)}, true);
+									jS.evt.scrollVertical.stop();
+									return false;
+								});
 					}
 					
 					jS.themeRoller.start(i);
@@ -1796,20 +1805,23 @@ jQuery.sheet = {
 						this.v = [],
 						this.p = [],
 						this.size = jS.sheetSize(sheet),
-						this.offset = 0;
+						this.offset = 0,
+						this.max = this.size.height,
+						this.height = pane.height() - 100,
+						this.gridSize = parseInt(this.height / this.size.height);
 						
-						var height = pane.height() - 100;
-						var gridSize = parseInt(height / this.size.height);
-						for(var i = 0; i < this.size.height; i++) {
-							this.v[i] = gridSize * i;
-							this.p[gridSize * i] = i;
+						for(var i = 0; i <= this.size.height; i++) {
+							this.v[i] = this.gridSize * i;
+							this.p[this.gridSize * i] = i;
 						}
 					},
 					scroll: function(pos, keepRight) {
 						if (!pos) pos = {};
 						if (!pos.pixel) pos.pixel = 1;
-						if (!pos.value) pos.value = this.p[arrHelpers.getClosestValues(this.v, pos.pixel)] + 1;
+						if (!pos.value) pos.value = this.p[arrHelpers.getClosestValues(this.v, pos.pixel)];
 						
+						if (pos.value > this.max) pos.value = this.max;
+
 						var i = 1;
 						while (i <= this.size.height) {
 							var row = jQuery(jS.getTd(jS.i, i, 1)).parent();
@@ -1830,7 +1842,7 @@ jQuery.sheet = {
 					stop: function() {
 						if (this.value) {
 							jS.obj.scrollerRight()
-								.css('top', ((this.pane.height() / this.size.height) * (this.value - 1)) + 'px');
+								.css('top', (this.gridSize * this.value) + 'px');
 						}
 						
 						if (this.td) {
@@ -1854,21 +1866,22 @@ jQuery.sheet = {
 						this.offset = 0,
 						this.td = jS.obj.cellActive(),
 						this.tdLoc = jS.getTdLocation(this.td),
-						this.widthSheet = 0;
+						this.widthSheet = 0,
+						this.max = this.size.width,
+						this.width = pane.width() - 100,
+						this.gridSize = parseInt(this.width / this.size.width);
 						
-						var width = pane.width();
-						var gridSize = parseInt(width / this.size.width);
-						for(var i = 0; i < this.size.width; i++) {
-							this.v[i] = gridSize * i;
-							this.p[gridSize * i] = i;
+						for(var i = 0; i <= this.size.width; i++) {
+							this.v[i] = this.gridSize * i;
+							this.p[this.gridSize * i] = i;
 						}
 					},
 					scroll: function(pos, keepBottom) {
 						if (!pos) pos = {pixel: 0, value: 0};
 						if (!pos.pixel) pos.pixel = 1;
-						if (!pos.value) pos.value = this.p[arrHelpers.getClosestValues(this.v, pos.pixel)] + 1;
+						if (!pos.value) pos.value = this.p[arrHelpers.getClosestValues(this.v, pos.pixel)];
 						
-						console.log(pos.value);
+						if (pos.value > this.max) pos.value = this.max;
 						
 						var widthSheet = 0;
 						var widths = [];
@@ -1901,7 +1914,7 @@ jQuery.sheet = {
 					stop: function(td) {
 						if (this.value) {
 							jS.obj.scrollerBottom()
-								.css('left', ((this.pane.width() / this.size.width) * (this.value - 1)) + 'px');
+								.css('left', (this.gridSize * this.value) + 'px');
 						}
 						
 						if (this.td) {
@@ -4896,13 +4909,13 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		);
 		
 		this.cell.html.push(Globalize.format(date, Globalize.culture().calendar.patterns.d));
-		console.log(Globalize.culture());
+		
 		return date;
 	},
 	WEEKDAY: 	function(date, returnValue) {
 		date = (date ? date : new Date()).toString();
 		date = (new Date(Globalize.parseDate( date ))).getDay() + 1;
-		console.log(date);
+		
 		returnValue = (returnValue ? returnValue : 1);
 		switch (returnValue) {
 			case 2:
