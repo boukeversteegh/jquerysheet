@@ -130,15 +130,6 @@ jQuery.fn.extend({
 		try {
 			jS.spreadsheets[sheet][row][col].html = html;
 		} catch(e) {}
-	},
-	redraw: function(fn) {
-		var me = jQuery(this).hide();
-		setTimeout(function() {
-			me.show();
-			if (fn)
-				if (jQuery.isFunction(fn)) fn();
-		}, 0);
-		return this;
 	}
 });
 
@@ -1837,9 +1828,9 @@ jQuery.sheet = {
 							
 							if (!row.data('hidden')) {
 								if (i < pos.value) {
-									row.addClass("rowHidden");
+									row.addClass("rowHidden").hide();
 								} else {
-									row.removeClass("rowHidden");
+									row.removeClass("rowHidden").show();
 								}
 							}
 							
@@ -1928,13 +1919,7 @@ jQuery.sheet = {
 						jS.obj.scrollerBottom().css('left', (this.gridSize * this.value) + 'px');
 						
 						if (this.td) {
-							if (window.chrome) {//chrome hack to redraw table
-								this.td.parent().redraw(function() {
-									jS.autoFillerGoToTd(this.td);
-								});
-							} else {
-								jS.autoFillerGoToTd(this.td);
-							}
+							jS.autoFillerGoToTd(this.td);
 						}
 					}
 				}

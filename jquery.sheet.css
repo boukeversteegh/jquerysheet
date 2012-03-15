@@ -222,7 +222,7 @@
 tr.rowHidden, tr.rowHidden td {
 	display: none;
 	opacity:0.01;
-	filter:alpha(opacity=01); /* For IE8 and earlier */
+	filter:alpha(opacity=01);
 }
 
 .jSheetError {
