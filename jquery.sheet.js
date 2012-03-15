@@ -292,7 +292,7 @@ jQuery.sheet = {
 				uiError:				'ui-state-error',
 				uiFullScreen:			'ui-widget-content ui-corner-all',
 				uiInPlaceEdit:			'ui-state-active',
-				uiMenu:					'ui-state-default',
+				uiMenu:					'ui-widget-header',
 				uiMenuUl: 				'ui-widget-header',
 				uiMenuLi: 				'ui-widget-header',
 				uiMenuHighlighted: 		'ui-state-highlight',
@@ -2702,12 +2702,13 @@ jQuery.sheet = {
 					bar.find('.barController').remove();
 					var barController = jQuery('<div class="barController" />')
 						.width(bar.width())
-						.height(18)
+						.height(0)
 						.prependTo(bar);
 					
 					jS.resizable(barController, {
 						handles: 'e',
 						start: function(e, ui) {
+							jS.obj.autoFiller().hide();
 							jS.busy = true;
 							this.col = jS.obj.sheet().find('col').eq(i);
 							this.colWidth = this.col.width();
@@ -2726,7 +2727,7 @@ jQuery.sheet = {
 				left: function(bar, i) {
 					bar.find('.barController').remove();
 					var barController = jQuery('<div class="barController" />')
-						.width(18)
+						.width(0)
 						.height(bar.height())
 						.prependTo(bar);
 					
@@ -2734,6 +2735,7 @@ jQuery.sheet = {
 					jS.resizable(barController, {
 						handles: 's',
 						start: function() {
+							jS.obj.autoFiller().hide();
 							jS.busy = true;
 						},
 						resize: function(e, ui) {
@@ -3206,7 +3208,6 @@ jQuery.sheet = {
 				jS.trigger('deleteSheet', [oldI]);
 			},
 			deleteRow: function(skipCalc) { /* removes the currently selected row */
-				var lastRow = jS.rowLast;
 				jQuery(jS.getTd(jS.i, jS.rowLast, 1)).parent().remove();
 				
 				jS.setTdIds();
@@ -3223,14 +3224,20 @@ jQuery.sheet = {
 				
 				jS.evt.cellEditAbandon();
 				
-				jS.trigger('deleteRow', lastRow);
+				jS.trigger('deleteRow', jS.rowLast);
 			},
 			deleteColumn: function(skipCalc) { /* removes the currently selected column */
-				var colLast = jS.colLast;
+				console.log(jS.colLast);
+				if (jS.colLast < 1) return;
 				jS.obj.barHelper().remove();
-				jS.obj.sheet().find('colgroup col').eq(jS.colLast).remove();
+				var col = jS.obj.sheet().find('colgroup col').eq(jS.colLast);
+				var colWidth = col.width();
+				var sheet = jS.obj.sheet();
+				var sheetWidth = sheet.width() - colWidth;
+				col.remove();
 				
 				var size = jS.sheetSize();
+				jS.obj.barTop(jS.colLast).remove();
 				for (var i = 1; i <= size.height; i++) {
 					jQuery(jS.getTd(jS.i, i, jS.colLast)).remove();
 				}
@@ -3249,7 +3256,9 @@ jQuery.sheet = {
 				
 				jS.evt.cellEditAbandon();
 				
-				jS.trigger('deleteColumn', lastCol);
+				sheet.width(sheetWidth);
+				
+				jS.trigger('deleteColumn', jS.colLast);
 			},
 			sheetTab: function(get) { /* manages a tabs inner value
 											get: bool, makes return the current value of the tab;
