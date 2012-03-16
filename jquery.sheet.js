@@ -2,24 +2,12 @@
 jQuery.sheet() The Web Based Spreadsheet
 $Id$
 http://code.google.com/p/jquerysheet/
-		
-Copyright (C) 2010 Robert Plummer
-Dual licensed under the LGPL v2 and GPL v2 licenses.
-http://www.gnu.org/licenses/
-*/
 
-/*
-	Dimensions Info:
-		When dealing with size, it seems that outerHeight is generally the most stable cross browser
-		attribute to use for bar sizing.  We try to use this as much as possible.  But because col's
-		don't have boarders, we subtract or add jS.s.boxModelCorrection for those browsers.
-	tr/td column and row Index VS cell/column/row index
-		DOM elements are all 0 based (tr/td/table), but first is cell bar, so A1 = tr[1] td[1]
-		Spreadsheet elements are all 1 based (A1, A1:B4, TABLE2:A1, TABLE2:A1:B4)
-		Column/Row/Cell
-	DOCTYPE:
-		It is recommended to use STRICT doc types on the viewing page when using sheet to ensure that the heights/widths of bars and sheet rows show up correctly
-		Example of recommended doc type: <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+Copyright (c) 2012 Robert Plummer, RobertLeePlummerJr@gmail.com
+Licensed under MIT
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 jQuery.fn.extend({
 	sheet: function(settings) {
