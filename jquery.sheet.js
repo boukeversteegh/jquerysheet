@@ -1661,7 +1661,7 @@ jQuery.sheet = {
 						case key.RIGHT: 	c++; break;
 						case key.ENTER:		r++;
 							overrideIsEdit = true;
-							if (jS.highlightedLast.tNovd.length > 1) {
+							if (jS.highlightedLast.td.length > 1) {
 								var inPlaceEdit = jS.obj.inPlaceEdit();
 								var v = inPlaceEdit.val();
 								inPlaceEdit.remove();

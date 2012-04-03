@@ -1,6 +1,5 @@
 /* Jison generated parser */
 var parser = (function(){
-
 var parser = {trace: function trace() { },
 yy: {},
 symbols_: {"error":2,"expressions":3,"expression":4,"EOF":5,"NUMBER":6,"STRING":7,"=":8,"+":9,"(":10,")":11,"<":12,">":13,"NOT":14,"-":15,"*":16,"/":17,"^":18,"%":19,"E":20,"IDENTIFIER":21,"expseq":22,"cell":23,"FIXEDCELL":24,":":25,"CELL":26,"SHEET":27,"!":28,";":29,",":30,"$accept":0,"$end":1},
@@ -14,7 +13,10 @@ case 1:return $$[$0-1];
 break;
 case 2:this.$ = $$[$0] * 1;
 break;
-case 3:this.$ = $$[$0].substring(1, $$[$0].length - 1);
+case 3:
+			this.$ = $$[$0].substring(1, $$[$0].length - 1);//js
+			//php this.$ = substr($$[$0], 1, -1);
+		
 break;
 case 4:this.$ = $$[$0-2] == $$[$0];
 break;
@@ -40,7 +42,10 @@ case 14:this.$ = ($$[$0-2] * 1) * ($$[$0] * 1);
 break;
 case 15:this.$ = ($$[$0-2] * 1) / ($$[$0] * 1);
 break;
-case 16:this.$ = Math.pow(($$[$0-2] * 1), ($$[$0] * 1));
+case 16:
+			this.$ = Math.pow(($$[$0-2] * 1), ($$[$0] * 1));//js
+			//php this.$ = pow(($$[$0-2] * 1), ($$[$0] * 1));
+		
 break;
 case 17:this.$ = $$[$0] * -1;
 break;
@@ -50,30 +55,60 @@ case 19:this.$ = $$[$0-1] * 0.01;
 break;
 case 20:/*this.$ = Math.E;*/;
 break;
-case 21:this.$ = yy.lexer.cellHandlers.callFunction($$[$0-2], '', yy.lexer.cell);
+case 21:
+			this.$ = yy.lexer.cellHandlers.callFunction($$[$0-2], '', yy.lexer.cell);//js
+			//php this.$ = this->callFunction($$[$0-2]);
+		
 break;
-case 22:this.$ = yy.lexer.cellHandlers.callFunction($$[$0-3], $$[$0-1], yy.lexer.cell);
+case 22:
+			this.$ = yy.lexer.cellHandlers.callFunction($$[$0-3], $$[$0-1], yy.lexer.cell);//js
+			//php this.$ = this->callFunction($$[$0-3], $$[$0-1]);
+		
 break;
-case 24:this.$ = yy.lexer.cellHandlers.fixedCellValue.apply(yy.lexer.cell, new Array($$[$0]));
+case 24:
+			this.$ = yy.lexer.cellHandlers.fixedCellValue.apply(yy.lexer.cell, new Array($$[$0]));//js
+			//php this.$ = this->fixedCellValue($$[$0]);
+		
 break;
-case 25:this.$ = yy.lexer.cellHandlers.fixedCellRangeValue.apply(yy.lexer.cell, new Array($$[$0-2], $$[$0]));
+case 25:
+			this.$ = yy.lexer.cellHandlers.fixedCellRangeValue.apply(yy.lexer.cell, new Array($$[$0-2], $$[$0]));//js
+			//php this.$ = this->fixedCellRangeValue($$[$0-2], $$[$0]);
+		
 break;
-case 26:this.$ = yy.lexer.cellHandlers.cellValue.apply(yy.lexer.cell, new Array($$[$0]));
+case 26:
+			this.$ = yy.lexer.cellHandlers.cellValue.apply(yy.lexer.cell, new Array($$[$0]));//js
+			//php this.$ = this->cellValue($$[$0]);
+		
 break;
-case 27:this.$ = yy.lexer.cellHandlers.cellRangeValue.apply(yy.lexer.cell, new Array($$[$0-2], $$[$0]));
+case 27:
+			this.$ = yy.lexer.cellHandlers.cellRangeValue.apply(yy.lexer.cell, new Array($$[$0-2], $$[$0]));//js
+			//php this.$ = this->cellRangeValue($$[$0-2], $$[$0]);
+		
 break;
-case 28:this.$ = yy.lexer.cellHandlers.remoteCellValue.apply(yy.lexer.cell, new Array($$[$0-2], $$[$0]));
+case 28:
+			this.$ = yy.lexer.cellHandlers.remoteCellValue.apply(yy.lexer.cell, new Array($$[$0-2], $$[$0]));//js
+			//php this.$ = this->remoteCellValue($$[$0-2], $$[$0]);
+		
 break;
-case 29:this.$ = yy.lexer.cellHandlers.remoteCellRangeValue.apply(yy.lexer.cell, new Array($$[$0-4], $$[$0-2], $$[$0]));
+case 29:
+			this.$ = yy.lexer.cellHandlers.remoteCellRangeValue.apply(yy.lexer.cell, new Array($$[$0-4], $$[$0-2], $$[$0]));//js
+			//php this.$ = this->remoteCellRangeValue($$[$0-4], $$[$0-2], $$[$0]);
+		
 break;
 case 31:
- 		this.$ = (jQuery.isArray($$[$0]) ? $$[$0] : [$$[$0]]);
-	 	this.$.push($$[$0-2]);
+ 		this.$ = ($.isArray($$[$0]) ? $$[$0] : [$$[$0]]);//js
+	 	this.$.push($$[$0-2]);//js
+		
+		//php this.$ = (is_array($$[$0]) ? $$[$0] : array());
+		//php this.$[] = $$[$0-2];
  	
 break;
 case 32:
- 		this.$ = (jQuery.isArray($$[$0]) ? $$[$0] : [$$[$0]]);
-	 	this.$.push($$[$0-2]);
+ 		this.$ = ($.isArray($$[$0]) ? $$[$0] : [$$[$0]]);//js
+	 	this.$.push($$[$0-2]);//js
+		
+		//php this.$ = (is_array($$[$0]) ? $$[$0] : array());
+		//php this.$[] = $$[$0-2];
  	
 break;
 }
@@ -266,9 +301,9 @@ parse: function parse(input) {
     }
 
     return true;
-}};/* Jison generated lexer */
+}};
+/* Jison generated lexer */
 var lexer = (function(){
-
 var lexer = ({EOF:1,
 parseError:function parseError(str, hash) {
         if (this.yy.parseError) {
@@ -305,6 +340,9 @@ more:function () {
         this._more = true;
         return this;
     },
+less:function (n) {
+        this._input = this.match.slice(n) + this._input;
+    },
 pastInput:function () {
         var past = this.matched.substr(0, this.matched.length - this.match.length);
         return (past.length > 20 ? '...':'') + past.substr(-20).replace(/\n/g, "");
@@ -329,6 +367,8 @@ next:function () {
 
         var token,
             match,
+            tempMatch,
+            index,
             col,
             lines;
         if (!this._more) {
@@ -337,25 +377,29 @@ next:function () {
         }
         var rules = this._currentRules();
         for (var i=0;i < rules.length; i++) {
-            match = this._input.match(this.rules[rules[i]]);
-            if (match) {
-                lines = match[0].match(/\n.*/g);
-                if (lines) this.yylineno += lines.length;
-                this.yylloc = {first_line: this.yylloc.last_line,
-                               last_line: this.yylineno+1,
-                               first_column: this.yylloc.last_column,
-                               last_column: lines ? lines[lines.length-1].length-1 : this.yylloc.last_column + match[0].length}
-                this.yytext += match[0];
-                this.match += match[0];
-                this.matches = match;
-                this.yyleng = this.yytext.length;
-                this._more = false;
-                this._input = this._input.slice(match[0].length);
-                this.matched += match[0];
-                token = this.performAction.call(this, this.yy, this, rules[i],this.conditionStack[this.conditionStack.length-1]);
-                if (token) return token;
-                else return;
+            tempMatch = this._input.match(this.rules[rules[i]]);
+            if (tempMatch && (!match || tempMatch[0].length > match[0].length)) {
+                match = tempMatch;
+                index = i;
+                if (!this.options.flex) break;
             }
+        }
+        if (match) {
+            lines = match[0].match(/\n.*/g);
+            if (lines) this.yylineno += lines.length;
+            this.yylloc = {first_line: this.yylloc.last_line,
+                           last_line: this.yylineno+1,
+                           first_column: this.yylloc.last_column,
+                           last_column: lines ? lines[lines.length-1].length-1 : this.yylloc.last_column + match[0].length}
+            this.yytext += match[0];
+            this.match += match[0];
+            this.yyleng = this.yytext.length;
+            this._more = false;
+            this._input = this._input.slice(match[0].length);
+            this.matched += match[0];
+            token = this.performAction.call(this, this.yy, this, rules[index],this.conditionStack[this.conditionStack.length-1]);
+            if (token) return token;
+            else return;
         }
         if (this._input === "") {
             return this.EOF;
@@ -387,6 +431,7 @@ topState:function () {
 pushState:function begin(condition) {
         this.begin(condition);
     }});
+lexer.options = {};
 lexer.performAction = function anonymous(yy,yy_,$avoiding_name_collisions,YY_START) {
 
 var YYSTATE=YY_START
@@ -458,7 +503,8 @@ break;
 }
 };
 lexer.rules = [/^\s+/,/^"(\\["]|[^"])*"/,/^'(\\[']|[^'])*'/,/^SHEET[0-9]+/,/^\$[A-Za-z]+\$[0-9]+/,/^[A-Za-z]+[0-9]+/,/^[A-Za-z]+/,/^[0-9]+(\.[0-9])?/,/^\$/,/^ /,/^\./,/^:/,/^;/,/^,/,/^\*/,/^\//,/^-/,/^\+/,/^\^/,/^\(/,/^\)/,/^>/,/^</,/^NOT\b/,/^PI\b/,/^E\b/,/^"/,/^'/,/^!/,/^=/,/^%/,/^$/];
-lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31],"inclusive":true}};return lexer;})()
+lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31],"inclusive":true}};
+return lexer;})()
 parser.lexer = lexer;
 return parser;
 })();
