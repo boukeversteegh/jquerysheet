@@ -13,9 +13,8 @@ Class ParserHandler extends Parser
 
 	function __construct($spreadsheets = array())
 	{
+		parent::__construct();
 		$this->spreadsheets = $spreadsheets;
-		$this->Parser = new Parser();
-		$this->Parser->lexer->cellHandlers = $this;
 	}
 
 	function setSheet($sheet)
@@ -48,26 +47,28 @@ Class ParserHandler extends Parser
 
 					if ($this->callStack) { //we prevent parsers from overwriting each other
 						if (!$cell->parser) { //cut down on un-needed parser creation
-							$cell->parser = (new Parser());
+							$cell->parser = (new self());
 						}
 						$Parser = $cell->parser;
 					} else {//use the sheet's parser if there aren't many calls in the callStack
-						$Parser = $this->Parser;
+						$Parser = $this;
 					}
 
 					$this->callStack++;
-					$Parser->lexer->cell = array(
+
+					$Parser->cell = array(
 						"sheet"=> $sheet,
 						"row"=> $row,
 						"col"=> $col,
 						"cell"=> $cell,
 					);
-					$Parser->lexer->cellHandler = $this;
+
 					$cell->value = $Parser->parse($cell->formula);
 				} catch(Exception $e) {
-					$cell->value = $e->message();
+					$cell->value = $e->getMessage();
 					$this->alertFormulaError($cell->value);
 				}
+
 				$this->callStack--;
 			}
 		}
@@ -76,6 +77,11 @@ Class ParserHandler extends Parser
 		$cell->state = null;
 
 		return $cell->value;
+	}
+
+	private function alertFormulaError($value)
+	{
+		print_r($value);
 	}
 
 	function cellValue($id) { //Example: A1
@@ -130,7 +136,7 @@ Class ParserHandler extends Parser
 		return array($result);
 	}
 
-	function callFunction($fn, $args, $cell) {
+	function callFunction($fn, $args) {
 		if (!$args) {
 			$args = array('');
 		} else if (is_array($args)) {
@@ -139,7 +145,11 @@ Class ParserHandler extends Parser
 			$args = array($args);
 		}
 
-		return (function_exists('calculations_engine_' . $fn) ? call_user_func_array('calculations_engine_' . $fn, array($cell, $args)) : "Error: Function Not Found");
+		if (function_exists('calculations_engine_' . $fn)) {
+			return call_user_func_array('calculations_engine_' . $fn, array($this->cell, $args));
+		} else {
+			return "Error: Function Not Found";
+		}
 	}
 
 	function parseLocation($locStr) { // With input of "A1", "B4", "F20", will return {row: 0,col: 0}, {row: 3,col: 1}, {row: 19,col: 5}.

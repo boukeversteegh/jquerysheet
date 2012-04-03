@@ -1,12 +1,26 @@
 <?php
+
+ini_set('error_reporting', E_ALL);
+ini_set('display_errors', 1);
+
 include_once "handler.php";
 
 
-function calculations_engine_sum($array)
+function calculations_engine_sum($cell, $array)
 {
+	print_r($array);
 	return array_sum($array);
 }
 
-$ce = new calculations_engine(array(array(array("=SUM(B1 + 100)",2),array(2,"=A1"))));
-$ce->calc(0);
-print_r($ce->toArray());
+$handler = new ParserHandler(
+	array(
+		array(
+			array("=SUM(B1 + 100)",2),
+			array(2,"=A1")
+		)
+	)
+);
+
+//print_r($handler);
+$handler->calc(0);
+print_r($handler->toArray());
