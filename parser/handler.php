@@ -1,6 +1,4 @@
 <?php
-require_once("parser.php");
-
 Class ParserHandler extends Parser
 {
 	var $callStack = 0;
@@ -25,9 +23,9 @@ Class ParserHandler extends Parser
 	function updateCellValue($sheet, $row, $col)
 	{
 		//first detect if the cell exists if not return nothing
-		if (!$this->spreadsheets[$sheet]) return 'Error: Sheet not found';
-		if (!$this->spreadsheets[$sheet][$row]) return 'Error: Row not found';
-		if (!$this->spreadsheets[$sheet][$row][$col]) return 'Error: Column not found';
+		if (empty($this->spreadsheets[$sheet])) 		return 'Error: Sheet not found';
+		if (empty($this->spreadsheets[$sheet][$row])) 		return 'Error: Row not found';
+		if (empty($this->spreadsheets[$sheet][$row][$col])) 	return 'Error: Column not found';
 
 		$cell = $this->spreadsheets[$sheet][$row][$col];
 
@@ -46,8 +44,8 @@ Class ParserHandler extends Parser
 					}
 
 					if ($this->callStack) { //we prevent parsers from overwriting each other
-						if (!$cell->parser) { //cut down on un-needed parser creation
-							$cell->parser = (new self());
+						if (empty($cell->parser)) { //cut down on un-needed parser creation
+							$cell->parser = new self($this->spreadsheets);
 						}
 						$Parser = $cell->parser;
 					} else {//use the sheet's parser if there aren't many calls in the callStack
@@ -235,3 +233,5 @@ Class ParserHandler extends Parser
 		}
 	}
 }
+
+
