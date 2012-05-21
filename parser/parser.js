@@ -95,6 +95,11 @@ case 29:
 			//php this.$ = this->remoteCellRangeValue($$[$0-4], $$[$0-2], $$[$0]);
 		
 break;
+case 30:
+		this.$ = [$$[$0]];//js
+		//php this.$ = array($$[$0]);
+	
+break;
 case 31:
  		this.$ = ($.isArray($$[$0]) ? $$[$0] : [$$[$0]]);//js
 	 	this.$.push($$[$0-2]);//js
@@ -106,7 +111,7 @@ break;
 case 32:
  		this.$ = ($.isArray($$[$0]) ? $$[$0] : [$$[$0]]);//js
 	 	this.$.push($$[$0-2]);//js
-		
+
 		//php this.$ = (is_array($$[$0]) ? $$[$0] : array());
 		//php this.$[] = $$[$0-2];
  	
@@ -398,6 +403,7 @@ next:function () {
             this._input = this._input.slice(match[0].length);
             this.matched += match[0];
             token = this.performAction.call(this, this.yy, this, rules[index],this.conditionStack[this.conditionStack.length-1]);
+            if (this.done && this._input) this.done = false;
             if (token) return token;
             else return;
         }
@@ -502,14 +508,15 @@ case 31:return 5;
 break;
 }
 };
-lexer.rules = [/^\s+/,/^"(\\["]|[^"])*"/,/^'(\\[']|[^'])*'/,/^SHEET[0-9]+/,/^\$[A-Za-z]+\$[0-9]+/,/^[A-Za-z]+[0-9]+/,/^[A-Za-z]+/,/^[0-9]+(\.[0-9])?/,/^\$/,/^ /,/^\./,/^:/,/^;/,/^,/,/^\*/,/^\//,/^-/,/^\+/,/^\^/,/^\(/,/^\)/,/^>/,/^</,/^NOT\b/,/^PI\b/,/^E\b/,/^"/,/^'/,/^!/,/^=/,/^%/,/^$/];
+lexer.rules = [/^(?:\s+)/,/^(?:"(\\["]|[^"])*")/,/^(?:'(\\[']|[^'])*')/,/^(?:SHEET[0-9]+)/,/^(?:\$[A-Za-z]+\$[0-9]+)/,/^(?:[A-Za-z]+[0-9]+)/,/^(?:[A-Za-z]+)/,/^(?:[0-9]+(\.[0-9])?)/,/^(?:\$)/,/^(?: )/,/^(?:\.)/,/^(?::)/,/^(?:;)/,/^(?:,)/,/^(?:\*)/,/^(?:\/)/,/^(?:-)/,/^(?:\+)/,/^(?:\^)/,/^(?:\()/,/^(?:\))/,/^(?:>)/,/^(?:<)/,/^(?:NOT\b)/,/^(?:PI\b)/,/^(?:E\b)/,/^(?:")/,/^(?:')/,/^(?:!)/,/^(?:=)/,/^(?:%)/,/^(?:$)/];
 lexer.conditions = {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31],"inclusive":true}};
 return lexer;})()
-parser.lexer = lexer;
-return parser;
+parser.lexer = lexer;function Parser () { this.yy = {}; }Parser.prototype = parser;parser.Parser = Parser;
+return new Parser;
 })();
 if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
 exports.parser = parser;
+exports.Parser = parser.Parser;
 exports.parse = function () { return parser.parse.apply(parser, arguments); }
 exports.main = function commonjsMain(args) {
     if (!args[1])

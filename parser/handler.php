@@ -45,7 +45,7 @@ Class ParserHandler extends Parser
 
 					if ($this->callStack) { //we prevent parsers from overwriting each other
 						if (empty($cell->parser)) { //cut down on un-needed parser creation
-							$cell->parser = new self($this->spreadsheets);
+							$cell->parser = new ParserHandler($this->spreadsheets);
 						}
 						$Parser = $cell->parser;
 					} else {//use the sheet's parser if there aren't many calls in the callStack
@@ -134,10 +134,8 @@ Class ParserHandler extends Parser
 		return array($result);
 	}
 
-	function callFunction($fn, $args) {
-		if (!$args) {
-			$args = array('');
-		} else if (is_array($args)) {
+	function callFunction($fn, $args = array()) {
+		if (is_array($args)) {
 			$args = array_reverse($args);
 		} else {
 			$args = array($args);
@@ -218,7 +216,7 @@ Class ParserHandler extends Parser
 				for ($l = 0; $l < count($this->spreadsheets[$j][$k]); $l++) {
 					$this->spreadsheets[$j][$k][$l] = (object)$this->spreadsheets[$j][$k][$l];
 					$this->spreadsheets[$j][$k][$l]->value = $this->spreadsheets[$j][$k][$l]->scalar;
-					if ($this->spreadsheets[$j][$k][$l]->value[0] == '=') $this->spreadsheets[$j][$k][$l]->formula = $this->spreadsheets[$j][$k][$l]->value;
+					if (!empty($this->spreadsheets[$j][$k][$l]->value[0]) && $this->spreadsheets[$j][$k][$l]->value[0] == '=') $this->spreadsheets[$j][$k][$l]->formula = $this->spreadsheets[$j][$k][$l]->value;
 					$this->spreadsheets[$j][$k][$l]->calcCount = 0;
 				}
 			}
