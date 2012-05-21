@@ -151,6 +151,10 @@ cell :
 
 expseq : 
 	expression
+	{
+		$$ = [$1];//js
+		//php $$ = array($1);
+	}
 	| expression ';' expseq
  	{
  		$$ = ($.isArray($3) ? $3 : [$3]);//js
@@ -163,7 +167,7 @@ expseq :
 	{
  		$$ = ($.isArray($3) ? $3 : [$3]);//js
 	 	$$.push($1);//js
-		
+
 		//php $$ = (is_array($3) ? $3 : array());
 		//php $$[] = $1;
  	}
