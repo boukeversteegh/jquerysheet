@@ -6,6 +6,9 @@ ini_set('display_errors', 1);
 include_once 'parser.php';
 include_once 'handler.php';
 
+global $calculations_engine_inputs, $calculations_engine_outputs;
+$calculations_engine_inputs = $_REQUEST;
+$calculations_engine_outputs = array();
 
 function calculations_engine_sum($cell, $array)
 {
@@ -140,11 +143,27 @@ function calculations_engine_sqrt($cell, $array)
 	return sqrt($array);
 }
 
+function calculations_engine_input($cell, $array)
+{
+	global $calculations_engine_inputs;
+	return (!empty($calculations_engine_inputs[$array[0]]) ? $calculations_engine_inputs[$array[0]] : 0);
+}
+
+function calculations_engine_output($cell, $array)
+{
+	global $calculations_engine_outputs;
+	$calculations_engine_outputs[$array[0]] = (!empty($array[1]) ? $array[1] : 0);
+	return '';
+}
+
 $spreadsheets = array(//Spreadsheets
 	array(//Sheet
 		array("=AVG(B1 * 100 / 100)",2),	//Row
 		array("=(2^8 * A1) / B1 * B2","=A1"),	//Row
-		array("This is A3","=A3")		//Row
+		array("=B3","This is B3"),		//Row
+		array("=INPUT('tax')", "=OUTPUT('taxes', INPUT('tax'))"),
+		array("=A1", "=A2", "=A3"),
+		array("=AVG(1,2,3,4,5,6,7)", "")
 	)
 );
 
@@ -154,3 +173,4 @@ $handler->calc(0);
 
 print_r($spreadsheets[0]);
 print_r($handler->toArray());
+print_r($calculations_engine_outputs);
