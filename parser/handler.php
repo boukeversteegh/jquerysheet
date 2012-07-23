@@ -3,29 +3,45 @@ Class ParserHandler extends Parser
 {
 	var $callStack = 0;
 	var $spreadsheets = array();
+	var $formulas;
 	var $calcLast = 0;
 	var $sheet = 0;
 	var $COLCHAR = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	var $parser;
 	var $cell;
 
-	function __construct($spreadsheets = array())
+	static function init($spreadsheets, $formulas)
 	{
-		parent::__construct();
+		$me = new self();
+		$me->spreadsheets = $spreadsheets;
+		$me->formulas = $formulas;
+		return $me;
+	}
+
+	function setSpreadsheets($spreadsheets)
+	{
 		$this->spreadsheets = $spreadsheets;
+		return $this;
 	}
 
 	function setSheet($sheet)
 	{
 		$this->sheet = $sheet;
+		return $this;
+	}
+
+	function setFormulas($formulas)
+	{
+		$this->formulas = $formulas;
+		return $this;
 	}
 
 	function updateCellValue($sheet, $row, $col)
 	{
 		//first detect if the cell exists if not return nothing
-		if (empty($this->spreadsheets[$sheet])) 		return 'Error: Sheet not found';
-		if (empty($this->spreadsheets[$sheet][$row])) 		return 'Error: Row not found';
-		if (empty($this->spreadsheets[$sheet][$row][$col])) 	return 'Error: Column not found';
+		if (empty($this->spreadsheets[$sheet]) == true) 		        return 'Error: Sheet not found';
+		if (empty($this->spreadsheets[$sheet][$row]) == true) 		    return 'Error: Row not found';
+		if (empty($this->spreadsheets[$sheet][$row][$col]) == true) 	return 'Error: Column not found';
 
 		$cell = $this->spreadsheets[$sheet][$row][$col];
 
@@ -45,7 +61,7 @@ Class ParserHandler extends Parser
 
 					if ($this->callStack) { //we prevent parsers from overwriting each other
 						if (empty($cell->parser)) { //cut down on un-needed parser creation
-							$cell->parser = new ParserHandler($this->spreadsheets);
+							$cell->parser = self::init($this->spreadsheets, $this->formulas);
 						}
 						$Parser = $cell->parser;
 					} else {//use the sheet's parser if there aren't many calls in the callStack
@@ -141,8 +157,8 @@ Class ParserHandler extends Parser
 			$args = array($args);
 		}
 
-		if (function_exists('calculations_engine_' . $fn)) {
-			return call_user_func_array('calculations_engine_' . $fn, array($this->cell, $args));
+		if (method_exists($this->formulas, $fn)) {
+			return $this->formulas->$fn($this->cell, $args);
 		} else {
 			return "Error: Function Not Found";
 		}
