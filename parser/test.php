@@ -13,6 +13,9 @@ $spreadsheets = array(//Spreadsheets
 		array("=INPUT('tax')", "=OUTPUT('taxes', INPUT('tax'))"),
 		array("=A1", "=A2", "=A3"),
 		array("=AVG(1,2,3,4,5,6,7)", "")
+	),
+	array(
+		array("=SHEET1!A1")
 	)
 );
 
@@ -20,7 +23,7 @@ $formulas = new formulas();
 
 $handler = ParserHandler::init($spreadsheets, $formulas);
 
-$handler->calc(0);
+$handler->calc();
 
 print_r(json_encode($spreadsheets) . "\n");
 print_r(json_encode($handler->toArray()) . "\n");

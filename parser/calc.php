@@ -7,11 +7,28 @@ include_once 'parser.php';
 include_once 'handler.php';
 include_once 'formulas.php';
 
-$spreadsheets = json_decode($_REQUEST['s']);
+if (empty($_REQUEST['ss'])) {
+	echo "Spreadsheet needed";
+	exit();
+}
+
+$spreadsheets = json_decode($_REQUEST['ss']);
 
 $formulas = new formulas();
 
 $handler = ParserHandler::init($spreadsheets, $formulas);
-$handler->calc(0);
+$handler->calc();
 
-echo json_encode($handler->toArray());
+if (isset($_REQUEST['c'])) {
+	$cell = $_REQUEST['c'];
+	$sheet = (isset($_REQUEST['s']) ? $_REQUEST['s'] : 0);
+	$handler->setSheet($sheet);
+	echo json_encode($handler->cellValue($cell));
+} else if (isset($_REQUEST['cr'])) {
+	$cells = explode(':', $_REQUEST['cr']);
+	$sheet = (isset($_REQUEST['s']) ? $_REQUEST['s'] : 0);
+	$handler->setSheet($sheet);
+	echo json_encode($handler->cellRangeValue($cells[0], $cells[1]));
+} else {
+	echo json_encode($handler->toArray());
+}

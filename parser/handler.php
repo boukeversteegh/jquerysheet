@@ -1,14 +1,38 @@
 <?php
 Class ParserHandler extends Parser
 {
-	var $callStack = 0;
 	var $spreadsheets = array();
 	var $formulas;
 	var $calcLast = 0;
+	var $calcTime = 0;
 	var $sheet = 0;
 	var $COLCHAR = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	var $parser;
 	var $cell;
+	static $spareParsers = array();
+	var $parsing = false;
+
+	function parse($input)
+	{
+		if (empty($input)) return $input;
+
+		if ($this->parsing == true) {
+			$parser = end(self::$spareParsers);
+			if (!empty($parser) && $parser->parsing == false) {
+				$result = $parser->parse($input);
+			} else {
+				self::$spareParsers[] = $parser = self::init($this->spreadsheets, $this->formulas);
+				$result = $parser->parse($input);
+			}
+		} else {
+			$this->parsing = true;
+			$result = parent::parse($input);
+			$this->parsing = false;
+
+		}
+
+		return $result;
+	}
 
 	static function init($spreadsheets, $formulas)
 	{
@@ -26,7 +50,7 @@ Class ParserHandler extends Parser
 
 	function setSheet($sheet)
 	{
-		$this->sheet = $sheet;
+		$this->sheet = (int)$sheet;
 		return $this;
 	}
 
@@ -59,31 +83,18 @@ Class ParserHandler extends Parser
 						$cell->formula = substr($cell->formula, 1);
 					}
 
-					if ($this->callStack) { //we prevent parsers from overwriting each other
-						if (empty($cell->parser)) { //cut down on un-needed parser creation
-							$cell->parser = self::init($this->spreadsheets, $this->formulas);
-						}
-						$Parser = $cell->parser;
-					} else {//use the sheet's parser if there aren't many calls in the callStack
-						$Parser = $this;
-					}
-
-					$this->callStack++;
-
-					$Parser->cell = array(
+					$this->cell = array(
 						"sheet"=> $sheet,
 						"row"=> $row,
 						"col"=> $col,
 						"cell"=> $cell,
 					);
 
-					$cell->value = $Parser->parse($cell->formula);
+					$cell->value = $this->parse($cell->formula);
 				} catch(Exception $e) {
 					$cell->value = $e->getMessage();
 					$this->alertFormulaError($cell->value);
 				}
-
-				$this->callStack--;
 			}
 		}
 
@@ -110,9 +121,11 @@ Class ParserHandler extends Parser
 		$result = array();
 
 		for ($i = $start->row; $i <= $end->row; $i++) {
+			$row = array();
 			for ($j = $start->col; $j <= $end->col; $j++) {
-				array_push($result, $this->updateCellValue($this->sheet, $i, $j));
+				$row[] = $this->updateCellValue($this->sheet, $i, $j);
 			}
+			$result[] = $row;
 		}
 		return array($result);
 	}
@@ -130,12 +143,12 @@ Class ParserHandler extends Parser
 
 	function remoteCellValue($sheet, $id) {//Example: SHEET1:A1
 		$loc = $this->parseLocation($id);
-		$sheet = str_replace($sheet, 'SHEET','') - 1;
+		$sheet = $this->parseSheet($sheet);
 		return $this->updateCellValue($sheet, $loc->row, $loc->col);
 	}
 
 	function remoteCellRangeValue($sheet, $start, $end) {//Example: SHEET1:A1:B2
-		$sheet = str_replace($sheet, 'SHEET','') - 1;
+		$sheet = $this->parseSheet($sheet);
 		$start = $this->parseLocation($start);
 		$end = $this->parseLocation($end);
 
@@ -143,7 +156,7 @@ Class ParserHandler extends Parser
 
 		for ($i = $start->row; $i <= $end->row; $i++) {
 			for ($j = $start->col; $j <= $end->col; $j++) {
-				array_push($result, $this->updateCellValue($sheet, $i, $j));
+				$result[] = $this->updateCellValue($sheet, $i, $j);
 			}
 		}
 
@@ -171,15 +184,20 @@ Class ParserHandler extends Parser
 		);
 	}
 
+	function parseSheet($sheet)
+	{
+		return (int)(str_replace('SHEET','', $sheet) - 1);
+	}
+
 	function columnLabelIndex($str) {
 		// Converts A to 0, B to 1, Z to 25, AA to 26.
 		$num = 0;
 		for ($i = 0; $i < strlen($str); $i++) {
-			$char =  strtoupper($str[$i]);	   // 65 == 'A'.
+			$char =  strtoupper($str[$i]);
 			$digit = strpos($this->COLCHAR, $char) + 1;
 			$num = ($num * 26) + $digit;
 		}
-		return ($num >= 1 ? $num : 1) - 1;
+		return ($num >= 0 ? $num : 1) - 1;
 	}
 
 	function getRowIndex( $id )
@@ -222,26 +240,35 @@ Class ParserHandler extends Parser
 			}
 			$result[] = $toSpreadsheet;
 		}
-		return $toSpreadsheet;
+		return $result;
 	}
 
-	function calc($tableI) { //spreadsheets are array, [spreadsheet][row][cell], like A1 = o[0][0][0];
+	function calc() { //spreadsheets are array, [spreadsheet][row][cell], like A1 = o[0][0][0];
 		$this->calcLast = time();
-		for ($j = 0; $j < count($this->spreadsheets); $j++) {
-			for ($k = 0; $k < count($this->spreadsheets[$j]); $k++) {
-				for ($l = 0; $l < count($this->spreadsheets[$j][$k]); $l++) {
-					$this->spreadsheets[$j][$k][$l] = (object)$this->spreadsheets[$j][$k][$l];
-					$this->spreadsheets[$j][$k][$l]->value = $this->spreadsheets[$j][$k][$l]->scalar;
-					if (!empty($this->spreadsheets[$j][$k][$l]->value[0]) && $this->spreadsheets[$j][$k][$l]->value[0] == '=') $this->spreadsheets[$j][$k][$l]->formula = $this->spreadsheets[$j][$k][$l]->value;
-					$this->spreadsheets[$j][$k][$l]->calcCount = 0;
+
+		$this->preCalc();
+
+		for ($j = 0, $spreadsheetCount = count($this->spreadsheets);            $j < $spreadsheetCount; $j++) {
+			for ($k = 0, $rowCount = count($this->spreadsheets[$j]);            $k < $rowCount; $k++) {
+				for ($l = 0, $colCount = count($this->spreadsheets[$j][$k]);    $l < $colCount; $l++) {
+					$this->updateCellValue($j, $k, $l);
 				}
 			}
 		}
 
-		for ($j = 0; $j < count($this->spreadsheets); $j++) {
-			for ($k = 0; $k < count($this->spreadsheets[$j]); $k++) {
-				for ($l = 0; $l < count($this->spreadsheets[$j][$k]); $l++) {
-					$this->updateCellValue($j, $k, $l);
+		$calcEnded = time();
+		$this->calcTime = $calcEnded - $this->calcLast;
+	}
+
+	private function preCalc()
+	{
+		for($j = 0, $spreadsheetCount = count($this->spreadsheets);            $j < $spreadsheetCount; $j++) {
+			for ($k = 0, $rowCount = count($this->spreadsheets[$j]);            $k < $rowCount; $k++) {
+				for ($l = 0, $cellCount = count($this->spreadsheets[$j][$k]);   $l < $cellCount; $l++) {
+					$this->spreadsheets[$j][$k][$l] = (object)$this->spreadsheets[$j][$k][$l];
+					$this->spreadsheets[$j][$k][$l]->value = $this->spreadsheets[$j][$k][$l]->scalar;
+					if (!empty($this->spreadsheets[$j][$k][$l]->value[0]) && $this->spreadsheets[$j][$k][$l]->value[0] == '=') $this->spreadsheets[$j][$k][$l]->formula = $this->spreadsheets[$j][$k][$l]->value;
+					$this->spreadsheets[$j][$k][$l]->calcCount = 0;
 				}
 			}
 		}
