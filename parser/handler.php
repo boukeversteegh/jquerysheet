@@ -226,7 +226,7 @@ Class ParserHandler extends Parser
 		return  call_user_func_array(array_shift($arguments), $arguments);
 	}
 
-	function toArray()
+	function toArray($sheet = null)
 	{
 		$result = array();
 		foreach($this->spreadsheets as $spreadsheet) {
@@ -240,6 +240,11 @@ Class ParserHandler extends Parser
 			}
 			$result[] = $toSpreadsheet;
 		}
+
+		if (isset($sheet)) {
+			return $result[$sheet];
+		}
+
 		return $result;
 	}
 

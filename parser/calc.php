@@ -30,5 +30,5 @@ if (isset($_REQUEST['c'])) {
 	$handler->setSheet($sheet);
 	echo json_encode($handler->cellRangeValue($cells[0], $cells[1]));
 } else {
-	echo json_encode($handler->toArray());
+	echo json_encode($handler->toArray(isset($_REQUEST['s']) ? $_REQUEST['s'] : null));
 }
