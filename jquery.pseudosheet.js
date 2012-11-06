@@ -19,7 +19,17 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 			},
 			calcLast: 0,
 			callStack: 0,
-			fn: {},
+			fn: {
+				OBJVAL: function (selector) {
+					var val = jQuery.trim(jQuery(selector).text());
+
+					if (!isNaN(val)) {
+						val *= 1;
+					}
+
+					return val;
+				}
+			},
 			updateObjectValue: function(i) {
 				//first detect if the object exists if not return nothing
 				if (!jP.obj[i]) return 'Error: Object not found';
@@ -103,17 +113,20 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 			}
 		};
 
-		jP.fn = jQuery.extend(jQuery.sheet.fn, {
-			OBJVAL: function (selector) {
-				var val = jQuery.trim(jQuery(selector).text());
+		if (jQuery.sheet.fn) { //If the new calculations engine is alive, fill it too, we will remove above when no longer needed.
+			//Extend the calculation engine plugins
+			jP.fn = jQuery.extend(jQuery.sheet.fn, jP.fn);
 
-				if (!isNaN(val)) {
-					val *= 1;
-				}
-
-				return val;
+			//Extend the calculation engine with advanced functions
+			if (jQuery.sheet.advancedfn) {
+				jP.fn = jQuery.extend(jP.fn, jQuery.sheet.advancedfn);
 			}
-		});
+
+			//Extend the calculation engine with finance functions
+			if (jQuery.sheet.financefn) {
+				jP.fn = jQuery.extend(jP.fn, jQuery.sheet.financefn);
+			}
+		}
 
 		//ready the sheet's parser
 		jP.lexer = function() {};
