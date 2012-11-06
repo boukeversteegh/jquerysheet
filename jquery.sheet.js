@@ -4575,7 +4575,7 @@ jQuery.sheet = {
 	}
 };
 
-var jSE = jQuery.sheet.engine = { //Calculations Engine
+var jSE = jQuery.sheet.engine = { //Formula Engine
 	calc: function(tableI, spreadsheets, ignite, freshCalc) { //spreadsheets are array, [spreadsheet][row][cell], like A1 = o[0][0][0];
 		for (var j = 1; j < spreadsheets.length; j++) {
 			for (var k = 1; k < spreadsheets[j].length; k++) {

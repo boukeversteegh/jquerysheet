@@ -1,0 +1,18 @@
+<html>
+<head>
+    <script type="text/javascript" src="../jquery-1.7.min.js"></script>
+    <script type="text/javascript" src="../plugins/globalize.js"></script>
+    <script type="text/javascript" src="../jquery.sheet.js"></script>
+    <script type="text/javascript" src="../jquery.pseudosheet.js"></script>
+    <script type="text/javascript" src="../parser/parser.js"></script>
+    <script>
+        $(function() {
+            $('.cells').pseudoSheet();
+        });
+    </script>
+</head>
+<body>
+    <span class="cells" data-formula="=SUM(OBJVAL('.cells:eq(0)'), 200)">100</span>
+    <span class="cells">100</span>
+</body>
+</html>
