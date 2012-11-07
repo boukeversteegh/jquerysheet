@@ -20,8 +20,16 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 			calcLast: 0,
 			callStack: 0,
 			fn: {
-				OBJVAL: function (selector) {
-					var val = jQuery.trim(jQuery(selector).text());
+				OBJVAL: function (selector, getAll) {
+					if (getAll) {
+						var values = [];
+						jQuery(selector).each(function() {
+							values.push(jP.fn.OBJVAL(this));
+						});
+						return values;
+					}
+
+					var val = jP.updateObjectValue(jQuery(selector)[0]);
 
 					if (!isNaN(val)) {
 						val *= 1;
@@ -30,20 +38,20 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 					return val;
 				}
 			},
-			updateObjectValue: function(i) {
+			updateObjectValue: function(obj) {
 				//first detect if the object exists if not return nothing
-				if (!jP.obj[i]) return 'Error: Object not found';
+				if (!obj) return 'Error: Object not found';
 
-				var obj = jP.obj[i],
-					$obj = jQuery(jP.obj[i]);
+				var	$obj = jQuery(obj);
 
-				$obj.data('oldValue', $obj.html()); //we detect the last value, so that we don't have to update all objects, thus saving resources
+				obj.value = $obj.html();
+				$obj.data('oldValue', obj.value); //we detect the last value, so that we don't have to update all objects, thus saving resources
 
 				if ($obj.data('state')) {
 					throw("Error: Loop Detected");
 				}
 
-				obj.state = 'red';
+				$obj.data('state', 'red');
 				obj.html = [];
 				obj.fnCount = 0;
 
@@ -69,7 +77,6 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 
 							jP.callStack++
 							Parser.lexer.cell = {
-								i: i,
 								cell: obj,
 								jP: jP
 							};
@@ -89,7 +96,15 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 					}
 				}
 
-				obj.state = null;
+				$obj.data('state', null);
+
+				if (jQuery.isPlainObject(obj.value)) {
+					obj.value = "object";
+				}
+
+				if (jQuery.isArray(obj.value)) {
+					obj.value = "array";
+				}
 
 				return obj.value;
 			},
@@ -104,7 +119,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 					}
 
 					if (jP.fn[fn]) {
-						jP.obj[obj.i].fnCount++;
+						obj.fnCount++;
 						return jP.fn[fn].apply(obj, args);
 					} else {
 						return "Error: Function Not Found";
@@ -151,7 +166,7 @@ var jPE = jQuery.pseudoSheetEngine = jQuery.extend(jSE, {//Pseudo Sheet Formula 
 		}
 
 		for (var i = 0; i < elements.length; i++) {
-			ignite(i);
+			ignite(elements[i]);
 		}
 	}
 });
