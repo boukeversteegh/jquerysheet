@@ -44,7 +44,12 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 
 				var	$obj = jQuery(obj);
 
-				obj.value = $obj.html();
+				if ($obj.is(':input')) {
+					obj.value = $obj.val();
+				} else {
+					obj.value = $obj.html();
+				}
+
 				$obj.data('oldValue', obj.value); //we detect the last value, so that we don't have to update all objects, thus saving resources
 
 				if ($obj.data('state')) {
@@ -76,11 +81,12 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 							}
 
 							jP.callStack++
-							Parser.lexer.cell = {
-								cell: obj,
+							Parser.lexer.obj = {
+								obj: obj,
+								type: 'object',
 								jP: jP
 							};
-							Parser.lexer.cellHandlers = jP.objHandlers;
+							Parser.lexer.handler = jP.objHandler;
 							obj.value = Parser.parse(obj.formula);
 						} catch(e) {
 							console.log(e);
@@ -108,7 +114,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 
 				return obj.value;
 			},
-			objHandlers: {
+			objHandler: {
 				callFunction: function(fn, args, obj) {
 					if (!args) {
 						args = [''];
@@ -124,6 +130,35 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 					} else {
 						return "Error: Function Not Found";
 					}
+				},
+				variable: function() {
+					switch (name.toLowerCase()) {
+						case "true" :   return 'TRUE';
+						case "false":   return 'TRUE';
+					}
+
+					var varName = arguments;
+					if (varName.length > 1) {
+						var $obj = $('#' + varName[0]);
+
+						if ($obj.length) {
+							switch (varName[1]) {
+								case "visible": return ($obj.is(':visible') ? 'TRUE' : 'FALSE');
+								case "enabled": return ($obj.is(':enabled') ? 'TRUE' : 'FALSE');
+								case "value": return jP.updateObjectValue($obj[0]);
+								default:
+									return jP.updateObjectValue($obj[0]);
+							}
+						}
+					} else {
+						var $obj = $('#' + varName[0]);
+						if ($obj.length) {
+
+							return jP.updateObjectValue($obj[0]);
+						}
+					}
+
+					throw("Error: Variable not found");
 				}
 			}
 		};
