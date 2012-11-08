@@ -2983,7 +2983,7 @@ jQuery.sheet = {
 							}
 							
 							jS.callStack++
-							Parser.lexer.cell = {
+							Parser.lexer.obj = {
 								sheet: sheet,
 								row: row,
 								col: col,
@@ -2992,7 +2992,7 @@ jQuery.sheet = {
 								editable: s.editable,
 								jS: jS
 							};
-							Parser.lexer.cellHandlers = jS.cellHandlers;
+							Parser.lexer.handler = jS.cellHandler;
 							cell.value = Parser.parse(cell.formula);
 						} catch(e) {
 							console.log(e);
@@ -3018,7 +3018,7 @@ jQuery.sheet = {
 				
 				return cell.value;
 			},
-			cellHandlers: {
+			cellHandler: {
 				cellValue: function(id) { //Example: A1
 					var loc = jSE.parseLocation(id);
 					return jS.updateCellValue(this.sheet, loc.row, loc.col);
@@ -3037,12 +3037,12 @@ jQuery.sheet = {
 				},
 				fixedCellValue: function(id) {
 					id = id.replace(/\$/g, '');
-					return jS.cellHandlers.cellValue.apply(this, [id]);
+					return jS.cellHandler.cellValue.apply(this, [id]);
 				},
 				fixedCellRangeValue: function(start, end) {
 					start = start.replace(/\$/g, '');
 					end = end.replace(/\$/g, '');
-					return jS.cellHandlers.cellRangeValue.apply(this, [start, end]);
+					return jS.cellHandler.cellRangeValue.apply(this, [start, end]);
 				},
 				remoteCellValue: function(sheet, id) {//Example: SHEET1:A1
 					var loc = jSE.parseLocation(id);
@@ -3108,8 +3108,8 @@ jQuery.sheet = {
 			},
 			cellLookup: function() {
 				var parser = (new jS.parser);
-				parser.lexer.cell = this.cell;
-				parser.lexer.cellHandlers = jQuery.extend(parser.lexer.cellHandlers, jS.cellLookupHandlers);
+				parser.lexer.obj = this.cell;
+				parser.lexer.handler = jQuery.extend(parser.lexer.handler, jS.cellLookupHandlers);
 				
 				var args = parser.parse(this.cell.formula);
 				var lookupTable = [];
