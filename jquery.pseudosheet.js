@@ -42,9 +42,10 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 				//first detect if the object exists if not return nothing
 				if (!obj) return 'Error: Object not found';
 
-				var	$obj = jQuery(obj);
+				var	$obj = jQuery(obj),
+					isInput = $obj.is(':input');
 
-				if ($obj.is(':input')) {
+				if (isInput) {
 					obj.value = $obj.val();
 				} else {
 					obj.value = $obj.html();
@@ -59,6 +60,8 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 				$obj.data('state', 'red');
 				obj.html = [];
 				obj.fnCount = 0;
+				obj.calcCount = (obj.calcCount ? obj.calcCount : 0);
+				obj.calcLast = (obj.calcLast ? obj.calcLast : 0);
 
 				if (obj.calcCount < 1 && obj.calcLast != jP.calcLast) {
 					obj.calcLast = jP.calcLast;
@@ -72,7 +75,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 
 							var Parser;
 							if (jP.callStack) { //we prevent parsers from overwriting each other
-								if (!object.parser) { //cut down on un-needed parser creation
+								if (!obj.parser) { //cut down on un-needed parser creation
 									obj.parser = (new jP.parser);
 								}
 								Parser = obj.parser
@@ -96,9 +99,17 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 					}
 
 					if (obj.fnCount == obj.html.length && obj.html.length > 0) { //if object has an html front bring that to the value but preserve it's value
-						$obj.html(obj.html[0]);
+						if (isInput) {
+							$obj.val(obj.html[0]);
+						} else {
+							$obj.html(obj.html[0]);
+						}
 					} else {
-						$obj.html(obj.value);
+						if (isInput) {
+							$obj.val(obj.value);
+						} else {
+							$obj.html(obj.value);
+						}
 					}
 				}
 
@@ -132,12 +143,15 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 					}
 				},
 				variable: function() {
-					switch (name.toLowerCase()) {
-						case "true" :   return 'TRUE';
-						case "false":   return 'TRUE';
+					var varName = arguments;
+
+					if (varName.length == 1) {
+						switch (varName[0].toLowerCase()) {
+							case "true" :   return 'TRUE';
+							case "false":   return 'TRUE';
+						}
 					}
 
-					var varName = arguments;
 					if (varName.length > 1) {
 						var $obj = $('#' + varName[0]);
 
