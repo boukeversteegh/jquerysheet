@@ -16,7 +16,7 @@
 
     <script>
         $(function() {
-            $('.cells').pseudoSheet();
+            $('.cells,#test3').pseudoSheet();
             $('input').change(function() {
                 $('.cells').pseudoSheet();
             });
@@ -24,13 +24,14 @@
     </script>
 </head>
 <body>
-    <span class="cells" data-formula="=SUM(OBJVAL('.cells:eq(1),.cells:eq(2)', 1), 200)"></span>
+    <span class="cells" data-formula="=SUM(OBJVAL('.cells:eq(1),.cells:eq(2)', 1), 56757567500)"></span>
     <span class="cells">100</span>
     <span class="cells">150</span>
     <span class="cells" data-formula="=SUM(OBJVAL('.cells:eq(0),.cells:eq(1),.cells:eq(2)', 1))"></span>
     <span class="cells" data-formula="=test2.value"></span>
     <span id="test">100</span>
-    <input id="test2" data-formula="=div_1.value"/>
+    <input id="test2" data-formula="=div_1"/>
+    <input id="test3" data-formula="=div_1.value"/>
     <div id="div_1" data-formula="=SUM(OBJVAL('.cells:eq(0)'))"></div>
 </body>
 </html>
