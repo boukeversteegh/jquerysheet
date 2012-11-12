@@ -183,13 +183,13 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 
 					var $obj = jQuery('#' + varName[0]);
 					if (!$obj.length) $obj = jQuery('[name="' + varName[0] + '"]');
-					if (!$obj.length) throw("Error: Variable not found");
+					if (!$obj.length) throw("Error: Object not found");
 
 					if (varName.length > 1) {
 						switch (varName[1]) {
 							case "visible": return ($obj.is(':visible') ? 'TRUE' : 'FALSE');
 							case "enabled": return ($obj.is(':enabled') ? 'TRUE' : 'FALSE');
-							case "value":   return this.getObjectValue($obj);
+							case "value":   return jP.objHandler.getObjectValue($obj);
 							default:        throw("Error: Attribute not found");
 						}
 					}
@@ -197,10 +197,13 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 					return jP.objHandler.getObjectValue($obj);
 				},
 				getObjectValue: function($obj) {
-					if ($obj.is(':radio,:checkbox:checked')) {
-						console.log($obj);
-						console.log($obj.filter(':checked')[0]);
-						return jP.updateObjectValue($obj.filter(':checked')[0]);
+					if ($obj.is(':radio,:checkbox')) {
+						$obj = $obj.filter(':checked');
+					}
+
+					//We don't throw an error here if the item doesn't exist, because we have ensured it does, it is most likely filtered at this point
+					if (!$obj[0]) {
+						$obj[0] = jQuery('<div />');
 					}
 
 					return jP.updateObjectValue($obj[0]);
