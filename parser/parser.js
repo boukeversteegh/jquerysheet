@@ -512,17 +512,17 @@ break;
 case 2:return 8;
 break;
 case 3:
-	if (yy.lexer.obj.cell) return 28; //js
+	if (yy.lexer.obj.type == 'cell') return 28; //js
 	return 'VARIABLE'; //js
 
 break;
 case 4:
-	if (yy.lexer.obj.cell) return 25; //js
+	if (yy.lexer.obj.type == 'cell') return 25; //js
 	return 'VARIABLE';
 
 break;
 case 5:
-	if (yy.lexer.obj.cell) return 27; //js
+	if (yy.lexer.obj.type == 'cell') return 27; //js
 	return 'VARIABLE';
 
 break;

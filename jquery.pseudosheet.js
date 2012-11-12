@@ -10,12 +10,12 @@ jQuery.fn.extend({
 });
 
 jQuery.pseudoSheet = { //jQuery.pseudoSheet
-	createInstance: function(objs) {
+	createInstance: function(obj) {
 		var jP = {
-			obj: objs,
+			obj: obj,
 			calc: function() {
 				jP.calcLast = new Date();
-				jPE.calc(objs, jP.updateObjectValue);
+				jPE.calc(jP, jP.updateObjectValue);
 			},
 			calcLast: 0,
 			callStack: 0,
@@ -66,6 +66,52 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 				if (obj.calcCount < 1 && obj.calcLast != jP.calcLast) {
 					obj.calcLast = jP.calcLast;
 					obj.calcCount++;
+					var Parser;
+					if (jP.callStack) { //we prevent parsers from overwriting each other
+						if (!obj.parser) { //cut down on un-needed parser creation
+							obj.parser = (new jP.parser);
+						}
+						Parser = obj.parser
+					} else {//use the sheet's parser if there aren't many calls in the callStack
+						Parser = jP.Parser;
+					}
+
+					jP.callStack++
+					Parser.lexer.obj = {
+						obj: obj,
+						type: 'object',
+						jP: jP
+					};
+					Parser.lexer.handler = jP.objHandler;
+
+					var data = $obj.data();
+					jQuery.each(data, function(i) {
+						switch(i) {
+							case 'visible':
+								if (data[i].charAt(0) == '=') {
+									var visible = data[i].substring(1, data[i].length);
+									visible = Parser.parse(visible);
+									if (visible) {
+										$obj.show();
+									} else {
+										$obj.hide();
+									}
+								}
+								break;
+							case 'enabled':
+								if (data[i].charAt(0) == '=') {
+									var enabled = data[i].substring(1, data[i].length);
+									enabled = Parser.parse(enabled);
+									if (enabled) {
+										$obj.removeAttr('disabled');
+									} else {
+										$obj.attr('disabled', true);
+									}
+								}
+								break;
+						}
+					});
+
 					obj.formula = $obj.data('formula');
 					if (obj.formula) {
 						try {
@@ -73,23 +119,6 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 								obj.formula = obj.formula.substring(1, obj.formula.length);
 							}
 
-							var Parser;
-							if (jP.callStack) { //we prevent parsers from overwriting each other
-								if (!obj.parser) { //cut down on un-needed parser creation
-									obj.parser = (new jP.parser);
-								}
-								Parser = obj.parser
-							} else {//use the sheet's parser if there aren't many calls in the callStack
-								Parser = jP.Parser;
-							}
-
-							jP.callStack++
-							Parser.lexer.obj = {
-								obj: obj,
-								type: 'object',
-								jP: jP
-							};
-							Parser.lexer.handler = jP.objHandler;
 							obj.value = Parser.parse(obj.formula);
 						} catch(e) {
 							console.log(e);
@@ -136,7 +165,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 					}
 
 					if (jP.fn[fn]) {
-						obj.fnCount++;
+						obj.obj.fnCount++;
 						return jP.fn[fn].apply(obj, args);
 					} else {
 						return "Error: Function Not Found";
@@ -147,32 +176,34 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 
 					if (varName.length == 1) {
 						switch (varName[0].toLowerCase()) {
-							case "true" :   return 'TRUE';
-							case "false":   return 'TRUE';
+							case "true" :   return true;
+							case "false":   return false;
 						}
 					}
+
+					var $obj = jQuery('#' + varName[0]);
+					if (!$obj.length) $obj = jQuery('[name="' + varName[0] + '"]');
+					if (!$obj.length) throw("Error: Variable not found");
 
 					if (varName.length > 1) {
-						var $obj = $('#' + varName[0]);
-
-						if ($obj.length) {
-							switch (varName[1]) {
-								case "visible": return ($obj.is(':visible') ? 'TRUE' : 'FALSE');
-								case "enabled": return ($obj.is(':enabled') ? 'TRUE' : 'FALSE');
-								case "value": return jP.updateObjectValue($obj[0]);
-								default:
-									return jP.updateObjectValue($obj[0]);
-							}
-						}
-					} else {
-						var $obj = $('#' + varName[0]);
-						if ($obj.length) {
-
-							return jP.updateObjectValue($obj[0]);
+						switch (varName[1]) {
+							case "visible": return ($obj.is(':visible') ? 'TRUE' : 'FALSE');
+							case "enabled": return ($obj.is(':enabled') ? 'TRUE' : 'FALSE');
+							case "value":   return this.getObjectValue($obj);
+							default:        throw("Error: Attribute not found");
 						}
 					}
 
-					throw("Error: Variable not found");
+					return jP.objHandler.getObjectValue($obj);
+				},
+				getObjectValue: function($obj) {
+					if ($obj.is(':radio,:checkbox:checked')) {
+						console.log($obj);
+						console.log($obj.filter(':checked')[0]);
+						return jP.updateObjectValue($obj.filter(':checked')[0]);
+					}
+
+					return jP.updateObjectValue($obj[0]);
 				}
 			}
 		};
@@ -209,13 +240,13 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 
 
 var jPE = jQuery.pseudoSheetEngine = jQuery.extend(jSE, {//Pseudo Sheet Formula Engine
-	calc: function(elements, ignite, freshCalc) {
-		for (var i = 0; i < elements.length; i++) {
-			elements[i].calcCount = 0;
+	calc: function(jP, ignite) {
+		for (var i = 0; i < jP.obj.length; i++) {
+			jP.obj[i].calcCount = 0;
 		}
 
-		for (var i = 0; i < elements.length; i++) {
-			ignite(elements[i]);
+		for (var i = 0; i < jP.obj.length; i++) {
+			ignite(jP.obj[i]);
 		}
 	}
 });

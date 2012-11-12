@@ -2984,10 +2984,11 @@ jQuery.sheet = {
 							
 							jS.callStack++
 							Parser.lexer.obj = {
+								type: 'cell',
 								sheet: sheet,
 								row: row,
 								col: col,
-								cell: cell,
+								obj: cell,
 								s: s,
 								editable: s.editable,
 								jS: jS
@@ -3108,10 +3109,10 @@ jQuery.sheet = {
 			},
 			cellLookup: function() {
 				var parser = (new jS.parser);
-				parser.lexer.obj = this.cell;
+				parser.lexer.obj = this.obj;
 				parser.lexer.handler = jQuery.extend(parser.lexer.handler, jS.cellLookupHandlers);
 				
-				var args = parser.parse(this.cell.formula);
+				var args = parser.parse(this.obj.formula);
 				var lookupTable = [];
 				
 				for(var row = args[1].row; row <= args[2].row; row++) {
@@ -4886,16 +4887,22 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	},
 	RAND: 		function() { return Math.random(); },
 	RND: 		function() { return Math.random(); },
-	TRUE: 		function() { return 'TRUE'; },
-	FALSE: 		function() { return 'FALSE'; },
+	TRUE: 		function() {
+		this.obj.html.push('TRUE');
+		return true;
+	},
+	FALSE: 		function() {
+		this.obj.html.push('FALSE');
+		return false;
+	},
 	NOW: 		function() {
 		var today = new Date();
-		this.cell.html.push(Globalize.format(today));
+		this.obj.html.push(Globalize.format(today));
 		return today;
 	},
 	TODAY: 		function() {
 		var today = new Date();
-		this.cell.html.push(Globalize.format(today, Globalize.culture().calendar.patterns.d));
+		this.obj.html.push(Globalize.format(today, Globalize.culture().calendar.patterns.d));
 		return today;
 	},
 	WEEKENDING: function(weeksBack) {
@@ -4906,7 +4913,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			date.getDate() + 5 - date.getDay() - ((weeksBack || 0) * 7)
 		);
 		
-		this.cell.html.push(Globalize.format(date, Globalize.culture().calendar.patterns.d));
+		this.obj.html.push(Globalize.format(date, Globalize.culture().calendar.patterns.d));
 		
 		return date;
 	},
@@ -5010,9 +5017,9 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		var r = jFN.FIXED(v, decimals, false);
 		
 		if (v >= 0) {
-			this.cell.html.push(symbol + r);
+			this.obj.html.push(symbol + r);
 		} else {
-			this.cell.html.push('-' + symbol + r.slice(1));
+			this.obj.html.push('-' + symbol + r.slice(1));
 		}
 		return v;
 	},
@@ -5038,7 +5045,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		var v = arrHelpers.flatten(arguments);
 		v = arrHelpers.unique(v);
 		
-		var cell = this.cell;
+		var cell = this.obj;
 		var jS = this.jS;
 		
 		if (this.s.editable) {
@@ -5071,7 +5078,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 					
 			o.val(cell.selectedValue);
 			
-			this.cell.html.push(o);
+			this.obj.html.push(o);
 		}
 		return cell.selectedValue;
 	},
@@ -5079,7 +5086,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		var v = arrHelpers.flatten(arguments);
 		v = arrHelpers.unique(v);
 		
-		var cell = this.cell;
+		var cell = this.obj;
 		var jS = this.jS;
 		
 		if (this.s.editable) {
@@ -5120,14 +5127,14 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				cell.selectedValue = jS.spreadsheets[this.sheet][this.row][this.col].value;
 			}
 			
-			this.cell.html.push(o);
+			this.obj.html.push(o);
 		}
 		return cell.selectedValue;
 	},
 	CHECKBOX: function(v) {
 		if (jQuery.isArray(v)) v = v[0];
 		
-		var cell = this.cell;
+		var cell = this.obj;
 		var jS = this.jS;
 		
 		if (this.s.editable) {
@@ -5168,7 +5175,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				cell.selectedValue = (checked == 'true' || checked == true ? v : '');
 			}
 
-			this.cell.html.push(o);
+			this.obj.html.push(o);
 		}
 		return cell.selectedValue;
 	},

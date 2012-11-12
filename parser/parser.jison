@@ -8,17 +8,17 @@
 "'"('\\'[']|[^'])*"'"				{return 'STRING';}
 'SHEET'[0-9]+
 %{
-	if (yy.lexer.obj.cell) return 'SHEET'; //js
+	if (yy.lexer.obj.type == 'cell') return 'SHEET'; //js
 	return 'VARIABLE'; //js
 %}
 '$'[A-Za-z]+'$'[0-9]+
 %{
-	if (yy.lexer.obj.cell) return 'FIXEDCELL'; //js
+	if (yy.lexer.obj.type == 'cell') return 'FIXEDCELL'; //js
 	return 'VARIABLE';
 %}
 [A-Za-z]+[0-9]+
 %{
-	if (yy.lexer.obj.cell) return 'CELL'; //js
+	if (yy.lexer.obj.type == 'cell') return 'CELL'; //js
 	return 'VARIABLE';
 %}
 [A-Za-z]+(?=[(])    				{return 'FUNCTION';}
