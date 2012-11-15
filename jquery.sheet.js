@@ -2994,10 +2994,10 @@ jQuery.sheet = {
 								jS: jS
 							};
 							Parser.lexer.handler = jS.cellHandler;
-							cell.value = Parser.parse(cell.formula);
+							cell.result = Parser.parse(cell.formula);
 						} catch(e) {
 							console.log(e);
-							cell.value = e.toString().replace(/\n/g, '<br />'); //error
+							cell.result = e.toString().replace(/\n/g, '<br />'); //error
 							
 							origParent.one('calculation', function() { // the error size may be bigger than that of the cell, so adjust the height accordingly
 								jS.attrH.setHeight(row, 'cell', false);
@@ -3007,16 +3007,21 @@ jQuery.sheet = {
 						}
 						jS.callStack--;
 					}
-				
-					if (cell.fnCount == cell.html.length && cell.html.length > 0) { //if cell has an html front bring that to the value but preserve it's value
-						jQuery(jS.getTd(sheet, row, col)).html(cell.html[0]);					
-					} else {
-						jQuery(jS.getTd(sheet, row, col)).html(cell.value);
+
+					if (typeof cell.result != 'undefined') {
+						if (cell.result.html) {
+							jQuery(jS.getTd(sheet, row, col)).html(cell.result.html);
+						} else if (cell.result.value) {
+							cell.value = cell.result.value;
+							jQuery(jS.getTd(sheet, row, col)).html(cell.result.value);
+						} else {
+							cell.value = cell.result;
+							jQuery(jS.getTd(sheet, row, col)).html(cell.result);
+						}
 					}
 				}
 				
 				cell.state = null;
-				
 				return cell.value;
 			},
 			cellHandler: {
@@ -3076,7 +3081,22 @@ jQuery.sheet = {
 					
 					if (jQuery.sheet.fn[fn]) {
 						jS.spreadsheets[cell.sheet][cell.row][cell.col].fnCount++;
-						return jQuery.sheet.fn[fn].apply(cell, args);
+						var values = [],
+							html = [];
+
+						for(i in args) {
+							if (args[i].value && args[i].html) {
+								values.push(args[i].value);
+								html.push(args[i].html);
+							} else {
+								values.push(args[i]);
+								html.push(args[i]);
+							}
+						}
+
+						cell.html = html;
+						var result = jQuery.sheet.fn[fn].apply(cell, args);
+						return result;
 					} else {
 						return "Error: Function Not Found";
 					}
@@ -4657,8 +4677,8 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 								y {data, legend}
 								owner
 												*/
-		var jS = this.jS;
-		var owner = this;
+		var jS = this.jS,
+			owner = this;
 		
 		function sanitize(v, toNum) {
 			if (!v) {
@@ -4888,22 +4908,30 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	RAND: 		function() { return Math.random(); },
 	RND: 		function() { return Math.random(); },
 	TRUE: 		function() {
-		this.obj.html.push('TRUE');
-		return true;
+		return {
+			value: true,
+			html: 'TRUE'
+		};
 	},
 	FALSE: 		function() {
-		this.obj.html.push('FALSE');
-		return false;
+		return {
+			value: false,
+			html: 'FALSE'
+		};
 	},
 	NOW: 		function() {
 		var today = new Date();
-		this.obj.html.push(Globalize.format(today));
-		return today;
+		return {
+			value: today,
+			html: Globalize.format(today)
+		};
 	},
 	TODAY: 		function() {
 		var today = new Date();
-		this.obj.html.push(Globalize.format(today, Globalize.culture().calendar.patterns.d));
-		return today;
+		return {
+			value: today,
+			html: Globalize.format(today, Globalize.culture().calendar.patterns.d)
+		};
 	},
 	WEEKENDING: function(weeksBack) {
 		var date = new Date();
@@ -4913,9 +4941,10 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			date.getDate() + 5 - date.getDay() - ((weeksBack || 0) * 7)
 		);
 		
-		this.obj.html.push(Globalize.format(date, Globalize.culture().calendar.patterns.d));
-		
-		return date;
+		return {
+			value: date,
+			html: Globalize.format(date, Globalize.culture().calendar.patterns.d)
+		};
 	},
 	WEEKDAY: 	function(date, returnValue) {
 		date = (date ? date : new Date()).toString();
@@ -4947,8 +4976,19 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
 	},
 	IF: function(expression, resultTrue, resultFalse){
-		//return [expression, resultTrue, resultFalse] + "";
-		return (expression ? resultTrue : resultFalse);
+		var value, html;
+		if (expression) {
+			value = resultTrue;
+			html = this.html[1];
+		} else {
+			value = resultFalse;
+			html = this.html[2];
+		}
+
+		return {
+			value: value,
+			html: html
+		};
 	},
 	FIXED: 		function(v, decimals, noCommas) { 
 		if (decimals == null) {
@@ -5014,14 +5054,17 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			symbol = '$';
 		}
 		
-		var r = jFN.FIXED(v, decimals, false);
-		
+		var r = jFN.FIXED(v, decimals, false),
+			html;
 		if (v >= 0) {
-			this.obj.html.push(symbol + r);
+			html = symbol + r;
 		} else {
-			this.obj.html.push('-' + symbol + r.slice(1));
+			html = '-' + symbol + r.slice(1);
 		}
-		return v;
+		return {
+			value: v,
+			html: html
+		};
 	},
 	VALUE: function(v) { return parseFloat(v); },
 	N: function(v) {
@@ -5042,57 +5085,56 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		return Math.sqrt(v);
 	},
 	DROPDOWN: function() {
-		var v = arrHelpers.flatten(arguments);
+		var cell = this.obj,
+			jS = this.jS,
+			v = arrHelpers.flatten(arguments),
+			html;
 		v = arrHelpers.unique(v);
-		
-		var cell = this.obj;
-		var jS = this.jS;
 		
 		if (this.s.editable) {
 			
 			var id = "dropdown" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
-			var o = jQuery('<select style="width: 100%;" name="' + id + '" id="' + id + '" />')
+			html = jQuery('<select style="width: 100%;" name="' + id + '" id="' + id + '" />')
 				.mousedown(function() {
 					jS.cellEdit(jQuery(this).parent(), null, true);
 				});
 		
 			for (var i = 0; i < (v.length <= 50 ? v.length : 50); i++) {
 				if (v[i]) {
-					o.append('<option value="' + v[i] + '">' + v[i] + '</option>');
+					html.append('<option value="' + v[i] + '">' + v[i] + '</option>');
 				}
 			}
 			
 			//here we find out if it is on initial calc, if it is, the value we an use to set the dropdown
 			if (jQuery(jS.getTd(this.sheet, this.row, this.col)).find('#' + id).length == 0) {
-				cell.selectedValue = jS.spreadsheets[this.sheet][this.row][this.col].value;
+				cell.value = jS.spreadsheets[this.sheet][this.row][this.col].value;
 			}
 			
 			jS.s.origParent.one('calculation', function() {
 				jQuery('#' + id)
 					.change(function() {
-						cell.selectedValue = jQuery(this).val();
+						cell.value = jQuery(this).val();
 						jS.calc();
 					});
-				jS.attrH.setHeight(jS.getTdLocation(o.parent()).row, 'cell', false);
+				jS.attrH.setHeight(jS.getTdLocation(html.parent()).row, 'cell', false);
 			});
 					
-			o.val(cell.selectedValue);
-			
-			this.obj.html.push(o);
+			html.val(cell.value);
 		}
-		return cell.selectedValue;
+		return {value: cell.value, html: html};
 	},
 	RADIO: function() {
-		var v = arrHelpers.flatten(arguments);
+		var cell = this.obj,
+			jS = this.jS,
+			v = arrHelpers.flatten(arguments),
+			html;
 		v = arrHelpers.unique(v);
 		
-		var cell = this.obj;
-		var jS = this.jS;
-		
+
 		if (this.s.editable) {
 			var id = "radio" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
 			
-			var o = jQuery('<span />')
+			html = jQuery('<span />')
 				.mousedown(function() {
 					jS.cellEdit(jQuery(this).parent());
 				});
@@ -5102,11 +5144,11 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 					var input = jQuery('<input type="radio" name="' + id + '" class="' + id + '" />')
 						.val(v[i]);
 					
-					if (v[i] == cell.selectedValue) {
+					if (v[i] == cell.value) {
 						input.attr('checked', 'true');
 					}
 					
-					o
+					html
 						.append(input)
 						.append('<span>' + v[i] + '</span>')
 						.append('<br />');
@@ -5114,49 +5156,48 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 					jS.s.origParent.one('calculation', function() {
 						jQuery('.' + id)
 							.change(function() {
-								cell.selectedValue = jQuery(this).val();
+								cell.value = jQuery(this).val();
 								jS.calc();
 							});
-						jS.attrH.setHeight(jS.getTdLocation(o.parent()).row, 'cell', false);
+						jS.attrH.setHeight(jS.getTdLocation(html.parent()).row, 'cell', false);
 					});
 				}
 			}
 			
 			//here we find out if it is on initial calc, if it is, the value we an use to set the radio
 			if (jQuery(jS.getTd(this.sheet, this.row, this.col)).find('.' + id).length == 0) {
-				cell.selectedValue = jS.spreadsheets[this.sheet][this.row][this.col].value;
+				cell.value = jS.spreadsheets[this.sheet][this.row][this.col].value;
 			}
-			
-			this.obj.html.push(o);
 		}
-		return cell.selectedValue;
+		return {value: cell.value, html: html};
 	},
 	CHECKBOX: function(v) {
 		if (jQuery.isArray(v)) v = v[0];
 		
-		var cell = this.obj;
-		var jS = this.jS;
+		var cell = this.obj,
+			jS = this.jS,
+			html;
 		
 		if (this.s.editable) {
 			
-			var id = "checkbox" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I;
-			var checkbox = jQuery('<input type="checkbox" name="' + id + '" class="' + id + '" />')
-				.val(v);
-				
-			var o = jQuery('<span />')
+			var id = "checkbox" + this.sheet + "_" + this.row + "_" + this.col + '_' + this.jS.I,
+				checkbox = jQuery('<input type="checkbox" name="' + id + '" class="' + id + '" />')
+					.val(v);
+
+			html = jQuery('<span />')
 				.append(checkbox)
 				.append('<span>' + v + '</span><br />')
 				.mousedown(function() {
 					jS.cellEdit(jQuery(this).parent());
 				});
 			
-			if (v == cell.selectedValue) {
+			if (v == cell.value) {
 				checkbox.attr('checked', true);
 			}
 			
 			var td = jQuery(jS.getTd(this.sheet, this.row, this.col));
 			if (!td.children().length) {
-				if (td.text() == cell.selectedValue) {
+				if (td.text() == cell.value) {
 					checkbox.attr('checked', true);
 				}
 			}
@@ -5164,7 +5205,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			jS.s.origParent.one('calculation', function() {
 				jQuery('.' + id)
 					.change(function() {
-						cell.selectedValue = (jQuery(this).is(':checked') ? jQuery(this).val() : '');
+						cell.value = (jQuery(this).is(':checked') ? jQuery(this).val() : '');
 						jS.calc();
 					});
 			});
@@ -5172,63 +5213,76 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			//here we find out if it is on initial calc, if it is, the value we an use to set the checkbox
 			if (jQuery(jS.getTd(this.sheet, this.row, this.col)).find('.' + id).length == 0) {
 				var checked = jS.spreadsheets[this.sheet][this.row][this.col].value;
-				cell.selectedValue = (checked == 'true' || checked == true ? v : '');
+				cell.value = (checked == 'true' || checked == true ? v : '');
 			}
-
-			this.obj.html.push(o);
 		}
-		return cell.selectedValue;
+		return {value: cell.value, html: html};
 	},
 	BARCHART:	function(values, legend, title) {
-		return jSE.chart.apply(this, [{
-			type: 'bar',
-			data: values,
-			legend: legend,
-			title: title
-		}]);
+		return {
+			value: '',
+			html: jSE.chart.apply(this, [{
+				type: 'bar',
+				data: values,
+				legend: legend,
+				title: title
+			}])
+		};
 	},
 	HBARCHART:	function(values, legend, title) {
-		return jSE.chart.apply(this, [{
-			type: 'hbar',
-			data: values,
-			legend: legend,
-			title: title
-		}]);
+		return {
+			value: '',
+			html:jSE.chart.apply(this, [{
+				type: 'hbar',
+				data: values,
+				legend: legend,
+				title: title
+			}])
+		};
 	},
 	LINECHART:	function(valuesX, valuesY) {
-		return jSE.chart.apply(this, [{
-			type: 'line',
-			x: {
-				data: valuesX
-			},
-			y: {
-				data: valuesY
-			},
-			title: ""
-		}]);
+		return {
+			value: '',
+			html:jSE.chart.apply(this, [{
+				type: 'line',
+				x: {
+					data: valuesX
+				},
+				y: {
+					data: valuesY
+				},
+				title: ""
+			}])
+		};
 	},
 	PIECHART:	function(values, legend, title) {
-		return jSE.chart.apply(this, [{
-			type: 'pie',
-			data: values,
-			legend: legend,
-			title: title
-		}]);
+		return {
+			value: '',
+			html: jSE.chart.apply(this, [{
+				type: 'pie',
+				data: values,
+				legend: legend,
+				title: title
+			}])
+		};
 	},
 	DOTCHART:	function(valuesX, valuesY, values, legendX, legendY, title) {
-		return jSE.chart.apply(this, [{
-			type: 'dot',
-			data: (values ? values : valuesX),
-			x: {
-				data: valuesX,
-				legend: legendX
-			},
-			y: {
-				data: (valuesY ? valuesY : valuesX),
-				legend: (legendY ? legendY : legendX)
-			},
-			title: title
-		}]);
+		return {
+			value: '',
+			html: jSE.chart.apply(this, [{
+				type: 'dot',
+				data: (values ? values : valuesX),
+				x: {
+					data: valuesX,
+					legend: legendX
+				},
+				y: {
+					data: (valuesY ? valuesY : valuesX),
+					legend: (legendY ? legendY : legendX)
+				},
+				title: title
+			}])
+		};
 	},
 	CELLREF: function(v) {
 		return (this.jS.spreadsheets[v] ? this.jS.spreadsheets[v] : 'Cell Reference Not Found');

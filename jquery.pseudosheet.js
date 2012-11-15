@@ -119,7 +119,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 								obj.formula = obj.formula.substring(1, obj.formula.length);
 							}
 
-							obj.value = Parser.parse(obj.formula);
+							obj.result = Parser.parse(obj.formula);
 						} catch(e) {
 							console.log(e);
 							obj.value = e.toString().replace(/\n/g, '<br />'); //error
@@ -127,18 +127,10 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 						jP.callStack--;
 					}
 
-					if (obj.fnCount == obj.html.length && obj.html.length > 0) { //if object has an html front bring that to the value but preserve it's value
-						if (isInput) {
-							$obj.val(obj.html[0]);
-						} else {
-							$obj.html(obj.html[0]);
-						}
+					if (isInput) {
+						$obj.val(obj.result ? obj.result.value : obj.value);
 					} else {
-						if (isInput) {
-							$obj.val(obj.value);
-						} else {
-							$obj.html(obj.value);
-						}
+						$obj.html(obj.result ? obj.result.html : obj.value);
 					}
 				}
 
@@ -152,7 +144,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 					obj.value = "array";
 				}
 
-				return obj.value;
+				return (obj.result ? obj.result.value : obj.value);
 			},
 			objHandler: {
 				callFunction: function(fn, args, obj) {
@@ -166,7 +158,22 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 
 					if (jP.fn[fn]) {
 						obj.obj.fnCount++;
-						return jP.fn[fn].apply(obj, args);
+						var values = [],
+							html = [];
+
+						for(i in args) {
+							if (args[i].value && args[i].html) {
+								values.push(args[i].value);
+								html.push(args[i].html);
+							} else {
+								values.push(args[i]);
+								html.push(args[i]);
+							}
+						}
+
+						obj.html = html;
+
+						return jP.fn[fn].apply(obj, values);
 					} else {
 						return "Error: Function Not Found";
 					}
@@ -242,7 +249,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 };
 
 
-var jPE = jQuery.pseudoSheetEngine = jQuery.extend(jSE, {//Pseudo Sheet Formula Engine
+var jPE = jQuery.pseudoSheetEngine = {//Pseudo Sheet Formula Engine
 	calc: function(jP, ignite) {
 		for (var i = 0; i < jP.obj.length; i++) {
 			jP.obj[i].calcCount = 0;
@@ -252,4 +259,4 @@ var jPE = jQuery.pseudoSheetEngine = jQuery.extend(jSE, {//Pseudo Sheet Formula 
 			ignite(jP.obj[i]);
 		}
 	}
-});
+};
