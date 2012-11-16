@@ -4973,7 +4973,10 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	},
 	DATEVALUE: function(v) {
 		var d = new Date(v);
-		return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
+		return {
+			html: (d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear()),
+			value: d
+		};
 	},
 	IF: function(expression, resultTrue, resultFalse){
 		var value, html;
