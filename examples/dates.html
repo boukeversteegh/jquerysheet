@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="-1">
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <title>jQuery.sheet - The Web Based Spreadsheet</title>
+    <!--Required-->
+    <link rel="stylesheet" type="text/css" href="../jquery.sheet.css" />
+    <link rel="stylesheet" type="text/css" href="../jquery-ui/theme/jquery-ui.css" />
+    <script type="text/javascript" src="../jquery-1.8.3.min.js">
+    </script>
+    <script type="text/javascript" src="../plugins/globalize.js">
+    </script>
+    <script type="text/javascript" src="../jquery.sheet.js">
+    </script>
+    <script type="text/javascript" src="../parser/parser.js">
+    </script>
+    <!--/Required-->
+
+    <!--Optional-->
+    <!--MouseWheel-->
+    <script type="text/javascript" src="../plugins/jquery.mousewheel.min.js"></script>
+    <!--/MouseWheel-->
+    <!--jQuery UI-->
+    <script type="text/javascript" src="../jquery-ui/ui/jquery-ui.min.js"></script>
+    <!--/jQuery UI-->
+    <!--Raphaeljs - for charts-->
+    <script type="text/javascript" src="../plugins/raphael-min.js"></script>
+    <script type="text/javascript" src="../plugins/g.raphael-min.js"></script>
+    <!--/Raphaeljs-->
+    <!--ColorPicker-->
+    <link rel="stylesheet" type="text/css" href="../plugins/jquery.colorPicker.css" />
+    <script type="text/javascript" src="../plugins/jquery.colorPicker.min.js"></script>
+    <!--/ColorPicker-->
+    <!--Theme Switcher Tool-->
+    <!--<script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/"></script>-->
+    <!--/Theme Switcher Tool-->
+    <!--Elastic-->
+    <script type="text/javascript" src="../plugins/jquery.elastic.min.js"></script>
+    <!--/Elastic-->
+    <!--Advanced_Math-->
+    <script type="text/javascript" src="../jquery.sheet.advancedfn.js"></script>
+    <!--/Advanced_Math-->
+    <!--Finance-->
+    <script type="text/javascript" src="../jquery.sheet.financefn.js"></script>
+    <!--/Finance-->
+    <!--/Optional-->
+    <script type="text/javascript">
+        $(function() {
+            $('#sheetParent').sheet({
+                buildSheet: true,
+                inlineMenu: $('<div />'),
+                autoFiller: true,
+                urlMenu: '../menu.html',
+                title: 'Dates'
+            });
+        });
+    </script>
+</head>
+<body>
+<div id="sheetParent" title="Dates">
+    <table title="Dates Spreadsheet">
+        <tbody>
+            <tr>
+                <td class="styleBold styleCenter">Function</td>
+                <td class="styleBold styleCenter">Execution</td>
+                <td class="styleBold styleCenter">Desired Result</td>
+                <td class="styleBold styleCenter">Correct?</td>
+                <td class="styleBold styleCenter">Notes</td>
+            </tr>
+            <tr><!--date-->
+                <td>DATE</td>
+                <td formula="=DATE(2012,11,20)"></td>
+                <td>41233</td>
+                <td formula="=IF(B2 = C2, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
+            <tr><!--datevalue-->
+                <td>DATEVALUE</td>
+                <td formula="=DATEVALUE('11/20/2012')"></td>
+                <td>41233</td>
+                <td formula="=IF(B3 = C3, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
+            <tr><!--day-->
+                <td>DAY</td>
+                <td formula="=DAY('11/20/2012')"></td>
+                <td>20</td>
+                <td formula="=IF(B4 = C4, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
+            <tr><!--days360-->
+                <td>DAYS360</td>
+                <td formula="=DAYS360('11/20/2011', '11/20/2012')"></td>
+                <td>366</td>
+                <td formula="=IF(B5 = C5, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
+            <tr><!--edate-->
+                <td>EDATE</td>
+                <td formula="=EDATE('11/20/2012', 1)"></td>
+                <td>41263</td>
+                <td formula="=IF(B6 = C6, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
+            <tr><!--eomonth-->
+                <td>EOMONTH</td>
+                <td formula="=EOMONTH('11/20/2012', 1)"></td>
+                <td>41274</td>
+                <td formula="=IF(B7 = C7, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
+            <tr><!--hour-->
+                <td>HOUR</td>
+                <td formula="=HOUR(10:30AM)"></td>
+                <td>10</td>
+                <td formula="=IF(B8 = C8, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
+            <tr><!--minute-->
+                <td>MINUTE</td>
+                <td formula="=MINUTE(10:30AM)"></td>
+                <td>30</td>
+                <td formula="=IF(B9 = C9, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
+            <tr><!--month-->
+                <td>MONTH</td>
+                <td formula="=MONTH(DATE(2012,11,20))"></td>
+                <td>11</td>
+                <td formula="=IF(B10 = C10, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
+            <tr><!--now-->
+                <td>NOW</td>
+                <td formula="=NOW()"></td>
+                <td></td>
+                <td>Not Checkable</td>
+                <td></td>
+            </tr>
+            <tr><!--second-->
+                <td>SECOND</td>
+                <td formula="=SECOND(TIME(10,30,54))"></td>
+                <td>54</td>
+                <td formula="=IF(B12 = C12, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
+            <tr><!--time-->
+                <td>TIME</td>
+                <td formula="=TIME(9,79,660)"></td>
+                <td>0.4375</td>
+                <td formula="=IF(B13 = C13, TRUE, FALSE)"></td>
+                <td>Equal to 10:30</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
