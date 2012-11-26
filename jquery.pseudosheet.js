@@ -20,22 +20,17 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 			calcLast: 0,
 			callStack: 0,
 			fn: {
-				OBJVAL: function (selector, getAll) {
-					if (getAll) {
-						var values = [];
-						jQuery(selector).each(function() {
-							values.push(jP.fn.OBJVAL(this));
-						});
-						return values;
-					}
+				OBJVAL: function (selector) {
+					var values = [];
+					jQuery(selector).each(function() {
+						var value = jP.updateObjectValue(this);
+						if (!isNaN(value)) {
+							value *= 1;
+						}
+						values.push(value ? value : '');
+					});
 
-					var val = jP.updateObjectValue(jQuery(selector)[0]);
-
-					if (!isNaN(val)) {
-						val *= 1;
-					}
-
-					return val;
+					return (values.length > 1 ? values : values[0]);
 				}
 			},
 			updateObjectValue: function(obj) {
@@ -127,24 +122,31 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 						jP.callStack--;
 					}
 
-					if (isInput) {
-						$obj.val(obj.result ? obj.result.value : obj.value);
+					if (obj.result) {
+						if (obj.result.value) {
+							obj.value = obj.result.value;
+						} else {
+							obj.value = obj.result;
+						}
+						if (!obj.result.html && !obj.result.value) {
+							obj.result = {value: obj.result, html: obj.result};
+						} else {
+							obj.result.html = obj.value;
+						}
 					} else {
-						$obj.html(obj.result ? obj.result.html : obj.value);
+						obj.result = {html: obj.value};
+					}
+
+					if (isInput) {
+						$obj.val(obj.value);
+					} else {
+						$obj.html(obj.result.html);
 					}
 				}
 
 				$obj.data('state', null);
 
-				if (jQuery.isPlainObject(obj.value)) {
-					obj.value = "object";
-				}
-
-				if (jQuery.isArray(obj.value)) {
-					obj.value = "array";
-				}
-
-				return (obj.result ? obj.result.value : obj.value);
+				return obj.value;
 			},
 			objHandler: {
 				callFunction: function(fn, args, obj) {
