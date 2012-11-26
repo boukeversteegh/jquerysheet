@@ -93,7 +93,7 @@ jQuery.fn.extend({
 		var jS = $(this).getSheet();
 		sheet = (sheet ? sheet : 0);
 		try {
-			return jS.spreadsheets[sheet][row][col].value;
+			return jS.updateCellValue(sheet, row, col);
 		} catch(e) {
 			return "";
 		}
@@ -3009,11 +3009,12 @@ jQuery.sheet = {
 					}
 
 					if (typeof cell.result != 'undefined') {
-						if (cell.result.html) {
-							jQuery(jS.getTd(sheet, row, col)).html(cell.result.html);
-						} else if (cell.result.value) {
+
+						if (typeof cell.result.value != 'undefined') {
 							cell.value = cell.result.value;
-							jQuery(jS.getTd(sheet, row, col)).html(cell.result.value);
+							jQuery(jS.getTd(sheet, row, col)).html(cell.result.html ? cell.result.html : cell.result.value);
+						} else if (cell.result.html) {
+								jQuery(jS.getTd(sheet, row, col)).html(cell.result.html);
 						} else {
 							cell.value = cell.result;
 							jQuery(jS.getTd(sheet, row, col)).html(cell.result);
@@ -3025,6 +3026,38 @@ jQuery.sheet = {
 				return cell.value;
 			},
 			cellHandler: {
+				variable: function() {
+					if (arguments.length) {
+						switch(arguments[0].toLowerCase()) {
+							case 'true': return {
+								html: 'TRUE',
+								value: true
+							};
+							case 'false': return {
+								html: 'FALSE',
+								value: false
+							}
+						}
+					}
+				},
+				time: function(time, isAMPM) {
+					var date = new Date(), timeParts = time, timeValue, hour, minute, second, meridiem;
+					if (isAMPM) {
+						meridiem = timeParts.substr(-2).toLowerCase(); //get ampm;
+						timeParts = timeParts.replace(/(am|pm)/i,'');
+					}
+
+					timeParts = timeParts.split(':');
+					hour = timeParts[0] * 1;
+					minute = timeParts[1] * 1;
+					second = (timeParts[2] ? timeParts[2] : 0) * 1;
+
+					if (isAMPM && meridiem == 'pm') {
+						hour += 12;
+					}
+
+					return jFN.TIME(hour, minute, second);
+				},
 				cellValue: function(id) { //Example: A1
 					var loc = jSE.parseLocation(id);
 					return jS.updateCellValue(this.sheet, loc.row, loc.col);
@@ -4819,10 +4852,10 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 					axisytype: " "
 				})
 					.hover(function () {
-						this.tag = this.tag || r.tag(this.x, this.y, this.value, 0, this.r + 2).insertBefore(this);
-						this.tag.show();
+						this.marker = this.marker || r.tag(this.x, this.y, this.value, 0, this.r + 2).insertBefore(this);
+						this.marker.show();
 					}, function () {
-						this.tag && this.tag.hide();
+						this.marker && this.marker.hide();
 					});
 				break;
 			}
@@ -4923,14 +4956,14 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		var today = new Date();
 		return {
 			value: today,
-			html: Globalize.format(today)
+			html: dates.toString(today)
 		};
 	},
 	TODAY: 		function() {
 		var today = new Date();
 		return {
 			value: today,
-			html: Globalize.format(today, Globalize.culture().calendar.patterns.d)
+			html: dates.toString(today, 'd')
 		};
 	},
 	WEEKENDING: function(weeksBack) {
@@ -4943,11 +4976,11 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		
 		return {
 			value: date,
-			html: Globalize.format(date, Globalize.culture().calendar.patterns.d)
+			html: dates.toString(date, 'd')
 		};
 	},
 	WEEKDAY: 	function(date, returnValue) {
-		date = (date ? date : new Date()).toString();
+		date = (date ? dates.get(date) : new Date()).toString();
 		date = (new Date(Globalize.parseDate( date ))).getDay() + 1;
 		
 		returnValue = (returnValue ? returnValue : 1);
@@ -4963,20 +4996,88 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		return date;
 	},
 	DAYSFROM: 	function(year, month, day) { 
-		return Math.floor( (new Date() - new Date (year, (month - 1), day)) / 86400000);
+		return Math.floor( (new Date() - new Date (year, (month - 1), day)) / dates.dayDiv);
 	},
 	DAYS: function(v1, v2) {
-		var date1 = new Date(v1);
-		var date2 = new Date(v2);
+		var date1 = dates.get(v1);
+		var date2 = dates.get(v2);
 		var ONE_DAY = 1000 * 60 * 60 * 24;
 		return Math.round(Math.abs(date1.getTime() - date2.getTime()) / ONE_DAY);
 	},
-	DATEVALUE: function(v) {
-		var d = new Date(v);
+	DAY: function(date) {
+		date = dates.get(date);
+		return date.getDate();
+	},
+	DAYS360: function(date1, date2) {//TODO: not properly implemented
+		date1 = dates.get(date1);
+		date2 = dates.get(date2);
+		return (date2 - date1) /  dates.dayDiv;
+	},
+	DATE: function(year, month, day) {
+		var date = new Date(year, month - 1, day);
 		return {
-			html: (d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear()),
-			value: d
+			html: dates.toString(date, 'd'),
+			value: dates.toCentury(date)
 		};
+	},
+	DATEVALUE: function(date) {
+		date = dates.get(date);
+		return {
+			html: dates.toString(date, 'd'),
+			value: dates.toCentury(date)
+		}
+	},
+	EDATE: function(date, months) {
+		date = dates.get(date),
+		date.setMonth(date.getMonth() + months);
+		return {
+			html: dates.toString(date, 'd'),
+			value: dates.toCentury(date)
+		};
+	},
+	EOMONTH: function(date, months) {
+		date = dates.get(date),
+		date.setMonth(date.getMonth() + months + 1);
+		date = new Date(date.getFullYear(), date.getMonth(), 0);
+		return {
+			html: dates.toString(date, 'd'),
+			value: dates.toCentury(date)
+		};
+	},
+	HOUR: function(time) {
+		return times.fromMath(time).hour;
+	},
+	MINUTE: function(time) {
+		return times.fromMath(time).minute;
+	},
+	MONTH: function(date) {
+		date = dates.get(date);
+		return date.getMonth();
+	},
+	SECOND: function(time) {
+		return times.fromMath(time).second;
+	},
+	TIME: function(hour, minute, second) {
+		var date = new Date();
+			second = (second ? second : 0),
+			minute = (minute ? minute : 0),
+			hour = (hour ? hour : 0);
+
+		if (second && second > 60) {
+			var minuteFromSecond = (((second / 60) + '').split('.')[0]) * 1;
+			second = second - (minuteFromSecond * 60);
+			minute += minuteFromSecond;
+		}
+
+		if (minute && minute > 60) {
+			var hourFromMinute = (((minute / 60) + '').split('.')[0]) * 1;
+			minute = minute - (hourFromMinute * 60);
+			hour += hourFromMinute;
+		}
+
+		var millisecond = (hour * 60 * 60 * 1000) + (minute * 60 * 1000) + (second * 1000);
+
+		return millisecond / dates.dayDiv;
 	},
 	IF: function(expression, resultTrue, resultFalse){
 		var value, html;
@@ -4992,6 +5093,9 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			value: value,
 			html: html
 		};
+	},
+	GETHTML: function() {
+		return this.html[0];
 	},
 	FIXED: 		function(v, decimals, noCommas) { 
 		if (decimals == null) {
@@ -5439,4 +5543,79 @@ var arrHelpers = {
 		
 		return closest;
     }
+};
+
+var dates = {
+	dayDiv: 86400000,
+	toCentury: function(date) {
+		return Math.round(Math.abs((new Date(1900,0,-1)) - date) / dates.dayDiv);
+	},
+	get: function(date) {
+		if (date.getMonth) {
+			return date;
+		} else if (isNaN(date)) {
+			return new Date(Globalize.parseDate( date ));
+		} else {
+			date *= dates.dayDiv;
+			//date = new Date(date);
+			var newDate = (new Date(1900,0,-1)) * 1;
+			date += newDate;
+			date = new Date(date);
+			return date;
+		}
+	},
+	toString: function(date, pattern) {
+		if (!pattern) {
+			return Globalize.format(date);
+		}
+		return Globalize.format(date, Globalize.culture().calendar.patterns[pattern]);
+	}
+};
+
+var times = {
+	fromMath: function(time) {
+		var result = {};
+
+		result.hour = ((time * 24) + '').split('.')[0];
+
+		result.minute = function(time) {
+			time = Math.round(time * 24 * 100)/100;
+			time = (time + '').split('.');
+			var minute = 0;
+			if (time[1]) {
+				if (time[1].length < 2) {
+					time[1] += '0';
+				}
+				minute = time[1] * 0.6;
+			}
+			return Math.round(minute);
+		}(time);
+
+		result.second = function(time) {
+			time = Math.round(time * 24 * 10000)/10000;
+			time = (time + '').split('.');
+			var second = 0;
+			if (time[1]) {
+				for(var i = 0; i < 4; i++) {
+					if (!time[1].charAt(i)) {
+						time[1] += '0';
+					}
+				}
+				var secondDecimal = ((time[1] * 0.006) + '').split('.');
+				if (secondDecimal[1]) {
+					if (secondDecimal[1] && secondDecimal[1].length > 2) {
+						secondDecimal[1] = secondDecimal[1].substr(0,2);
+					}
+
+					return Math.round(secondDecimal[1] * 0.6);
+				}
+			}
+			return second;
+		}(time);
+
+		return result;
+	},
+	toMath: function(time) {
+
+	}
 };
