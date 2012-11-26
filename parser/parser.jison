@@ -6,6 +6,11 @@
 \s+									{/* skip whitespace */}
 '"'("\\"["]|[^"])*'"'				{return 'STRING';}
 "'"('\\'[']|[^'])*"'"				{return 'STRING';}
+"DAYS360"                           {return 'FUNCTION';}
+([0]?[1-9]|1[0-2])[:][0-5][0-9]([:][0-5][0-9])?[ ]?(AM|am|aM|Am|PM|pm|pM|Pm)
+									{return 'TIME_AMPM';}
+([0]?[0-9]|1[0-9]|2[0-3])[:][0-5][0-9]([:][0-5][0-9])?
+									{return 'TIME_24';}
 'SHEET'[0-9]+
 %{
 	if (yy.lexer.obj.type == 'cell') return 'SHEET'; //js
@@ -24,7 +29,7 @@
 [A-Za-z]+(?=[(])    				{return 'FUNCTION';}
 [A-Za-z]{1,}[A-Za-z_0-9]+			{return 'VARIABLE';}
 [A-Za-z_]+           				{return 'VARIABLE';}
-[0-9]+([.][0-9])?			  		{return 'NUMBER';}
+[0-9]+          			  		{return 'NUMBER';}
 "$"									{/* skip whitespace */}
 " "									{return ' ';}
 [.]									{return 'DECIMAL';}
@@ -78,7 +83,15 @@ expression :
 			$$ = yy.lexer.handler.variable.apply(yy.lexer.obj, $1);//js
             //php $$ = $this->variable($1);
 		}
-	| NUMBER
+	| TIME_AMPM
+		{
+			$$ = yy.lexer.handler.time.apply(yy.lexer.obj, [$1, true]); //js
+		}
+	| TIME_24
+		{
+			$$ = yy.lexer.handler.time.apply(yy.lexer.obj, [$1]); //js
+		}
+	| number
 		{$$ = $1 * 1;}
 	| STRING
 		{
@@ -118,8 +131,6 @@ expression :
 		{$$ = $2 * -1;}
 	| '+' expression
 		{$$ = $2 * 1;}
-	| NUMBER '%'
-		{$$ = $1 * 0.01;}
 	| E
 		{/*$$ = Math.E;*/;}
 	| FUNCTION '(' ')'
@@ -206,5 +217,21 @@ variableSequence :
 
             //php $$ = (is_array($1) ? $1 : array());
             //php $$[] = $3;
+		}
+;
+
+number :
+	NUMBER
+		{
+			$$ = $1 * 1;
+		}
+	| NUMBER DECIMAL NUMBER
+		{
+			$$ = ($1 + '.' + $3) * 1; //js
+			//php $$ = $1 . '.' . $3;
+		}
+	| NUMBER '%'
+		{
+			$$ = $1 * 0.01;
 		}
 ;
