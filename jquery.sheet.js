@@ -5003,6 +5003,14 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		
 		return day;
 	},
+	WEEKNUM: function(date) {//TODO: implement week starting
+		date = dates.get(date);
+		return dates.week(date) + 1;
+	},
+	YEAR: function(date) {
+		date = dates.get(date);
+		return date.getFullYear();
+	},
 	DAYSFROM: 	function(year, month, day) { 
 		return Math.floor( (new Date() - new Date (year, (month - 1), day)) / dates.dayDiv);
 	},
@@ -5582,6 +5590,10 @@ var dates = {
 			date = new Date(date);
 			return date;
 		}
+	},
+	week: function(date) {
+		var onejan = new Date(date.getFullYear(),0,1);
+		return Math.ceil((((date - onejan) / 86400000) + onejan.getDay()+1)/7);
 	},
 	toString: function(date, pattern) {
 		if (!pattern) {
