@@ -213,6 +213,9 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 
 					return jP.objHandler.getObjectValue($obj);
 				},
+				time: function(time, isAMPM) {
+					return times.fromString(time, isAMPM);
+				},
 				getObjectValue: function($obj) {
 					if ($obj.is(':radio,:checkbox')) {
 						$obj = $obj.filter(':checked');

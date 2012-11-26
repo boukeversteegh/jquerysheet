@@ -3041,22 +3041,7 @@ jQuery.sheet = {
 					}
 				},
 				time: function(time, isAMPM) {
-					var date = new Date(), timeParts = time, timeValue, hour, minute, second, meridiem;
-					if (isAMPM) {
-						meridiem = timeParts.substr(-2).toLowerCase(); //get ampm;
-						timeParts = timeParts.replace(/(am|pm)/i,'');
-					}
-
-					timeParts = timeParts.split(':');
-					hour = timeParts[0] * 1;
-					minute = timeParts[1] * 1;
-					second = (timeParts[2] ? timeParts[2] : 0) * 1;
-
-					if (isAMPM && meridiem == 'pm') {
-						hour += 12;
-					}
-
-					return jFN.TIME(hour, minute, second);
+					return times.fromString(time, isAMPM);
 				},
 				cellValue: function(id) { //Example: A1
 					var loc = jSE.parseLocation(id);
@@ -5079,6 +5064,17 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 
 		return millisecond / dates.dayDiv;
 	},
+	TIMEVALUE: function (time) {
+		if (!isNaN(time)) {
+			return time;
+		}
+		if (/([0]?[1-9]|1[0-2])[:][0-5][0-9]([:][0-5][0-9])?[ ]?(AM|am|aM|Am|PM|pm|pM|Pm)/.test(time)) {
+			return times.fromString(time, true);
+		} else if (/([0]?[0-9]|1[0-9]|2[0-3])[:][0-5][0-9]([:][0-5][0-9])?/.test(time)) {
+			return times.fromString(time);
+		}
+		return 0;
+	},
 	IF: function(expression, resultTrue, resultFalse){
 		var value, html;
 		if (expression) {
@@ -5615,7 +5611,22 @@ var times = {
 
 		return result;
 	},
-	toMath: function(time) {
+	fromString: function(time, isAMPM) {
+		var date = new Date(), timeParts = time, timeValue, hour, minute, second, meridiem;
+		if (isAMPM) {
+			meridiem = timeParts.substr(-2).toLowerCase(); //get ampm;
+			timeParts = timeParts.replace(/(am|pm)/i,'');
+		}
 
+		timeParts = timeParts.split(':');
+		hour = timeParts[0] * 1;
+		minute = timeParts[1] * 1;
+		second = (timeParts[2] ? timeParts[2] : 0) * 1;
+
+		if (isAMPM && meridiem == 'pm') {
+			hour += 12;
+		}
+
+		return jFN.TIME(hour, minute, second);
 	}
 };

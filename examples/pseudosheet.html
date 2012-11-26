@@ -38,15 +38,17 @@
 
             $('.outsideInclusion').pseudoSheet();
 
+            $('.time').pseudoSheet();
+
             $('.result').each(function() {
-                if($(this).is(':contains("SUCCESS")')) {
+                if($(this).is(':contains("FAILURE")')) {
                     $(this)
-                        .css('background-color', 'green')
+                        .css('background-color', 'red')
                         .css('color', 'white');
 
                 } else {
                     $(this)
-                        .css('background-color', 'red')
+                        .css('background-color', 'green')
                         .css('color', 'white');
                 }
             });
@@ -163,6 +165,19 @@
             </td>
             <td class="result">
                 <span class="outsideInclusion" data-formula="=IF(OBJVAL('.outsideInclusion:eq(0)') = 100, 'SUCCESS', 'FAILURE')"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>Timevalue</td>
+            <td>
+               <span class="time" data-formula="=TIMEVALUE('10:30am')"></span>
+               <span class="time" data-formula="=TIMEVALUE(10:30am)"></span>
+               <span class="time" data-formula="=TIME(10,30,0)"></span>
+            </td>
+            <td class="result">
+                <span class="time" data-formula="=IF(OBJVAL('.time:eq(0)') = 0.4375, 'SUCCESS', 'FAILURE')"></span>
+                <span class="time" data-formula="=IF(OBJVAL('.time:eq(1)') = 0.4375, 'SUCCESS', 'FAILURE')"></span>
+                <span class="time" data-formula="=IF(OBJVAL('.time:eq(2)') = 0.4375, 'SUCCESS', 'FAILURE')"></span>
             </td>
         </tr>
     </table>
