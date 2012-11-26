@@ -4969,20 +4969,39 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		};
 	},
 	WEEKDAY: 	function(date, returnValue) {
-		date = (date ? dates.get(date) : new Date()).toString();
-		date = (new Date(Globalize.parseDate( date ))).getDay() + 1;
+		date = dates.get(date);
+		var day = date.getDay();
 		
 		returnValue = (returnValue ? returnValue : 1);
 		switch (returnValue) {
-			case 2:
-				date = date - 1;
-				if (date == 0) date = 7;
 			case 3:
-				date = date - 2;
-				if (date == -1) date = 6;
+				switch (day) {
+					case 0:return 7;
+					case 1:return 1;
+					case 2:return 2;
+					case 3:return 3;
+					case 4:return 4;
+					case 5:return 5;
+					case 6:return 6;
+				}
+				break;
+			case 2:
+				switch (day) {
+					case 0:return 6;
+					case 1:return 0;
+					case 2:return 1;
+					case 3:return 2;
+					case 4:return 3;
+					case 5:return 4;
+					case 6:return 5;
+				}
+				break;
+			case 1:
+				day++;
+				break;
 		}
 		
-		return date;
+		return day;
 	},
 	DAYSFROM: 	function(year, month, day) { 
 		return Math.floor( (new Date() - new Date (year, (month - 1), day)) / dates.dayDiv);

@@ -169,6 +169,27 @@
                 <td>Not Checkable</td>
                 <td></td>
             </tr>
+            <tr><!--weekday sunday 1-7 saturday-->
+                <td>WEEKDAY</td>
+                <td formula="=WEEKDAY('11/20/2012')"></td>
+                <td>3</td>
+                <td formula="=IF(B16 = C16, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
+            <tr><!--weekday monday 1-7 sunday -->
+                <td>WEEKDAY</td>
+                <td formula="=WEEKDAY('11/20/2012', 2)"></td>
+                <td>1</td>
+                <td formula="=IF(B17 = C17, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
+            <tr><!--weekday monday 0-6 sunday -->
+                <td>WEEKDAY</td>
+                <td formula="=WEEKDAY('11/20/2012', 3)"></td>
+                <td>2</td>
+                <td formula="=IF(B18 = C18, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
         </tbody>
     </table>
 </div>
