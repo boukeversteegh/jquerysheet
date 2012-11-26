@@ -2954,7 +2954,11 @@ jQuery.sheet = {
 				
 				var cell = jS.spreadsheets[sheet][row][col];
 				cell.oldValue = cell.value; //we detect the last value, so that we don't have to update all cell, thus saving resources
-				
+
+				if (cell.result) { //unset the last result if it is set
+					delete cell.result;
+				}
+
 				if (cell.state) {
 					throw("Error: Loop Detected");
 				}
@@ -4947,7 +4951,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	TODAY: 		function() {
 		var today = new Date();
 		return {
-			value: today,
+			value: dates.toCentury(today) - 1,
 			html: dates.toString(today, 'd')
 		};
 	},
