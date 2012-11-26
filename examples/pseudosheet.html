@@ -1,5 +1,7 @@
+<!DOCTYPE html>
 <html>
 <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <script type="text/javascript" src="../jquery-1.8.3.min.js"></script>
     <script type="text/javascript" src="../plugins/globalize.js"></script>
     <script type="text/javascript" src="../jquery.sheet.js"></script>
@@ -16,26 +18,153 @@
 
     <script>
         $(function() {
-            $('.cells,#test3').pseudoSheet();
-            $('input').change(function() {
-                $('.cells').pseudoSheet();
+            $('.objVal').pseudoSheet();
+
+            $('.check').change(function() {
+                $('.check').pseudoSheet();
+            }).change();
+
+            $('.idValues').pseudoSheet();
+
+            $('.nameValues').pseudoSheet();
+
+            $('.vis').pseudoSheet();
+
+            $('.enabled').pseudoSheet();
+
+            $('.loop').pseudoSheet();
+
+            $('.outside').pseudoSheet();
+
+            $('.outsideInclusion').pseudoSheet();
+
+            $('.result').each(function() {
+                if($(this).is(':contains("SUCCESS")')) {
+                    $(this)
+                        .css('background-color', 'green')
+                        .css('color', 'white');
+
+                } else {
+                    $(this)
+                        .css('background-color', 'red')
+                        .css('color', 'white');
+                }
             });
         });
     </script>
 </head>
 <body>
-    <span class="cells" data-formula="=SUM(OBJVAL('.cells:eq(1),.cells:eq(2)', 1), 56757567500)"></span>
-    <span class="cells">100</span>
-    <span class="cells">150</span>
-    <span class="cells" data-formula="=SUM(OBJVAL('.cells:eq(0),.cells:eq(1),.cells:eq(2)', 1))"></span>
-    <span class="cells" data-formula="=test2.value"></span>
-    <span id="test">100</span>
-    <input id="test2" data-formula="=div_1"/>
-    <input id="test3" data-formula="=div_1.value"/>
-    <div id="div_1" data-formula="=SUM(OBJVAL('.cells:eq(0)'))"></div>
-    <span class="cells" data-visible="">I'm Gone</span>
-    <input type="checkbox" name="testCheckbox" class="cells" value="test1"/>
-    <input type="checkbox" name="testCheckbox" class="cells" value="test2"/>
-    <input type="input" data-formula="=testCheckbox" class="cells" />
+    <table>
+        <tr>
+            <td>Test</td>
+            <td>Output</td>
+            <td>Result</td>
+        </tr>
+        <tr>
+            <td>Function: OBJVAL</td>
+            <td>
+                <span class="objVal" data-formula="=SUM(OBJVAL('.objVal:eq(1)'),100)"></span>
+                <span class="objVal" data-visible="=FALSE">100</span>
+            </td>
+            <td class="result">
+                <span class="objVal" data-formula="=IF(OBJVAL('.objVal:eq(0)') = 200, 'SUCCESS', 'FAILURE')"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>Checkbox Functionality</td>
+            <td>
+                <input type="checkbox" name="testCheckbox" class="check" value="FAILURE"/>
+                <input type="checkbox" name="testCheckbox" class="check" value="SUCCESS" checked="true"/>
+                <input type="input" class="check" data-formula="=testCheckbox"/>
+            </td>
+            <td class="result">
+                <span class="check" data-formula="=IF(OBJVAL('.check:eq(2)') = 'SUCCESS', 'SUCCESS', 'FAILURE')"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>IDs</td>
+            <td>
+                <input class="idValues" type="input" data-formula="=idVal"/>
+                <span class="idValues" id="idVal" data-visible="=FALSE">100</span>
+            </td>
+            <td class="result">
+                <span class="idValues" data-formula="=IF(OBJVAL('.idValues:eq(0)') = 100, 'SUCCESS', 'FAILURE')" />
+            </td>
+        </tr>
+        <tr>
+            <td>Name</td>
+            <td>
+                <input class="nameValues" type="input" data-formula="=nameValue"/>
+                <input class="nameValues" name="nameValue" data-visible="=FALSE" value="100"/>
+            </td>
+            <td class="result">
+                <span class="nameValues" data-formula="IF(OBJVAL('.nameValues:eq(0)') = 100, 'SUCCESS', 'FAILURE')"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>Visible (false)</td>
+            <td>
+                <span id="not_vis" class="vis" data-visible="=FALSE"></span>
+            </td>
+            <td class="result">
+                <span class="vis" data-formula="=IF(not_vis.visible, 'FAILURE', 'SUCCESS')"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>Visible (true)</td>
+            <td>
+                <span id="is_vis" class="vis" data-visible="=TRUE" style="display: none;"></span>
+            </td>
+            <td class="result">
+                <span class="vis" data-formula="=IF(is_vis.visible, 'SUCCESS', 'FAILURE')"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>Enabled (false)</td>
+            <td>
+                <input type="input" id="not_enabled" class="enabled" data-enabled="=FALSE" />
+            </td>
+            <td class="result">
+                <span class="enabled" data-formula="=IF(not_enabled.enabled, 'FAILURE', 'SUCCESS')"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>Enabled (true)</td>
+            <td>
+                <input type="input" id="is_enabled" class="enabled" data-enabled="=TRUE" disabled="true"/>
+            </td>
+            <td class="result">
+                <span class="enabled" data-formula="=IF(is_enabled.enabled, 'SUCCESS', 'FAILURE')"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>Loop detection</td>
+            <td>
+                <input type="input" class="loop" data-formula="=OBJVAL('.loop:eq(0)')"/>
+            </td>
+            <td class="result">
+                <span class="loop" data-formula="=IF(OBJVAL('.loop:eq(0)') = 'Error: Loop Detected', 'SUCCESS', 'FAILURE')"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>Outside Inclusion</td>
+            <td>
+                <input type="input" class="outside" data-formula="=outside_hidden.value"/>
+                <input type="hidden" id="outside_hidden" value="SUCCESS"/>
+            </td>
+            <td class="result">
+                <span class="loop" data-formula="=IF(OBJVAL('.loop:eq(0)') = 'Error: Loop Detected', 'SUCCESS', 'FAILURE')"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>Outside Inclusion From Existing Set</td>
+            <td>
+                <input type="input" class="outsideInclusion" data-formula="=idVal.value"/>
+            </td>
+            <td class="result">
+                <span class="outsideInclusion" data-formula="=IF(OBJVAL('.outsideInclusion:eq(0)') = 100, 'SUCCESS', 'FAILURE')"></span>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
