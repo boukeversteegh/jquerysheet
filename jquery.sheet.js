@@ -3117,7 +3117,7 @@ jQuery.sheet = {
 						}
 
 						cell.html = html;
-						var result = jQuery.sheet.fn[fn].apply(cell, args);
+						var result = jQuery.sheet.fn[fn].apply(cell, values);
 						return result;
 					} else {
 						return "Error: Function Not Found";
@@ -5068,7 +5068,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	},
 	MONTH: function(date) {
 		date = dates.get(date);
-		return date.getMonth();
+		return date.getMonth() + 1;
 	},
 	SECOND: function(time) {
 		return times.fromMath(time).second;
@@ -5105,6 +5105,47 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			return times.fromString(time);
 		}
 		return 0;
+	},
+	WORKDAY: function(startDate, days, holidays) {
+		var workDays = {1:true, 2:true, 3:true, 4:true, 5:true},
+			startDate = dates.get(startDate),
+			days = (days && !isNaN(days) ? days : 0),
+			dayCounter = 0,
+			daysSoFar = 0,
+			workingDate = new Date();
+
+		workingDate = startDate;
+
+		if (holidays) {
+			if (!jQuery.isArray(holidays)) {
+				holidays = [holidays];
+			}
+			holidays = arrHelpers.flatten(holidays);
+			var holidaysTemp = {};
+			jQuery.each(holidays, function(i) {
+				if (holidays[i]) {
+					holidaysTemp[dates.toString(dates.get(holidays[i]), 'd')] = true;
+				}
+			});
+			holidays = holidaysTemp;
+		} else {
+			holidays = {};
+		}
+
+		while( daysSoFar < days ){
+			workingDate = new Date(workingDate.setDate(workingDate.getDate() + 1));
+			if( workDays[workingDate.getDay()] ){
+				if (!holidays[dates.toString(workingDate, 'd')]) {
+					daysSoFar++;
+				}
+			}
+			dayCounter++;
+		}
+
+		return {
+			html: dates.toString(workingDate, 'd'),
+			value: dates.toCentury(workingDate)
+		};
 	},
 	IF: function(expression, resultTrue, resultFalse){
 		var value, html;
