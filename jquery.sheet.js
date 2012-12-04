@@ -1812,13 +1812,13 @@ jQuery.sheet = {
 
 						var i = 1;
 						while (i <= this.max) {
-							var row = jQuery(jS.getTd(jS.i, i, 1)).parent();
+							this.row = jQuery(jS.getTd(jS.i, i, 1)).parent();
 							
-							if (!row.data('hidden')) {
+							if (!this.row.data('hidden')) {
 								if (i < pos.value) {
-									row.addClass("rowHidden").hide();
+									this.row.addClass("rowHidden").hide();
 								} else {
-									row.removeClass("rowHidden").show();
+									this.row.removeClass("rowHidden").hide();
 								}
 							}
 							
