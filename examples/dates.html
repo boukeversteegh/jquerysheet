@@ -94,44 +94,51 @@
             </tr>
             <tr><!--days360-->
                 <td>DAYS360</td>
-                <td formula="=DAYS360('11/20/2011', '11/20/2012')"></td>
-                <td>366</td>
+                <td formula="=DAYS360('09/01/2012', '08/31/2013')"></td>
+                <td>360</td>
                 <td formula="=IF(B5 = C5, TRUE, FALSE)"></td>
+                <td></td>
+            </tr>
+            <tr><!--days360-->
+                <td>DAYS360</td>
+                <td formula="=DAYS360('09/01/2012', '08/31/2013', true)"></td>
+                <td>359</td>
+                <td formula="=IF(B6 = C6, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--edate-->
                 <td>EDATE</td>
                 <td formula="=EDATE('11/20/2012', 1)"></td>
                 <td>41263</td>
-                <td formula="=IF(B6 = C6, TRUE, FALSE)"></td>
+                <td formula="=IF(B7 = C7, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--eomonth-->
                 <td>EOMONTH</td>
                 <td formula="=EOMONTH('11/20/2012', 1)"></td>
                 <td>41274</td>
-                <td formula="=IF(B7 = C7, TRUE, FALSE)"></td>
+                <td formula="=IF(B8 = C8, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--hour-->
                 <td>HOUR</td>
                 <td formula="=HOUR(10:30AM)"></td>
                 <td>10</td>
-                <td formula="=IF(B8 = C8, TRUE, FALSE)"></td>
+                <td formula="=IF(B9 = C9, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--minute-->
                 <td>MINUTE</td>
                 <td formula="=MINUTE(10:30AM)"></td>
                 <td>30</td>
-                <td formula="=IF(B9 = C9, TRUE, FALSE)"></td>
+                <td formula="=IF(B10 = C10, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--month-->
                 <td>MONTH</td>
                 <td formula="=MONTH(DATE(2012,11,20))"></td>
                 <td>11</td>
-                <td formula="=IF(B10 = C10, TRUE, FALSE)"></td>
+                <td formula="=IF(B11 = C11, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--now-->
@@ -145,21 +152,21 @@
                 <td>SECOND</td>
                 <td formula="=SECOND(TIME(10,30,54))"></td>
                 <td>54</td>
-                <td formula="=IF(B12 = C12, TRUE, FALSE)"></td>
+                <td formula="=IF(B13 = C13, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--time-->
                 <td>TIME</td>
                 <td formula="=TIME(9,79,660)"></td>
                 <td>0.4375</td>
-                <td formula="=IF(B13 = C13, TRUE, FALSE)"></td>
+                <td formula="=IF(B14 = C14, TRUE, FALSE)"></td>
                 <td>Equal to 10:30</td>
             </tr>
             <tr><!--timevalue-->
                 <td>TIMEVALUE</td>
                 <td formula="=TIMEVALUE(10:30am)"></td>
                 <td>0.4375</td>
-                <td formula="=IF(B14 = C14, TRUE, FALSE)"></td>
+                <td formula="=IF(B15 = C15, TRUE, FALSE)"></td>
                 <td>Equal to 10:30</td>
             </tr>
             <tr><!--today-->
@@ -173,77 +180,77 @@
                 <td>WEEKDAY</td>
                 <td formula="=WEEKDAY('11/20/2012')"></td>
                 <td>3</td>
-                <td formula="=IF(B16 = C16, TRUE, FALSE)"></td>
+                <td formula="=IF(B17 = C17, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--weekday monday 1-7 sunday -->
                 <td>WEEKDAY</td>
                 <td formula="=WEEKDAY('11/20/2012', 2)"></td>
                 <td>1</td>
-                <td formula="=IF(B17 = C17, TRUE, FALSE)"></td>
+                <td formula="=IF(B18 = C18, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--weekday monday 0-6 sunday -->
                 <td>WEEKDAY</td>
                 <td formula="=WEEKDAY('11/20/2012', 3)"></td>
                 <td>2</td>
-                <td formula="=IF(B18 = C18, TRUE, FALSE)"></td>
+                <td formula="=IF(B19 = C19, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--weeknum-->
                 <td>WEEKNUM</td>
                 <td formula="=WEEKNUM('11/20/2012', 3)"></td>
                 <td>48</td>
-                <td formula="=IF(B19 = C19, TRUE, FALSE)"></td>
+                <td formula="=IF(B20 = C20, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--workday-->
                 <td>WORKDAY</td>
                 <td formula="=WORKDAY(DATE(2012,11,20), 1000, DATE(2013,1,1))"></td>
                 <td>42634</td>
-                <td formula="=IF(B20 = C20, TRUE, FALSE)"></td>
+                <td formula="=IF(B21 = C21, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--year-->
                 <td>YEAR</td>
                 <td formula="=YEAR('11/20/2012', 3)"></td>
                 <td>2012</td>
-                <td formula="=IF(B21 = C21, TRUE, FALSE)"></td>
+                <td formula="=IF(B22 = C22, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--yearfrac-->
                 <td>YEARFRAC</td>
                 <td formula="=YEARFRAC(DATE(2012,1,1), DATE(2012,7,1))"></td>
                 <td>0.5</td>
-                <td formula="=IF(B22 = C22, TRUE, FALSE)"></td>
+                <td formula="=IF(B23 = C23, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--yearfrac-->
                 <td>YEARFRAC</td>
                 <td formula="=YEARFRAC(DATE(2012,1,1), DATE(2012,7,1), 1)"></td>
                 <td>0.4972677595628415</td>
-                <td formula="=IF(B23 = C23, TRUE, FALSE)"></td>
+                <td formula="=IF(B24 = C24, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--yearfrac-->
                 <td>YEARFRAC</td>
                 <td formula="=YEARFRAC(DATE(2012,1,1), DATE(2012,7,1), 2)"></td>
                 <td>0.5055555555555555</td>
-                <td formula="=IF(B24 = C24, TRUE, FALSE)"></td>
+                <td formula="=IF(B25 = C25, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--yearfrac-->
                 <td>YEARFRAC</td>
                 <td formula="=YEARFRAC(DATE(2012,1,1), DATE(2012,7,1), 3)"></td>
                 <td>0.4986301369863014</td>
-                <td formula="=IF(B24 = C24, TRUE, FALSE)"></td>
+                <td formula="=IF(B26 = C26, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
             <tr><!--yearfrac-->
                 <td>YEARFRAC</td>
                 <td formula="=YEARFRAC(DATE(2012,1,1), DATE(2012,7,1), 4)"></td>
                 <td>0.5</td>
-                <td formula="=IF(B25 = C25, TRUE, FALSE)"></td>
+                <td formula="=IF(B27 = C27, TRUE, FALSE)"></td>
                 <td></td>
             </tr>
         </tbody>

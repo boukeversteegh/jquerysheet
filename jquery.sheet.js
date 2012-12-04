@@ -5024,10 +5024,34 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		date = dates.get(date);
 		return date.getDate();
 	},
-	DAYS360: function(date1, date2) {//TODO: not properly implemented
+	DAYS360: function(date1, date2, method) {
 		date1 = dates.get(date1);
 		date2 = dates.get(date2);
-		return (date2 - date1) /  dates.dayDiv;
+
+		var startDate = date1.getDate(),
+			endDate = date2.getDate(),
+			startIsLastDay = dates.isLastDayOfMonth(date1),
+			endIsLastDay = dates.isLastDayOfMonth(date2),
+			monthCount = dates.diffMonths(date1, date2);
+
+		if (method) {//Euro method
+			startDate = Math.min(startDate, 30);
+			endDate = Math.min(endDate, 30);
+		} else { //Standard
+			if (startIsLastDay) {
+				startDate = 30;
+			}
+			if (endIsLastDay) {
+				if (startDate < 30) {
+					monthCount++;
+					endDate = 1;
+				} else {
+					endDate = 30;
+				}
+			}
+		}
+
+		return (monthCount * 30) + (endDate - startDate);
 	},
 	DATE: function(year, month, day) {
 		var date = new Date(year, month - 1, day);
@@ -5667,6 +5691,13 @@ var dates = {
 			case 4: return this.days360Euro(start, end);
 		}
 	},
+	diffMonths: function(start, end) {
+		var months;
+		months = (end.getFullYear() - start.getFullYear()) * 12;
+		months -= start.getMonth() + 1;
+		months += end.getMonth() + 1;
+		return months;
+	},
 	days360: function(startYear, endYear, startMonth, endMonth, startDate, endDate) {
 		return ((endYear - startYear) * 360) + ((endMonth - startMonth) * 30) + (endDate - startDate)
 	},
@@ -5770,6 +5801,13 @@ var dates = {
 				}
 				return result;
 		}
+	},
+	lastDayOfMonth: function(date) {
+		date.setDate(0);
+		return date.getDate();
+	},
+	isLastDayOfMonth: function(date) {
+		return (date.getDate() == this.lastDayOfMonth(date));
 	}
 };
 
