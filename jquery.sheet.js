@@ -5147,6 +5147,20 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			value: dates.toCentury(workingDate)
 		};
 	},
+	YEARFRAC: function(startDate, endDate, basis) {
+		startDate = dates.get(startDate);
+		endDate = dates.get(endDate);
+
+		if (!startDate || !endDate) {
+			return '#VALUE!';
+		}
+
+		basis = (basis ? basis : 0);
+
+		var numerator = dates.diff( startDate , endDate , basis );
+		var denom = dates.calcAnnualBasis( startDate , endDate , basis );
+		return numerator / denom;
+	},
 	IF: function(expression, resultTrue, resultFalse){
 		var value, html;
 		if (expression) {
@@ -5616,7 +5630,7 @@ var arrHelpers = {
 var dates = {
 	dayDiv: 86400000,
 	toCentury: function(date) {
-		return Math.round(Math.abs((new Date(1900,0,-1)) - date) / dates.dayDiv);
+		return Math.round(Math.abs((new Date(1900,0,-1)) - date) / this.dayDiv);
 	},
 	get: function(date) {
 		if (date.getMonth) {
@@ -5624,7 +5638,7 @@ var dates = {
 		} else if (isNaN(date)) {
 			return new Date(Globalize.parseDate( date ));
 		} else {
-			date *= dates.dayDiv;
+			date *= this.dayDiv;
 			//date = new Date(date);
 			var newDate = (new Date(1900,0,-1)) * 1;
 			date += newDate;
@@ -5634,13 +5648,128 @@ var dates = {
 	},
 	week: function(date) {
 		var onejan = new Date(date.getFullYear(),0,1);
-		return Math.ceil((((date - onejan) / 86400000) + onejan.getDay()+1)/7);
+		return Math.ceil((((date - onejan) / this.dayDiv) + onejan.getDay()+1)/7);
 	},
 	toString: function(date, pattern) {
 		if (!pattern) {
 			return Globalize.format(date);
 		}
 		return Globalize.format(date, Globalize.culture().calendar.patterns[pattern]);
+	},
+	diff: function(start, end, basis) {
+		switch (basis) {
+			case 0: return this.days360Nasd(start, end, 0, true);
+			case 1:
+			case 2:
+			case 3:
+				var result = Math.abs(end - start) / this.dayDiv;
+				return result;
+			case 4: return this.days360Euro(start, end);
+		}
+	},
+	days360: function(startYear, endYear, startMonth, endMonth, startDate, endDate) {
+		return ((endYear - startYear) * 360) + ((endMonth - startMonth) * 30) + (endDate - startDate)
+	},
+	days360Nasd: function(start, end, method, useEom) {
+		var startDate = start.getDate(),
+			startMonth = start.getMonth(),
+			startYear = start.getFullYear(),
+			endDate = end.getDate(),
+			endMonth = end.getMonth(),
+			endYear = end.getFullYear();
+
+		if (
+			(endMonth==2 && this.isEndOfMonth(endDate, endMonth, endYear)) &&
+			(
+				(startMonth==2 && this.isEndOfMonth(startDate, startMonth, startYear)) ||
+				method==3
+			)
+		) {
+			endDate = 30;
+		}
+
+		if (endDate==31 && (startDate >= 30 || method==3)) {
+			endDate = 30;
+		}
+
+		if (startDate==31) {
+			startDate = 30;
+		}
+
+		if (useEom && startMonth==2 && this.isEndOfMonth(startDate, startMonth, startYear)) {
+			startDate = 30;
+		}
+
+		return this.days360(startYear, endYear, startMonth, endMonth, startDate, endDate);
+	},
+	days360Euro: function(start, end) {
+		var startDate = start.getDate(),
+			startMonth = start.getMonth(),
+			startYear = start.getFullYear(),
+			endDate = end.getDate(),
+			endMonth = end.getMonth(),
+			endYear = end.getFullYear();
+
+		if (startDate==31) startDate = 30;
+		if (endDate==31) endDate = 30;
+
+		return this.days360(startYear, endYear, startMonth, endMonth, startDate, endDate);
+	},
+	isEndOfMonth: function(day, month, year) {
+		return day == (new Date(year, month + 1, 0, 23, 59, 59)).getDate();
+	},
+	isLeapYear: function(year) {
+		return new Date(year, 1, 29).getMonth() == 1;
+	},
+	calcAnnualBasis: function(start, end, basis) {
+		switch (basis) {
+			case 0:
+			case 2:
+			case 4: return 360;
+			case 3: return 365;
+			case 1:
+				var startDate = start.getDate(),
+					startMonth = start.getMonth(),
+					startYear = start.getFullYear(),
+					endDate = end.getDate(),
+					endMonth = end.getMonth(),
+					endYear = end.getFullYear(),
+					result;
+
+				if (startYear == endYear) {
+					if (this.isLeapYear(startYear)) {
+						result = 366;
+					} else {
+						result = 365;
+					}
+				} else if (((endYear-1) == startYear) && ((startMonth>endMonth) || ((startMonth==endMonth) && startDate>=endDate))) {
+					if (this.isLeapYear(startYear)) {
+						if (startMonth<2 || (startMonth==2 && startDate<=29)) {
+							result = 366;
+						} else {
+							result = 365;
+						}
+					} else if (this.isLeapYear(endYear)) {
+						if (endMonth>2 || (endMonth==2 && endDate==29)) {
+							result = 366;
+						} else {
+							result = 365;
+						}
+					} else {
+						result = 365;
+					}
+				} else {
+					for(var iYear = startYear; iYear <= endYear; iYear++) {
+						if (this.isLeapYear(iYear)) {
+							result += 366;
+						} else {
+							result += 365;
+						}
+					}
+					result = result / (endYear - startYear + 1);
+				}
+				return result;
+		}
 	}
 };
 
