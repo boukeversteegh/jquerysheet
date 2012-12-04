@@ -42,10 +42,14 @@ jQuery.sheet.financefn = {
 	FV: function(rate, nper, pmt, pv, type) { //not working yet
 		pv = (pv ? pv : 0);
 		type = (type ? type : 0);
-		return -(
+		var result = -(
 			pv*Math.pow(1.0+rate, nper)
 			+ pmt * (1.0 + rate*type)
 				* (Math.pow(1.0+rate, nper) - 1.0) / rate
 		);
+		return {
+			value: result,
+			html: Globalize.format( result, "c" )
+		};
 	}
 }; 
