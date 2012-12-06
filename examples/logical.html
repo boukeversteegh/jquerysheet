@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="-1">
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
+	<title>jQuery.sheet - The Web Based Spreadsheet</title>
+	<!--Required-->
+	<link rel="stylesheet" type="text/css" href="../jquery.sheet.css" />
+	<link rel="stylesheet" type="text/css" href="../jquery-ui/theme/jquery-ui.css" />
+	<script type="text/javascript" src="../jquery-1.8.3.min.js">
+	</script>
+	<script type="text/javascript" src="../plugins/globalize.js">
+	</script>
+	<script type="text/javascript" src="../jquery.sheet.js">
+	</script>
+	<script type="text/javascript" src="../parser/parser.js">
+	</script>
+	<!--/Required-->
+
+	<!--Optional-->
+	<!--MouseWheel-->
+	<script type="text/javascript" src="../plugins/jquery.mousewheel.min.js"></script>
+	<!--/MouseWheel-->
+	<!--jQuery UI-->
+	<script type="text/javascript" src="../jquery-ui/ui/jquery-ui.min.js"></script>
+	<!--/jQuery UI-->
+	<!--Raphaeljs - for charts-->
+	<script type="text/javascript" src="../plugins/raphael-min.js"></script>
+	<script type="text/javascript" src="../plugins/g.raphael-min.js"></script>
+	<!--/Raphaeljs-->
+	<!--ColorPicker-->
+	<link rel="stylesheet" type="text/css" href="../plugins/jquery.colorPicker.css" />
+	<script type="text/javascript" src="../plugins/jquery.colorPicker.min.js"></script>
+	<!--/ColorPicker-->
+	<!--Theme Switcher Tool-->
+	<!--<script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/"></script>-->
+	<!--/Theme Switcher Tool-->
+	<!--Elastic-->
+	<script type="text/javascript" src="../plugins/jquery.elastic.min.js"></script>
+	<!--/Elastic-->
+	<!--Advanced_Math-->
+	<script type="text/javascript" src="../jquery.sheet.advancedfn.js"></script>
+	<!--/Advanced_Math-->
+	<!--Finance-->
+	<script type="text/javascript" src="../jquery.sheet.financefn.js"></script>
+	<!--/Finance-->
+	<!--/Optional-->
+	<script type="text/javascript">
+		$(function() {
+			$('#sheetParent').sheet({
+				buildSheet: true,
+				inlineMenu: $('<div />'),
+				autoFiller: true,
+				urlMenu: '../menu.html',
+				title: 'Dates'
+			});
+		});
+	</script>
+</head>
+<body>
+<div id="sheetParent" title="Logical Functions">
+	<table title="Dates Spreadsheet">
+		<tbody>
+		<tr>
+			<td class="styleBold styleCenter">Function</td>
+			<td class="styleBold styleCenter">Execution</td>
+			<td class="styleBold styleCenter">Desired Result</td>
+			<td class="styleBold styleCenter">Correct?</td>
+			<td class="styleBold styleCenter">Notes</td>
+		</tr>
+		<tr><!--and-->
+			<td>AND</td>
+			<td formula="=AND(true,true,true,true)"></td>
+			<td formula="=TRUE()"></td>
+			<td formula="=IF(B2 = C2, TRUE, FALSE)"></td>
+			<td></td>
+		</tr>
+		<tr><!--and-->
+			<td>AND</td>
+			<td formula="=AND(true,false,true,true)"></td>
+			<td formula="=FALSE()"></td>
+			<td formula="=IF(B3 = C3, TRUE, FALSE)"></td>
+			<td></td>
+		</tr>
+		<tr><!--false-->
+			<td>FALSE</td>
+			<td formula="=FALSE()"></td>
+			<td formula="=FALSE()"></td>
+			<td formula="=IF(B4 = C4, TRUE, FALSE)"></td>
+			<td></td>
+		</tr>
+		<tr><!--true-->
+			<td>TRUE</td>
+			<td formula="=TRUE()"></td>
+			<td formula="=TRUE()"></td>
+			<td formula="=IF(B5 = C5, TRUE, FALSE)"></td>
+			<td></td>
+		</tr>
+		<tr><!--if-->
+			<td>IF</td>
+			<td formula="=IF(TRUE(),TRUE(),FALSE())"></td>
+			<td formula="=TRUE()"></td>
+			<td formula="=IF(B6 = C6, TRUE, FALSE)"></td>
+			<td></td>
+		</tr>
+		<tr><!--if-->
+			<td>IF</td>
+			<td formula="=IF(FALSE(),TRUE(),FALSE())"></td>
+			<td formula="=FALSE()"></td>
+			<td formula="=IF(B7 = C7, TRUE, FALSE)"></td>
+			<td></td>
+		</tr>
+		<tr><!--not-->
+			<td>NOT</td>
+			<td formula="=NOT(FALSE())"></td>
+			<td formula="=TRUE()"></td>
+			<td formula="=IF(B8 = C8, TRUE, FALSE)"></td>
+			<td></td>
+		</tr>
+		<tr><!--not-->
+			<td>NOT</td>
+			<td formula="=NOT(TRUE())"></td>
+			<td formula="=FALSE()"></td>
+			<td formula="=IF(B9 = C9, TRUE, FALSE)"></td>
+			<td></td>
+		</tr>
+		<tr><!--or-->
+			<td>OR</td>
+			<td formula="=OR(TRUE(), FALSE())"></td>
+			<td formula="=TRUE()"></td>
+			<td formula="=IF(B10 = C10, TRUE, FALSE)"></td>
+			<td></td>
+		</tr>
+		<tr><!--or-->
+			<td>OR</td>
+			<td formula="=OR(FALSE(), FALSE())"></td>
+			<td formula="=FALSE()"></td>
+			<td formula="=IF(B11 = C11, TRUE, FALSE)"></td>
+			<td></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+</body>
+</html>

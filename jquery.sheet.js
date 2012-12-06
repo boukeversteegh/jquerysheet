@@ -1812,19 +1812,19 @@ jQuery.sheet = {
 
 						var i = 1;
 						while (i <= this.max) {
-							this.row = jQuery(jS.getTd(jS.i, i, 1)).parent();
+							var row = jQuery(jS.getTd(jS.i, i, 1)).parent();
 							
-							if (!this.row.data('hidden')) {
+							if (!row.data('hidden')) {
 								if (i < pos.value) {
-									this.row.addClass("rowHidden").hide();
+									row.addClass("rowHidden").hide();
 								} else {
-									this.row.removeClass("rowHidden").hide();
+									row.removeClass("rowHidden").show();
 								}
 							}
-							
+							delete row;
 							i++;
 						}
-						
+
 						this.value = pos.value;
 					},
 					stop: function() {
@@ -3033,14 +3033,8 @@ jQuery.sheet = {
 				variable: function() {
 					if (arguments.length) {
 						switch(arguments[0].toLowerCase()) {
-							case 'true': return {
-								html: 'TRUE',
-								value: true
-							};
-							case 'false': return {
-								html: 'FALSE',
-								value: false
-							}
+							case 'true': return jFN.TRUE();
+							case 'false': return jFN.FALSE();
 						}
 					}
 				},
@@ -3107,7 +3101,7 @@ jQuery.sheet = {
 							html = [];
 
 						for(i in args) {
-							if (args[i].value && args[i].html) {
+							if (args[i].value || args[i].html) {
 								values.push(args[i].value);
 								html.push(args[i].html);
 							} else {
@@ -4857,19 +4851,39 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 };
 
 var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
+    //information functions
+    ISNUMBER: function(v) {
+        if (!isNaN(v)) {
+            return jFN.TRUE();
+        }
+        return jFN.FALSE();
+    },
+    N: function(v) {
+        if (v == null) {return 0;}
+        if (v instanceof Date) {return v.getTime();}
+        if (typeof(v) == 'object') {v = v.toString();}
+        if (typeof(v) == 'string') {v = parseFloat(v.replace(jSE.regEx.n, ''));}
+        if (isNaN(v)) {return 0;}
+        if (typeof(v) == 'number') {return v;}
+        if (v == true) {return 1;}
+        return 0;
+    },
 	VERSION: function() {
 		return this.jS.version;
 	},
-	IMG: function(v) {
-		return jQuery('<img />')
-			.attr('src', v);
-	},
+    //math functions
+    ABS: function(v) {
+        return Math.abs(jFN.N(v));
+    },
 	AVERAGE:	function(v) {
 		return jFN.SUM(v) / jFN.COUNT(v); 
 	},
 	AVG: 		function(v) { 
 		return jFN.AVERAGE(v);
 	},
+    CEILING: 	function(value, significance) {
+
+    },
 	COUNT: 		function() {
 		var count = 0;
 		var v = arrHelpers.toNumbers(arguments);
@@ -4892,15 +4906,70 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		
 		return count;
 	},
-	SUM: 		function() {
-		var sum = 0;
-		var v = arrHelpers.toNumbers(arguments);
-		
-		for(i in v) {
-			sum += v[i] * 1;
-		}
-		return sum;
-	},
+    EVEN: function(v) {
+        v = Math.round(v);
+        var even = (v % 2 == 0);
+        if (!even) {
+            if (v > 0) {
+                v++;
+            } else {
+                v--;
+            }
+        }
+        return v;
+    },
+    EXP: function(v) {
+        return Math.exp(v);
+    },
+    FIXED: function(v, decimals, noCommas) {
+        if (decimals == null) {
+            decimals = 2;
+        }
+        var x = Math.pow(10, decimals);
+        var n = String(Math.round(jFN.N(v) * x) / x);
+        var p = n.indexOf('.');
+        if (p < 0) {
+            p = n.length;
+            n += '.';
+        }
+        for (var i = n.length - p - 1; i < decimals; i++) {
+            n += '0';
+        }
+        if (noCommas == true) {// Treats null as false.
+            return n;
+        }
+        var arr	= n.replace('-', '').split('.');
+        var result = [];
+        var first  = true;
+        while (arr[0].length > 0) { // LHS of decimal point.
+            if (!first) {
+                result.unshift(',');
+            }
+            result.unshift(arr[0].slice(-3));
+            arr[0] = arr[0].slice(0, -3);
+            first = false;
+        }
+        if (decimals > 0) {
+            result.push('.');
+            var first = true;
+            while (arr[1].length > 0) { // RHS of decimal point.
+                if (!first) {
+                    result.push(',');
+                }
+                result.push(arr[1].slice(0, 3));
+                arr[1] = arr[1].slice(3);
+                first = false;
+            }
+        }
+        if (v < 0) {
+            return '-' + result.join('');
+        }
+        return result.join('');
+    },
+    FLOOR: function(value, significance) {
+
+    },
+    INT: 		function(v) { return Math.floor(jFN.N(v)); },
 	MAX: 		function() {
 		var v = arrHelpers.toNumbers(arguments);
 		var max = v[0];
@@ -4920,27 +4989,28 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		return min;
 	},
 	MEAN:		function(v) { return (v.length ? jFN.SUM(v) / v.length : v); },
-	ABS	: 		function(v) { return Math.abs(jFN.N(v)); },
-	CEILING: 	function(v) { return Math.ceil(jFN.N(v)); },
-	FLOOR: 		function(v) { return Math.floor(jFN.N(v)); },
-	INT: 		function(v) { return Math.floor(jFN.N(v)); },
+    PI: function() { return Math.PI; },
+    POWER: function(x, y) {
+        return Math.pow(x, y);
+    },
+    SQRT: function(v) {
+        return Math.sqrt(v);
+    },
+    RAND: 		function() { return Math.random(); },
+    RND: 		function() { return Math.random(); },
 	ROUND: 		function(v, decimals) {
 		return jFN.FIXED(v, (decimals ? decimals : 0), false);
 	},
-	RAND: 		function() { return Math.random(); },
-	RND: 		function() { return Math.random(); },
-	TRUE: 		function() {
-		return {
-			value: true,
-			html: 'TRUE'
-		};
-	},
-	FALSE: 		function() {
-		return {
-			value: false,
-			html: 'FALSE'
-		};
-	},
+    SUM: 		function() {
+        var sum = 0;
+        var v = arrHelpers.toNumbers(arguments);
+
+        for(i in v) {
+            sum += v[i] * 1;
+        }
+        return sum;
+    },
+    //date/time functions
 	NOW: 		function() {
 		var today = new Date();
 		return {
@@ -5185,6 +5255,26 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		var denom = dates.calcAnnualBasis( startDate , endDate , basis );
 		return numerator / denom;
 	},
+    //logical functions
+    AND: function() {
+        var args = arguments,
+            res;
+        jQuery.each(args, function(i) {
+            if (args[i] !== true && res == undefined) {
+                res = jFN.FALSE();
+            }
+        });
+        if (!res) {
+            res = jFN.TRUE();
+        }
+        return res;
+    },
+    FALSE: 		function() {
+        return {
+            value: false,
+            html: 'FALSE'
+        };
+    },
 	IF: function(expression, resultTrue, resultFalse){
 		var value, html;
 		if (expression) {
@@ -5200,53 +5290,38 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			html: html
 		};
 	},
+    NOT: function(v) {
+        if (v) {
+            return jFN.FALSE();
+        }
+        return jFN.TRUE();
+    },
+    OR: function() {
+        var args = arguments,
+            or;
+        jQuery.each(args, function(i) {
+            if (args[i] === true && or == undefined) {
+                or = jFN.TRUE();
+            }
+        });
+        if (!or) {
+            or = jFN.FALSE();
+        }
+        return or;
+    },
+    TRUE: 		function() {
+        return {
+            value: true,
+            html: 'TRUE'
+        };
+    },
+    //html function
+    IMG: function(v) {
+        return jQuery('<img />')
+            .attr('src', v);
+    },
 	GETHTML: function() {
 		return this.html[0];
-	},
-	FIXED: 		function(v, decimals, noCommas) { 
-		if (decimals == null) {
-			decimals = 2;
-		}
-		var x = Math.pow(10, decimals);
-		var n = String(Math.round(jFN.N(v) * x) / x); 
-		var p = n.indexOf('.');
-		if (p < 0) {
-			p = n.length;
-			n += '.';
-		}
-		for (var i = n.length - p - 1; i < decimals; i++) {
-			n += '0';
-		}
-		if (noCommas == true) {// Treats null as false.
-			return n;
-		}
-		var arr	= n.replace('-', '').split('.');
-		var result = [];
-		var first  = true;
-		while (arr[0].length > 0) { // LHS of decimal point.
-			if (!first) {
-				result.unshift(',');
-			}
-			result.unshift(arr[0].slice(-3));
-			arr[0] = arr[0].slice(0, -3);
-			first = false;
-		}
-		if (decimals > 0) {
-			result.push('.');
-			var first = true;
-			while (arr[1].length > 0) { // RHS of decimal point.
-				if (!first) {
-					result.push(',');
-				}
-				result.push(arr[1].slice(0, 3));
-				arr[1] = arr[1].slice(3);
-				first = false;
-			}
-		}
-		if (v < 0) {
-			return '-' + result.join('');
-		}
-		return result.join('');
 	},
 	TRIM: function(v) { 
 		if (typeof(v) == 'string') {
@@ -5280,23 +5355,6 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		};
 	},
 	VALUE: function(v) { return parseFloat(v); },
-	N: function(v) {
-		if (v == null) {return 0;}
-		if (v instanceof Date) {return v.getTime();}
-		if (typeof(v) == 'object') {v = v.toString();}
-		if (typeof(v) == 'string') {v = parseFloat(v.replace(jSE.regEx.n, ''));}
-		if (isNaN(v)) {return 0;}
-		if (typeof(v) == 'number') {return v;}
-		if (v == true) {return 1;}
-		return 0;
-	},
-	PI: function() { return Math.PI; },
-	POWER: function(x, y) {
-		return Math.pow(x, y);
-	},
-	SQRT: function(v) {
-		return Math.sqrt(v);
-	},
 	DROPDOWN: function() {
 		var cell = this.obj,
 			jS = this.jS,
@@ -5508,6 +5566,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		});
 		return "";
 	},
+    //cell functions
 	HLOOKUP: function ( value, tableArray, indexNumber, notExactMatch ) {
 		var lookupTable = this.jS.cellLookup.apply(this);
 		
