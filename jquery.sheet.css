@@ -204,7 +204,7 @@
 	border-color: inherit ! important;
 	color:  inherit ! important;
 }
-.jSheet td, .jSheet th {
+.jSheet td:not(.jSheetBarLeft):not(.jSheetBarTop):not(.jSheetBarCorner), .jSheet th {
 	height: inherit;
 	border-width: 1px ! important;
 	border-color: inherit;
