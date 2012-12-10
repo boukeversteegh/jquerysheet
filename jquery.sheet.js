@@ -4882,7 +4882,8 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		return jFN.AVERAGE(v);
 	},
     CEILING: 	function(value, significance) {
-
+	    significance = significance || 1;
+	    return (parseInt(value / significance) * significance) + significance;
     },
 	COUNT: 		function() {
 		var count = 0;
@@ -4967,7 +4968,20 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
         return result.join('');
     },
     FLOOR: function(value, significance) {
-
+	    significance = significance || 1;
+	    if (
+		    (value < 0 && significance > 0 ) ||
+			(value > 0 && significance < 0 )) {
+		    return {
+			    value: 0,
+			    html: "#NUM"
+		    };
+	    }
+	    if (value >= 0) {
+		    return Math.floor(value / significance) * significance;
+	    } else {
+		    return Math.ceil(value / significance) * significance;
+	    }
     },
     INT: 		function(v) { return Math.floor(jFN.N(v)); },
 	MAX: 		function() {
