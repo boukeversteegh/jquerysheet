@@ -3114,7 +3114,7 @@ jQuery.sheet = {
 						var result = jQuery.sheet.fn[fn].apply(cell, values);
 						return result;
 					} else {
-						return "Error: Function Not Found";
+						return "Error: Function " + fn + " Not Found";
 					}
 				}
 			},
@@ -4875,38 +4875,10 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
     ABS: function(v) {
         return Math.abs(jFN.N(v));
     },
-	AVERAGE:	function(v) {
-		return jFN.SUM(v) / jFN.COUNT(v); 
-	},
-	AVG: 		function(v) { 
-		return jFN.AVERAGE(v);
-	},
     CEILING: 	function(value, significance) {
 	    significance = significance || 1;
 	    return (parseInt(value / significance) * significance) + significance;
     },
-	COUNT: 		function() {
-		var count = 0;
-		var v = arrHelpers.toNumbers(arguments);
-		
-		for (i in v) {
-			if (v[i] != null) count++;
-		}
-		
-		return count;
-	},
-	COUNTA:		function() {
-		var count = 0;
-		var v = arrHelpers.flatten(arguments);
-		
-		for (i in v) {
-			if (v[i]) {
-				count++;
-			}
-		}
-		
-		return count;
-	},
     EVEN: function(v) {
         v = Math.round(v);
         var even = (v % 2 == 0);
@@ -4984,25 +4956,43 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	    }
     },
     INT: 		function(v) { return Math.floor(jFN.N(v)); },
-	MAX: 		function() {
-		var v = arrHelpers.toNumbers(arguments);
-		var max = v[0];
-		
-		for(i in v) {
-			max = (v[i] > max ? v[i]: max);
-		}
-		return max;
+	LN: function(v) {
+		return Math.log(v);
 	},
-	MIN: 		function() {
-		var v = arrHelpers.toNumbers(arguments);
-		var min = v[0];
-		
-		for(i in v) {
-			min = (v[i] < min ? v[i]: min);
-		}
-		return min;
+	LOG: function(v,n) {
+		n = n || 10;
+		return Math.log(v) / Math.log(n);
 	},
-	MEAN:		function(v) { return (v.length ? jFN.SUM(v) / v.length : v); },
+	LOG10: function(v) {
+		return jFN.LOG(v);
+	},
+	MOD: function(x, y) {
+		var modulus = x % y;
+		if (y < 0) {
+			modulus *= -1;
+		}
+		return modulus;
+	},
+	ODD: function(v) {
+		var gTZ = false;
+		if (v > 0) {
+			v = Math.floor(Math.round(v));
+			gTZ = true;
+		} else {
+			v = Math.ceil(v);
+		}
+
+		var vTemp = Math.abs(v);
+		if ((vTemp % 2) == 0) { //even
+			vTemp++;
+		}
+
+		if (gTZ) {
+			return vTemp;
+		} else {
+			return -vTemp;
+		}
+	},
     PI: function() { return Math.PI; },
     POWER: function(x, y) {
         return Math.pow(x, y);
@@ -5015,6 +5005,20 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	ROUND: 		function(v, decimals) {
 		return jFN.FIXED(v, (decimals ? decimals : 0), false);
 	},
+	ROUNDDOWN: function(v, decimals) {
+		var neg = (v < 0);
+		v = Math.abs(v);
+		decimals = decimals || 0;
+		v = Math.floor(v * Math.pow(10, decimals)) / Math.pow(10, decimals);
+		return (neg ? -v : v);
+	},
+	ROUNDUP: function(v, decimals) {
+		var neg = (v < 0);
+		v = Math.abs(v);
+		decimals = decimals || 0;
+		v = Math.ceil(v * Math.pow(10, decimals)) / Math.pow(10, decimals);
+		return (neg ? -v : v);
+	},
     SUM: 		function() {
         var sum = 0;
         var v = arrHelpers.toNumbers(arguments);
@@ -5024,6 +5028,72 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
         }
         return sum;
     },
+	TRUNC: function(number, digits) {
+		digits = digits || 0;
+		number = number + '';
+
+		if (digits == 0) {
+			return number.split('.').shift();
+		}
+
+		if (number.match('.')) {
+			if (digits == 1) {
+				number = number.substr(0,number.length - 1);
+			} else if (digits == -1) {
+				number = number.split('.').shift();
+				number = number.substr(0,number.length - 1) + '0';
+			}
+		}
+
+		return number;
+	},
+	//statistical functions
+	AVERAGE:	function(v) {
+		return jFN.SUM(arguments) / jFN.COUNT(arguments);
+	},
+	AVG: 		function(v) {
+		return jFN.AVERAGE(v);
+	},
+	COUNT: 		function() {
+		var count = 0;
+		var v = arrHelpers.toNumbers(arguments);
+
+		for (i in v) {
+			if (v[i] != null) count++;
+		}
+
+		return count;
+	},
+	COUNTA:		function() {
+		var count = 0;
+		var v = arrHelpers.flatten(arguments);
+
+		for (i in v) {
+			if (v[i]) {
+				count++;
+			}
+		}
+
+		return count;
+	},
+	MAX: 		function() {
+		var v = arrHelpers.toNumbers(arguments);
+		var max = v[0];
+
+		for(i in v) {
+			max = (v[i] > max ? v[i]: max);
+		}
+		return max;
+	},
+	MIN: 		function() {
+		var v = arrHelpers.toNumbers(arguments);
+		var min = v[0];
+
+		for(i in v) {
+			min = (v[i] < min ? v[i]: min);
+		}
+		return min;
+	},
     //date/time functions
 	NOW: 		function() {
 		var today = new Date();
@@ -5448,7 +5518,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 					});
 				}
 			}
-			
+
 			//here we find out if it is on initial calc, if it is, the value we an use to set the radio
 			if (jQuery(jS.getTd(this.sheet, this.row, this.col)).find('.' + id).length == 0) {
 				cell.value = jS.spreadsheets[this.sheet][this.row][this.col].value;
@@ -5602,6 +5672,15 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		}
 		
 		return notExactMatch;
+	},
+	THISROWCELL: function(col) {
+		if (isNaN(col)) {
+			col = jSE.columnLabelIndex(col);
+		}
+		return this.jS.updateCellValue(this.sheet, this.row, col);
+	},
+	THISCOLCELL: function(row) {
+		return this.jS.updateCellValue(this.sheet, row, this.col);
 	}
 };
 
@@ -5959,5 +6038,8 @@ var math = {
 		// *     example 2: log10(1);
 		// *     returns 2: 0
 		return Math.log(arg) / 2.302585092994046; // Math.LN10
+	},
+	signum: function(x) {
+		return (x/Math.abs(x))||x;
 	}
 };
