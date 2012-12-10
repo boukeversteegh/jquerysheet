@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="-1">
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
+	<title>jQuery.sheet - The Web Based Spreadsheet</title>
+	<!--Required-->
+	<link rel="stylesheet" type="text/css" href="../jquery.sheet.css" />
+	<link rel="stylesheet" type="text/css" href="../jquery-ui/theme/jquery-ui.css" />
+	<script type="text/javascript" src="../jquery-1.8.3.min.js">
+	</script>
+	<script type="text/javascript" src="../plugins/globalize.js">
+	</script>
+	<script type="text/javascript" src="../jquery.sheet.js">
+	</script>
+	<script type="text/javascript" src="../parser/parser.js">
+	</script>
+	<!--/Required-->
+
+	<!--Optional-->
+	<!--MouseWheel-->
+	<script type="text/javascript" src="../plugins/jquery.mousewheel.min.js"></script>
+	<!--/MouseWheel-->
+	<!--jQuery UI-->
+	<script type="text/javascript" src="../jquery-ui/ui/jquery-ui.min.js"></script>
+	<!--/jQuery UI-->
+	<!--Raphaeljs - for charts-->
+	<script type="text/javascript" src="../plugins/raphael-min.js"></script>
+	<script type="text/javascript" src="../plugins/g.raphael-min.js"></script>
+	<!--/Raphaeljs-->
+	<!--ColorPicker-->
+	<link rel="stylesheet" type="text/css" href="../plugins/jquery.colorPicker.css" />
+	<script type="text/javascript" src="../plugins/jquery.colorPicker.min.js"></script>
+	<!--/ColorPicker-->
+	<!--Theme Switcher Tool-->
+	<!--<script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/"></script>-->
+	<!--/Theme Switcher Tool-->
+	<!--Elastic-->
+	<script type="text/javascript" src="../plugins/jquery.elastic.min.js"></script>
+	<!--/Elastic-->
+	<!--Advanced_Math-->
+	<script type="text/javascript" src="../jquery.sheet.advancedfn.js"></script>
+	<!--/Advanced_Math-->
+	<!--Finance-->
+	<script type="text/javascript" src="../jquery.sheet.financefn.js"></script>
+	<!--/Finance-->
+	<!--/Optional-->
+	<script type="text/javascript">
+		$(function() {
+			$('#sheetParent').sheet({
+				buildSheet: true,
+				inlineMenu: $('<div />'),
+				autoFiller: true,
+				urlMenu: '../menu.html',
+				title: 'Dates'
+			});
+		});
+	</script>
+</head>
+<body>
+<div id="sheetParent" title="Math Functions">
+	<table title="Dates Spreadsheet">
+		<tbody>
+		<tr>
+			<td class="styleBold styleCenter">Function</td>
+			<td class="styleBold styleCenter">Execution</td>
+			<td class="styleBold styleCenter">Desired Result</td>
+			<td class="styleBold styleCenter">Correct?</td>
+			<td class="styleBold styleCenter">Notes</td>
+		</tr>
+        <tr><!--average-->
+            <td>AVERAGE</td>
+            <td formula="=AVERAGE(1,2,3,4,5,6,7,8,9,10,100,1000,9999)"></td>
+            <td>858</td>
+            <td formula="=IF(THISROWCELL('B') = THISROWCELL('C'), TRUE, FALSE)"></td>
+            <td></td>
+        </tr>
+        <tr><!--max-->
+            <td>MAX</td>
+            <td formula="=MAX(1,2,3,4,5,6,7,8,9,10,100,1000,9999)"></td>
+            <td>9999</td>
+            <td formula="=IF(THISROWCELL('B') = THISROWCELL('C'), TRUE, FALSE)"></td>
+            <td></td>
+        </tr>
+        <tr><!--min-->
+            <td>MIN</td>
+            <td formula="=MIN(1,2,3,4,5,6,7,8,9,10,100,1000,9999)"></td>
+            <td>1</td>
+            <td formula="=IF(THISROWCELL('B') = THISROWCELL('C'), TRUE, FALSE)"></td>
+            <td></td>
+        </tr>
+        <tr><!--stdev-->
+            <td>STDEV</td>
+            <td formula="=STDEV(10.5,7.2)"></td>
+            <td>2.333452378</td>
+            <td formula="=IF(THISROWCELL('B') = THISROWCELL('C'), TRUE, FALSE)"></td>
+            <td></td>
+        </tr>
+		</tbody>
+	</table>
+</div>
+</body>
+</html>

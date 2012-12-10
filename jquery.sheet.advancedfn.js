@@ -1,4 +1,4 @@
-jQuery.sheet.advancedfn = {
+var jFNA = jQuery.sheet.advancedfn = {
 	FACTORIAL: function(n){
 		fact = 1;
 		for (i = n; i > 0; i--) 
