@@ -6,7 +6,7 @@
 \s+									{/* skip whitespace */}
 '"'("\\"["]|[^"])*'"'				{return 'STRING';}
 "'"('\\'[']|[^'])*"'"				{return 'STRING';}
-"DAYS360"                           {return 'FUNCTION';}
+[A-Za-z]{1,}[A-Za-z_0-9]+(?=[(])    {return 'FUNCTION';}
 ([0]?[1-9]|1[0-2])[:][0-5][0-9]([:][0-5][0-9])?[ ]?(AM|am|aM|Am|PM|pm|pM|Pm)
 									{return 'TIME_AMPM';}
 ([0]?[0-9]|1[0-9]|2[0-3])[:][0-5][0-9]([:][0-5][0-9])?
