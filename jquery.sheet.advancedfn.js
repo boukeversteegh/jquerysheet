@@ -6,10 +6,10 @@ var jFNA = jQuery.sheet.advancedfn = {
 		return fact;
 	},
 	COMBINATION: function(n, k){
-	   return this.FACTORIAL(n) / this.FACTORIAL(k) / this.FACTORIAL(n - k);
+	   return jFNA.FACTORIAL(n) / jFNA.FACTORIAL(k) / jFNA.FACTORIAL(n - k);
 	},
 	PERMUTATION: function(n, r){
-		return this.FACTORIAL(n) / this.FACTORIAL(n - r);
+		return jFNA.FACTORIAL(n) / jFNA.FACTORIAL(n - r);
 	},
 	GAMMA: function(x){
 		if (x > 0) {
@@ -39,7 +39,7 @@ var jFNA = jQuery.sheet.advancedfn = {
 				(x - 0.5) * Math.log(x));
 			}
 			else {
-				return this.FACTORIAL(x - 1);
+				return jFNA.FACTORIAL(x - 1);
 			}
 		}
 		return false;
@@ -48,8 +48,8 @@ var jFNA = jQuery.sheet.advancedfn = {
 		var dec = Math.pow(10, Math.floor(Math.log(1 / eps) * Math.LOG10E));
 		return Math.round(dec * x) / dec;
 	},
-	MINIMUM: function(arr){
-		arr = this.external.sanitize(arr);
+	MINIMUM: function(){
+		var arr = jFNA.external.sanitize(arguments);
 		
 		var min = arr[0];
 		for (i = 0; i < arr.length; i++) {
@@ -59,8 +59,8 @@ var jFNA = jQuery.sheet.advancedfn = {
 		}
 		return min;
 	},
-	MODE: function(arr){
-		arr = this.external.sanitize(arr);
+	MODE: function(){
+		var arr = jFNA.external.sanitize(arguments);
 		
 		var arrsort = arr.sort(function(a, b){
 			return a - b;
@@ -91,58 +91,65 @@ var jFNA = jQuery.sheet.advancedfn = {
 		}
 		return values[position];
 	},
-	MEDIAN: function(arr){
-		arr = this.external.sanitize(arr);
+	MEDIAN: function(){
+		var arr = jFNA.external.sanitize(arguments);
 		
 		var arrsort = arr.sort(function(a, b){
 			return a - b;
 		});
 		return arrsort[Math.round((arr.length) / 2) - 1];
 	},
-	QUARTILES: function(arr){
-		arr = this.external.sanitize(arr);
+	QUARTILES: function(){
+		var arr = jFNA.external.sanitize(arguments);
 		
 		var arrsort = arr.sort(function sortNumber(a, b){
 			return a - b;
 		});
 		return [arrsort[Math.round((arrsort.length) / 4) - 1], arrsort[Math.round((arrsort.length) / 2) - 1], arrsort[Math.round((arrsort.length) * 3 / 4) - 1]];
 	},
-	VARIANCE: function(arr){
-		arr = this.external.sanitize(arr);
+	VARIANCE: function(){
+		var arr = jFNA.external.sanitize(arguments);
 		
 		var sq_dev = [];
-		var u = this.external.mean(arr);
+		var u = jFNA.external.mean(arr);
 		for (i = 0; i < arr.length; i++) {
 			sq_dev[i] = Math.pow(arr[i] - u, 2);
 		}
-		return this.external.sum(sq_dev) / arr.length;
+		return jFNA.external.sum(sq_dev) / arr.length;
 	},
-	MEANDEV: function(arr){
-		arr = this.external.sanitize(arr);
+	MEANDEV: function(){
+		var arr = jFNA.external.sanitize(arguments);
 		
 		var dev = [];
-		var u = this.external.sum(arr);
+		var u = jFNA.external.sum(arr);
 		for (i = 0; i < arr.length; i++) {
 			dev[i] = Math.abs(arr[i] - u);
 		}
 		
-		return this.external.sum(dev) / arr.length;
+		return jFNA.external.sum(dev) / arr.length;
 	},
-	STDEV: function(arr){
-		arr = this.external.sanitize(arr);
-		return Math.sqrt(this.VARIANCE(arr));
-	},
+	STDEV: function(){
+		var arr = jFNA.external.sanitize(arguments),
+            mean = jFNA.external.sum(arr) / arr.length,
+            devs = [];
+
+        for(key in arr) {
+            devs[key] = Math.pow(arr[key] - mean, 2);
+        }
+
+        return Math.sqrt(jFNA.external.sum(devs) / (devs.length - 1));
+    },
 	COVARIANCE: function(arr1, arr2){		
-		var u = this.external.mean(arr1);
-		var v = this.external.mean(arr2);
+		var u = jFNA.external.mean(arr1);
+		var v = jFNA.external.mean(arr2);
 		var sq_dev = [];
 		for (i = 0; i < arr1.length; i++) {
 			sq_dev[i] = (arr1[i] - u) * (arr2[i] - v);
 		}
-		return this.external.sum(sq_dev) / arr1.length;
+		return jFNA.external.sum(sq_dev) / arr1.length;
 	},
 	CORR_COEFF: function(arr1, arr2){
-		return this.COVARIANCE(arr1, arr2) / this.STDEV(arr1) / this.STDEV(arr2);
+		return jFNA.COVARIANCE(arr1, arr2) / jFNA.STDEV(arr1) / jFNA.STDEV(arr2);
 	},
 	UNIFORMCDF: function(a, b, x){
 		if (x < a) {
@@ -156,7 +163,7 @@ var jFNA = jQuery.sheet.advancedfn = {
 		return 1;
 	},
 	BINOMIAL: function(n, p, k){
-		return this.COMBINATION(n, k) * Math.pow(p, k) * Math.pow(1 - p, n - k);
+		return jFNA.COMBINATION(n, k) * Math.pow(p, k) * Math.pow(1 - p, n - k);
 	},
 	BINOMIALCDF: function(n, p, x){
 		if (x < 0) {
@@ -164,7 +171,7 @@ var jFNA = jQuery.sheet.advancedfn = {
 		}
 		var binomarr = [];
 		for (k = 0; k < n; k++) 
-			binomarr[k] = this.BINOMIAL(n, p, k);
+			binomarr[k] = jFNA.BINOMIAL(n, p, k);
 		if (x < n) {
 			var sum = 0;
 			for (i = 0; i <= x; i++) 
@@ -181,7 +188,7 @@ var jFNA = jQuery.sheet.advancedfn = {
 			return 0;
 		}
 		else {
-			return this.COMBINATION(x + r - 1, r - 1) * Math.pow(p, r) * Math.pow(1 - p, x);
+			return jFNA.COMBINATION(x + r - 1, r - 1) * Math.pow(p, r) * Math.pow(1 - p, x);
 		}
 	},
 	NEGBINCDF: function(n, p, x){
@@ -190,7 +197,7 @@ var jFNA = jQuery.sheet.advancedfn = {
 		}
 		var sum = 0;
 		for (k = 0; k <= x; k++) {
-			sum += this.NEGBIN(n, p, k);
+			sum += jFNA.NEGBIN(n, p, k);
 		}
 		return sum;
 	},
@@ -202,7 +209,7 @@ var jFNA = jQuery.sheet.advancedfn = {
 			return 0;
 		}
 		else {
-			return this.COMBINATION(m, x) * this.COMBINATION((N - m), n - x) / this.COMBINATION(N, n);
+			return jFNA.COMBINATION(m, x) * jFNA.COMBINATION((N - m), n - x) / jFNA.COMBINATION(N, n);
 		}
 	},
 	HYPGEOMCDF: function(N, m, n, x){
@@ -211,14 +218,14 @@ var jFNA = jQuery.sheet.advancedfn = {
 		}
 		var sum = 0;
 		for (k = 0; k <= x; k++) 
-			sum += this.HYPGEOM(N, m, n, k);
+			sum += jFNA.HYPGEOM(N, m, n, k);
 		return sum;
 	},
 	EXPONENTIALCDF: function(l, x){
 		return 1 - Math.exp(-l * x);
 	},
 	POISSON: function(l, x){
-		return Math.pow(l, x) * Math.exp(-l) / this.FACTORIAL(x);
+		return Math.pow(l, x) * Math.exp(-l) / jFNA.FACTORIAL(x);
 	},
 	POISSONCDF: function(l, x){
 		if (x < 0) {
@@ -226,22 +233,22 @@ var jFNA = jQuery.sheet.advancedfn = {
 		}
 		var sum = 0;
 		for (k = 0; k <= x; k++) 
-			sum += this.POISSON(l, k);
+			sum += jFNA.POISSON(l, k);
 		return sum;
 	},
 	NORMCDF: function(u, s, t){
-		return this.ASR(Function("x", "return Math.exp(-Math.pow(x-" + u + ",2)/Math.pow(" + s + ",2)/2)/" + s + "/Math.sqrt(2*Math.PI)"), 0, t, 1e-14);
+		return jFNA.ASR(Function("x", "return Math.exp(-Math.pow(x-" + u + ",2)/Math.pow(" + s + ",2)/2)/" + s + "/Math.sqrt(2*Math.PI)"), 0, t, 1e-14);
 	},
 	LINEAR_REQ_EQ: function(arrf, arrx){
-		var u = this.external.mean(arrf);
-		var v = this.external.mean(arrx);
+		var u = jFNA.external.mean(arrf);
+		var v = jFNA.external.mean(arrx);
 		var sq_dev = [];
 		var devx = [];
 		for (i = 0; i < arrf.length; i++) {
 			sq_dev[i] = (arrf[i] - u) * (arrx[i] - v);
 			devx[i] = Math.pow(arrx[i] - v, 2);
 		}
-		var linear_eq_coeff = this.external.sum(sq_dev) / this.external.sum(devx);
+		var linear_eq_coeff = jFNA.external.sum(sq_dev) / jFNA.external.sum(devx);
 		var linear_eq_const = u - linear_eq_coeff * v;
 		return Function("x", "return " + linear_eq_coeff + "*x+" + linear_eq_const);
 	},
@@ -249,15 +256,15 @@ var jFNA = jQuery.sheet.advancedfn = {
 		for (i = 0; i < arrf.length; i++) {
 			(arrf[i] = Math.log(arrf[i]));
 		}
-		var u = this.external.mean(arrf);
-		var v = this.external.mean(arrx);
+		var u = jFNA.external.mean(arrf);
+		var v = jFNA.external.mean(arrx);
 		var sq_dev = [];
 		var devx = [];
 		for (i = 0; i < arrf.length; i++) {
 			sq_dev[i] = (arrf[i] - u) * (arrx[i] - v);
 			devx[i] = Math.pow(arrx[i] - v, 2);
 		}
-		var exp_coeff = this.external.sum(sq_dev) / this.external.sum(devx);
+		var exp_coeff = jFNA.external.sum(sq_dev) / jFNA.external.sum(devx);
 		var exp_const = Math.exp(u - exp_coeff * v);
 		return Function("x", "return Math.exp(" + exp_coeff + "*x)*" + exp_const);
 	},
@@ -279,7 +286,7 @@ var jFNA = jQuery.sheet.advancedfn = {
 		return (-func(x + h * 2) + 8 * func(x + h) - 8 * func(x - h) + func(x - h * 2)) / h / 12;
 	},
 	FCRIT: function(f, a, b){
-		return this.PRECISION(this.SECANTMETHOD(Function("t", "return jQuery.sheet.advancedfn.FIVEPT(" + f + ",t,1e-3)"), a, b, 1e-13, 99999), 1e-12);
+		return jFNA.PRECISION(jFNA.SECANTMETHOD(Function("t", "return jQuery.sheet.advancedfn.FIVEPT(" + f + ",t,1e-3)"), a, b, 1e-13, 99999), 1e-12);
 	},
 	ASR: function(f, a, b, eps){
 		var c = (a + b) / 2;
@@ -300,14 +307,14 @@ var jFNA = jQuery.sheet.advancedfn = {
 			}
 			return recursive_asr(f, a, c, cl, eps / 2, left, fa, fc, fcl) + recursive_asr(f, c, b, cr, eps / 2, right, fc, fb, fcr);
 		};
-		return this.PRECISION(recursive_asr(f, a, b, c, eps, h * (fa + fb + 4 * fc), fa, fb, fc), eps);
+		return jFNA.PRECISION(recursive_asr(f, a, b, c, eps, h * (fa + fb + 4 * fc), fa, fb, fc), eps);
 	}
 };
 
 /*
 	external is used for no conflict with internal functions used by the calculations engine,
 */
-jQuery.sheet.advancedfn.external = {
+jFNA.external = jQuery.sheet.advancedfn.external = {
 	sum: function(arr){
 		arr = this.sanitize(arr);
 		var sum = 0;
@@ -318,7 +325,7 @@ jQuery.sheet.advancedfn.external = {
 	},
 	mean: function(arr){
 		arr = this.sanitize(arr);
-		return this.external.sum(arr) / arr.length;
+		return jFNA.external.sum(arr) / arr.length;
 	},
 	sanitize: function(arr) {
 		arrHelpers.foldPrepare(arr, arguments);
