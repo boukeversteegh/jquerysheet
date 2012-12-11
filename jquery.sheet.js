@@ -53,7 +53,8 @@ jQuery.fn.extend({
 				autoFiller: 		false,							//bool, the little guy that hangs out to the bottom right of a selected cell, users can click and drag the value to other cells
 				minSize: 			{rows: 15, cols: 5},			//object - {rows: int, cols: int}, Makes the sheet stay at a certain size when loaded in edit mode, to make modification more productive
 				forceColWidthsOnStartup:true,						//bool, makes cell widths load from pre-made colgroup/col objects, use this if you plan on making the col items, makes widths more stable on startup
-				alertFormulaErrors:	false
+				alertFormulaErrors:	false,
+				error:              function(e) { return e.error; }
 			}, settings);
 			
 			var jS = parent.getSheet();
@@ -2948,9 +2949,9 @@ jQuery.sheet = {
 			callStack: 0,
 			updateCellValue: function(sheet, row, col) {
 				//first detect if the cell exists if not return nothing
-				if (!jS.spreadsheets[sheet]) return 'Error: Sheet not found';
-				if (!jS.spreadsheets[sheet][row]) return 'Error: Row not found';
-				if (!jS.spreadsheets[sheet][row][col]) return 'Error: Column not found';
+				if (!jS.spreadsheets[sheet]) return s.error({error: 'Sheet not found'});
+				if (!jS.spreadsheets[sheet][row]) return s.error({error: 'Row not found'});
+				if (!jS.spreadsheets[sheet][row][col]) return s.error({error: 'Column not found'});
 				
 				var cell = jS.spreadsheets[sheet][row][col];
 				cell.oldValue = cell.value; //we detect the last value, so that we don't have to update all cell, thus saving resources
@@ -2960,7 +2961,7 @@ jQuery.sheet = {
 				}
 
 				if (cell.state) {
-					throw("Error: Loop Detected");
+					return s.error({error: 'Loop Detected'});
 				}
 				
 				cell.state = "red";
@@ -2995,7 +2996,8 @@ jQuery.sheet = {
 								obj: cell,
 								s: s,
 								editable: s.editable,
-								jS: jS
+								jS: jS,
+								error: s.error
 							};
 							Parser.lexer.handler = jS.cellHandler;
 							cell.result = Parser.parse(cell.formula);
@@ -3111,10 +3113,11 @@ jQuery.sheet = {
 						}
 
 						cell.html = html;
+						console.log( jQuery.sheet.fn[fn]);
 						var result = jQuery.sheet.fn[fn].apply(cell, values);
 						return result;
 					} else {
-						return "Error: Function " + fn + " Not Found";
+						return s.error({error: "Function " + fn + " Not Found"});
 					}
 				}
 			},
@@ -4851,111 +4854,66 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 };
 
 var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
-    //information functions
-    ISNUMBER: function(v) {
-        if (!isNaN(v)) {
-            return jFN.TRUE();
-        }
-        return jFN.FALSE();
-    },
-    N: function(v) {
-        if (v == null) {return 0;}
-        if (v instanceof Date) {return v.getTime();}
-        if (typeof(v) == 'object') {v = v.toString();}
-        if (typeof(v) == 'string') {v = parseFloat(v.replace(jSE.regEx.n, ''));}
-        if (isNaN(v)) {return 0;}
-        if (typeof(v) == 'number') {return v;}
-        if (v == true) {return 1;}
-        return 0;
-    },
+	//information functions
+	ISNUMBER: function(v) {
+		if (!isNaN(v)) {
+			return jFN.TRUE();
+		}
+		return jFN.FALSE();
+	},
+	N: function(v) {
+		if (v == null) {return 0;}
+		if (v instanceof Date) {return v.getTime();}
+		if (typeof(v) == 'object') {v = v.toString();}
+		if (typeof(v) == 'string') {v = parseFloat(v.replace(jSE.regEx.n, ''));}
+		if (isNaN(v)) {return 0;}
+		if (typeof(v) == 'number') {return v;}
+		if (v == true) {return 1;}
+		return 0;
+	},
 	VERSION: function() {
 		return this.jS.version;
 	},
-    //math functions
-    ABS: function(v) {
-        return Math.abs(jFN.N(v));
-    },
-    CEILING: 	function(value, significance) {
-	    significance = significance || 1;
-	    return (parseInt(value / significance) * significance) + significance;
-    },
-    EVEN: function(v) {
-        v = Math.round(v);
-        var even = (v % 2 == 0);
-        if (!even) {
-            if (v > 0) {
-                v++;
-            } else {
-                v--;
-            }
-        }
-        return v;
-    },
-    EXP: function(v) {
-        return Math.exp(v);
-    },
-    FIXED: function(v, decimals, noCommas) {
-        if (decimals == null) {
-            decimals = 2;
-        }
-        var x = Math.pow(10, decimals);
-        var n = String(Math.round(jFN.N(v) * x) / x);
-        var p = n.indexOf('.');
-        if (p < 0) {
-            p = n.length;
-            n += '.';
-        }
-        for (var i = n.length - p - 1; i < decimals; i++) {
-            n += '0';
-        }
-        if (noCommas == true) {// Treats null as false.
-            return n;
-        }
-        var arr	= n.replace('-', '').split('.');
-        var result = [];
-        var first  = true;
-        while (arr[0].length > 0) { // LHS of decimal point.
-            if (!first) {
-                result.unshift(',');
-            }
-            result.unshift(arr[0].slice(-3));
-            arr[0] = arr[0].slice(0, -3);
-            first = false;
-        }
-        if (decimals > 0) {
-            result.push('.');
-            var first = true;
-            while (arr[1].length > 0) { // RHS of decimal point.
-                if (!first) {
-                    result.push(',');
-                }
-                result.push(arr[1].slice(0, 3));
-                arr[1] = arr[1].slice(3);
-                first = false;
-            }
-        }
-        if (v < 0) {
-            return '-' + result.join('');
-        }
-        return result.join('');
-    },
-    FLOOR: function(value, significance) {
-	    significance = significance || 1;
-	    if (
-		    (value < 0 && significance > 0 ) ||
+	//math functions
+	ABS: function(v) {
+		return Math.abs(jFN.N(v));
+	},
+	CEILING: 	function(value, significance) {
+		significance = significance || 1;
+		return (parseInt(value / significance) * significance) + significance;
+	},
+	EVEN: function(v) {
+		v = Math.round(v);
+		var even = (v % 2 == 0);
+		if (!even) {
+			if (v > 0) {
+				v++;
+			} else {
+				v--;
+			}
+		}
+		return v;
+	},
+	EXP: function(v) {
+		return Math.exp(v);
+	},
+	FLOOR: function(value, significance) {
+		significance = significance || 1;
+		if (
+			(value < 0 && significance > 0 ) ||
 			(value > 0 && significance < 0 )) {
-		    return {
-			    value: 0,
-			    html: "#NUM"
-		    };
-	    }
-	    if (value >= 0) {
-		    return Math.floor(value / significance) * significance;
-	    } else {
-		    return Math.ceil(value / significance) * significance;
-	    }
-    },
-    INT: 		function(v) { return Math.floor(jFN.N(v)); },
+			return {
+				value: 0,
+				html: "#NUM"
+			};
+		}
+		if (value >= 0) {
+			return Math.floor(value / significance) * significance;
+		} else {
+			return Math.ceil(value / significance) * significance;
+		}
+	},
+	INT: 		function(v) { return Math.floor(jFN.N(v)); },
 	LN: function(v) {
 		return Math.log(v);
 	},
@@ -4993,15 +4951,15 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			return -vTemp;
 		}
 	},
-    PI: function() { return Math.PI; },
-    POWER: function(x, y) {
-        return Math.pow(x, y);
-    },
-    SQRT: function(v) {
-        return Math.sqrt(v);
-    },
-    RAND: 		function() { return Math.random(); },
-    RND: 		function() { return Math.random(); },
+	PI: function() { return Math.PI; },
+	POWER: function(x, y) {
+		return Math.pow(x, y);
+	},
+	SQRT: function(v) {
+		return Math.sqrt(v);
+	},
+	RAND: 		function() { return Math.random(); },
+	RND: 		function() { return Math.random(); },
 	ROUND: 		function(v, decimals) {
 		return jFN.FIXED(v, (decimals ? decimals : 0), false);
 	},
@@ -5019,15 +4977,15 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		v = Math.ceil(v * Math.pow(10, decimals)) / Math.pow(10, decimals);
 		return (neg ? -v : v);
 	},
-    SUM: 		function() {
-        var sum = 0;
-        var v = arrHelpers.toNumbers(arguments);
+	SUM: 		function() {
+		var sum = 0;
+		var v = arrHelpers.toNumbers(arguments);
 
-        for(i in v) {
-            sum += v[i] * 1;
-        }
-        return sum;
-    },
+		for(i in v) {
+			sum += v[i] * 1;
+		}
+		return sum;
+	},
 	TRUNC: function(number, digits) {
 		digits = digits || 0;
 		number = number + '';
@@ -5094,7 +5052,182 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		}
 		return min;
 	},
-    //date/time functions
+	//string functions
+	ASC: function(v) {
+		return v.charCodeAt(0);
+	},
+	CHAR: function(v) {
+		return String.fromCharCode(v);
+	},
+	CLEAN: function(v) {
+		var exp = new RegExp("[\cG\x1B\cL\cJ\cM\cI\cK\x07\x1B\f\n\r\t\v]","g");
+		return v.replace(exp, '');
+	},
+	CODE: function(v) {
+		return jFN.ASC(v);
+	},
+	CONCATENATE: function() {
+		var arr = arrHelpers.flatten(arguments),
+			result = '';
+		jQuery.each(arr, function (i) {
+			result += arr[i];
+		});
+		return result;
+	},
+	DOLLAR: function(v, decimals, symbol) {
+		if (decimals == null) {
+			decimals = 2;
+		}
+
+		if (symbol == null) {
+			symbol = '$';
+		}
+
+		var r = jFN.FIXED(v, decimals, false),
+			html;
+		if (v >= 0) {
+			html = symbol + r;
+		} else {
+			html = '-' + symbol + r.slice(1);
+		}
+		return {
+			value: v,
+			html: html
+		};
+	},
+	FIXED: function(v, decimals, noCommas) {
+		if (decimals == null) {
+			decimals = 2;
+		}
+		var x = Math.pow(10, decimals),
+			n = String(Math.round(jFN.N(v) * x) / x),
+			p = n.indexOf('.'),
+			commaPreDecimal = (noCommas ? '' : ''),
+			commaPostDecimal = (noCommas ? '' : ',');
+
+		if (p < 0) {
+			p = n.length;
+			n += '.';
+		}
+		for (var i = n.length - p - 1; i < decimals; i++) {
+			n += '0';
+		}
+
+		var arr	= n.replace('-', '').split('.');
+		var result = [];
+		var first  = true;
+		while (arr[0].length > 0) { // LHS of decimal point.
+			if (!first) {
+				result.unshift(commaPostDecimal);
+			}
+			result.unshift(arr[0].slice(-3));
+			arr[0] = arr[0].slice(0, -3);
+			first = false;
+		}
+		if (decimals > 0) {
+			result.push('.');
+			var first = true;
+			while (arr[1].length > 0) { // RHS of decimal point.
+				if (!first) {
+					result.push(commaPreDecimal);
+				}
+				result.push(arr[1].slice(0, 3));
+				arr[1] = arr[1].slice(3);
+				first = false;
+			}
+		}
+		if (v < 0) {
+			return '-' + result.join('');
+		}
+		return result.join('');
+	},
+	LEFT: function(v, numberOfChars) {
+		numberOfChars = numberOfChars || 1;
+		return v.substring(0, numberOfChars);
+	},
+	LEN: function(v) {
+		if (!v) {
+			return 0;
+		}
+		return v.length;
+	},
+	LOWER: function(v) {
+		return v.toLowerCase();
+	},
+	MID: function(v, start, end) {
+		if (!v || !start || !end) {
+			return this.error({error: 'ERROR'});
+		}
+		return v.substring(start - 1, end + start - 1);
+	},
+	REPLACE: function(oldText, start, numberOfChars, newText) {
+		if (!oldText || !start || !numberOfChars || !newText) {
+			return this.error({error: 'ERROR'});
+		}
+		var result = oldText.split('');
+		result.splice(start - 1, numberOfChars);
+		result.splice(start - 1, 0, newText);
+		return result.join('');
+	},
+	REPT: function(v, times) {
+		var result = '';
+		for(var i = 0;i < times; i++) {
+			result += v;
+		}
+		return result;
+	},
+	RIGHT: function(v, numberOfChars) {
+		numberOfChars = numberOfChars || 1;
+		return v.substring(v.length - numberOfChars, v.length);
+	},
+	SEARCH: function(find, body, start) {
+		start = start || 0;
+		if (start) {
+			body = body.split('');
+			body.splice(0, start - 1);
+			body = body.join('');
+		}
+		var i = body.search(find);
+
+		if (i < 0) {
+			return this.error({error: '#VALUE!'});
+		}
+
+		return start + (start ? 0 : 1) + i;
+	},
+	SUBSTITUTE: function(text, oldText, newText, nthAppearance) {
+		nthAppearance = nthAppearance || 0;
+		oldText = new RegExp(oldText, 'g');
+		var i = 1;
+		text = text.replace(oldText, function(match, contents, offset, s) {
+			var result = match;
+			if (nthAppearance) {
+				if (i >= nthAppearance) {
+					result = newText;
+				}
+			} else {
+				result = newText;
+			}
+
+			i++;
+			return result;
+		});
+		return text;
+	},
+	TEXT: function() {
+		return this.error({error: 'Not Yet Implemented'});
+	},
+	UPPER: function(v) {
+		return v.toUpperCase();
+	},
+	VALUE: function(v) {
+		if (jQuery.isNumeric(v)) {
+			return v *= 1;
+		} else {
+			return this.error({error: "#VALUE!"})
+		}
+	},
+	//date/time functions
 	NOW: 		function() {
 		var today = new Date();
 		return {
@@ -5330,7 +5463,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		endDate = dates.get(endDate);
 
 		if (!startDate || !endDate) {
-			return '#VALUE!';
+			return this.error({error: '#VALUE!'});
 		}
 
 		basis = (basis ? basis : 0);
@@ -5339,26 +5472,26 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		var denom = dates.calcAnnualBasis( startDate , endDate , basis );
 		return numerator / denom;
 	},
-    //logical functions
-    AND: function() {
-        var args = arguments,
-            res;
-        jQuery.each(args, function(i) {
-            if (args[i] !== true && res == undefined) {
-                res = jFN.FALSE();
-            }
-        });
-        if (!res) {
-            res = jFN.TRUE();
-        }
-        return res;
-    },
-    FALSE: 		function() {
-        return {
-            value: false,
-            html: 'FALSE'
-        };
-    },
+	//logical functions
+	AND: function() {
+		var args = arguments,
+			res;
+		jQuery.each(args, function(i) {
+			if (args[i] !== true && res == undefined) {
+				res = jFN.FALSE();
+			}
+		});
+		if (!res) {
+			res = jFN.TRUE();
+		}
+		return res;
+	},
+	FALSE: 		function() {
+		return {
+			value: false,
+			html: 'FALSE'
+		};
+	},
 	IF: function(expression, resultTrue, resultFalse){
 		var value, html;
 		if (expression) {
@@ -5374,36 +5507,36 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			html: html
 		};
 	},
-    NOT: function(v) {
-        if (v) {
-            return jFN.FALSE();
-        }
-        return jFN.TRUE();
-    },
-    OR: function() {
-        var args = arguments,
-            or;
-        jQuery.each(args, function(i) {
-            if (args[i] === true && or == undefined) {
-                or = jFN.TRUE();
-            }
-        });
-        if (!or) {
-            or = jFN.FALSE();
-        }
-        return or;
-    },
-    TRUE: 		function() {
-        return {
-            value: true,
-            html: 'TRUE'
-        };
-    },
-    //html function
-    IMG: function(v) {
-        return jQuery('<img />')
-            .attr('src', v);
-    },
+	NOT: function(v) {
+		if (v) {
+			return jFN.FALSE();
+		}
+		return jFN.TRUE();
+	},
+	OR: function() {
+		var args = arguments,
+			or;
+		jQuery.each(args, function(i) {
+			if (args[i] === true && or == undefined) {
+				or = jFN.TRUE();
+			}
+		});
+		if (!or) {
+			or = jFN.FALSE();
+		}
+		return or;
+	},
+	TRUE: 		function() {
+		return {
+			value: true,
+			html: 'TRUE'
+		};
+	},
+	//html function
+	IMG: function(v) {
+		return jQuery('<img />')
+			.attr('src', v);
+	},
 	GETHTML: function() {
 		return this.html[0];
 	},
@@ -5417,28 +5550,6 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		name = (name ? name : 'LINK');
 		return jQuery('<a href="' + link + '" target="_new">' + name + '</a>');
 	},
-	DOLLAR: function(v, decimals, symbol) { 
-		if (decimals == null) {
-			decimals = 2;
-		}
-		
-		if (symbol == null) {
-			symbol = '$';
-		}
-		
-		var r = jFN.FIXED(v, decimals, false),
-			html;
-		if (v >= 0) {
-			html = symbol + r;
-		} else {
-			html = '-' + symbol + r.slice(1);
-		}
-		return {
-			value: v,
-			html: html
-		};
-	},
-	VALUE: function(v) { return parseFloat(v); },
 	DROPDOWN: function() {
 		var cell = this.obj,
 			jS = this.jS,
@@ -5650,7 +5761,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		});
 		return "";
 	},
-    //cell functions
+	//cell functions
 	HLOOKUP: function ( value, tableArray, indexNumber, notExactMatch ) {
 		var lookupTable = this.jS.cellLookup.apply(this);
 		
@@ -5800,7 +5911,7 @@ var arrHelpers = {
 		}
 		
 		return closest;
-    }
+	}
 };
 
 var dates = {
@@ -6033,10 +6144,10 @@ var math = {
 		// +   improved by: Onno Marsman
 		// +   improved by: Tod Gentille
 		// +   improved by: Brett Zamir (http://brett-zamir.me)
-		// *     example 1: log10(10);
-		// *     returns 1: 1
-		// *     example 2: log10(1);
-		// *     returns 2: 0
+		// *	 example 1: log10(10);
+		// *	 returns 1: 1
+		// *	 example 2: log10(1);
+		// *	 returns 2: 0
 		return Math.log(arg) / 2.302585092994046; // Math.LN10
 	},
 	signum: function(x) {

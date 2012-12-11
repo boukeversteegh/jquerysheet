@@ -1,8 +1,10 @@
 jQuery.fn.extend({
 	pseudoSheet: function(settings) {
-		settings = jQuery.extend({}, settings);
+		settings = jQuery.extend({
+			error: function(e) { return e.error; }
+		}, settings);
 
-		var jP = jQuery.pseudoSheet.createInstance(this);
+		var jP = jQuery.pseudoSheet.createInstance(this, settings);
 		jP.calc();
 
 		return this;
@@ -10,7 +12,7 @@ jQuery.fn.extend({
 });
 
 jQuery.pseudoSheet = { //jQuery.pseudoSheet
-	createInstance: function(obj) {
+	createInstance: function(obj, s) {
 		var jP = {
 			obj: obj,
 			calc: function() {
@@ -35,7 +37,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 			},
 			updateObjectValue: function(obj) {
 				//first detect if the object exists if not return nothing
-				if (!obj) return 'Error: Object not found';
+				if (!obj) return s.error({error: 'Object not found'});
 
 				var	$obj = jQuery(obj),
 					isInput = $obj.is(':input');
@@ -57,7 +59,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 				$obj.data('oldValue', obj.val); //we detect the last value, so that we don't have to update all objects, thus saving resources
 
 				if ($obj.data('state')) {
-					throw("Error: Loop Detected");
+					return s.error({error: "Loop Detected"});
 				}
 
 				$obj.data('state', 'red');
@@ -185,7 +187,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 
 						return jP.fn[fn].apply(obj, values);
 					} else {
-						return "Error: Function Not Found";
+						return s.error({error: "Function Not Found"});
 					}
 				},
 				variable: function() {
@@ -200,14 +202,14 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 
 					var $obj = jQuery('#' + varName[0]);
 					if (!$obj.length) $obj = jQuery('[name="' + varName[0] + '"]');
-					if (!$obj.length) throw("Error: Object not found");
+					if (!$obj.length) return s.error({error: "Object not found"});
 
 					if (varName.length > 1) {
 						switch (varName[1]) {
 							case "visible": return ($obj.is(':visible') ? true : false);
 							case "enabled": return ($obj.is(':enabled') ? true : false);
 							case "value":   return jP.objHandler.getObjectValue($obj);
-							default:        throw("Error: Attribute not found");
+							default:        return s.error({error: "Attribute not found"});
 						}
 					}
 
