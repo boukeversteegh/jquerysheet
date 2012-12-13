@@ -33,7 +33,15 @@ case 6:
 break;
 case 7:this.$ = $$[$0-2] == $$[$0];
 break;
-case 8:this.$ = $$[$0-2] + $$[$0];
+case 8:
+			this.$ = yy.lexer.handler.concatenate.apply(yy.lexer.obj, [$$[$0-2],$$[$0]]); //js
+
+			//php if (is_number($$[$0-2]) && is_numeric($$[$0])) {
+			//php   this.$ = $$[$0-2] + $$[$0];
+			//php } else {
+			//php   this.$ = $$[$0-2] . $$[$0];
+			//php }
+		
 break;
 case 9:this.$ = $$[$0-1] * 1;
 break;

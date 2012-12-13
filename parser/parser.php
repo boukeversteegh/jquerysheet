@@ -64,7 +64,14 @@ case 6:
 break;
 case 7:$thisS = $S[$O-2] == $S[$O];
 break;
-case 8:$thisS = $S[$O-2] + $S[$O];
+case 8:
+
+			if (is_number($S[$O-2]) && is_numeric($S[$O])) {
+			  $thisS = $S[$O-2] + $S[$O];
+			} else {
+			  $thisS = $S[$O-2] . $S[$O];
+			}
+		
 break;
 case 9:$thisS = $S[$O-1] * 1;
 break;

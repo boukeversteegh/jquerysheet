@@ -101,7 +101,15 @@ expression :
 	| expression '=' expression
 		{$$ = $1 == $3;}
 	| expression '+' expression
-		{$$ = $1 + $3;}
+		{
+			$$ = yy.lexer.handler.concatenate.apply(yy.lexer.obj, [$1,$3]); //js
+
+			//php if (is_number($1) && is_numeric($3)) {
+			//php   $$ = $1 + $3;
+			//php } else {
+			//php   $$ = $1 . $3;
+			//php }
+		}
 	| '(' expression ')'
 		{$$ = $2 * 1;}
 	| expression '<' '=' expression

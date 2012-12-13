@@ -54,7 +54,24 @@ jQuery.fn.extend({
 				minSize: 			{rows: 15, cols: 5},			//object - {rows: int, cols: int}, Makes the sheet stay at a certain size when loaded in edit mode, to make modification more productive
 				forceColWidthsOnStartup:true,						//bool, makes cell widths load from pre-made colgroup/col objects, use this if you plan on making the col items, makes widths more stable on startup
 				alertFormulaErrors:	false,
-				error:              function(e) { return e.error; }
+				error:              function(e) { return e.error; },
+				encode:             function(val) {
+					switch( typeof val ) {
+						case 'object':
+						case 'number': return val;
+					}
+					return val
+						.replace(/&/gi, '&amp;')
+						.replace(/>/gi, '&gt;')
+						.replace(/</gi, '&lt;')
+						.replace(/\n/g, '\n<br>');
+				},
+				decode:             function(val) {
+					return val
+						.replace(/&gt;/gi, '>')
+						.replace(/&lt;/gi, '<')
+						.replace(/&amp;/gi, '&');
+				}
 			}, settings);
 			
 			var jS = parent.getSheet();
@@ -1546,7 +1563,7 @@ jQuery.sheet = {
 										} else {
 											td
 												.removeAttr('formula')
-												.html(v);
+												.html(s.encode(v));
 											cell.value = v;
 											cell.formula = null;
 										}
@@ -3015,22 +3032,21 @@ jQuery.sheet = {
 					}
 
 					cell = jS.filterValue(cell, sheet, row, col);
+					cell = jS.filterValue(cell, sheet, row, col);
 				}
 				
 				cell.state = null;
 				return cell.value;
 			},
 			filterValue: function(cell, sheet, row, col) {
+
 				if (typeof cell.result != 'undefined') {
-					if (typeof cell.result.value != 'undefined') {
-						cell.value = cell.result.value;
-						jQuery(jS.getTd(sheet, row, col)).html(cell.result.html ? cell.result.html : cell.result.value);
-					} else if (cell.result.html) {
-						jQuery(jS.getTd(sheet, row, col)).html(cell.result.html);
-					} else {
-						cell.value = cell.result;
-						jQuery(jS.getTd(sheet, row, col)).html(cell.result);
-					}
+					cell.value = cell.result;
+					jQuery(jS.getTd(sheet, row, col)).html(cell.html.length > 0 ? cell.html : s.encode(cell.value));
+				} else if (cell.html.length > 0) {
+					jQuery(jS.getTd(sheet, row, col)).html(cell.html);
+				} else {
+					jQuery(jS.getTd(sheet, row, col)).html(s.encode(cell.value));
 				}
 				return cell;
 			},
@@ -3045,6 +3061,10 @@ jQuery.sheet = {
 				},
 				time: function(time, isAMPM) {
 					return times.fromString(time, isAMPM);
+				},
+				concatenate: function() {
+					jS.spreadsheets[this.sheet][this.row][this.col].html = [];
+					return jFN.CONCATENATE.apply(this, arguments).value;
 				},
 				cellValue: function(id) { //Example: A1
 					var loc = jSE.parseLocation(id);
@@ -3091,7 +3111,8 @@ jQuery.sheet = {
 
 					return [result];
 				},
-				callFunction: function(fn, args, cell) {					
+				callFunction: function(fn, args, cell) {
+					fn = fn.toUpperCase();
 					if (!args) {
 						args = [''];
 					} else if (jQuery.isArray(args)) {
@@ -3106,18 +3127,27 @@ jQuery.sheet = {
 							html = [];
 
 						for(i in args) {
-							if (args[i].value || args[i].html) {
-								values.push(args[i].value);
-								html.push(args[i].html);
-							} else {
-								values.push(args[i]);
-								html.push(args[i]);
+							if (args[i]) {
+								if (args[i].value || args[i].html) {
+									values.push(args[i].value);
+									html.push(args[i].html);
+								} else {
+									values.push(args[i]);
+									html.push(args[i]);
+								}
 							}
 						}
 
 						cell.html = html;
-						console.log( jQuery.sheet.fn[fn]);
 						var result = jQuery.sheet.fn[fn].apply(cell, values);
+						if (result != null) {
+							if (typeof result.html != 'undefined') {
+								jS.spreadsheets[cell.sheet][cell.row][cell.col].html = result.html;
+							}
+							if (typeof result.value != 'undefined') {
+								return result.value;
+							}
+						}
 						return result;
 					} else {
 						return s.error({error: "Function " + fn + " Not Found"});
@@ -5075,7 +5105,10 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 		jQuery.each(arr, function (i) {
 			result += arr[i];
 		});
-		return result;
+		return {
+			value: result,
+			html: result
+		};
 	},
 	DOLLAR: function(v, decimals, symbol) {
 		if (decimals == null) {
@@ -5666,7 +5699,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 			
 			var td = jQuery(jS.getTd(this.sheet, this.row, this.col));
 			if (!td.children().length) {
-				if (td.text() == cell.value) {
+				if (td.html() == cell.value) {
 					checkbox.attr('checked', true);
 				}
 			}
