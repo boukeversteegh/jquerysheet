@@ -24,6 +24,10 @@
                 $('.check').pseudoSheet();
             }).change();
 
+            $('.radio').change(function() {
+                $('.radio').pseudoSheet();
+            }).change();
+
             $('.idValues').pseudoSheet();
 
             $('.nameValues').pseudoSheet();
@@ -81,6 +85,17 @@
             </td>
             <td class="result">
                 <span class="check" data-formula="=IF(OBJVAL('.check:eq(2)') = 'SUCCESS', 'SUCCESS', 'FAILURE')"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>Radio Functionality</td>
+            <td>
+                <input type="radio" name="testRadio" class="radio" value="FAILURE"/>
+                <input type="radio" name="testRadio" class="radio" value="SUCCESS" checked="true"/>
+                <input type="input" class="radio" data-formula="=testRadio"/>
+            </td>
+            <td class="result">
+                <span class="radio" data-formula="=IF(OBJVAL('.radio:eq(2)') = 'SUCCESS', 'SUCCESS', 'FAILURE')"></span>
             </td>
         </tr>
         <tr>

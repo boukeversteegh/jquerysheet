@@ -78,7 +78,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 				if (isInput) {
 					if ($obj.is(':radio,:checkbox')) {
 						if ($obj.is(':checked')) {
-							obj.val = $obj.val();
+							obj.val = $obj.filter(':checked').val();
 						} else {
 							obj.val = '';
 						}
