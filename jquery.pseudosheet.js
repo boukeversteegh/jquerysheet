@@ -5,7 +5,7 @@ jQuery.fn.extend({
 			dataHandlers: {
 				visible: function() {
 					if (this.canParse) {
-						var visible = this.parser.parse(this.formula);
+						var visible = this.parse(this.formula);
 						if (visible) {
 							this.$obj.show();
 						} else {
@@ -15,7 +15,7 @@ jQuery.fn.extend({
 				},
 				enabled: function() {
 					if (this.canParse) {
-						var enabled = this.parser.parse(this.formula);
+						var enabled = this.parse(this.formula);
 						if (enabled) {
 							this.$obj.removeAttr('disabled');
 						} else {
@@ -34,7 +34,8 @@ jQuery.fn.extend({
 				value:   function() {
 					return jP.objHandler.getObjectValue(this.$obj);
 				}
-			}
+			},
+			formulaFunctions: {}
 		}, settings);
 
 		var jP = jQuery.pseudoSheet.createInstance(this, settings);
@@ -128,35 +129,19 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 							s.dataHandlers[i].apply({
 								formula: (data[i].charAt(0) == '=' ? data[i].substring(1, data[i].length) : data[i]),
 								canParse: (data[i].charAt(0) == '='),
-								parser: Parser,
+								parse: function(input) {
+									obj.result = Parser.parse(input);
+									var result = jP.filterValue(obj);
+									if (typeof result.val.value != 'undefined') {
+										return result.val.value;
+									} else {
+										return result.val;
+									}
+								},
 								obj: obj,
 								$obj: $obj
 							});
 						}
-						/*switch(i) {
-							case 'visible':
-								if (data[i].charAt(0) == '=') {
-									var visible = data[i].substring(1, data[i].length);
-									visible = Parser.parse(visible);
-									if (visible) {
-										$obj.show();
-									} else {
-										$obj.hide();
-									}
-								}
-								break;
-							case 'enabled':
-								if (data[i].charAt(0) == '=') {
-									var enabled = data[i].substring(1, data[i].length);
-									enabled = Parser.parse(enabled);
-									if (enabled) {
-										$obj.removeAttr('disabled');
-									} else {
-										$obj.attr('disabled', true);
-									}
-								}
-								break;
-						}*/
 					});
 
 					obj.formula = $obj.data('formula');
@@ -173,20 +158,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 						}
 						jP.callStack--;
 
-						if (typeof obj.result != 'undefined') {
-							if (obj.result.value) {
-								obj.val = obj.result.value;
-							} else {
-								obj.val = obj.result;
-							}
-							if (!obj.result.html && !obj.result.value) {
-								obj.result = {val: obj.result, html: obj.result};
-							} else {
-								obj.result.html = obj.val;
-							}
-						} else {
-							obj.result = {html: obj.val};
-						}
+						obj = jP.filterValue(obj);
 
 						if (isInput) {
 							$obj.val(obj.val);
@@ -199,6 +171,23 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 				$obj.removeData('state');
 
 				return obj.val;
+			},
+			filterValue: function (obj) {
+				if (typeof obj.result != 'undefined') {
+					if (obj.result.value) {
+						obj.val = obj.result.value;
+					} else {
+						obj.val = obj.result;
+					}
+					if (!obj.result.html && !obj.result.value) {
+						obj.result = {val: obj.result, html: obj.result};
+					} else {
+						obj.result.html = obj.val;
+					}
+				} else {
+					obj.result = {html: obj.val};
+				}
+				return obj;
 			},
 			objHandler: {
 				callFunction: function(fn, args, obj) {
@@ -288,6 +277,10 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 			//Extend the calculation engine with finance functions
 			if (jQuery.sheet.financefn) {
 				jP.fn = jQuery.extend(jP.fn, jQuery.sheet.financefn);
+			}
+
+			if (s.formulaFunctions) {
+				jP.fn = jQuery.extend(jP.fn, s.formulaFunctions);
 			}
 		}
 

@@ -3014,22 +3014,25 @@ jQuery.sheet = {
 						jS.callStack--;
 					}
 
-					if (typeof cell.result != 'undefined') {
-
-						if (typeof cell.result.value != 'undefined') {
-							cell.value = cell.result.value;
-							jQuery(jS.getTd(sheet, row, col)).html(cell.result.html ? cell.result.html : cell.result.value);
-						} else if (cell.result.html) {
-								jQuery(jS.getTd(sheet, row, col)).html(cell.result.html);
-						} else {
-							cell.value = cell.result;
-							jQuery(jS.getTd(sheet, row, col)).html(cell.result);
-						}
-					}
+					cell = jS.filterValue(cell, sheet, row, col);
 				}
 				
 				cell.state = null;
 				return cell.value;
+			},
+			filterValue: function(cell, sheet, row, col) {
+				if (typeof cell.result != 'undefined') {
+					if (typeof cell.result.value != 'undefined') {
+						cell.value = cell.result.value;
+						jQuery(jS.getTd(sheet, row, col)).html(cell.result.html ? cell.result.html : cell.result.value);
+					} else if (cell.result.html) {
+						jQuery(jS.getTd(sheet, row, col)).html(cell.result.html);
+					} else {
+						cell.value = cell.result;
+						jQuery(jS.getTd(sheet, row, col)).html(cell.result);
+					}
+				}
+				return cell;
 			},
 			cellHandler: {
 				variable: function() {
