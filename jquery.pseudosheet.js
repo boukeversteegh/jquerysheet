@@ -3,24 +3,18 @@ jQuery.fn.extend({
 		settings = jQuery.extend({
 			error: function(e) { return e.error; },
 			dataHandlers: {
-				visible: function() {
-					if (this.canParse) {
-						var visible = this.parse(this.formula);
-						if (visible) {
-							this.$obj.show();
-						} else {
-							this.$obj.hide();
-						}
+				visible: function(visible) {
+					if (visible) {
+						this.$obj.show();
+					} else {
+						this.$obj.hide();
 					}
 				},
-				enabled: function() {
-					if (this.canParse) {
-						var enabled = this.parse(this.formula);
-						if (enabled) {
-							this.$obj.removeAttr('disabled');
-						} else {
-							this.$obj.attr('disabled', true);
-						}
+				enabled: function(enabled) {
+					if (enabled) {
+						this.$obj.removeAttr('disabled');
+					} else {
+						this.$obj.attr('disabled', true);
 					}
 				}
 			},
@@ -126,21 +120,24 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 					var data = $obj.data();
 					jQuery.each(data, function(i) {
 						if (s.dataHandlers[i]) {
-							s.dataHandlers[i].apply({
-								formula: (data[i].charAt(0) == '=' ? data[i].substring(1, data[i].length) : data[i]),
-								canParse: (data[i].charAt(0) == '='),
-								parse: function(input) {
-									obj.result = Parser.parse(input);
+							var canParse = (data[i].charAt(0) == '='),
+								formula = (data[i].charAt(0) == '=' ? data[i].substring(1, data[i].length) : data[i]),
+								result = function () {
+									if (!canParse) return false;
+									obj.result = Parser.parse(formula);
 									var result = jP.filterValue(obj);
 									if (typeof result.val.value != 'undefined') {
 										return result.val.value;
 									} else {
 										return result.val;
 									}
-								},
+								}();
+
+							s.dataHandlers[i].apply({
 								obj: obj,
-								$obj: $obj
-							});
+								$obj: $obj,
+								formula: formula
+							}, [result]);
 						}
 					});
 
