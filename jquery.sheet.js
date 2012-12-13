@@ -2854,6 +2854,9 @@ jQuery.sheet = {
 								if (jS.busy) return false;
 								
 								var endLoc = jS.getTdLocation([e.target]);
+
+								if (endLoc.col < 1 || endLoc.row < 1) return false; //bar
+
 								var ok = true;
 								
 								if (directional) {
