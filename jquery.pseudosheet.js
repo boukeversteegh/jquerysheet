@@ -2,7 +2,7 @@ jQuery.fn.extend({
 	pseudoSheet: function(settings) {
 		settings = jQuery.extend({
 			error: function(e) { return e.error; },
-			dataHandlers: {
+			dataHandler: {
 				visible: function(visible) {
 					if (visible) {
 						this.$obj.show();
@@ -119,7 +119,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 
 					var data = $obj.data();
 					jQuery.each(data, function(i) {
-						if (s.dataHandlers[i]) {
+						if (s.dataHandler[i]) {
 							var canParse = (data[i].charAt(0) == '='),
 								formula = (data[i].charAt(0) == '=' ? data[i].substring(1, data[i].length) : data[i]),
 								result = function () {
@@ -133,7 +133,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 									}
 								}();
 
-							s.dataHandlers[i].apply({
+							s.dataHandler[i].apply({
 								obj: obj,
 								$obj: $obj,
 								formula: formula
