@@ -1,7 +1,40 @@
 jQuery.fn.extend({
 	pseudoSheet: function(settings) {
 		settings = jQuery.extend({
-			error: function(e) { return e.error; }
+			error: function(e) { return e.error; },
+			dataHandlers: {
+				visible: function() {
+					if (this.canParse) {
+						var visible = this.parser.parse(this.formula);
+						if (visible) {
+							this.$obj.show();
+						} else {
+							this.$obj.hide();
+						}
+					}
+				},
+				enabled: function() {
+					if (this.canParse) {
+						var enabled = this.parser.parse(this.formula);
+						if (enabled) {
+							this.$obj.removeAttr('disabled');
+						} else {
+							this.$obj.attr('disabled', true);
+						}
+					}
+				}
+			},
+			attrHandler: {
+				visible: function() {
+					return (this.$obj.is(':visible') ? true : false);
+				},
+				enabled: function() {
+					return (this.$obj.is(':enabled') ? true : false);
+				},
+				value:   function() {
+					return jP.objHandler.getObjectValue(this.$obj);
+				}
+			}
 		}, settings);
 
 		var jP = jQuery.pseudoSheet.createInstance(this, settings);
@@ -91,7 +124,16 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 
 					var data = $obj.data();
 					jQuery.each(data, function(i) {
-						switch(i) {
+						if (s.dataHandlers[i]) {
+							s.dataHandlers[i].apply({
+								formula: (data[i].charAt(0) == '=' ? data[i].substring(1, data[i].length) : data[i]),
+								canParse: (data[i].charAt(0) == '='),
+								parser: Parser,
+								obj: obj,
+								$obj: $obj
+							});
+						}
+						/*switch(i) {
 							case 'visible':
 								if (data[i].charAt(0) == '=') {
 									var visible = data[i].substring(1, data[i].length);
@@ -114,7 +156,7 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 									}
 								}
 								break;
-						}
+						}*/
 					});
 
 					obj.formula = $obj.data('formula');
@@ -191,26 +233,27 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 					}
 				},
 				variable: function() {
-					var varName = arguments;
+					var vars = arguments;
 
-					if (varName.length == 1) {
-						switch (varName[0].toLowerCase()) {
+					if (vars.length == 1) {
+						switch (vars[0].toLowerCase()) {
 							case "true" :   return true;
 							case "false":   return false;
 						}
 					}
 
-					var $obj = jQuery('#' + varName[0]);
-					if (!$obj.length) $obj = jQuery('[name="' + varName[0] + '"]');
+					var $obj = jQuery('#' + vars[0]);
+					if (!$obj.length) $obj = jQuery('[name="' + vars[0] + '"]');
 					if (!$obj.length) return s.error({error: "Object not found"});
 
-					if (varName.length > 1) {
-						switch (varName[1]) {
-							case "visible": return ($obj.is(':visible') ? true : false);
-							case "enabled": return ($obj.is(':enabled') ? true : false);
-							case "value":   return jP.objHandler.getObjectValue($obj);
-							default:        return s.error({error: "Attribute not found"});
+					if (vars.length > 1) {
+						if (s.attrHandler[vars[1]]) {
+							return s.attrHandler[vars[1]].apply({
+								$obj: $obj,
+								vars: vars
+							});
 						}
+						return s.error({error: "Attribute not found"});
 					}
 
 					return jP.objHandler.getObjectValue($obj);
