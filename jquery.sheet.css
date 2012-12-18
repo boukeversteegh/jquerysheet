@@ -218,6 +218,10 @@
 	color:  inherit;
 }
 
+.jSheetCellHighighted {
+	background-image: none ! important;
+}
+
 tr.rowHidden, tr.rowHidden td {
 	display: none;
 	opacity:0.01;
