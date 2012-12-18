@@ -1829,9 +1829,9 @@ jQuery.sheet = {
 							
 							if (!row.data('hidden')) {
 								if (i < pos.value) {
-									row.addClass("rowHidden").hide();
+									row.addClass("rowHidden");
 								} else {
-									row.removeClass("rowHidden").show();
+									row.removeClass("rowHidden");
 								}
 							}
 							delete row;
@@ -4750,21 +4750,19 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 			}
 			return v;
 		}
-		
+
 		o = jQuery.extend({
 			x: { legend: "", data: [0]},
 			y: { legend: "", data: [0]},
 			title: "",
 			data: [0],
 			legend: "",
+			cell: jQuery(jS.getTd(this.sheet, this.row, this.col)),
 			chart: jQuery('<div class="' + jS.cl.chart + '" />')
 				.mousedown(function() {
-					jQuery(this).parent().mousedown();
-				})
-				.mousemove(function() {
-					jQuery(this).parent().mousemove();
-					return false;
-				})
+					o.cell.mousedown();
+				}),
+			gR: {}
 		}, o);
 	
 		o.data = sanitize(o.data, true);
@@ -4783,7 +4781,7 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 			if (o.title) r.text(width / 2, 10, o.title).attr({"font-size": 20});
 			switch (o.type) {
 			case "bar":
-				r.barchart(width / 8, height / 8, width * 0.8, height * 0.8, o.data, o.legend)
+				o.gR = r.barchart(width / 8, height / 8, width * 0.8, height * 0.8, o.data, o.legend)
 					.hover(function () {
 						this.flag = r.popup(
 							this.bar.x,
@@ -4799,10 +4797,10 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 								this.remove();
 								}
 							);
-						});
+					});
 				break;
 			case "hbar":
-				r.hbarchart(width / 8, height / 8, width * 0.8, height * 0.8, o.data, o.legend)
+				o.gR = r.hbarchart(width / 8, height / 8, width * 0.8, height * 0.8, o.data, o.legend)
 					.hover(function () {
 						this.flag = r.popup(this.bar.x, this.bar.y, this.bar.value || "0").insertBefore(this);
 					},function () {
@@ -4813,10 +4811,10 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 								this.remove();
 								}
 							);
-						});
+					});
 				break;
 			case "line":
-				r.linechart(width / 8, height / 8, width * 0.8, height * 0.8, o.x.data, o.y.data, {
+				o.gR = r.linechart(width / 8, height / 8, width * 0.8, height * 0.8, o.x.data, o.y.data, {
 					nostroke: false, 
 					axis: "0 0 1 1", 
 					symbol: "circle", 
@@ -4837,14 +4835,14 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 				}, function () {
 					this.tags && this.tags.remove();
 				});
-		
+
 				break;
 			case "pie":
-				var pie = r.piechart(width / 2, height / 2, (width < height ? width : height) / 2, o.data, {legend: o.legend})
+				o.gR = r.piechart(width / 2, height / 2, (width < height ? width : height) / 2, o.data, {legend: o.legend})
 					.hover(function () {
 						this.sector.stop();
 						this.sector.scale(1.1, 1.1, this.cx, this.cy);
-						
+
 						if (this.label) {
 							this.label[0].stop();
 							this.label[0].attr({ r: 7.5 });
@@ -4852,7 +4850,7 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 						}
 					}, function () {
 						this.sector.animate({ transform: 's1 1 ' + this.cx + ' ' + this.cy }, 500, "bounce");
-					
+
 						if (this.label) {
 							this.label[0].animate({ r: 5 }, 500, "bounce");
 							this.label[1].attr({ "font-weight": 400 });
@@ -4860,16 +4858,16 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 					});
 				break;
 			case "dot":
-				r.dotchart(width / 8, height / 8, width * 0.8, height * 0.8, o.x.data, o.y.data, o.data, {
-					symbol: "o", 
-					max: 10, 
-					heat: true, 
-					axis: "0 0 1 1", 
-					axisxstep: o.x.data.length - 1, 
-					axisystep: o.y.data.length - 1, 
+				o.gR = r.dotchart(width / 8, height / 8, width * 0.8, height * 0.8, o.x.data, o.y.data, o.data, {
+					symbol: "o",
+					max: 10,
+					heat: true,
+					axis: "0 0 1 1",
+					axisxstep: o.x.data.length - 1,
+					axisystep: o.y.data.length - 1,
 					axisxlabels: (o.x.legend ? o.x.legend : o.x.data),
 					axisylabels: (o.y.legend ? o.y.legend : o.y.data),
-					axisxtype: " ", 
+					axisxtype: " ",
 					axisytype: " "
 				})
 					.hover(function () {
@@ -4878,9 +4876,20 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 					}, function () {
 						this.marker && this.marker.hide();
 					});
+
 				break;
 			}
-		
+
+			o.gR
+				.mousedown(function() {
+					o.cell.mousedown().mouseup();
+				});
+
+			o.chart.mousemove(function() {
+				o.cell.mousemove();
+				return false;
+			});
+
 			jS.attrH.setHeight(owner.row, 'cell', false);
 		});
 		
