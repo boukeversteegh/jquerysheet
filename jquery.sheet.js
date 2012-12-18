@@ -66,12 +66,7 @@ jQuery.fn.extend({
 						.replace(/</gi, '&lt;')
 						.replace(/\n/g, '\n<br>');
 				},
-				decode:             function(val) {
-					return val
-						.replace(/&gt;/gi, '>')
-						.replace(/&lt;/gi, '<')
-						.replace(/&amp;/gi, '&');
-				}
+				allowCellsLineBreaks: true
 			}, settings);
 			
 			var jS = parent.getSheet();
@@ -4410,6 +4405,10 @@ jQuery.sheet = {
 		
 		if (!s.alertFormulaErrors) {
 			jS.alertFormulaError = emptyFN;
+		}
+
+		if (!s.allowCellsLineBreaks) {
+			origParent.addClass('noBreak');
 		}
 		
 		jS.s = s;

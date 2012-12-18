@@ -209,13 +209,17 @@
 	border-color: inherit;
 	padding: 0px ! important;
 	border-style: solid ! important;
+	margin: 0px ! important;
+	font-size: 1em;
+	color:  inherit;
+}
+
+.noBreak .jSheet td, .noBreak .jSheet th
+{
 	-moz-border-radius: 0px 0px 0px 0px;
 	overflow: hidden;
 	text-overflow: ellipsis ! important;
 	white-space: nowrap ! important;
-	margin: 0px ! important;
-	font-size: 1em;
-	color:  inherit;
 }
 
 .jSheetCellHighighted {
