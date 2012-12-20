@@ -181,6 +181,17 @@
 	border-bottom-width: 0px ! important;
 	background: none ! important;
 }
+.jSheetScrollerMaster {
+	position: absolute;
+	overflow: scroll;
+	height: inherit;
+	width: inherit;
+	z-index: -100;
+}
+.jSheetScrollerMaster * {
+	width: 15000px;
+	height: 8000px;
+}
 
 /* Sheet styling */
 .jSheet
@@ -234,8 +245,6 @@ tr.rowHidden, tr.rowHidden td {
 
 .jSheetError {
 	text-align: left;
-	width: inherit ! important;
-	height: inherit ! important;
 	overflow: hidden;
 	padding: 0px;
 	margin: 0px;
@@ -319,6 +328,8 @@ tr.rowHidden, tr.rowHidden td {
 .jSheetInPlaceEdit
 {
 	position: absolute;
+	background-image: none ! important;
+	z-index: 9;
 }
 
 .colorPickers *
@@ -357,6 +368,7 @@ tr.rowHidden, tr.rowHidden td {
 	left: 0px;
 	cursor: crosshair ! important;
 	display: none;
+	z-index: 10;
 }
 
 .jSheetTitle, .jSheetInlineMenu
@@ -370,6 +382,10 @@ tr.rowHidden, tr.rowHidden td {
 {
 	width: inherit;
 	height: inherit;
+}
+
+.jSheetChart svg {
+	position: static ! important;
 }
 
 .bodyNoScroll
