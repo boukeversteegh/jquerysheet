@@ -186,7 +186,7 @@
 	overflow: scroll;
 	height: inherit;
 	width: inherit;
-	z-index: -100;
+	z-index: 3;
 }
 .jSheetScrollerMaster * {
 	width: 15000px;
@@ -201,7 +201,8 @@
 	background-image: none ! important;
 	border-width: 1px ! important;
 	cursor: cell;
-	*border-collapse: collapse; /* IE7 and below */ 
+	*border-collapse: collapse; /* IE7 and below */
+	width: 0px ! important;
 }
 .jSheet tbody
 {
@@ -223,6 +224,7 @@
 	margin: 0px ! important;
 	font-size: 1em;
 	color:  inherit;
+	z-index: 10 ! important;
 }
 
 .noBreak .jSheet td, .noBreak .jSheet th
@@ -265,6 +267,7 @@ tr.rowHidden, tr.rowHidden td {
 .sheetPane
 {
 	border: none ! important;
+	vertical-align: top;
 }
 
 .jSheetEditPane
@@ -272,7 +275,8 @@ tr.rowHidden, tr.rowHidden td {
     overflow: hidden ! important;
 	background-image: none ! important;
 	border-width: 0px;
-	position: relative ! important;
+	position: absolute ! important;
+	z-index: 2;
 }
 /* Bar item styling */
 
