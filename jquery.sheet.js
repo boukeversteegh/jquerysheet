@@ -1082,52 +1082,77 @@ jQuery.sheet = {
 												sheet: object, the current active sheet;
 											*/
 
-					var tempScrollTop, currentScrollTop = 0;
+					var tempScrollTop,
+						parent = pane.parent(),
+						currentScrollTop = 0,
+						disable = false,
+						target,
+						scrollMaster = $('<div id="' + jS.id.scrollerMaster + jS.i + '" class="' + jS.cl.scrollerMaster + '">' +
+								'<div></div>' +
+							'</div>')
+							.mousedown(function(e) {
+								jS.evt.scrollHorizontal.start();
+								jS.evt.scrollVertical.start();
 
-					var scrollMaster = $('<div id="' + jS.id.scrollerMaster + jS.i + '" class="' + jS.cl.scrollerMaster + '">' +
-						'<div></div>' +
-					'</div>')
-						.mousedown(function(e) {
-							jS.evt.scrollHorizontal.start();
-							jS.evt.scrollVertical.start();
+								scrollMaster.css('z-index', 1);
+								target = document.elementFromPoint(e.clientX, e.clientY);
 
-							scrollMaster.css('z-index', 1);
-							var target = document.elementFromPoint(e.clientX, e.clientY);
-							scrollMaster.css('z-index', 3);
-							$(target).trigger('mousedown', [target]);
+								if (jS.isTd(target)) { //we have certain events that are deligated to cell bars
+									$(target).trigger('mousedown', [target]);
+								}
 
-						})
-						.mousemove(function(e) {
-							scrollMaster.css('z-index', 1);
-							var target = document.elementFromPoint(e.clientX, e.clientY);
-							scrollMaster.css('z-index', 3);
+								disable = true;
+							})
+							.mousemove(function(e) {
+								scrollMaster.css('z-index', 1);
+								target = document.elementFromPoint(e.clientX, e.clientY);
 
-							pane.trigger('mousemove', [target]);
-						})
-						.scroll(function() {
-							jS.evt.scrollHorizontal.scroll({pixel: this.scrollLeft});
-							jS.evt.scrollVertical.scroll({pixel: this.scrollTop});
+								if (jS.isTd(target)) { //we have certain events that are deligated to cell bars
+									scrollMaster.css('z-index', 3);
+									pane.trigger('mousemove', [target]);
+								}
+							})
+							.scroll(function() {
+								jS.evt.scrollHorizontal.scroll({pixel: this.scrollLeft});
+								jS.evt.scrollVertical.scroll({pixel: this.scrollTop});
 
-							jS.autoFillerGoToTd();
-						})
-						.dblclick(function(e) {
-							scrollMaster.css('z-index', 1);
-							var target = document.elementFromPoint(e.clientX, e.clientY);
-							scrollMaster.css('z-index', 3);
+								jS.autoFillerGoToTd();
+							})
+							.dblclick(function(e) {
+								scrollMaster.css('z-index', 1);
+								target = document.elementFromPoint(e.clientX, e.clientY);
+								scrollMaster.css('z-index', 3);
 
-							pane.trigger('dblclick', [target]);
-						})
-						.mouseout(function(e) {
-							jS.evt.scrollHorizontal.stop();
-							jS.evt.scrollVertical.stop();
-						})
-						.appendTo(pane.parent())
-						.disableSelectionSpecial();
+								pane.trigger('dblclick', [target]);
+							})
+							.appendTo(parent)
+							.disableSelectionSpecial();
 
 					pane.append('<style id="' + jS.id.scrollerMasterLeft + jS.i + '"></style>');
 					pane.append('<style id="' + jS.id.scrollerMasterTop + jS.i + '"></style>');
 
+					parent
+						.mouseup(function(e) {
+							jS.evt.scrollHorizontal.stop();
+							jS.evt.scrollVertical.stop();
+							target = document.elementFromPoint(e.clientX, e.clientY);
+							scrollMaster.css('z-index', 3);
+							$(target).trigger('mouseup', [target]);
+							disable = false;
+							console.log('mouseup');
+						});
 
+					function autoShow() {
+						if (!target) {
+							scrollMaster.css('z-index', 3);
+						} else if (jS.isTd(target) && !disable) {
+							scrollMaster.css('z-index', 3);
+						} else {
+							scrollMaster.css('z-index', 1);
+						}
+						setTimeout(autoShow, 1000);
+					}
+					autoShow();
 				},
 				sheetUI: function(o, i, fn, reloadBars) { /* creates the spreadsheet user interface
 															o: object, table object to be used as a spreadsheet;
@@ -1150,11 +1175,13 @@ jQuery.sheet = {
 
 					var table = jS.controlFactory.table().appendTo(jS.obj.ui());
 					var pane = jS.obj.pane().html(o);
-					
+
+					jS.controlFactory.scrollers(table, pane, o);
+
 					if (jS.isSheetEditable()) {
 						var autoFiller = jS.controlFactory.autoFiller();
 						if (autoFiller) {
-							pane.append(autoFiller);
+							pane.parent().append(autoFiller);
 						}
 					}
 								
@@ -1172,15 +1199,15 @@ jQuery.sheet = {
 							.mousedown(function(e, target) {
 								if (jS.busy) return false;
 
-								target = target || e.target;
+								e.target = target || e.target;
 
-								if (jS.isTd(target)) {
+								if (jS.isTd(e.target)) {
 									jS.evt.cellOnMouseDown(e);
 									return false;
 								}
 								
-								if (jS.isBar(target)){ //possibly a bar
-									jS.evt.barInteraction.select(target);
+								if (jS.isBar(e.target)){ //possibly a bar
+									jS.evt.barInteraction.select(e.target);
 									return false;
 								}
 							})
@@ -1188,12 +1215,12 @@ jQuery.sheet = {
 								//This manages bar resize, bar menu, and bar selection
 								if (jS.busy) return false;
 
-								target = target || e.target;
+								e.target = target || e.target;
 
-								if (!jS.isBar(target)) return;
-								var bar = $(target);
+								if (!jS.isBar(e.target)) return;
+								var bar = $(e.target);
 								var entity = bar.data('entity');
-								var i = jS.getBarIndex[entity](target);
+								var i = jS.getBarIndex[entity](e.target);
 								if (i == 0) return false;
 								
 								if (jS.evt.barInteraction.selecting) {
@@ -1215,12 +1242,12 @@ jQuery.sheet = {
 							.bind('contextmenu', function(e, target) {
 								if (jS.busy) return false;
 
-								target = target || e.target;
+								e.target = target || e.target;
 
-								if (jS.isBar(target)) {
-									var o = $(target);
+								if (jS.isBar(e.target)) {
+									var o = $(e.target);
 									var entity = o.data('entity');
-									var i = jS.getBarIndex[entity](target);
+									var i = jS.getBarIndex[entity](e.target);
 									if (i == 0) return false;
 									
 									if (jS.evt.barInteraction.first == jS.evt.barInteraction.last) {
@@ -1242,8 +1269,6 @@ jQuery.sheet = {
 					var size = jS.sheetSize(o);
 					
 					jS.checkMinSize(o);
-					
-					jS.controlFactory.scrollers(table, pane, o);
 					
 					jS.addTab();
 					
@@ -1838,15 +1863,17 @@ jQuery.sheet = {
 						this.p = [],
 						this.size = jS.sheetSize(sheet),
 						this.offset = 0,
+						this.td = jS.obj.cellActive(),
+						this.tdLoc = jS.getTdLocation(this.td),
 						this.max = this.size.height,
 						this.height = pane.height() - 50,
 						this.master = jS.obj.scrollerMasterLeft();
 
 						var alwaysShowRowHeight = 0;
 
-						for(var i = this.size.height; i > 0; i--) {
+						for(var i = this.size.height; i > 0 || alwaysShowRowHeight < this.height; i--) {
 							alwaysShowRowHeight += $(jS.getTd(jS.i, i, 1)).parent().andSelf().height();
-							if (alwaysShowRowHeight < this.height) this.max--;
+							this.max--;
 						}
 						this.max++;
 						
@@ -1891,9 +1918,10 @@ jQuery.sheet = {
 					},
 					stop: function() {
 						jS.obj.scrollerMaster().children().scrollTop(this.gridSize * (this.value - 1));
-						
+
 						if (this.td) {
-							jS.autoFillerGoToTd(this.td);
+							jS.evt.scrollHorizontal.td = null;
+							jS.autoFillerGoToTd();
 						}
 					}
 				},
@@ -1983,7 +2011,8 @@ jQuery.sheet = {
 						jS.obj.scrollerMaster().scrollLeft(this.gridSize * this.value);
 						
 						if (this.td) {
-							jS.autoFillerGoToTd(this.td);
+							jS.evt.scrollVertical.td = null;
+							jS.autoFillerGoToTd();
 						}
 					}
 				}
@@ -2005,6 +2034,8 @@ jQuery.sheet = {
 			isTd: function(o) { /* ensures the the object selected is actually a td that is in a sheet
 									o: object, cell object;
 								*/
+				if (!o) return false;
+
 				o = (o[0] ? o[0] : [o]);
 				if (o[0]) {
 					if (!isNaN(o[0].cellIndex)) {
@@ -2773,13 +2804,13 @@ jQuery.sheet = {
 						start: function(e, ui) {
 							jS.autoFillerHide();
 							jS.busy = true;
-							this.col = jS.col(i);
-							this.colWidth = this.col.width();
-							this.tableWidth = sheet.width();
+							this.col = $(jS.col(sheet, i));
 						},
 						resize: function(e, ui) {
-							this.col.width(ui.size.width);
-							sheet.width((this.tableWidth - this.colWidth) + ui.size.width);
+							this.col
+								.width(ui.size.width)
+								.attr('width', ui.size.width + 'px')
+								.css('width', ui.size.width + 'px');
 						},
 						stop: function(e, ui) {
 							jS.busy = false;
@@ -3620,16 +3651,16 @@ jQuery.sheet = {
 																*/
 				if (!s.autoFiller) return;
 
-				td = (td ? td : jS.obj.cellActive());
-				tdHeight = (tdHeight ? tdHeight : td.height());
-				tdWidth = (tdWidth ? tdWidth : td.width());
+				td = td || jS.obj.cellActive();
+				tdHeight = tdHeight || td.height();
+				tdWidth = tdWidth || td.width();
 
-				if (td.attr('id')) { //ensure that it is a usable cell
-					tdPos = td.position();
+				if (jS.isTd(td[0])) { //ensure that it is a usable cell
+					var tdPos = td.position();
 					jS.obj.autoFiller()
 						.show()
-						.css('top', ((tdPos.top + (tdHeight ? tdHeight : td.height()) - 3) + 'px'))
-						.css('left', ((tdPos.left + (tdWidth ? tdWidth : td.width()) - 3) + 'px'));
+						.css('top', ((tdPos.top + (tdHeight || td.height()) - 3) + 'px'))
+						.css('left', ((tdPos.left + (tdWidth || td.width()) - 3) + 'px'));
 				}
 			},
 			autoFillerHide: function() {
