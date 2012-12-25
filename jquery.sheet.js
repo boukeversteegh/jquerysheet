@@ -1175,7 +1175,7 @@ jQuery.sheet = {
 					if (jS.isSheetEditable()) {
 						var autoFiller = jS.controlFactory.autoFiller();
 						if (autoFiller) {
-							pane.parent().append(autoFiller);
+							pane.append(autoFiller);
 						}
 					}
 								

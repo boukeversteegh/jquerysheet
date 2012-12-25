@@ -364,7 +364,7 @@ tr.rowHidden, tr.rowHidden td {
 
 .jSheetAutoFiller
 {
-	position: relative;
+	position: absolute;
 	height: 8px;
 	width: 8px;
 	top: 0px;
