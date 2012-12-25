@@ -1631,8 +1631,10 @@ jQuery.sheet = {
 											jS.calc();
 										}
 										
-										jS.attrH.setHeight(jS.cellLast.row, 'cell');
-										
+										//jS.attrH.setHeight(jS.cellLast.row, 'cell');
+
+										jS.sheetSyncSize();
+
 										//Save the newest version of that cell
 										jS.cellUndoable.add(td);
 										
@@ -3364,6 +3366,8 @@ jQuery.sheet = {
 				jS.setDirty(true);
 				
 				jS.evt.cellEditAbandon();
+
+				jS.sheetSyncSize();
 				
 				jS.trigger('deleteRow', jS.rowLast);
 			},
@@ -3374,7 +3378,7 @@ jQuery.sheet = {
 				var col = jS.obj.sheet().find('colgroup col').eq(jS.colLast);
 				var colWidth = col.width();
 				var sheet = jS.obj.sheet();
-				var sheetWidth = sheet.width() - colWidth;
+				//var sheetWidth = sheet.width() - colWidth;
 				col.remove();
 				
 				var size = jS.sheetSize();
@@ -3397,8 +3401,10 @@ jQuery.sheet = {
 				
 				jS.evt.cellEditAbandon();
 				
-				sheet.width(sheetWidth);
-				
+				//sheet.width(sheetWidth);
+
+				jS.sheetSyncSize();
+
 				jS.trigger('deleteColumn', jS.colLast);
 			},
 			sheetTab: function(get) { /* manages a tabs inner value

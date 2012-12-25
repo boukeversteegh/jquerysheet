@@ -333,6 +333,7 @@ tr.rowHidden, tr.rowHidden td {
 {
 	position: absolute;
 	background-image: none ! important;
+	z-index: 9;
 }
 
 .colorPickers *
@@ -371,6 +372,7 @@ tr.rowHidden, tr.rowHidden td {
 	left: 0px;
 	cursor: crosshair ! important;
 	display: none;
+	z-index: 10;
 }
 
 .jSheetTitle, .jSheetInlineMenu
