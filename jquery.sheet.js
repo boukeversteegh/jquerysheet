@@ -431,8 +431,8 @@ jQuery.sheet = {
 					jS.obj.barHelper().remove();
 					
 					var sheet = jS.obj.sheet(),
-						sheetWidth = sheet.width().
-							isLast = false;
+						sheetWidth = sheet.width();
+						isLast = false;
 					
 					//jS.evt.cellEditAbandon();
 					
@@ -442,7 +442,7 @@ jQuery.sheet = {
 					//var barLast = (type == 'row' ? jS.rowLast : jS.colLast);
 					var cellLastBar = (type == 'row' ? jS.cellLast.row : jS.cellLast.col);
 					
-					if (!eq) {
+					if (eq === undefined) {
 						if (cellLastBar != 0) {
 							eq = cellLastBar;
 							isLast = true;
@@ -483,7 +483,10 @@ jQuery.sheet = {
 								},
 								newCol: '',
 								dimensions: function(cell, col) {},
-								offset: {row: qty,col: 0}
+								offset: {row: qty,col: 0},
+								start: function() {
+									return {row: (isBefore ? eq : eq + qty)};
+								}
 							};
 							break;
 						case "col":
@@ -525,7 +528,10 @@ jQuery.sheet = {
 									
 									sheet.width(sheetWidth + (w * qty));
 								},
-								offset: {row: 0, col: qty}
+								offset: {row: 0, col: qty},
+								start: function() {
+									return {col: (isBefore ? eq : eq + qty)};
+								}
 							};
 							break;
 					}
@@ -558,12 +564,13 @@ jQuery.sheet = {
 						cells.after(newCells);
 						$(col).after(newCols);
 					}
-					
-					jS.setTdIds(sheet, jS.i);
+
+
+					jS.setTdIds(sheet, jS.i, o.start());
 					
 					o.dimensions(newCells, newCols);
 					
-					if (!skipFormulaReparse && isLast != true) { //TODO: replace ':last' here
+					if (!skipFormulaReparse && isLast != true) {
 						//offset formulas
 						jS.offsetFormulas(loc, o.offset, isBefore);
 					}
@@ -736,13 +743,13 @@ jQuery.sheet = {
 							},{
 								msg: jS.msg.menuInsertColumnAfter,
 								fn: function(){
-									jS.controlFactory.addColumn();
+									jS.controlFactory.addColumn(jS.colLast);
 									return false;
 								}
 							}, {
 								msg: jS.msg.menuInsertColumnBefore,
 								fn: function(){
-									jS.controlFactory.addColumn(null, true);
+									jS.controlFactory.addColumn(jS.colLast, true);
 									return false;
 								}
 							}, {
@@ -816,13 +823,13 @@ jQuery.sheet = {
 								}, {
 									msg: jS.msg.menuInsertRowAfter,
 									fn: function(){
-										jS.controlFactory.addRow();
+										jS.controlFactory.addRow(jS.rowLast);
 										return false;
 									}
 								}, {
 									msg: jS.msg.menuInsertRowBefore,
 									fn: function(){
-										jS.controlFactory.addRow(null, true);
+										jS.controlFactory.addRow(jS.rowLast, true);
 										return false;
 									}
 								}, {
@@ -2156,11 +2163,11 @@ jQuery.sheet = {
 					switch(from) {
 						case 'cell':
 							o = (o ? o : jS.obj.barLeft(i));
-							h = jS.attrH.height(jQuery(jS.getTd(jS.i, i, 0)).parent().andSelf(), skipCorrection);
+							h = jS.attrH.height($(jS.getTd(jS.i, i, 0)).parent().andSelf(), skipCorrection);
 							break;
 						case 'bar':
 							if (!o) {
-								var tr = jQuery(jS.getTd(jS.i, i, 0)).parent();
+								var tr = $(jS.getTd(jS.i, i, 0)).parent();
 								var td = tr.children();
 								o = tr.add(td);
 							} 
@@ -2169,7 +2176,7 @@ jQuery.sheet = {
 					}
 					
 					if (h) {
-						jQuery(o)
+						$(o)
 							.height(h)
 							.css('height', h + 'px')
 							.attr('height', h + 'px');
@@ -2178,7 +2185,7 @@ jQuery.sheet = {
 					return o;
 				}
 			},
-			setTdIds: function(sheet, i) { /* cycles through all the td in a sheet and sets their id & virtual spreadsheet so it can be quickly referenced later
+			setTdIds: function(sheet, i, start) { /* cycles through all the td in a sheet and sets their id & virtual spreadsheet so it can be quickly referenced later
 										sheet: object, table object;
 										i: integer, sheet index
 									*/
@@ -2186,12 +2193,52 @@ jQuery.sheet = {
 					sheet = jS.obj.sheet();
 					i = jS.i;
 				}
+
+				start = $.extend({row: 0, col: 0}, start);
 				
 				jS.spreadsheets[i] = []; //reset the sheet's spreadsheet
-				
-				sheet.find('tr').each(function(row) {
-					jQuery(this).children().each(function(col) {
-						var td = jQuery(this);
+
+				var rows = jS.rows(sheet);
+				/*for(var row = start.row; row < rows.length; row++) { //rows
+					if (!rows[row].children) continue;
+					for(var col = start.col; col < rows[row].children.length; col++) { //cells
+						var td = $(rows[row].children[col]);
+
+						if (row > 0 && col > 0) {
+							td.attr('id', jS.getTdId(i, row - 1, col - 1));
+							jS.createCell(i, row- 1, col - 1, td.text(), td.attr('formula'));
+						} else {
+							if (col == 0 && row > 0) { //barleft
+								td
+									.data('type', 'bar')
+									.data('entity', 'left')
+									.text(row)
+									.attr('id', jS.id.barLeft + row + '_' + jS.i)
+									.attr('class', jS.cl.barLeft + ' ' + jS.cl.barLeft + '_' + jS.i + ' ' + jS.cl.uiBar);
+							}
+
+							if (row == 0 && col > 0) { //bartop
+								td
+									.data('type', 'bar')
+									.data('entity', 'top')
+									.text(jSE.columnLabelString(col))
+									.attr('id', jS.id.barTop + col + '_' + jS.i)
+									.attr('class', jS.cl.barTop + ' ' + jS.cl.barTop + '_' + jS.i + ' ' + jS.cl.uiBar);
+							}
+
+							if (row == 0 && col == 0) { //corner
+								td
+									.data('type', 'bar')
+									.data('entity', 'corner')
+									.attr('id', jS.id.barCorner + jS.i)
+									.attr('class', jS.cl.uiBar + ' ' + ' ' + jS.cl.barCorner);
+							}
+						}
+					}
+				}*/
+				$(rows).each(function(row) {
+					$(this).children().each(function(col) {
+						var td = $(this);
 						
 						if (row > 0 && col > 0) {
 							td.attr('id', jS.getTdId(i, row, col));
@@ -2229,14 +2276,14 @@ jQuery.sheet = {
 			setControlIds: function() { /* resets the control ids, useful for when adding new sheets/controls between sheets/controls :) */
 				var resetIds = function(o, id) {
 					o.each(function(i) {
-						jQuery(this).attr('id', id + i);
+						$(this).attr('id', id + i);
 					});
 				};
 				
 				resetIds(jS.obj.sheetAll().each(function(i) {
-					jS.setTdIds(jQuery(this), i);
+					jS.setTdIds($(this), i);
 				}), jS.id.sheet);
-				
+
 				resetIds(jS.obj.barTopAll(), jS.id.barTop);
 				resetIds(jS.obj.barTopParentAll(), jS.id.barTopParent);
 				resetIds(jS.obj.barLeftAll(), jS.id.barLeft);
@@ -2246,7 +2293,7 @@ jQuery.sheet = {
 				resetIds(jS.obj.tableControlAll(), jS.id.tableControl);
 				resetIds(jS.obj.paneAll(), jS.id.pane);
 				resetIds(jS.obj.tabAll().each(function(j) {
-					jQuery(this).attr('i', j);
+					$(this).attr('i', j);
 				}), jS.id.tab);
 			},
 			toggleHide: {//These are not ready for prime time
@@ -2281,7 +2328,7 @@ jQuery.sheet = {
 						var o = jS.obj.barTop(i);
 						if (o.is(':visible')) {
 							jS.obj.sheet().find('tbody tr').each(function() {
-								jQuery(this).children().eq(i).hide();
+								$(this).children().eq(i).hide();
 							});
 							o.hide();
 							jS.obj.sheet().find('colgroup col').eq(i).hide();
@@ -2299,7 +2346,7 @@ jQuery.sheet = {
 					var newW = 0;
 					var newW = 0;
 					jS.obj.barTopAll().each(function() {
-						var o = jQuery(this);
+						var o = $(this);
 						if (o.is(':hidden')) {
 							newW += o.width();
 						}
@@ -2318,7 +2365,7 @@ jQuery.sheet = {
 				
 				if (cells.length > 1 && cellFirstLoc.row) {
 					for (var i = cellFirstLoc.col; i <= cellLastLoc.col; i++) {
-						var td = jQuery(jS.getTd(jS.i, cellFirstLoc.row, i)).hide();
+						var td = $(jS.getTd(jS.i, cellFirstLoc.row, i)).hide();
 						var cell = jS.spreadsheets[jS.i][cellFirstLoc.row][i];
 						
 						cellsValue = (cell.formula ? "(" + cell.formula.replace('=', '') + ")" : cell.value) + cellsValue;
@@ -2368,7 +2415,7 @@ jQuery.sheet = {
 				}
 				
 				for (var i = loc.col; i < colI; i++) {
-					jQuery(jS.getTd(jS.i, loc.row, i)).show();
+					$(jS.getTd(jS.i, loc.row, i)).show();
 				}
 				
 				cell.removeAttr('colspan');
@@ -2401,7 +2448,7 @@ jQuery.sheet = {
 				var fn;
 				if (v.charAt(0) == '=') {
 					fn = function(sheet, row, col){
-						td = jQuery(this);
+						td = $(this);
 						
 						if (goUp) {
 							offset.row = -endLoc.row + row;
@@ -2425,7 +2472,7 @@ jQuery.sheet = {
 						newV -= endLoc.col;
 					}
 					fn = function(sheet, row, col){
-						td = jQuery(this);
+						td = $(this);
 						
 						jS.spreadsheets[sheet][row][col].formula = null;
 						jS.spreadsheets[sheet][row][col].value = newV;
@@ -2488,7 +2535,7 @@ jQuery.sheet = {
 				}
 
 				jS.cycleCells(function (sheet, row, col) {
-					var td = jQuery(this);
+					var td = $(this);
 					var formula = td.attr('formula');
 
 					if (formula && jS.isFormulaEditable(td)) {
@@ -2533,7 +2580,7 @@ jQuery.sheet = {
 				});
 			},
 			makeFormula: function(loc, offset) {
-				offset = jQuery.extend({row: 0, col: 0}, offset);
+				offset = $.extend({row: 0, col: 0}, offset);
 				
 				//set offsets
 				loc.col += offset.col;
@@ -2554,7 +2601,7 @@ jQuery.sheet = {
 				firstLoc = (firstLoc ? firstLoc : {row: 0, col: 0});
 				
 				if (!lastLoc) {
-					var size = jS.sheetSize(jQuery('#' + jS.id.sheet + sheet));
+					var size = jS.sheetSize($('#' + jS.id.sheet + sheet));
 					lastLoc = {row: size.height, col: size.width};
 				}
 				
@@ -2569,7 +2616,7 @@ jQuery.sheet = {
 			},
 			cycleCellsAll: function(fn) {
 				for (var i = 0; i <= jS.sheetCount; i++) {
-					var size = jS.sheetSize(jQuery('#' + jS.id.sheet + i));
+					var size = jS.sheetSize($('#' + jS.id.sheet + i));
 					var endLoc = {row: size.height, col: size.width};
 					jS.cycleCells(fn, {row: 0, col: 0}, endLoc, i);
 				}
@@ -2589,7 +2636,7 @@ jQuery.sheet = {
 				return o;
 			},
 			addTab: function() { /* Adds a tab for navigation to a spreadsheet */
-				jQuery('<span class="' + jS.cl.uiTab + ' ui-corner-bottom">' + 
+				$('<span class="' + jS.cl.uiTab + ' ui-corner-bottom">' +
 						'<a class="' + jS.cl.tab + '" id="' + jS.id.tab + jS.i + '" i="' + jS.i + '">' + jS.sheetTab(true) + '</a>' + 
 					'</span>')
 						.insertBefore(
@@ -2600,7 +2647,6 @@ jQuery.sheet = {
 											o: object, table object;
 										*/
 				jS.formatSheet(o);
-				jS.sheetSyncSizeToCols(o);
 				jS.sheetDecorateRemove(false, o);
 			},
 			formatSheet: function(o) { /* adds tbody, colgroup, heights and widths to different parts of a spreadsheet
@@ -2613,10 +2659,10 @@ jQuery.sheet = {
 				
 				if (o.find('colgroup').length < 1 || o.find('col').length < 1) {
 					o.remove('colgroup');
-					var colgroup = jQuery('<colgroup />');
+					var colgroup = $('<colgroup />');
 					o.find('tr:first').children().each(function() {
 						var w = s.newColumnWidth;
-						jQuery('<col />')
+						$('<col />')
 							.width(w)
 							.css('width', (w) + 'px')
 							.attr('width', (w) + 'px')
@@ -2625,7 +2671,7 @@ jQuery.sheet = {
 						tableWidth += w;
 					});
 					o.find('tr').each(function() {
-						jQuery(this)
+						$(this)
 							.height(s.colMargin)
 							.css('height', s.colMargin + 'px')
 							.attr('height', s.colMargin + 'px');
@@ -2681,7 +2727,7 @@ jQuery.sheet = {
 						);
 					},
 					setHighlighted: function(td) {
-						jQuery(td)
+						$(td)
 							.addClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
 					},
 					clearActive: function() {
@@ -2707,7 +2753,7 @@ jQuery.sheet = {
 				},
 				bar: {
 					style: function(o) {
-						jQuery(o).addClass(jS.cl.uiBar);
+						$(o).addClass(jS.cl.uiBar);
 					},
 					setActive: function(direction, i) {
 						//We don't clear here because we can have multi active bars
@@ -2750,7 +2796,7 @@ jQuery.sheet = {
 						}
 					});
 					// resizable formula area - a bit hard to grab the handle but is there!
-					var formulaResizeParent = jQuery('<span />');
+					var formulaResizeParent = $('<span />');
 					jS.resizable(jS.obj.formula().wrap(formulaResizeParent).parent(), {
 						minHeight: jS.obj.formula().height(), 
 						maxHeight: 78,
@@ -2781,7 +2827,7 @@ jQuery.sheet = {
 			resizeBar: {
 				top: function(bar, i, sheet) {
 					bar.find('.barController').remove();
-					var barController = jQuery('<div class="barController" />')
+					var barController = $('<div class="barController" />')
 						.width(bar.width())
 						.height(0)
 						.prependTo(bar);
@@ -2807,7 +2853,7 @@ jQuery.sheet = {
 				},
 				left: function(bar, i) {
 					bar.find('.barController').remove();
-					var barController = jQuery('<div class="barController" />')
+					var barController = $('<div class="barController" />')
 						.width(0)
 						.height(bar.height())
 						.prependTo(bar);
@@ -2849,7 +2895,7 @@ jQuery.sheet = {
 				return o;
 			},
 			sheetBarsRemove: function(o) {
-				o = jQuery(o ? o : jS.obj.sheetAll());
+				o = $(o ? o : jS.obj.sheetAll());
 				o.find('tr.' + jS.cl.barTopParent).remove();
 				o.find('td.' + jS.cl.barLeft).remove();
 				return o;
@@ -2928,7 +2974,7 @@ jQuery.sheet = {
 							break;
 						case 'oo':
 							selectModel = function(target) {
-								var td = jQuery(target);
+								var td = $(target);
 								if (jS.isTd(td)) {
 									jS.cellEdit(td);
 								}
@@ -2983,7 +3029,7 @@ jQuery.sheet = {
 									.unbind('mousemove')
 									.unbind('mouseup');
 								
-								if (jQuery.isFunction(fnDone)) {
+								if ($.isFunction(fnDone)) {
 									fnDone();
 								}
 							});
@@ -3050,7 +3096,7 @@ jQuery.sheet = {
 				jS.cellUndoable.add(uiCell);
 				
 				uiCell.each(function(i) {
-					cell = jQuery(this);
+					cell = $(this);
 					var curr_size = (cell.css("font-size") + '').replace("px","")
 					var new_size = parseInt(curr_size ? curr_size : 10) + resize;
 					cell.css("font-size", new_size + "px");
@@ -3350,8 +3396,8 @@ jQuery.sheet = {
 			},
 			deleteRow: function(skipCalc) { /* removes the currently selected row */
 				$(jS.getTd(jS.i, jS.rowLast, 1)).parent().remove();
-				
-				jS.setTdIds();
+
+				jS.setTdIds(null, null, {row: jS.rowLast - 1});
 				
 				jS.offsetFormulas({
 					row: jS.rowLast,
@@ -3385,7 +3431,7 @@ jQuery.sheet = {
 					$(jS.getTd(jS.i, i, jS.colLast)).remove();
 				}
 				
-				jS.setTdIds();
+				jS.setTdIds(null, null, {col: jS.colLast});
 				
 				jS.offsetFormulas({
 					row: 0,
@@ -3672,7 +3718,10 @@ jQuery.sheet = {
 					jS.obj.formula().val('');
 				}
 				
-				jS.obj.tableControlAll().hide().eq(i).show();
+				jS.obj.tableControlAll()
+					.addClass('tableControlHidden')
+					.eq(i).removeClass('tableControlHidden');
+
 				jS.i = i;			
 				
 				jS.themeRoller.tab.setActive();
@@ -3724,7 +3773,7 @@ jQuery.sheet = {
 					
 					if (!o) {
 						$('<div />').load(s.urlGet, function() {
-							var sheets = $(this).find('table');
+							var sheets = $(this).children('table');
 							sheets.each(function(i) {
 								jS.controlFactory.sheetUI($(this), i, function() {
 									fnAfter(i, sheets.length - 1);
@@ -3939,16 +3988,6 @@ jQuery.sheet = {
 					return sheetClone;
 				}
 			},
-			sheetSyncSizeToCols: function(o) { /* syncs a sheet's size from it's col objects
-													o: object, sheet object;
-												*/
-				var newSheetWidth = 0;
-				o = (o ? o : jS.obj.sheet());
-				o.find('colgroup col').each(function() {
-					newSheetWidth += $(this).width();
-				});
-				o.width(newSheetWidth);
-			},
 			sheetSyncSize: function() { /* syncs a sheet's size to that of the $().sheet() caller object */
 				var h = s.height;
 				if (!h) {
@@ -3965,7 +4004,7 @@ jQuery.sheet = {
 				h = h - jS.attrH.height(jS.obj.controls()) - jS.attrH.height(jS.obj.barTopParent()) - (s.boxModelCorrection * 3);
 				
 				jS.obj.pane()
-					.height(h - window.scrollerSize.height)
+					.height(h - window.scrollerSize.height - s.boxModelCorrection)
 					.width(w - window.scrollerSize.width)
 					.parent()
 						.width(w);
@@ -4429,18 +4468,27 @@ jQuery.sheet = {
 			},
 			rowCells: function(o, row) {
 				o = o || jS.obj.sheet();
+
+				var rows = jS.rows(o);
+
+				if (row == undefined) {
+					row = rows.length - 1;
+				}
+
+
+				if (!rows[row]) return {}; //tr
+				if (!rows[row].children) return {}; //td
+
+				return rows[row].children;
+			},
+			rows: function(o) {
+				o = o || jS.obj.sheet();
+				if (!o[0]) return {}; //table
 				if (!o[0].children) return {}; //table
 				if (!o[0].children[1]) return {}; //tbody
 				if (!o[0].children[1].children) return {}; //tr
 
-				if (row == undefined) {
-					row = o[0].children[1].children.length - 1;
-				}
-
-				if (!o[0].children[1].children[row]) return {}; //tr
-				if (!o[0].children[1].children[row].children) return {}; //td
-
-				return o[0].children[1].children[row].children;
+				return o[0].children[1].children;
 			},
 			sheetSize: function(o) {
 				o = o || jS.obj.sheet();
@@ -4498,7 +4546,7 @@ jQuery.sheet = {
 		};
 		
 		if (!window.scrollerSize) {
-			window.scrollerSize = jQuery.sheet.getScrollBarSize();
+			window.scrollerSize = $.sheet.getScrollBarSize();
 		}
 
 		var $window = $(window),
@@ -4518,7 +4566,7 @@ jQuery.sheet = {
 		jS.Parser = new jS.parser;
 		
 		//We need to take the sheet out of the parent in order to get an accurate reading of it's height and width
-		//jQuery(this).html(s.loading);
+		//$(this).html(s.loading);
 		s.origParent = origParent;
 		s.origHtml = origParent.html();
 		s.parent
@@ -4573,7 +4621,7 @@ jQuery.sheet = {
 		
 		$window
 			.resize(function() {
-				if (jS) { //We check because jS might have been killed
+				if (jS && !jS.busy) { //We check because jS might have been killed
 					s.width = s.parent.width();
 					s.height = s.parent.height();
 					jS.sheetSyncSize();

@@ -154,9 +154,25 @@
 
 .tableControl
 {
+	position: absolute;
+	width: 10px;
+	height: 10px;
 	border: none ! important;
 	margin: 0px ! important;
 	padding: 0px ! important;
+}
+
+.tableControl .jSheetEditPane
+{
+	width: 10px;
+	height: 10px;
+}
+
+.tableControlHidden
+{
+	z-index: -1 ! important;
+	opacity:0.01;
+	filter:alpha(opacity=1);
 }
 
 .jSheetScrollerBottom {
@@ -315,6 +331,7 @@ tr.rowHidden, tr.rowHidden td {
 	text-align: center;
 	vertical-align: middle;
 	cursor: pointer ! important;
+	overflow: visible ! important;
 }
 
 .jSheetControls img
