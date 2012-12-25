@@ -225,7 +225,6 @@
 	margin: 0px ! important;
 	font-size: 1em;
 	color:  inherit;
-	z-index: 10 ! important;
 }
 
 .noBreak .jSheet td, .noBreak .jSheet th
@@ -277,7 +276,7 @@ tr.rowHidden, tr.rowHidden td {
 	background-image: none ! important;
 	border-width: 0px;
 	position: absolute ! important;
-	z-index: 2;
+	z-index: 5;
 }
 /* Bar item styling */
 
@@ -334,7 +333,6 @@ tr.rowHidden, tr.rowHidden td {
 {
 	position: absolute;
 	background-image: none ! important;
-	z-index: 9;
 }
 
 .colorPickers *
@@ -373,7 +371,6 @@ tr.rowHidden, tr.rowHidden td {
 	left: 0px;
 	cursor: crosshair ! important;
 	display: none;
-	z-index: 10 ! important;
 }
 
 .jSheetTitle, .jSheetInlineMenu
@@ -387,12 +384,10 @@ tr.rowHidden, tr.rowHidden td {
 {
 	width: inherit;
 	height: inherit;
-	z-index: 5;
 }
 
 .jSheetChart svg {
 	position: relative ! important;
-	z-index: 6 ! important;
 }
 
 .bodyNoScroll
