@@ -1861,23 +1861,21 @@ jQuery.sheet = {
 						this.offset = 0,
 						this.td = jS.obj.cellActive(),
 						this.max = this.size.height,
+						this.master = jS.obj.scrollerMasterLeft().html(''),
 						this.height = jS.obj.pane().height() - 50,
-						this.sheetHeight = sheet.height(),
-						this.master = jS.obj.scrollerMasterLeft();
+						this.sheetHeight = sheet.height();
 
 						var alwaysShowRowHeight = 0;
 
-						for(var i = this.size.height; i > 1; i--) {
-							var rowHeight = $(jS.getTd(jS.i, i, 1)).parent().andSelf().height();
+						/*for(var i = this.size.height; i > 1; i--) {
+							var rowHeight = $(jS.getTd(jS.i, i, 1)).parent().outerHeight();
 							if (alwaysShowRowHeight + rowHeight < this.height) {
 								alwaysShowRowHeight += rowHeight;
 								this.max--;
 							}
-						}
-						this.max++;
-						this.max++;
+						}*/
 
-						this.gridSize = parseInt(100 / this.max);
+						this.gridSize = 100 / this.max;
 						for(var i = 1; i <= this.max; i++) {
 							this.v[i] = this.gridSize * i;
 							this.p[this.gridSize * i] = i + 1;
@@ -1941,10 +1939,10 @@ jQuery.sheet = {
 						this.offset = 0,
 						this.td = jS.obj.cellActive(),
 						this.tdLoc = jS.getTdLocation(this.td),
+						this.master = jS.obj.scrollerMasterTop().html(''),
 						this.sheetWidth = sheet.width(),
 						this.max = this.size.width,
-						this.width = pane.width() - 100,
-						this.master = jS.obj.scrollerMasterTop();
+						this.width = pane.width() - 100;
 						
 						var alwaysShowColWidth = 0;
 						for(var i = this.cols.length - 1; i > 1; i--) {
@@ -1955,7 +1953,7 @@ jQuery.sheet = {
 							}
 						}
 						this.max++;
-						this.gridSize = parseInt(100 / this.max);
+						this.gridSize = 100 / this.max;
 
 						for(var i = 0; i <= this.max; i++) {
 							this.v[i] = this.gridSize * i;
@@ -3648,12 +3646,14 @@ jQuery.sheet = {
 				tdHeight = tdHeight || td.height();
 				tdWidth = tdWidth || td.width();
 
-				if (jS.isTd(td[0])) { //ensure that it is a usable cell
+				if (jS.isTd(td[0]) && td.is(':visible')) { //ensure that it is a usable cell
 					var tdPos = td.position();
 					jS.obj.autoFiller()
 						.show()
 						.css('top', ((tdPos.top + (tdHeight || td.height()) - 3) + 'px'))
 						.css('left', ((tdPos.left + (tdWidth || td.width()) - 3) + 'px'));
+				} else {
+					jS.autoFillerHide();
 				}
 			},
 			autoFillerHide: function() {
@@ -3985,9 +3985,24 @@ jQuery.sheet = {
 					.parent()
 						.width(w);
 
+				var scrollerMasterTop = jS.obj.scrollerMasterTop();
+				var scrollerMasterLeft = jS.obj.scrollerMasterLeft();
+
+				this.tempTopStyle = scrollerMasterTop.html();
+				this.tempLeftStyle = scrollerMasterLeft.html();
+
+				scrollerMasterTop.html('');
+				scrollerMasterLeft.html('');
+
 				jS.obj.scrollerMaster().find('div')
 					.height(jS.obj.sheet().height())
 					.width(jS.obj.sheet().width());
+
+				jS.evt.scrollVertical.start();
+				jS.evt.scrollHorizontal.start();
+
+				scrollerMasterTop.html(this.tempTopStyle);
+				scrollerMasterLeft.html(this.tempLeftStyle);
 			},
 			cellChangeStyle: function(style, value) { /* changes a cell's style and makes it undoable/redoable
 														style: string, css style name;
