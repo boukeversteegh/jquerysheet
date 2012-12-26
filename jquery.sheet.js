@@ -1,15 +1,23 @@
-/*
-jQuery.sheet() The Web Based Spreadsheet
-$Id$
-http://code.google.com/p/jquerysheet/
+/**
+ * @project jQuery.sheet() The Web Based Spreadsheet - http://code.google.com/p/jquerysheet/
+ * @author RobertLeePlummerJr@gmail.com
+ * $Id$
+ * Copyright (c) 2012 Robert Plummer, RobertLeePlummerJr@gmail.com
+ * Licensed under MIT
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ */
 
-Copyright (c) 2012 Robert Plummer, RobertLeePlummerJr@gmail.com
-Licensed under MIT
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
-jQuery.fn.extend({
+/**
+ * @namespace
+ */
+var jQueryPlugins = {
+	/**
+	 * The jQuery.sheet plugin
+	 * @memberOf jQueryPlugins
+	 */
 	sheet: function(settings) {
 		jQuery(this).each(function() {
 			var parent = jQuery(this);
@@ -80,7 +88,7 @@ jQuery.fn.extend({
 				delete jS;
 			}
 			
-			if (jQuery.sheet.instance) {
+			if (jQuery.sheet.instance.length) {
 				parent.sheetInstance = jQuery.sheet.createInstance(jQuery, set, jQuery.sheet.instance.length, parent);
 				jQuery.sheet.instance.push(parent.sheetInstance);
 			} else {
@@ -91,6 +99,11 @@ jQuery.fn.extend({
 		});
 		return this;
 	},
+
+	/**
+	 * @memberOf jQueryPlugins
+	 * @returns {*}
+	 */
 	disableSelectionSpecial : function() { 
 			this.each(function() { 
 					this.onselectstart = function() { return false; }; 
@@ -99,6 +112,11 @@ jQuery.fn.extend({
 			});
 			return this;
 	},
+
+	/**
+	 * @memberOf jQueryPlugins
+	 * @return {*}
+	 */
 	getSheet: function() {
 		var I = parseInt(jQuery(this).attr('sheetInstance'));
 		if (!isNaN(I)) {
@@ -106,6 +124,15 @@ jQuery.fn.extend({
 		}
 		return false;
 	},
+
+	/**
+	 * Get cell value
+	 * @memberOf jQueryPlugins
+	 * @param row
+	 * @param col
+	 * @param sheet
+	 * @return {*}
+	 */
 	getCellValue: function(row, col, sheet) {
 		var jS = $(this).getSheet();
 		sheet = (sheet ? sheet : 0);
@@ -115,6 +142,15 @@ jQuery.fn.extend({
 			return "";
 		}
 	},
+
+	/**
+	 * Set cell value
+	 * @memberOf jQueryPlugins
+	 * @param value
+	 * @param row
+	 * @param col
+	 * @param sheet
+	 */
 	setCellValue: function(value, row, col, sheet) {
 		var jS = $(this).getSheet();
 		sheet = (sheet ? sheet : 0);
@@ -122,6 +158,15 @@ jQuery.fn.extend({
 			jS.spreadsheets[sheet][row][col].value = value;
 		} catch(e) {}
 	},
+
+	/**
+	 * Set cell formula
+	 * @memberOf jQueryPlugins
+	 * @param formula
+	 * @param row
+	 * @param col
+	 * @param sheet
+	 */
 	setCellFormula: function(formula, row, col, sheet) {
 		var jS = $(this).getSheet();
 		sheet = (sheet ? sheet : 0);
@@ -129,6 +174,15 @@ jQuery.fn.extend({
 			jS.spreadsheets[sheet][row][col].formula = formula;
 		} catch(e) {}
 	},
+
+	/**
+	 * Set cell html
+	 * @memberOf jQueryPlugins
+	 * @param html
+	 * @param row
+	 * @param col
+	 * @param sheet
+	 */
 	setCellHtml: function(html, row, col, sheet) {
 		var jS = $(this).getSheet();
 		sheet = (sheet ? sheet : 0);
@@ -136,18 +190,80 @@ jQuery.fn.extend({
 			jS.spreadsheets[sheet][row][col].html = html;
 		} catch(e) {}
 	}
-});
+};
 
+jQuery.fn.extend(jQueryPlugins);
+
+/**
+ * @namespace
+ * @type {Object}
+ */
 jQuery.sheet = {
-	createInstance: function($, s, I, origParent) { //s = jQuery.sheet settings, I = jQuery.sheet Instance Integer
+	/**
+	 * Array of instances of jQuery.sheet, generally short-handed to jS
+	 * @namespace
+	 * @memeberOf jQuery.sheet
+	 */
+	instance: [],
+
+	/**
+	 * The instance creator of jQuery.sheet
+	 * @methodOf jQuery.sheet
+	 * @param $ {Object} jQuery
+	 * @param s {Object} settings from jQuery.fn.sheet
+	 * @param I {Integer} the index of the instance
+	 * @param origParent {Object} the caller
+	 * @returns jS {Object} jQuery sheet instance
+	 */
+	createInstance: function($, s, I, origParent) {
 		var jS = {
+			/**
+			 * Current version of jQuery.sheet
+			 * @memberOf jQuery.sheet.instance
+			 * @name version
+			 * @type {String}
+			 */
 			version: 'trunk',
+
+			/**
+			 * The active sheet index within the a set of sheets
+			 * @memberOf jQuery.sheet.instance
+			 * @name i
+			 * @type {Integer}
+			 */
 			i: 0,
+
+			/**
+			 * The instance index
+			 * @memberOf jQuery.sheet.instance
+			 * @name I
+			 * @type {Integer}
+			 */
 			I: I,
+
+			/**
+			 * The current count of sheet's within the instance
+			 * @memberOf jQuery.sheet.instance
+			 * @name sheetCount
+			 * @type {Integer}
+			 */
 			sheetCount: 0,
-			spreadsheets: [], //the actual spreadsheets are going to be populated here
-			obj: {//obj = object references
-				//Please note, class references use the tag name because it's about 4 times faster
+
+			/**
+			 * The internal storage array of the spreadsheets for an instance
+			 * @memberOf jQuery.sheet.instance
+			 * @name spreadsheets
+			 * @type {Array}
+			 */
+			spreadsheets: [],
+
+			/**
+			 * Object selectors for interacting with a spreadsheet, dynamically id'd from both sheet index and instance index
+			 * @memberOf jQuery.sheet.instance
+			 * @name obj
+			 * @type {Object}
+			 */
+			obj: {
 				autoFiller:			function() { return $('#' + jS.id.autoFiller + jS.i); },
 				barCorner:			function() { return $('#' + jS.id.barCorner + jS.i); },
 				barCornerAll:		function() { return s.parent.find('div.' + jS.cl.barCorner); },
@@ -181,8 +297,8 @@ jQuery.sheet = {
 				pane: 				function() { return $('#' + jS.id.pane + jS.i); },
 				paneAll:			function() { return s.parent.find('div.' + jS.cl.pane); },
 				parent: 			function() { return s.parent; },
-				scrollStyleLeft:    function() { return $('#' + jS.id.scrollStyleLeft + jS.i); },
-				scrollStyleTop:     function() { return $('#' + jS.id.scrollStyleTop + jS.i); },
+				scrollStyleX:       function() { return $('#' + jS.id.scrollStyleX + jS.i); },
+				scrollStyleY:       function() { return $('#' + jS.id.scrollStyleY + jS.i); },
 				scroll:		        function() { return $('#' + jS.id.scroll + jS.i); },
 				sheet: 				function() { return $('#' + jS.id.sheet + jS.i); },
 				sheetPaneTd:		function() { return $('#' + jS.id.sheetPaneTd + jS.i); },
@@ -197,6 +313,13 @@ jQuery.sheet = {
 				ui:					function() { return $('#' + jS.id.ui); },
 				uiActive:			function() { return s.parent.find('div.' + jS.cl.uiActive); }
 			},
+
+			/**
+			 * Internal id's of objects, dynamically id'd from both sheet index and instance index
+			 * @memberOf jQuery.sheet.instance
+			 * @name id
+			 * @type {Object}
+			 */
 			id: {
 				/*
 					id = id's references
@@ -221,8 +344,8 @@ jQuery.sheet = {
 				label: 				'jSheetControls_loc_' + I,
 				menu:				'jSheetMenu_' + I,
 				pane: 				'jSheetEditPane_' + I + '_',
-				scrollStyleLeft:    'jSheetScrollStyleLeft_' + I + '_',
-				scrollStyleTop:     'jSheetScrollStyleTop_' + I + '_',
+				scrollStyleX:       'jSheetScrollStyleX_' + I + '_',
+				scrollStyleY:       'jSheetScrollStyleY_' + I + '_',
 				scroll:		        'jSheetScroll_' + I + '_',
 				sheet: 				'jSheet_' + I + '_',
 				sheetPaneTd: 		'jSheetEditSheetPaneTd_' + I + '_',
@@ -232,6 +355,13 @@ jQuery.sheet = {
 				title:				'jSheetTitle_' + I,
 				ui:					'jSheetUI_' + I
 			},
+
+			/**
+			 * Internal css classes of objects
+			 * @memberOf jQuery.sheet.instance
+			 * @name cl
+			 * @type {Object}
+			 */
 			cl: {
 				/*
 					cl = class references
@@ -299,6 +429,13 @@ jQuery.sheet = {
 				uiTab:					'ui-widget-header',
 				uiTabActive:			'ui-state-highlight'
 			},
+
+			/**
+			 * Messages for user interface
+			 * @memberOf jQuery.sheet.instance
+			 * @name msg
+			 * @type {Object}
+			 */
 			msg: { /*msg = messages used throught sheet, for easy access to change them for other languages*/
 				addRowMulti: 			"How many rows would you like to add?",
 				addColumnMulti: 		"How many columns would you like to add?",
@@ -308,7 +445,6 @@ jQuery.sheet = {
 				toggleHideRow:			"No row selected.",
 				toggleHideColumn: 		"Now column selected.",
 				merge:					"Merging is not allowed on the first row.",
-				evalError:				"Error, functions as formulas not supported.",
 				menuFreezeColumnToHere: "Toggle freeze columns to here",
 				menuFreezeRowToHere:    "Toggle freeze rows to here",
 				menuInsertColumnAfter: 	"Insert column after",
@@ -322,7 +458,13 @@ jQuery.sheet = {
 				menuAddSheet:			"Add spreadsheet",
 				menuDeleteSheet:		"Delete spreadsheet"
 			},
-			kill: function() { /* For ajax manipulation, kills this instance of sheet entirley */
+
+			/**
+			 * Deletes a jQuery sheet instance
+			 * @methodOf jQuery.sheet.instance
+			 * @name kill
+			 */
+			kill: function() {
 				jS.obj.tabContainer().remove();
 				jS.obj.fullScreen().remove();
 				jS.obj.inPlaceEdit().remove();
@@ -330,17 +472,33 @@ jQuery.sheet = {
 					.removeClass(jS.cl.uiParent)
 					.html('')
 					.removeAttr('sheetInstance');
-				cE = s = $.sheet.instance[I] = jS = null;
-				delete cE;
+				jSE = s = $.sheet.instance[I] = jS = null;
+				delete jSE;
 				delete s;
 				delete $.sheet.instance[I];
 				delete jS;
 			},
+
+			/**
+			 * Event trigger for jQuery sheet, wraps jQuery's trigger event to always return jS
+			 * @param eventType {String} event type
+			 * @param extraParameters {Array} optional
+			 * @methodOf jQuery.sheet.instance
+			 * @name trigger
+			 */
 			trigger: function(eventType, extraParameters) {
 				//wrapper for $ trigger of origParent, in case of further mods in the future
-				extraParameters = (extraParameters ? extraParameters : []);
+				extraParameters = extraParameters || [];
 				origParent.trigger(eventType, [jS].concat(extraParameters));
 			},
+
+			/**
+			 * Returns all spreadsheets within an instance as an array, builds it if it doesn't exist
+			 * @param forceRebuild
+			 * @return {Array|spreadsheets}
+			 * @methodOf jQuery.sheet.instance
+			 * @name spreadsheetsToArray
+			 */
 			spreadsheetsToArray: function(forceRebuild) {
 				if (forceRebuild || jS.spreadsheets.length == 0) {
 					jS.cycleCellsAll(function(sheet, row, col) {
@@ -350,6 +508,14 @@ jQuery.sheet = {
 				}
 				return jS.spreadsheets;
 			},
+
+			/**
+			 * Returns singe spreadsheet from a set of spreadsheets within as instance, builds if it doesn't exist
+			 * @param forceRebuild {Boolean} Enforces the spreadsheet to be rebuilt
+			 * @param i {Integer} Spreadsheet index
+			 * @methodOf jQuery.sheet.instance
+			 * @name spreadsheetToArray
+			 */
 			spreadsheetToArray: function(forceRebuild, i) {
 				i = (i ? i : jS.i);
 				if (forceRebuild || !jS.spreadsheets[i]) {
@@ -359,6 +525,20 @@ jQuery.sheet = {
 					});
 				}
 			},
+
+			/**
+			 * Creates a single cell within
+			 * @param sheet {Integer}
+			 * @param row {Integer}
+			 * @param col {Integer}
+			 * @param value {String}
+			 * @param formula {String}
+			 * @param calcCount {Integer}
+			 * @param calcLast {Date}
+			 * @return {Object} cell
+			 * @methodOf jQuery.sheet.instance
+			 * @name createCell
+			 */
 			createCell: function(sheet, row, col, value, formula, calcCount, calcLast) {
 				if (!jS.spreadsheets[sheet]) jS.spreadsheets[sheet] = [];
 				if (!jS.spreadsheets[sheet][row]) jS.spreadsheets[sheet][row] = [];
@@ -374,7 +554,21 @@ jQuery.sheet = {
 				
 				return jS.spreadsheets[sheet][row][col];
 			},
+
+			/**
+			 * Tracks which spreadsheet is active to intercept keystrokes for navigation
+			 * @type {Boolean}
+			 * @memberOf jQuery.sheet.instance
+			 * @name nav
+			 */
 			nav: false,
+
+			/**
+			 * Turns off all intercept keystroke navigation instances, with exception of supplied instance index
+			 * @param nav {Integer} Instance index
+			 * @methodOf jQuery.sheet.instance
+			 * @name setNav
+			 */
 			setNav: function(nav) {
 				$($.sheet.instance).each(function() {
 					this.nav = false;
@@ -382,41 +576,62 @@ jQuery.sheet = {
 			
 				jS.nav = nav;
 			},
-			controlFactory: { /* controlFactory creates the different objects requied by sheet */
-				addRowMulti: function(qty, isBefore, skipFormulaReparse) { /* creates multi rows
-															qty: int, the number of cells you'd like to add, if not specified, a dialog will ask; 
-															isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end
-															skipFormulaReparse: bool, re-parses formulas if needed
-														*/
+
+			/**
+			 * Creates the different objects required by sheets
+			 * @memberOf jQuery.sheet.instance
+			 * @name controlFactory
+			 * @type {Object}
+			 * @namespace
+			 */
+			controlFactory: {
+				/**
+				 * Creates multi rows
+				 * @param qty {Integer} the number of cells you'd like to add, if not specified, a dialog will ask
+				 * @param isBefore {Boolean} places cells before the selected cell if set to true, otherwise they will go after, or at end
+				 * @param skipFormulaReparse {Boolean} re-parses formulas if needed
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name addRowMulti
+				 */
+				addRowMulti: function(qty, isBefore, skipFormulaReparse) {
 					if (!qty) {
 						qty = prompt(jS.msg.addRowMulti);
 					}
 					if (qty) {
 						if (!isNaN(qty))
-							jS.controlFactory.addCells(null, isBefore, null, parseInt(qty), 'row', skipFormulaReparse);
+							jS.controlFactory.addCells(null, isBefore, parseInt(qty), 'row', skipFormulaReparse);
 					}
 				},
-				addColumnMulti: function(qty, isBefore, skipFormulaReparse) { /* creates multi columns
-															qty: int, the number of cells you'd like to add, if not specified, a dialog will ask; 
-															isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end
-															skipFormulaReparse: bool, re-parses formulas if needed
-														*/
+
+				/**
+				 * Creates multi columns
+				 * @param qty {Integer} the number of cells you'd like to add, if not specified, a dialog will ask
+				 * @param isBefore {Boolean} places cells before the selected cell if set to true, otherwise they will go after, or at end
+				 * @param skipFormulaReparse {Boolean} re-parses formulas if needed
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name addColumnMulti
+				 */
+				addColumnMulti: function(qty, isBefore, skipFormulaReparse) {
 					if (!qty) {
 						qty = prompt(jS.msg.addColumnMulti);
 					}
 					if (qty) {
 						if (!isNaN(qty))
-							jS.controlFactory.addCells(null, isBefore, null, parseInt(qty), 'col', skipFormulaReparse);
+							jS.controlFactory.addCells(null, isBefore, parseInt(qty), 'col', skipFormulaReparse);
 					}
 				},
-				addCells: function(eq, isBefore, eqO, qty, type, skipFormulaReparse) { /*creates cells for sheet and the bars that go along with them
-																		eq: int, position where cells should be added;
-																		isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end;
-																		eq0: no longer used, kept for legacy;
-																		qty: int, how many rows/columsn to add;
-																		type: string - "col" || "row", determans the type of cells to add;
-																		skipFormulaReparse: bool, re-parses formulas if needed
-																*/
+
+				/**
+				 * Creates cells for sheet and the bars that go along with them
+				 * @param eq {Integer} optional, position where cells should be added, if null, cells go to end
+				 * @param isBefore {Boolean} places cells before the selected cell if set to true, otherwise they will go after, or at end;
+				 * @param qty {Integer} how many rows/columsn to add
+				 * @param type {String} "row" or "col", default "col"
+				 * @param skipFormulaReparse {Boolean} re-parses formulas if needed
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name addCells
+				 */
+				addCells: function(eq, isBefore, qty, type, skipFormulaReparse) {
 					//hide the autoFiller, it can get confused
 					jS.autoFillerHide();
 					
@@ -429,8 +644,8 @@ jQuery.sheet = {
 					
 					//jS.evt.cellEditAbandon();
 					
-					qty = (qty ? qty : 1);
-					type = (type ? type : 'col');
+					qty = qty || 1;
+					type = type || 'col';
 					
 					//var barLast = (type == 'row' ? jS.rowLast : jS.colLast);
 					var cellLastBar = (type == 'row' ? jS.cellLast.row : jS.cellLast.col);
@@ -573,37 +788,55 @@ jQuery.sheet = {
 
 					jS.obj.pane().trigger('resizeScroll');
 				},
-				addRow: function(atRow, isBefore, atRowQ) {/* creates single row
-															qty: int, the number of cells you'd like to add, if not specified, a dialog will ask; 
-															isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end
-														*/
-					jS.controlFactory.addCells(atRow, isBefore, atRowQ, 1, 'row');
-					jS.trigger('addRow', [atRow, isBefore, atRowQ, 1]);
+
+				/**
+				 * creates single row
+				 * @param atRow {Integer} Index of row
+				 * @param isBefore {Boolean} places cells before the selected cell if set to true, otherwise they will go after, or at end
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name addRow
+				 */
+				addRow: function(atRow, isBefore) {
+					jS.controlFactory.addCells(atRow, isBefore, 1, 'row');
+					jS.trigger('addRow', [atRow, isBefore, 1]);
 				},
-				addColumn: function(atColumn, isBefore, atColumnQ) {/* creates single column
-															qty: int, the number of cells you'd like to add, if not specified, a dialog will ask; 
-															isBefore: bool, places cells before the selected cell if set to true, otherwise they will go after, or at end
-														*/
-					jS.controlFactory.addCells(atColumn, isBefore, atColumnQ, 1, 'col');
-					jS.trigger('addColumn', [atColumn, isBefore, atColumnQ, 1]);
+
+				/**
+				 * creates single column
+				 * @param atColumn {Integer} Index of row
+				 * @param isBefore {Boolean} places cells before the selected cell if set to true, otherwise they will go after, or at end
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name addColumn
+				 */
+				addColumn: function(atColumn, isBefore) {
+					jS.controlFactory.addCells(atColumn, isBefore, 1, 'col');
+					jS.trigger('addColumn', [atColumn, isBefore, 1]);
 				},
-				barLeft: function(o) { /* creates all the bars to the left of the spreadsheet
-															reloadHeights: bool, reloads all the heights of each bar from the cells of the sheet;
-															o: object, the table/spreadsheeet object
-													*/
+
+				/**
+				 * Creates all the bars to the left of the spreadsheet, if they exist, they are first removed
+				 * @param sheet {Object} Table of spreadsheet
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name barLeft
+				 */
+				barLeft: function(sheet) {
 					jS.obj.barLeftAll().remove();
-					
-					o.find('tr').each(function(i) {
+
+					sheet.find('tr').each(function(i) {
 						if (i > 0) {//top loads first, then we load barleft, the first cell is corner
 							$(this).prepend('<td  />');
 						}
 					});
 				},
-				barTop: function(o) { /* creates all the bars to the top of the spreadsheet
-															reloadWidths: bool, reloads all the widths of each bar from the cells of the sheet;
-															o: object, the table/spreadsheeet object
-													*/
-					var colgroup = o.find('colgroup');
+
+				/**
+				 * Creates all the bars to the top of the spreadsheet on colgroup col elements, if they exist, they are first removed
+				 * @param sheet {Object} Table of spreadsheet
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name barTop
+				 */
+				barTop: function(sheet) {
+					var colgroup = sheet.find('colgroup');
 					var col = $('<col />')
 						.attr('width', s.colMargin)
 						.css('width', s.colMargin + 'px')
@@ -612,7 +845,7 @@ jQuery.sheet = {
 					jS.obj.barTopAll().remove();
 					var barTopParent = $('<tr class="' + jS.cl.barTopParent + '" />');
 					
-					var parent = o.find('tr:first');
+					var parent = sheet.find('tr:first');
 					
 					//corner
 					barTopParent.append('<td />'); 
@@ -625,7 +858,23 @@ jQuery.sheet = {
 					
 					barTopParent.insertBefore(parent);
 				},
+
+				/**
+				 * Creates the draggable objects for freezing cells
+				 * @type {Object}
+				 * @memberOf jQuery.sheet.instance.controlFactory
+				 * @name barHandle
+				 * @namespace
+				 */
 				barHandle: {
+
+					/**
+					 * @param bar
+					 * @param i
+					 * @return {Boolean}
+					 * @methodOd jQuery.sheet.instance.controlFactory.barHandle
+					 * @name top
+					 */
 					top : function(bar, i) {
 						if (jS.busy) return false;
 						if (i != 0) return false;
@@ -650,6 +899,15 @@ jQuery.sheet = {
 							}
 						});
 					},
+
+					/**
+					 *
+					 * @param bar
+					 * @param i
+					 * @return {Boolean}
+					 * @methodOd jQuery.sheet.instance.controlFactory.barHandle
+					 * @name left
+					 */
 					left: function(bar, i) {
 						if (jS.busy) return false;
 						if (i != 0) return false;
@@ -675,8 +933,23 @@ jQuery.sheet = {
 							}
 						});
 					},
+
+					/**
+					 * @methodOf jQuery.sheet.instance.controlFactory.barHandle
+					 * @name corner
+					 */
 					corner: function() {}
 				},
+
+				/**
+				 *
+				 * Creates menus for contextual menus and top bar button
+				 * @param bar
+				 * @param menuItems
+				 * @return {Object}
+				 * @memberOf jQuery.sheet.instance.controlFactory
+				 * @name makeMenu
+				 */
 				makeMenu: function(bar, menuItems) {
 					var menu;
 					function addLink(msg, fn) {
@@ -718,7 +991,23 @@ jQuery.sheet = {
 					
 					return menu;
 				},
+
+				/**
+				 * Creates items within menus using jQuery.sheet.instance.msg
+				 * @memberOf jQuery.sheet.instance.controlFactory
+				 * @namespace
+				 * @name barMenu
+				 */
 				barMenu: {
+
+					/**
+					 * @param e {Object} jQuery event
+					 * @param i {Integer} column
+					 * @param target {Object}
+					 * @return {*}
+					 * @methodOf jQuery.sheet.instance.controlFactory.barMenu
+					 * @name top
+					 */
 					top: function(e, i, target) {
 						if (jS.busy) return false;
 						var menu = jS.obj.barMenuTop().hide();
@@ -797,6 +1086,15 @@ jQuery.sheet = {
 							.prependTo(target)
 							.show();
 					},
+
+					/**
+					 *
+					 * @param e
+					 * @param i
+					 * @return {Boolean}
+					 * @methodOf jQuery.sheet.instance.controlFactory.barMenu
+					 * @name left
+					 */
 					left: function(e, i) {
 						if (jS.busy) return false;
 						jS.obj.barMenuLeft().hide();
@@ -844,9 +1142,24 @@ jQuery.sheet = {
 							.css('left', (e.pageX - 5) + 'px')
 							.css('top', (e.pageY - 5) + 'px')
 							.show();
+
+						return true;
 					},
+
+					/**
+					 * @methodOf jQuery.sheet.instance.controlFactory.barMenu
+					 * @name corner
+					 */
 					corner: function() {}
 				},
+
+				/**
+				 * Creates contextual menus for cells (a right click menu)
+				 * @param e {Object} jQuery event
+				 * @return {Boolean}
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name cellMenu
+				 */
 				cellMenu: function(e) {
 					if (jS.busy) return false;
 					jS.obj.cellMenu().hide();
@@ -924,7 +1237,13 @@ jQuery.sheet = {
 						.css('top', (e.pageY - 5) + 'px')
 						.show();
 				},
-				header: function() { /* creates the control/container for everything above the spreadsheet */
+
+				/**
+				 * Creates the control/container for everything above the spreadsheet, removes them if they already exist
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name header
+				 */
+				header: function() {
 					jS.obj.controls().remove();
 					jS.obj.tabContainer().remove();
 					
@@ -1076,6 +1395,15 @@ jQuery.sheet = {
 						.append('<div id="' + jS.id.ui + '" class="' + jS.cl.ui + '">') //add spreadsheet control
 						.after(tabParent);
 				},
+
+				/**
+				 * Creates the scrolling system used by each spreadsheet
+				 * @param table
+				 * @param pane
+				 * @param sheet
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name scroll
+				 */
 				scroll: function(table, pane, sheet) { /* makes the bars scroll as the sheet is scrolled
 												table: object, the sheet pane's table;
 												pane: object, the sheet's pane;
@@ -1087,8 +1415,8 @@ jQuery.sheet = {
 								'<div></div>' +
 							'</div>')
 							.scroll(function() {
-								jS.evt.scrollHorizontal.scroll({pixel: this.scrollLeft}, 0);
-								jS.evt.scrollVertical.scroll({pixel: this.scrollTop}, 0);
+								jS.evt.scroll.scrollTo({axis: 'x', pixel: this.scrollLeft}, 0);
+								jS.evt.scroll.scrollTo({axis: 'y', pixel: this.scrollTop}, 0);
 
 								jS.autoFillerGoToTd();
 							})
@@ -1096,45 +1424,13 @@ jQuery.sheet = {
 							.disableSelectionSpecial(),
 
 						scrollChild = scroll.children(),
-						scrollStyleLeft = $('<style type="text/css" id="' + jS.id.scrollStyleLeft + jS.i + '"></style>')
+						scrollStyleX = $('<style type="text/css" id="' + jS.id.scrollStyleX + jS.i + '"></style>')
 							.bind('updateStyle', function(e, ids, styleOverride) {
 								ids = ids || [];
 
 								var style = [];
 
-								if (this.styleSheet) { //IE compatibillity
-									for (id in ids) {
-										var nthSelector = 'tr:first-child+tr', i = 2;
-										while (i < ids[id]) {
-											nthSelector += '+tr';
-											i++;
-										}
-										style.push('#' + jS.id.sheet + jS.i + ' ' + nthSelector);
-									}
-									if (style.length || styleOverride) {
-										this.styleSheet.cssText = styleOverride || style.join(',') + '{display: none;}';
-									} else {
-										this.styleSheet.cssText = '';
-									}
-								} else {
-									for (id in ids) {
-										style.push('#' + jS.id.sheet + jS.i + ' tr:nth-child(' + ids[id] + ')');
-									}
-
-									if (style.length || styleOverride) {
-										scrollStyleLeft.text(styleOverride || style.join(',') + '{display: none;}');
-									} else {
-										scrollStyleLeft.text('');
-									}
-								}
-							}),
-						scrollStyleTop = $('<style type="text/css" id="' + jS.id.scrollStyleTop + jS.i + '"></style>')
-							.bind('updateStyle', function(e, ids, styleOverride) {
-								ids = ids || [];
-
-								var style = [];
-
-								if (this.styleSheet) { //IE compatibillity
+								if (this.styleSheet) { //IE compatibility
 									for (id in ids) {
 										var nthColSelector = 'col:first-child', nthTdSelector = 'tr td:first-child', i = 1;
 										while (i < ids[id]) {
@@ -1156,16 +1452,48 @@ jQuery.sheet = {
 										style.push('#' + jS.id.sheet + jS.i + ' tr td:nth-child(' + ids[id] + ')');
 									}
 									if (style.length || styleOverride) {
-										scrollStyleTop.text(styleOverride || style.join(',') + '{display: none;}');
+										scrollStyleX.text(styleOverride || style.join(',') + '{display: none;}');
 									} else {
-										scrollStyleTop.text('');
+										scrollStyleX.text('');
+									}
+								}
+							}),
+						scrollStyleY = $('<style type="text/css" id="' + jS.id.scrollStyleY + jS.i + '"></style>')
+							.bind('updateStyle', function(e, ids, styleOverride) {
+								ids = ids || [];
+
+								var style = [];
+
+								if (this.styleSheet) { //IE compatibility
+									for (id in ids) {
+										var nthSelector = 'tr:first-child+tr', i = 2;
+										while (i < ids[id]) {
+											nthSelector += '+tr';
+											i++;
+										}
+										style.push('#' + jS.id.sheet + jS.i + ' ' + nthSelector);
+									}
+									if (style.length || styleOverride) {
+										this.styleSheet.cssText = styleOverride || style.join(',') + '{display: none;}';
+									} else {
+										this.styleSheet.cssText = '';
+									}
+								} else {
+									for (id in ids) {
+										style.push('#' + jS.id.sheet + jS.i + ' tr:nth-child(' + ids[id] + ')');
+									}
+
+									if (style.length || styleOverride) {
+										scrollStyleY.text(styleOverride || style.join(',') + '{display: none;}');
+									} else {
+										scrollStyleY.text('');
 									}
 								}
 							});
 
 					pane
-						.append(scrollStyleLeft)
-						.append(scrollStyleTop)
+						.append(scrollStyleX)
+						.append(scrollStyleY)
 						.mousewheel(function(e,o) {
 							var E = e.originalEvent, e, c;
 
@@ -1213,7 +1541,7 @@ jQuery.sheet = {
 							return false;
 						});
 
-					var topStyle, leftStyle;
+					var xStyle, yStyle;
 
 					function styleString(o) {
 						if (o && o[0] && o[0].styleSheet) return o[0].styleSheet.cssText;
@@ -1221,11 +1549,11 @@ jQuery.sheet = {
 					}
 
 					pane.bind('resizeScroll', function() {
-						topStyle = styleString(scrollStyleTop);
-						leftStyle = styleString(scrollStyleLeft);
+						xStyle = styleString(scrollStyleX);
+						yStyle = styleString(scrollStyleY);
 
-						scrollStyleTop.trigger('updateStyle');
-						scrollStyleLeft.trigger('updateStyle');
+						scrollStyleX.trigger('updateStyle');
+						scrollStyleY.trigger('updateStyle');
 
 						scrollChild
 							.height(sheet.height())
@@ -1235,19 +1563,24 @@ jQuery.sheet = {
 							.height(table.height())
 							.width(table.width());
 
-						jS.evt.scrollVertical.start(pane, sheet);
-						jS.evt.scrollHorizontal.start(pane, sheet);
+						jS.evt.scroll.start('x', pane, sheet);
+						jS.evt.scroll.start('y', pane, sheet);
 
-						scrollStyleTop.trigger('updateStyle', [null, topStyle]);
-						scrollStyleLeft.trigger('updateStyle', [null, leftStyle]);
+						scrollStyleX.trigger('updateStyle', [null, xStyle]);
+						scrollStyleY.trigger('updateStyle', [null, yStyle]);
 					});
 				},
-				sheetUI: function(o, i, fn, reloadBars) { /* creates the spreadsheet user interface
-															o: object, table object to be used as a spreadsheet;
-															i: int, the new count for spreadsheets in this instance;
-															fn: function, called after the spreadsheet is created and tuned for use;
-															reloadBars: bool, if set to true reloads id bars on top and left;
-														*/
+
+				/**
+				 * Creates the spreadsheet user interface
+				 * @param sheet {Object} raw table
+				 * @param i {Integer} the new count for spreadsheets in this instance
+				 * @param fn {Function} called after the spreadsheet is created and tuned for use
+				 * @return {Object} table
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name sheetUI
+				 */
+				sheetUI: function(sheet, i, fn) {
 					if (!i) {
 						jS.sheetCount = 0;
 						jS.i = 0;
@@ -1257,14 +1590,14 @@ jQuery.sheet = {
 						i = jS.i;
 					}
 					
-					o = jS.tuneTableForSheetUse(o);
+					table = jS.tuneTableForSheetUse(sheet);
 					
-					jS.readOnly[i] = o.hasClass('readonly');
+					jS.readOnly[i] = table.hasClass('readonly');
 
 					var table = jS.controlFactory.table().appendTo(jS.obj.ui());
-					var pane = jS.obj.pane().html(o);
+					var pane = jS.obj.pane().html(sheet);
 
-					jS.controlFactory.scroll(table, pane, o);
+					jS.controlFactory.scroll(table, pane, sheet);
 
 					if (jS.isSheetEditable()) {
 						var autoFiller = jS.controlFactory.autoFiller();
@@ -1273,10 +1606,10 @@ jQuery.sheet = {
 						}
 					}
 								
-					jS.sheetDecorate(o);
+					jS.sheetDecorate(sheet);
 					
-					jS.controlFactory.barTop(o);
-					jS.controlFactory.barLeft(o);
+					jS.controlFactory.barTop(sheet);
+					jS.controlFactory.barLeft(sheet);
 				
 					jS.sheetTab(true);
 					
@@ -1316,10 +1649,10 @@ jQuery.sheet = {
 									
 									jS.cellSetActiveBar(entity, jS.evt.barInteraction.first, jS.evt.barInteraction.last);
 								} else {
-									jS.resizeBar[entity](bar, i, o);
+									jS.resizeBar[entity](bar, i, sheet);
 									
 									if (jS.isSheetEditable()) {
-										jS.controlFactory.barHandle[entity](bar, i, o);
+										jS.controlFactory.barHandle[entity](bar, i, sheet);
 										
 										if (entity == "top") {
 											jS.controlFactory.barMenu[entity](e, i, bar);
@@ -1352,11 +1685,11 @@ jQuery.sheet = {
 					
 					jS.themeRoller.start(i);
 
-					jS.setTdIds(o, jS.i);
+					jS.setTdIds(sheet, jS.i);
 					
-					jS.sheetSize(o);
+					jS.sheetSize(sheet);
 					
-					jS.checkMinSize(o);
+					jS.checkMinSize(sheet);
 					
 					jS.addTab();
 
@@ -1368,6 +1701,13 @@ jQuery.sheet = {
 					
 					return table;
 				},
+
+				/**
+				 * Creates the a table which nests: table / pane / sheet.  Needs refactored to simple div
+				 * @return {*|jQuery|HTMLElement}
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name table
+				 */
 				table: function() { /* creates the table control the will contain all the other controls for this instance */
 					return $('<table cellpadding="0" cellspacing="0" border="0" id="' + jS.id.tableControl + jS.i + '" class="' + jS.cl.tableControl + '">' +
 						'<tbody>' +
@@ -1379,25 +1719,15 @@ jQuery.sheet = {
 						'</tbody>' +
 					'</table>');
 				},
-				chartCache: [],
-				safeImg: function(src, row) { /* creates and image and then resizes the cell's row for viewing
-												src: string, location of image;
-												row: int, the row number where the image is located;
-											*/
-					return $('<img />')
-						.hide()
-						.load(function() { //prevent the image from being too big for the row
-							$(this).fadeIn(function() {
-								$(this).addClass('safeImg');
-								jS.attrH.setHeight(parseInt(row), 'cell', false);
-							});
-						})
-						.attr('src', src);
-				},
-				inPlaceEdit: function(td) { /* creates a teaxtarea for a user to put a value in that floats on top of the current selected cell
-												td: object, the cell to be edited
-											*/
-					if (!td) td = jS.obj.cellActive();
+
+				/**
+				 * Creates a teaxtarea for a user to put a value in that floats on top of the current selected cell
+				 * @param td {Object} the cell to be edited
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name inPlaceEdit
+				 */
+				inPlaceEdit: function(td) {
+					td = td || jS.obj.cellActive();
 					
 					jS.obj.inPlaceEdit().remove();
 					var formula = jS.obj.formula();					
@@ -1437,13 +1767,20 @@ jQuery.sheet = {
 						textarea.elastic();
 					}
 				},
-				autoFiller: function() { /* created the autofiller object */
-					if (!s.autoFiller) return;
+
+				/**
+				 * Created the autofiller object
+				 * @return {*|jQuery|null}
+				 * @methodOf jQuery.sheet.instance.controlFactory
+				 * @name autoFiller
+				 */
+				autoFiller: function() {
+					if (!s.autoFiller) return null;
 
 					return $('<div id="' + (jS.id.autoFiller + jS.i) + '" class="' + jS.cl.autoFiller + ' ' + jS.cl.uiAutoFiller + '">' +
-									'<div class="' + jS.cl.autoFillerHandle + '" />' +
-									'<div class="' + jS.cl.autoFillerCover + '" />' +
-							'</div>')
+								'<div class="' + jS.cl.autoFillerHandle + '" />' +
+								'<div class="' + jS.cl.autoFillerCover + '" />' +
+						'</div>')
 							.mousedown(function(e) {
 								var td = jS.obj.cellActive();
 								if (td) {
@@ -1459,6 +1796,8 @@ jQuery.sheet = {
 							});
 				}
 			},
+
+
 			autoFillerNotGroup: true,
 			updateCellsAfterPasteToFormula: function(oldVal) { /* oldVal is what formula should be when this is done working with all the values */
 				var newValCount = 0;
@@ -1940,158 +2279,102 @@ jQuery.sheet = {
 						return false;
 					}
 				},
-				scrollVertical: {
-					start: function(pane, sheet) {
+				scroll: {
+					axis: {x: {}, y:{}},
+					size: {},
+					td: {},
+					start: function(axis, pane, sheet) {
+
 						jS.autoFillerHide();
-						
-						if (!pane) pane = jS.obj.pane();
-						if (!sheet) sheet = jS.obj.sheet();
-						
-						this.pane = pane,
-						this.sheet = sheet,
-						this.v = [],
-						this.p = [],
-						this.size = jS.sheetSize(sheet),
-						this.offset = 0,
-						this.td = jS.obj.cellActive(),
-						this.max = this.size.height,
-						this.scrollStyle = jS.obj.scrollStyleLeft().trigger('updateStyle'),
-						this.height = jS.obj.pane().height() - 50,
-						this.sheetHeight = sheet.height();
 
-						var alwaysShowRowHeight = 0;
+						pane = pane || jS.obj.pane();
+						sheet = sheet || jS.obj.sheet();
+						var me = jS.evt.scroll;
+						me.size = jS.sheetSize(sheet);
+						me.td = jS.obj.cellActive();
 
-						/*for(var i = this.size.height; i > 1; i--) {
-							var rowHeight = $(jS.getTd(jS.i, i, 1)).parent().outerHeight();
-							if (alwaysShowRowHeight + rowHeight < this.height) {
-								alwaysShowRowHeight += rowHeight;
-								this.max--;
-							}
-						}*/
+						me.axis[axis].v = [];
+						me.axis[axis].p = [];
 
-						this.gridSize = 100 / this.max;
-						for(var i = 1; i <= this.max; i++) {
-							this.v[i] = this.gridSize * i;
-							this.p[this.gridSize * i] = i + 1;
+						switch (axis || 'x') {
+							case 'x':
+								var x = me.axis.x;
+								x.max = me.size.width;
+								x.min = 1 + jS.s.frozenAt.row;
+								x.scrollStyle = jS.obj.scrollStyleX().trigger('updateStyle');
+								x.area = pane.width();
+								x.sheetArea = sheet.width();
+								x.scrollUpdate = function() {
+									var scroll = jS.obj.scroll();
+									scroll.scrollLeft(parseInt((x.value + 1) * (scroll.width() / me.size.width)));
+									return;
+								}
+
+								break;
+							case 'y':
+								var y = me.axis.y;
+								y.max = me.size.height;
+								y.min = 1 + jS.s.frozenAt.col;
+								y.scrollStyle = jS.obj.scrollStyleY().trigger('updateStyle');
+								y.area = pane.height();
+								y.sheetArea = sheet.height() ;
+								y.scrollUpdate = function() {
+									var scroll = jS.obj.scroll();
+									scroll.scrollTop(parseInt((y.value + 1) * (scroll.height() / me.size.height)));
+									return;
+								}
+								break;
+						}
+
+						me.axis[axis].gridSize = 100 / (me.axis[axis].max - me.axis[axis].min);
+
+						for(var i = me.axis[axis].min; i <= me.axis[axis].max; i++) {
+							me.axis[axis].v[i] = me.axis[axis].gridSize * i;
+							me.axis[axis].p[me.axis[axis].gridSize * i] = i + 1;
 						}
 					},
-					scroll: function(pos, offset) {
-						offset = offset || 0;
-						this.value += offset;
-						if (pos.value == this.value && this.value !== undefined) return;
-						if (!pos) pos = {};
-						if (!pos.pixel) pos.pixel = 1;
+					scrollTo: function(pos) {
+						pos = $.extend({
+							axis: 'x',
+							value:0,
+							pixel: 1}, pos);
+
+						if (!jS.evt.scroll.axis) {
+							jS.evt.scroll.start(pos.axis);
+						}
+						var me = jS.evt.scroll.axis[pos.axis];
+
+						if (pos.value == me.value && me.value !== undefined) return;
 
 						if (!pos.value) {
-							if (!this.p) {
-								this.start();
-							}
-							pos.value = this.p[arrHelpers.getClosestValues(this.v, Math.abs(pos.pixel / (this.sheetHeight - this.height)) * 100)];
+							pos.value = me.p[arrHelpers.getClosestValues(me.v, Math.abs(pos.pixel / (me.sheetArea - me.area)) * 100)];
 						}
 
-						if (pos.value > this.max) pos.value = this.max;
+						if (pos.value > me.max) pos.value = me.max;
 
-						var i = 1;
-						this.ids = [];
-						while (i <= this.max) {
-							if (i < pos.value && i > (1 + jS.s.frozenAt.row)) {
-								this.ids.push(i);
+						var i = 1, ids = [];
+						while (i <= me.max) {
+							if (i < pos.value && i > me.min) {
+								ids.push(i);
 							}
 							i++;
 						}
 
-						if (this.ids.length) {
-							this.scrollStyle.trigger('updateStyle', [this.ids]);
+						if (ids.length) {
+							me.scrollStyle.trigger('updateStyle', [ids]);
 						} else {
-							this.scrollStyle.trigger('updateStyle');
+							me.scrollStyle.trigger('updateStyle');
 						}
 
-						this.value = pos.value;
+						me.value = pos.value;
+
 					},
 					stop: function() {
-						jS.obj.scroll().scrollTop(this.gridSize * (this.value - 1));
+						this.axis.x.scrollUpdate();
+						this.axis.y.scrollUpdate();
 
-						if (this.td) {
-							jS.evt.scrollHorizontal.td = null;
-							jS.autoFillerGoToTd();
-						}
-					}
-				},
-				scrollHorizontal: {
-					start: function(pane, sheet) {
-						jS.autoFillerHide();
-						
-						if (!pane) pane = jS.obj.pane();
-						if (!sheet) sheet = jS.obj.sheet();
-						
-						this.pane = pane,
-						this.sheet = sheet,
-						this.cols = $(jS.cols()),
-						this.v = [],
-						this.p = [],
-						this.size = jS.sheetSize(sheet),
-						this.offset = 0,
-						this.td = jS.obj.cellActive(),
-						this.tdLoc = jS.getTdLocation(this.td),
-						this.scrollStyle = jS.obj.scrollStyleTop().trigger('updateStyle'),
-						this.sheetWidth = sheet.width(),
-						this.max = this.size.width,
-						this.width = pane.width() - 100;
-						
-						var alwaysShowColWidth = 0;
-						for(var i = this.cols.length - 1; i > 1; i--) {
-							var colWidth = this.cols.eq(i).width();
-							if (alwaysShowColWidth + colWidth < this.width) {
-								alwaysShowColWidth += colWidth;
-								if (alwaysShowColWidth < this.width) this.max--;
-							}
-						}
-						this.max++;
-						this.gridSize = 100 / this.max;
-
-						for(var i = 0; i <= this.max; i++) {
-							this.v[i] = this.gridSize * i;
-							this.p[this.gridSize * i] = i + 1;
-						}
-					},
-					scroll: function(pos, offset) {
-						offset = offset || 0;
-						this.value += offset;
-
-						if (pos.value == this.value && this.value !== undefined) return;
-						if (!pos) pos = {};
-						if (!pos.pixel) pos.pixel = 1;
-						if (!pos.value) {
-							if (!this.p) {
-								this.start();
-							}
-							pos.value = this.p[arrHelpers.getClosestValues(this.v, Math.abs(pos.pixel / (this.sheetWidth - this.width)) * 100)];
-						}
-
-						if (pos.value > this.max) pos.value = this.max;
-
-						var i = 1;
-						this.ids = [];
-						while (i <= this.max) {
-							if (i <= pos.value && i > (1 + jS.s.frozenAt.col)) {
-								this.ids.push(i);
-							}
-							i++;
-						}
-
-						if (this.ids.length) {
-							this.scrollStyle.trigger('updateStyle', [this.ids]);
-						} else {
-							this.scrollStyle.trigger('updateStyle');
-						}
-
-						this.value = pos.value;
-					},
-					stop: function() {
-						jS.obj.scroll().scrollLeft(this.gridSize * this.value);
-						
-						if (this.td) {
-							jS.evt.scrollVertical.td = null;
+						if (jS.evt.scroll.td) {
+							jS.evt.scroll.td = null;
 							jS.autoFillerGoToTd();
 						}
 					}
@@ -2100,15 +2383,15 @@ jQuery.sheet = {
 			scrollRefresh: function(pos) {
 				if (!pos) return;
 				if (pos.row) {
-					jS.evt.scrollVertical.start();
-					jS.evt.scrollVertical.scroll({value: pos.row});
-					jS.evt.scrollVertical.stop();
+					jS.evt.scroll.start('x');
+					jS.evt.scroll.scrollTo({axis: 'x', value: pos.row});
+					jS.evt.scroll.stop();
 				}
 
 				if (pos.col) {
-					jS.evt.scrollHorizontal.start();
-					jS.evt.scrollHorizontal.scroll({value: pos.col});
-					jS.evt.scrollHorizontal.stop();
+					jS.evt.scroll.start('y');
+					jS.evt.scroll.scrollTo({axis: 'y', value: pos.col});
+					jS.evt.scroll.stop();
 				}
 			},
 			isTd: function(o) { /* ensures the the object selected is actually a td that is in a sheet
@@ -2139,7 +2422,7 @@ jQuery.sheet = {
 			},
 			readOnly: [],
 			isSheetEditable: function(i) {
-				i = (i == null ? jS.i : i);
+				i = i || jS.i;
 				return (
 					s.editable == true && !jS.readOnly[i]
 				);
@@ -2285,43 +2568,6 @@ jQuery.sheet = {
 				jS.spreadsheets[i] = []; //reset the sheet's spreadsheet
 
 				var rows = jS.rows(sheet);
-				/*for(var row = start.row; row < rows.length; row++) { //rows
-					if (!rows[row].children) continue;
-					for(var col = start.col; col < rows[row].children.length; col++) { //cells
-						var td = $(rows[row].children[col]);
-
-						if (row > 0 && col > 0) {
-							td.attr('id', jS.getTdId(i, row - 1, col - 1));
-							jS.createCell(i, row- 1, col - 1, td.text(), td.attr('formula'));
-						} else {
-							if (col == 0 && row > 0) { //barleft
-								td
-									.data('type', 'bar')
-									.data('entity', 'left')
-									.text(row)
-									.attr('id', jS.id.barLeft + row + '_' + jS.i)
-									.attr('class', jS.cl.barLeft + ' ' + jS.cl.barLeft + '_' + jS.i + ' ' + jS.cl.uiBar);
-							}
-
-							if (row == 0 && col > 0) { //bartop
-								td
-									.data('type', 'bar')
-									.data('entity', 'top')
-									.text(jSE.columnLabelString(col))
-									.attr('id', jS.id.barTop + col + '_' + jS.i)
-									.attr('class', jS.cl.barTop + ' ' + jS.cl.barTop + '_' + jS.i + ' ' + jS.cl.uiBar);
-							}
-
-							if (row == 0 && col == 0) { //corner
-								td
-									.data('type', 'bar')
-									.data('entity', 'corner')
-									.attr('id', jS.id.barCorner + jS.i)
-									.attr('class', jS.cl.uiBar + ' ' + ' ' + jS.cl.barCorner);
-							}
-						}
-					}
-				}*/
 				$(rows).each(function(row) {
 					$(this).children().each(function(col) {
 						var td = $(this);
@@ -2683,8 +2929,8 @@ jQuery.sheet = {
 															firstLoc: array of int - [col, row], the group to start;
 															lastLoc: array of int - [col, row], the group to end;
 														*/
-				sheet = (sheet ? sheet : jS.i);
-				firstLoc = (firstLoc ? firstLoc : {row: 0, col: 0});
+				sheet = sheet || jS.i;
+				firstLoc = firstLoc || {row: 0, col: 0};
 				
 				if (!lastLoc) {
 					var size = jS.sheetSize($('#' + jS.id.sheet + sheet));
@@ -3702,64 +3948,75 @@ jQuery.sheet = {
 									*/
 				td = td || jS.obj.cellActive();
 				if (!td.length) return;
-				
-				var rowWasHidden = false;
-				var colWasHidden = false;
-				
-				if (td.is(':hidden')) {
-					jS.scrollRefresh(jS.getTdLocation(td));
-					rowWasHidden = true;
-				}
 
-				var sheet = jS.obj.sheet(),
-					pane = jS.obj.pane(),
-					panePos = pane.offset(),
+				var pane = jS.obj.pane(),
+					cols = jS.cols(),
+					paneOffset = pane.offset(),
 					paneWidth = pane.width(),
 					paneHeight = pane.height(),
-
 					tdLoc = jS.getTdLocation(td),
 					tdWidth = td.width(),
-					tdHeight = td.height();
+					tdHeight = td.height(),
+					visibleFold = {
+						top: parseInt(paneOffset.top),
+						bottom: parseInt(paneOffset.top + paneHeight),
+						left: parseInt(paneOffset.left),
+						right: parseInt(paneOffset.left + paneWidth)
+					},
+					move = true,
+					rowHidden,
+					colHidden,
+					i = 0,
+					x = 0,
+					y = 0,
+					max = 3,
+					tdPos,
+					tdLocation,
+					directions;
 
-				var visibleFold = {
-					top: panePos.top,
-					bottom: panePos.top + paneHeight,
-					left: panePos.left,
-					right: panePos.left + paneWidth
-				};
-
-				var move = true, i = 0, iVert = 0, iHoriz = 0, max = 3, tdPos, tdLocation, directions;
 				while (move == true && i < max) {
-					td = td;
+					rowHidden = td.is(':hidden');
+					colHidden = $(cols[tdLoc.col]).is(':hidden');
+
 					move = false;
 					tdPos = td.offset();
 					tdLocation = {
-						top: tdPos.top,
-						bottom: tdPos.top + tdHeight,
-						left: tdPos.left,
-						right: tdPos.left + tdWidth
+						top: parseInt(tdPos.top),
+						bottom: parseInt(tdPos.top + tdHeight),
+						left: parseInt(tdPos.left),
+						right: parseInt(tdPos.left + tdWidth)
 					};
 					directions = {
-						up: tdLocation.top < visibleFold.top,
+						up: tdLocation.top < visibleFold.top || rowHidden,
 						down: tdLocation.bottom > visibleFold.bottom,
-						left: tdLocation.left < visibleFold.left,
+						left: tdLocation.left < visibleFold.left && colHidden,
 						right: tdLocation.right > visibleFold.right
 					};
 
-					if (directions.up || directions.down && directions.up != directions.down) {
-						jS.evt.scrollVertical.start(pane, sheet);
-						jS.evt.scrollVertical.scroll({value: tdLoc.row}, (!directions.down ? iVert : -iVert));
-						jS.evt.scrollVertical.stop();
+					console.log(directions);
+
+					if (directions.left) {
+						jS.evt.scroll.scrollTo({axis: 'x', value: tdLoc.col + -x});
 						move = true;
-						iVert++;
+						x++;
+					} else if (directions.right) {
+						jS.evt.scroll.scrollTo({axis: 'x', value: tdLoc.col + x});
+						move = true;
+						x++;
 					}
 
-					if (directions.left || directions.right && directions.left != directions.right) {
-						jS.evt.scrollHorizontal.start(pane, sheet);
-						jS.evt.scrollHorizontal.scroll({value: tdLoc.col}, (directions.right ? iHoriz : -iHoriz));
-						jS.evt.scrollHorizontal.stop();
+					if (directions.up) {
+						jS.evt.scroll.scrollTo({axis: 'y', value: tdLoc.row + -y});
 						move = true;
-						iHoriz++;
+						y++;
+					} else if (directions.down) {
+						jS.evt.scroll.scrollTo({axis: 'y', value: tdLoc.row + y});
+						move = true;
+						y++;
+					}
+
+					if (move) {
+						jS.evt.scroll.stop();
 					}
 
 					i++;
@@ -4059,7 +4316,11 @@ jQuery.sheet = {
 					return sheetClone;
 				}
 			},
-			sheetSyncSize: function() { /* syncs a sheet's size to that of the $().sheet() caller object */
+			/**
+			 * Sync's the called parent's controls so that they fit inside
+			 * @function sheetSyncSize
+			 */
+			sheetSyncSize: function() {
 				var h = s.height;
 				if (!h) {
 					h = 400; //Height really needs to be set by the parent
@@ -4410,13 +4671,6 @@ jQuery.sheet = {
 				jS.time.set();
 				console.log(jS.time.get() + ', ' + jS.time.diff() + '; ' + msg);
 			},
-			replaceWithSafeImg: function(o) {  //ensures all pictures will load and keep their respective bar the same size.
-				(o ? o : jS.obj.sheet().find('img')).each(function() {			
-					var src = $(this).attr('src');
-					$(this).replaceWith(jS.controlFactory.safeImg(src, jS.getTdLocation($(this).parent()).row));
-				});
-			},
-			
 			isDirty:  false,
 			setDirty: function(dirty) { jS.isDirty = dirty; },
 			appendToFormula: function(v, o) {
