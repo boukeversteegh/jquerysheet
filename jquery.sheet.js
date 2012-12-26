@@ -181,9 +181,9 @@ jQuery.sheet = {
 				pane: 				function() { return $('#' + jS.id.pane + jS.i); },
 				paneAll:			function() { return s.parent.find('div.' + jS.cl.pane); },
 				parent: 			function() { return s.parent; },
-				scrollerMasterLeft: function() { return $('#' + jS.id.scrollerMasterLeft + jS.i); },
-				scrollerMasterTop:  function() { return $('#' + jS.id.scrollerMasterTop + jS.i); },
-				scrollerMaster:		function() { return $('#' + jS.id.scrollerMaster + jS.i); },
+				scrollStyleLeft:    function() { return $('#' + jS.id.scrollStyleLeft + jS.i); },
+				scrollStyleTop:     function() { return $('#' + jS.id.scrollStyleTop + jS.i); },
+				scroll:		        function() { return $('#' + jS.id.scroll + jS.i); },
 				sheet: 				function() { return $('#' + jS.id.sheet + jS.i); },
 				sheetPaneTd:		function() { return $('#' + jS.id.sheetPaneTd + jS.i); },
 				sheetAll: 			function() { return s.parent.find('table.' + jS.cl.sheet); },
@@ -221,9 +221,9 @@ jQuery.sheet = {
 				label: 				'jSheetControls_loc_' + I,
 				menu:				'jSheetMenu_' + I,
 				pane: 				'jSheetEditPane_' + I + '_',
-				scrollerMasterLeft: 'jSheetScrollerMasterLeft_' + I + '_',
-				scrollerMasterTop:  'jSheetScrollerMasterTop_' + I + '_',
-				scrollerMaster:		'jSheetScrollerMaster_' + I + '_',
+				scrollStyleLeft:    'jSheetScrollStyleLeft_' + I + '_',
+				scrollStyleTop:     'jSheetScrollStyleTop_' + I + '_',
+				scroll:		        'jSheetScroll_' + I + '_',
 				sheet: 				'jSheet_' + I + '_',
 				sheetPaneTd: 		'jSheetEditSheetPaneTd_' + I + '_',
 				tableControl:		'tableControl_' + I + '_',
@@ -262,11 +262,7 @@ jQuery.sheet = {
 				inPlaceEdit:			'jSheetInPlaceEdit',
 				menu:					'jSheetMenu',
 				parent:					'jSheetParent',
-				scrollerRight:			'jSheetScrollerRight',
-				scrollerBottom:			'jSheetScrollerBottom',
-				scrollerMaster:			'jSheetScrollerMaster',
-				scrollerParentRight:	'jSheetScrollerParentRight',
-				scrollerParentBottom:	'jSheetScrollerParentBottom',
+				scroll:			        'jSheetScroll',
 				sheet: 					'jSheet',
 				sheetPaneTd:			'sheetPane',
 				label: 					'jSheetControls_loc',
@@ -299,8 +295,6 @@ jQuery.sheet = {
 				uiMenuHighlighted: 		'ui-state-highlight',
 				uiPane: 				'ui-widget-content',
 				uiParent: 				'ui-widget-content ui-corner-all',
-				uiScroller:				'ui-state-default',
-				uiScrollerParent:		'ui-widget-content',
 				uiSheet:				'ui-widget-content',
 				uiTab:					'ui-widget-header',
 				uiTabActive:			'ui-state-highlight'
@@ -342,7 +336,6 @@ jQuery.sheet = {
 				delete $.sheet.instance[I];
 				delete jS;
 			},
-			masterScrollerStates: [],
 			trigger: function(eventType, extraParameters) {
 				//wrapper for $ trigger of origParent, in case of further mods in the future
 				extraParameters = (extraParameters ? extraParameters : []);
@@ -578,7 +571,7 @@ jQuery.sheet = {
 					//Let's make it redoable
 					jS.cellUndoable.add(sheet);
 
-					jS.sheetSyncSize();
+					jS.obj.pane().trigger('resizeScroll');
 				},
 				addRow: function(atRow, isBefore, atRowQ) {/* creates single row
 															qty: int, the number of cells you'd like to add, if not specified, a dialog will ask; 
@@ -1083,17 +1076,14 @@ jQuery.sheet = {
 						.append('<div id="' + jS.id.ui + '" class="' + jS.cl.ui + '">') //add spreadsheet control
 						.after(tabParent);
 				},
-				scrollers: function(table, pane, sheet) { /* makes the bars scroll as the sheet is scrolled
+				scroll: function(table, pane, sheet) { /* makes the bars scroll as the sheet is scrolled
 												table: object, the sheet pane's table;
 												pane: object, the sheet's pane;
 												sheet: object, the current active sheet;
 											*/
 
 					var parent = pane.parent(),
-						currentScrollTop = 0,
-						disable = false,
-						target,
-						scrollMaster = $('<div id="' + jS.id.scrollerMaster + jS.i + '" class="' + jS.cl.scrollerMaster + '">' +
+						scroll = $('<div id="' + jS.id.scroll + jS.i + '" class="' + jS.cl.scroll + '">' +
 								'<div></div>' +
 							'</div>')
 							.scroll(function() {
@@ -1103,56 +1093,153 @@ jQuery.sheet = {
 								jS.autoFillerGoToTd();
 							})
 							.appendTo(parent)
-							.disableSelectionSpecial();
+							.disableSelectionSpecial(),
 
-					pane.append('<style id="' + jS.id.scrollerMasterLeft + jS.i + '"></style>');
-					pane.append('<style id="' + jS.id.scrollerMasterTop + jS.i + '"></style>');
+						scrollChild = scroll.children(),
+						scrollStyleLeft = $('<style type="text/css" id="' + jS.id.scrollStyleLeft + jS.i + '"></style>')
+							.bind('updateStyle', function(e, ids, styleOverride) {
+								ids = ids || [];
 
-					pane.mousewheel(function(e,o) {
-						var E = e.originalEvent, e, c;
+								var style = [];
 
-						var div = function(a, b) {
-							return 0 != a % b ? a : a / b;
-						};
+								if (this.styleSheet) { //IE compatibillity
+									for (id in ids) {
+										var nthSelector = 'tr:first-child+tr', i = 2;
+										while (i < ids[id]) {
+											nthSelector += '+tr';
+											i++;
+										}
+										style.push('#' + jS.id.sheet + jS.i + ' ' + nthSelector);
+									}
+									if (style.length || styleOverride) {
+										this.styleSheet.cssText = styleOverride || style.join(',') + '{display: none;}';
+									} else {
+										this.styleSheet.cssText = '';
+									}
+								} else {
+									for (id in ids) {
+										style.push('#' + jS.id.sheet + jS.i + ' tr:nth-child(' + ids[id] + ')');
+									}
+
+									if (style.length || styleOverride) {
+										scrollStyleLeft.text(styleOverride || style.join(',') + '{display: none;}');
+									} else {
+										scrollStyleLeft.text('');
+									}
+								}
+							}),
+						scrollStyleTop = $('<style type="text/css" id="' + jS.id.scrollStyleTop + jS.i + '"></style>')
+							.bind('updateStyle', function(e, ids, styleOverride) {
+								ids = ids || [];
+
+								var style = [];
+
+								if (this.styleSheet) { //IE compatibillity
+									for (id in ids) {
+										var nthColSelector = 'col:first-child', nthTdSelector = 'tr td:first-child', i = 1;
+										while (i < ids[id]) {
+											nthColSelector += '+col';
+											nthTdSelector += '+td';
+											i++;
+										}
+										style.push('#' + jS.id.sheet + jS.i + ' ' + nthColSelector);
+										style.push('#' + jS.id.sheet + jS.i + ' ' + nthTdSelector);
+									}
+									if (style.length || styleOverride) {
+										this.styleSheet.cssText = styleOverride || style.join(',') + '{display: none;}';
+									} else {
+										this.styleSheet.cssText = '';
+									}
+								} else {
+									for (id in ids) {
+										style.push('#' + jS.id.sheet + jS.i + ' col:nth-child(' + ids[id] + ')');
+										style.push('#' + jS.id.sheet + jS.i + ' tr td:nth-child(' + ids[id] + ')');
+									}
+									if (style.length || styleOverride) {
+										scrollStyleTop.text(styleOverride || style.join(',') + '{display: none;}');
+									} else {
+										scrollStyleTop.text('');
+									}
+								}
+							});
+
+					pane
+						.append(scrollStyleLeft)
+						.append(scrollStyleTop)
+						.mousewheel(function(e,o) {
+							var E = e.originalEvent, e, c;
+
+							var div = function(a, b) {
+								return 0 != a % b ? a : a / b;
+							};
 
 
-						if ("mousewheel" == E.type) {
-							var scrollNoXY = 1,
-							setPixels = div(-E.wheelDelta, scrollNoXY), x,y;
+							if ("mousewheel" == E.type) {
+								var scrollNoXY = 1,
+								setPixels = div(-E.wheelDelta, scrollNoXY), x,y;
 
-							if (E.wheelDeltaX !== undefined) {
-								scrollMaster
-									.scrollTop(scrollMaster.scrollTop() + div(-E.wheelDeltaY, scrollNoXY))
-									.scrollLeft(scrollMaster.scrollLeft() + div(-E.wheelDeltaX, scrollNoXY))
-									.scroll();
+								if (E.wheelDeltaX !== undefined) {
+									scroll
+										.scrollTop(scroll.scrollTop() + div(-E.wheelDeltaY, scrollNoXY))
+										.scrollLeft(scroll.scrollLeft() + div(-E.wheelDeltaX, scrollNoXY))
+										.scroll();
+								} else {
+									scroll
+										.scrollTop(scroll.scrollTop() + setPixels)
+										.scroll();
+								}
+
 							} else {
-								scrollMaster
-									.scrollTop(scrollMaster.scrollTop() + setPixels)
+								e = E.detail, 100 < e ? e = 3 : -100 > e && (e = -3);
+
+								var top = 0, left = 0;
+								switch(e) {
+									case 1:
+									case -1:
+										left = e * 100;
+										break;
+									case 3:
+									case -3:
+										top = e * 33;
+										break;
+								}
+
+								scroll
+									.scrollTop(scroll.scrollTop() + top)
+									.scrollLeft(scroll.scrollLeft() + left)
 									.scroll();
 							}
 
-						} else {
-							e = E.detail, 100 < e ? e = 3 : -100 > e && (e = -3);
+							return false;
+						});
 
-							var top = 0, left = 0;
-							switch(e) {
-								case 1:
-								case -1:
-									left = e * 100;
-									break;
-								case 3:
-								case -3:
-									top = e * 33;
-									break;
-							}
+					var topStyle, leftStyle;
 
-							scrollMaster
-								.scrollTop(scrollMaster.scrollTop() + top)
-								.scrollLeft(scrollMaster.scrollLeft() + left)
-								.scroll();
-						}
+					function styleString(o) {
+						if (o && o[0] && o[0].styleSheet) return o[0].styleSheet.cssText;
+						return o.text();
+					}
 
-						return false;
+					pane.bind('resizeScroll', function() {
+						topStyle = styleString(scrollStyleTop);
+						leftStyle = styleString(scrollStyleLeft);
+
+						scrollStyleTop.trigger('updateStyle');
+						scrollStyleLeft.trigger('updateStyle');
+
+						scrollChild
+							.height(sheet.height())
+							.width(sheet.width());
+
+						scroll
+							.height(table.height())
+							.width(table.width());
+
+						jS.evt.scrollVertical.start(pane, sheet);
+						jS.evt.scrollHorizontal.start(pane, sheet);
+
+						scrollStyleTop.trigger('updateStyle', [null, topStyle]);
+						scrollStyleLeft.trigger('updateStyle', [null, leftStyle]);
 					});
 				},
 				sheetUI: function(o, i, fn, reloadBars) { /* creates the spreadsheet user interface
@@ -1177,7 +1264,7 @@ jQuery.sheet = {
 					var table = jS.controlFactory.table().appendTo(jS.obj.ui());
 					var pane = jS.obj.pane().html(o);
 
-					jS.controlFactory.scrollers(table, pane, o);
+					jS.controlFactory.scroll(table, pane, o);
 
 					if (jS.isSheetEditable()) {
 						var autoFiller = jS.controlFactory.autoFiller();
@@ -1267,12 +1354,12 @@ jQuery.sheet = {
 
 					jS.setTdIds(o, jS.i);
 					
-					var size = jS.sheetSize(o);
+					jS.sheetSize(o);
 					
 					jS.checkMinSize(o);
 					
 					jS.addTab();
-					
+
 					if (fn) {
 						fn(table, pane);
 					}
@@ -1640,7 +1727,7 @@ jQuery.sheet = {
 										
 										//jS.attrH.setHeight(jS.cellLast.row, 'cell');
 
-										jS.sheetSyncSize();
+										//jS.sheetSyncSize();
 
 										//Save the newest version of that cell
 										jS.cellUndoable.add(td);
@@ -1868,7 +1955,7 @@ jQuery.sheet = {
 						this.offset = 0,
 						this.td = jS.obj.cellActive(),
 						this.max = this.size.height,
-						this.master = jS.obj.scrollerMasterLeft().html(''),
+						this.scrollStyle = jS.obj.scrollStyleLeft().trigger('updateStyle'),
 						this.height = jS.obj.pane().height() - 50,
 						this.sheetHeight = sheet.height();
 
@@ -1908,21 +1995,21 @@ jQuery.sheet = {
 						this.ids = [];
 						while (i <= this.max) {
 							if (i < pos.value && i > (1 + jS.s.frozenAt.row)) {
-								this.ids.push('#' + jS.id.sheet + jS.i + ' tr:nth-child(' + i + ')');
+								this.ids.push(i);
 							}
 							i++;
 						}
 
-						this.master.html(
-							this.ids.join(',') + '{' +
-								'display: none;' +
-							'}'
-						);
+						if (this.ids.length) {
+							this.scrollStyle.trigger('updateStyle', [this.ids]);
+						} else {
+							this.scrollStyle.trigger('updateStyle');
+						}
 
 						this.value = pos.value;
 					},
 					stop: function() {
-						jS.obj.scrollerMaster().children().scrollTop(this.gridSize * (this.value - 1));
+						jS.obj.scroll().scrollTop(this.gridSize * (this.value - 1));
 
 						if (this.td) {
 							jS.evt.scrollHorizontal.td = null;
@@ -1946,7 +2033,7 @@ jQuery.sheet = {
 						this.offset = 0,
 						this.td = jS.obj.cellActive(),
 						this.tdLoc = jS.getTdLocation(this.td),
-						this.master = jS.obj.scrollerMasterTop().html(''),
+						this.scrollStyle = jS.obj.scrollStyleTop().trigger('updateStyle'),
 						this.sheetWidth = sheet.width(),
 						this.max = this.size.width,
 						this.width = pane.width() - 100;
@@ -1987,22 +2074,21 @@ jQuery.sheet = {
 						this.ids = [];
 						while (i <= this.max) {
 							if (i <= pos.value && i > (1 + jS.s.frozenAt.col)) {
-								this.ids.push('#' + jS.id.sheet + jS.i + ' tr td:nth-child(' + i + ')');
-								this.ids.push('#' + jS.id.sheet + jS.i + ' col:nth-child(' + i + ')');
+								this.ids.push(i);
 							}
 							i++;
 						}
 
-						this.master.html(
-							this.ids.join(',') + '{' +
-								'display: none;' +
-							'}'
-						)
+						if (this.ids.length) {
+							this.scrollStyle.trigger('updateStyle', [this.ids]);
+						} else {
+							this.scrollStyle.trigger('updateStyle');
+						}
 
 						this.value = pos.value;
 					},
 					stop: function() {
-						jS.obj.scrollerMaster().scrollLeft(this.gridSize * this.value);
+						jS.obj.scroll().scrollLeft(this.gridSize * this.value);
 						
 						if (this.td) {
 							jS.evt.scrollVertical.td = null;
@@ -2792,7 +2878,7 @@ jQuery.sheet = {
 							jS.obj.ui().show();
 							s.width = s.parent.width();
 							s.height = s.parent.height();
-							jS.sheetSyncSize();
+							jS.obj.pane().trigger('resizeScroll');
 						}
 					});
 					// resizable formula area - a bit hard to grab the handle but is there!
@@ -3411,7 +3497,7 @@ jQuery.sheet = {
 				
 				jS.evt.cellEditAbandon();
 
-				jS.sheetSyncSize();
+				jS.obj.pane().trigger('resizeScroll');
 				
 				jS.trigger('deleteRow', jS.rowLast);
 			},
@@ -3444,10 +3530,10 @@ jQuery.sheet = {
 				jS.setDirty(true);
 				
 				jS.evt.cellEditAbandon();
-				
+
 				//sheet.width(sheetWidth);
 
-				jS.sheetSyncSize();
+				jS.obj.pane().trigger('resizeScroll');
 
 				jS.trigger('deleteColumn', jS.colLast);
 			},
@@ -3719,30 +3805,17 @@ jQuery.sheet = {
 				}
 				
 				jS.obj.tableControlAll()
-					.addClass('tableControlHidden')
-					.eq(i).removeClass('tableControlHidden');
+					.hide()
+					.eq(i).show();
 
 				jS.i = i;			
 				
 				jS.themeRoller.tab.setActive();
 				
-				if (!jS.isRowHeightSync[i]) { //this makes it only run once, no need to have it run every time a user changes a sheet
-					jS.isRowHeightSync[i] = true;
-					jS.obj.sheet().find('tr').each(function(j) {
-						jS.attrH.setHeight(j, 'cell');
-						/*
-						fixes a wired bug with height in chrome and ie
-						It seems that at some point during the sheet's initializtion the height for each
-						row isn't yet clearly defined, this ensures that the heights for barLeft match 
-						that of each row in the currently active sheet when a user uses a non strict doc type.
-						*/
-					});
-				}
-				
 				jS.readOnly[i] = jS.obj.sheet().hasClass('readonly');
 				
 				jS.sheetSyncSize();
-				//jS.replaceWithSafeImg();
+				jS.obj.pane().trigger('resizeScroll');
 			},
 			openSheetURL: function ( url ) { /* opens a table object from a url, then opens it
 												url: string, location;
@@ -3779,8 +3852,6 @@ jQuery.sheet = {
 									fnAfter(i, sheets.length - 1);
 								}, true);
 							});
-							
-							jS.sheetSyncSize();
 						});
 					} else {
 						var sheets = $('<div />').html(o).children('table');
@@ -4004,8 +4075,8 @@ jQuery.sheet = {
 				h = h - jS.attrH.height(jS.obj.controls()) - jS.attrH.height(jS.obj.barTopParent()) - (s.boxModelCorrection * 3);
 				
 				jS.obj.pane()
-					.height(h - window.scrollerSize.height - s.boxModelCorrection)
-					.width(w - window.scrollerSize.width)
+					.height(h - window.scrollBarSize.height - s.boxModelCorrection)
+					.width(w - window.scrollBarSize.width)
 					.parent()
 						.width(w);
 				
@@ -4023,25 +4094,6 @@ jQuery.sheet = {
 					.width(w)
 					.parent()
 						.width(w);
-
-				var scrollerMasterTop = jS.obj.scrollerMasterTop();
-				var scrollerMasterLeft = jS.obj.scrollerMasterLeft();
-
-				this.tempTopStyle = scrollerMasterTop.html();
-				this.tempLeftStyle = scrollerMasterLeft.html();
-
-				scrollerMasterTop.html('');
-				scrollerMasterLeft.html('');
-
-				jS.obj.scrollerMaster().find('div')
-					.height(jS.obj.sheet().height())
-					.width(jS.obj.sheet().width());
-
-				jS.evt.scrollVertical.start();
-				jS.evt.scrollHorizontal.start();
-
-				scrollerMasterTop.html(this.tempTopStyle);
-				scrollerMasterLeft.html(this.tempLeftStyle);
 			},
 			cellChangeStyle: function(style, value) { /* changes a cell's style and makes it undoable/redoable
 														style: string, css style name;
@@ -4545,8 +4597,8 @@ jQuery.sheet = {
 			}
 		};
 		
-		if (!window.scrollerSize) {
-			window.scrollerSize = $.sheet.getScrollBarSize();
+		if (!window.scrollBarSize) {
+			window.scrollBarSize = $.sheet.getScrollBarSize();
 		}
 
 		var $window = $(window),

@@ -154,25 +154,9 @@
 
 .tableControl
 {
-	position: absolute;
-	width: 10px;
-	height: 10px;
 	border: none ! important;
 	margin: 0px ! important;
 	padding: 0px ! important;
-}
-
-.tableControl .jSheetEditPane
-{
-	width: 10px;
-	height: 10px;
-}
-
-.tableControlHidden
-{
-	z-index: -1 ! important;
-	opacity:0.01;
-	filter:alpha(opacity=1);
 }
 
 .jSheetScrollerBottom {
@@ -197,17 +181,12 @@
 	border-bottom-width: 0px ! important;
 	background: none ! important;
 }
-.jSheetScrollerMaster {
+.jSheetScroll {
 	position: absolute;
 	overflow: scroll;
 	height: inherit;
 	width: inherit;
 	z-index: 3;
-	cursor: cell;
-}
-.jSheetScrollerMaster * {
-	width: 15000px;
-	height: 8000px;
 }
 
 /* Sheet styling */
