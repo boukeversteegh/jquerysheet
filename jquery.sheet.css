@@ -1,5 +1,5 @@
 /* Controls styling */
-.jSheetControls_loc
+.jSheetLoc
 {
 	border-width: 0px ! important;
 	background: none ! important;
@@ -7,18 +7,18 @@
 	text-align: right;
 }
 
-.jSheetControls_formula
+.jSheetFormula
 {
 	width: 99%;
     height: 17px;
 }
 
-.jSheetControls_formulaParent 
+.jSheetFormulaParent
 {
 	border: none ! important;
 }
 
-.jSheetControls, .jSheetControls table
+.jSheetHeader, .jSheetHeader table
 {
 	padding: 0px ! important;
 	border: none ! important;
@@ -293,16 +293,22 @@ tr.rowHidden, tr.rowHidden td {
 	width: 16px;
 	height: inherit ! important;
 }
-.jSheetBarHandleTop
+.jSheetBarHandleFreezeTop
 {
 	top: 0em ! important;
 	cursor: move ! important;
+	width: 8px;
+	position: absolute;
+	background-image: none ! important;
 }
 
-.jSheetBarHandleLeft
+.jSheetBarHandleFreezeLeft
 {
 	right: 0em ! important;
 	cursor: move ! important;
+	height: 8px;
+	position: absolute;
+	background-image: none ! important;
 }
 .jSheetBarLeft
 {
@@ -392,6 +398,13 @@ tr.rowHidden, tr.rowHidden td {
 {
 	overflow: hidden ! important;
 }
+
+body.bodyHandlesHide .ui-resizable-handle,body.bodyHandlesHide .ui-draggable
+{
+	display: none ! important;
+}
+
+
 
 /* Cell styler classes */
 .styleBold
