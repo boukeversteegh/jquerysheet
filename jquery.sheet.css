@@ -45,6 +45,11 @@
 	width: 14px;
 	background-color: inherit ! important;
 }
+
+.jSheetMenuFixed {
+	position: relative ! important;
+}
+
 .jSheetMenu {
 	padding: 3px;
 	background-image: none;

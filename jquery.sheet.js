@@ -290,6 +290,14 @@ jQuery.sheet = {
 			},
 
 			/**
+			 * Internal storage array of the viewing panes for an instance
+			 * @memberOf jS
+			 * @type {Array}
+			 * @name panes
+			 */
+			panes: [],
+
+			/**
 			 * Object selectors for interacting with a spreadsheet, dynamically id'd from both sheet index and instance index
 			 * @memberOf jS
 			 * @name obj
@@ -424,6 +432,7 @@ jQuery.sheet = {
 				fullScreen:				'jSheetFullScreen',
 				inPlaceEdit:			'jSheetInPlaceEdit',
 				menu:					'jSheetMenu',
+				menuFixed:  			'jSheetMenuFixed',
 				parent:					'jSheetParent',
 				scroll:			        'jSheetScroll',
 				sheet: 					'jSheet',
@@ -775,9 +784,10 @@ jQuery.sheet = {
 									var loc2 = jS.getTdLocation(cellEnd);
 									
 									//we get the first cell then get all the other cells directly... faster ;)
-									var cells = jS.obj.barTop(loc1.col);
+									var cells = $([]);
+									cells = cells.add(jS.obj.barTop(loc1.col));
 									for (var i = 1; i <= loc2.row; i++) {
-										cells.push(jS.getTd(jS.i, i, loc1.col)[0]);
+										cells = cells.add(jS.getTd(jS.i, i, loc1.col));
 									}
 									
 									return cells;
@@ -806,7 +816,7 @@ jQuery.sheet = {
 										for (col; col < colMax; col++) {
 											var td = $(sheet[0].children[1].children[row].children[col]);
 											if (row == 0) {
-												jS.bars.top.splice(col, 0, td);
+												jS.bars.top[jS.i].splice(col, 0, td);
 												td
 													.addClass(jS.cl.barTop + ' ' + jS.cl.barTop + '_' + jS.i + ' ' + jS.cl.uiBar)
 													.data('type', 'bar')
@@ -1361,7 +1371,7 @@ jQuery.sheet = {
 					if (jS.isSheetEditable()) {
 						//Sheet Menu Control
 						function makeMenu(ulMenu) {
-							var menu = $('<td id="' + jS.id.menu + '" class="' + jS.cl.menu + '" />')
+							var menu = $('<td id="' + jS.id.menu + '" class="' + jS.cl.menu + ' ' + jS.cl.menuFixed + '" />')
 								.html(
 									ulMenu
 										.replace(/sheetInstance/g, "jQuery.sheet.instance[" + I + "]")
@@ -6248,7 +6258,7 @@ jQuery.sheet = {
 		
 		jS.s = s;
 		jS.openSheet(jS.buildSheet(), s.forceColWidthsOnStartup);
-		
+
 		return jS;
 	},
 	makeTable : {
