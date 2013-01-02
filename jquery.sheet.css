@@ -157,13 +157,6 @@
 	font-size: 1em ! important;
 }
 
-.tableControl
-{
-	border: none ! important;
-	margin: 0px ! important;
-	padding: 0px ! important;
-}
-
 .jSheetScrollerBottom {
 	width: 100px ! important;
 	cursor: e-resize;
