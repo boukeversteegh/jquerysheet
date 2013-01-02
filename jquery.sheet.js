@@ -259,6 +259,8 @@ jQuery.sheet = {
 
 			/**
 			 * The current scrolled area, col.start, col.end, row.start, row.end
+			 * @memberOf jS
+			 * @named scrolledArea
 			 */
 			scrolledArea: {
 				col: {
@@ -747,8 +749,9 @@ jQuery.sheet = {
 					jS.obj.barHelper().remove();
 					
 					var sheet = jS.obj.sheet(),
-						sheetWidth = sheet.width();
-						isLast = false;
+						sheetWidth = sheet.width(),
+						isLast = false,
+						o;
 					
 					//jS.evt.cellEditAbandon();
 					
@@ -769,7 +772,6 @@ jQuery.sheet = {
 						eq = (type == 'row' ? jS.sheetSize().rows : jS.sheetSize().cols);
 					}
 
-					var o;
 					switch (type) {
 						case "row":
 							o = {
@@ -808,17 +810,20 @@ jQuery.sheet = {
 								},
 								createCells: function(tr) {
 									tr.each(function(row) {
-										var tds = $(this).children();
-										jS.spreadsheets[jS.i].splice(eq + row + 1, 0, []);
+										var tds = $(this).children(),
+											offset = (isBefore ? 0 : 1) + eq;
+										jS.spreadsheets[jS.i].splice(row + offset, 0, []);
 										tds.each(function(col) {
+											var obj = jS.controls.bar.y.td[jS.i];
 											if (col == 0) {//skip bar
-												$(this).text(row + eq);
-												jS.controls.bar.y.td[jS.i].splice(eq + row + 1, 0, $(this));
+												jS.controls.bar.y.td[jS.i].splice(row + offset, 0, $(this));
 											} else {
-												jS.createCell($(this), jS.i, row + eq + 1, col);
+												jS.createCell($(this), jS.i, row + offset, col);
 											}
 										});
 									});
+
+									jS.refreshRowLabels(eq);
 								}
 							};
 							break;
@@ -860,7 +865,7 @@ jQuery.sheet = {
 									cols.width(jS.s.newColumnWidth);
 									var rows = jS.rows(sheet);
 									for (var row = 0; row < rows.length; row++) {
-										var col = (isBefore ? (eq - qty) - 1: eq + 1),
+										var col = (isBefore ? 0 : 1) + eq,
 											colMax = col + qty;
 										for (col; col < colMax; col++) {
 											var td = $(sheet[0].children[1].children[row].children[col]);
@@ -877,6 +882,8 @@ jQuery.sheet = {
 											}
 										}
 									}
+
+									jS.refreshColumnLabels(eq);
 								}
 							};
 							break;
@@ -910,13 +917,13 @@ jQuery.sheet = {
 						cells.after(newCells);
 						$(col).after(newCols);
 					}
-					
+
+					o.createCells(newCells, newCols);
+
 					if (!skipFormulaReparse && isLast != true) {
 						//offset formulas
 						jS.offsetFormulas(loc, o.offset, isBefore);
 					}
-
-					o.createCells(newCells, newCols);
 
 					//Let's make it redoable
 					jS.cellUndoable.add(sheet);
@@ -1328,13 +1335,13 @@ jQuery.sheet = {
 						menu = jS.controlFactory.makeMenu('cell', [{
 								msg: jS.msg.menuInsertColumnAfter,
 								fn: function(){
-									jS.controlFactory.addColumn();
+									jS.controlFactory.addColumn(jS.colLast);
 									return false;
 								}
 							}, {
 								msg: jS.msg.menuInsertColumnBefore,
 								fn: function(){
-									jS.controlFactory.addColumn(null, true);
+									jS.controlFactory.addColumn(jS.colLast, true);
 									return false;
 								}
 							}, {
@@ -1360,7 +1367,7 @@ jQuery.sheet = {
 							}, {
 								msg: jS.msg.menuInsertRowBefore,
 								fn: function(){
-									jS.controlFactory.addRow(null, true);
+									jS.controlFactory.addRow(jS.rowLast, true);
 									return false;
 								}
 							}, {
@@ -1716,11 +1723,11 @@ jQuery.sheet = {
 								switch(e) {
 									case 1:
 									case -1:
-										left = e * 100;
+										left = e * 50;
 										break;
 									case 3:
 									case -3:
-										top = e * 33;
+										top = e * 15;
 										break;
 								}
 
