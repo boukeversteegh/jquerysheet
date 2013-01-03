@@ -18,8 +18,10 @@
 
             var jS = sheet.getSheet();
             var xml = $.sheet.dts.fromTable.xml(jS);
-            alert(xml);
-            //var table = $.sheet.dts.toTable.xml(jS);
+            var tables = $.sheet.dts.toTable.xml(xml, jS);
+            $('#sheetFromXml')
+                .html(tables)
+                .sheet();
         });
     </script>
 </head>
@@ -156,5 +158,6 @@
         </tr>
     </table>
 </div>
+<div id="sheetFromXml" title="Came from xml output from the sheet above"></div>
 </body>
 </html>
