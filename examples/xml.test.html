@@ -19,7 +19,9 @@
 
             var jS = sheet.getSheet();
             var xml = $.sheet.dts.fromTable.xml(jS);
+	        console.log(xml);
             var tables = $.sheet.dts.toTable.xml(xml, jS);
+	        console.log(tables.html());
             $('#sheetFromXml')
                 .html(tables)
                 .sheet();
