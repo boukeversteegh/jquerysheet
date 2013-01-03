@@ -12,31 +12,64 @@
 
 /**
  * @namespace
+ * @name jQuery.fn
  */
-var jQueryPlugins = {
+jQuery.fn.extend({
 	/**
 	 * The jQuery.sheet plugin
-	 * @memberOf jQueryPlugins
+	 * @name sheet
+	 * @param {Object} settings supports the following attributes
+	 * editable {Boolean}, default true, Makes the sheet editable or viewable
+	 * editableNames {Boolean}, default true, Allows sheets to have their names changed, depends on settings.editable being true
+	 * barMenus {Boolean}, default true, Turns bar menus on/off
+	 * freezableCells
+	 * allowToggleState
+	 * menu
+	 * newColumnWidth
+	 * title
+	 * menuRight
+	 //bool true - build sheet inside of parent
+	 //string  - '{number_of_cols}x{number_of_rows} (5x100)
+	 //object - table
+	 * calcOff
+	 * log
+	 * lockFormulas
+	 * parent
+	 * colMargin
+	 * fnSave
+	 * fnOpen
+	 * fnClose
+	 * boxModelCorrection
+	 * formulaFunctions
+	 * formulaVariables
+	 * cellSelectModel
+	 * autoAddCells
+	 * resizable
+	 * autoFiller
+	 * minSize
+	 * alertFormulaErrors
+	 * error
+	 * encode
+	 * allowCellsLineBreaks
+	 * frozenAt
+	 * @methodOf jQuery.fn
+	 * @namespace
+	 *
 	 */
 	sheet: function(settings) {
 		jQuery(this).each(function() {
 			var parent = jQuery(this);
 			var set = jQuery.extend({
-				urlGet: 			"sheets/enduser.documentation.html", //local url, if you want to get a sheet from a url
-				urlSave: 			"save.html", 					//local url, for use only with the default save for sheet
 				editable: 			true, 							//bool, Makes the jSheetControls_formula & jSheetControls_fx appear
-				editableTabs:		true,							//bool, If sheet is editable, this allows users to change the tabs by second click
+				editableNames:		true,							//bool, If sheet is editable, this allows users to change the tabs by second click
 				barMenus:			true,							//bool, if sheet is editable, this will show the mini menu in barTop and barLeft for sheet manipulation
 				freezableCells:		true,							//bool, if sheet is editable, this will show the barHandles and allow user to drag them to freeze cells, not yet working.
 				allowToggleState: 	true,							//allows the function that changes the spreadsheet's state from static to editable and back
-				urlMenu: 			"menu.html", 					//local url, for the menu to the left of title
-				menu:			'',							//menu AS STRING!, overrides urlMenu
+				menuLeft:   	    null,
 				newColumnWidth: 	120, 							//int, the width of new columns or columns that have no width assigned
 				title: 				null, 							//html, general title of the sheet group
-				inlineMenu:			null, 							//html, menu for editing sheet
-				buildSheet: 		false,							//bool, string, or object
+				menuRight:			null, 							//html, menu for editing sheet
 																		//bool true - build sheet inside of parent
-																		//bool false - use urlGet from local url
 																		//string  - '{number_of_cols}x{number_of_rows} (5x100)
 																		//object - table
 				calcOff: 			false, 							//bool, turns calculationEngine off (no spreadsheet, just grid)
@@ -61,7 +94,6 @@ var jQueryPlugins = {
 				resizable: 			true,							//bool, makes the $(obj).sheet(); object resizeable, also adds a resizable formula textarea at top of sheet
 				autoFiller: 		false,							//bool, the little guy that hangs out to the bottom right of a selected cell, users can click and drag the value to other cells
 				minSize: 			{rows: 15, cols: 5},			//object - {rows: int, cols: int}, Makes the sheet stay at a certain size when loaded in edit mode, to make modification more productive
-				forceColWidthsOnStartup:true,						//bool, makes cell widths load from pre-made colgroup/col objects, use this if you plan on making the col items, makes widths more stable on startup
 				alertFormulaErrors:	false,
 				error:              function(e) { return e.error; },
 				encode:             function(val) {
@@ -191,9 +223,7 @@ var jQueryPlugins = {
 			jS.spreadsheets[sheet][row][col].html = html;
 		} catch(e) {}
 	}
-};
-
-jQuery.fn.extend(jQueryPlugins);
+});
 
 /**
  * @namespace
@@ -210,11 +240,11 @@ jQuery.sheet = {
 	/**
 	 * The instance creator of jQuery.sheet
 	 * @methodOf jQuery.sheet
-	 * @param $ {Object} jQuery
-	 * @param s {Object} settings from jQuery.fn.sheet
-	 * @param I {Integer} the index of the instance
-	 * @param origParent {jQuery|HTMLElement} the caller
-	 * @returns jS {Object} jQuery sheet instance
+	 * @param {Object} $ jQuery
+	 * @param {Object} s settings from jQuery.fn.sheet
+	 * @param {Integer} I the index of the instance
+	 * @param {jQuery|HTMLElement} origParent the caller
+	 * @returns {Object} jS jQuery sheet instance
 	 */
 	createInstance: function($, s, I, origParent) {
 
@@ -341,10 +371,11 @@ jQuery.sheet = {
 				formula: null,
 				fullscreen: [],
 				header: null,
-				inlineMenu: [],
+				menuRight: [],
 				inPlaceEdit: [],
 				label: null,
-				menu: [],
+				menuLeft: [],
+				menuRight: [],
 				pane: [],
 				panes: null,
 				scroll: [],
@@ -387,10 +418,10 @@ jQuery.sheet = {
 				formula: 			function() { return jS.controls.formula || $([]); },
 				fullScreen:			function() { return jS.controls.fullscreen[jS.i] || $([]); },
 				header: 			function() { return jS.controls.header || $([]); },
-				inlineMenu:			function() { return jS.controls.inlineMenu[jS.i] || $([]); },
+				menuRight:			function() { return jS.controls.menuRight[jS.i] || $([]); },
 				inPlaceEdit:		function() { return jS.controls.inPlaceEdit[jS.i] || $([]); },
 				label: 				function() { return jS.controls.label || $([]); },
-				menu:				function() { return jS.controls.menu[jS.i] || $([]); },
+				menuLeft:			function() { return jS.controls.menuLeft[jS.i] || $([]); },
 				pane: 				function() { return jS.controls.pane[jS.i] || $([]); },
 				panes:  			function() { return jS.controls.panes || $([]); },
 				parent: 			function() { return s.parent; },
@@ -431,10 +462,10 @@ jQuery.sheet = {
 				cellMenu:			'jSheetCellMenu_' + I,
 				formula: 			'jSheetFormula_' + I,
 				header: 			'jSheetHeader_' + I,
-				inlineMenu:			'jSheetInlineMenu_' + I,
+				menuRight:			'jSheetMenuRight_' + I,
 				inPlaceEdit:		'jSheetInPlaceEdit_' + I,
 				label: 				'jSheetLoc_' + I,
-				menu:				'jSheetMenu_' + I,
+				menuLeft:			'jSheetMenuLeft_' + I,
 				pane: 				'jSheetEditPane_' + I + '_',
 				scrollStyleX:       'jSheetScrollStyleX_' + I + '_',
 				scrollStyleY:       'jSheetScrollStyleY_' + I + '_',
@@ -476,7 +507,7 @@ jQuery.sheet = {
 				formula: 				'jSheetFormula',
 				formulaParent:			'jSheetFormulaParent',
 				header:                 'jSheetHeader',
-				inlineMenu:				'jSheetInlineMenu',
+				menuRight:				'jSheetMenuRight',
 				fullScreen:				'jSheetFullScreen',
 				inPlaceEdit:			'jSheetInPlaceEdit',
 				menu:					'jSheetMenu',
@@ -577,8 +608,8 @@ jQuery.sheet = {
 
 			/**
 			 * Event trigger for jQuery sheet, wraps jQuery's trigger event to always return jS
-			 * @param eventType {String} event type
-			 * @param extraParameters {Array} optional
+			 * @param {String} eventType event type
+			 * @param {Array} extraParameters optional
 			 * @methodOf jS
 			 * @name trigger
 			 */
@@ -607,8 +638,8 @@ jQuery.sheet = {
 
 			/**
 			 * Returns singe spreadsheet from a set of spreadsheets within as instance, builds if it doesn't exist
-			 * @param forceRebuild {Boolean} Enforces the spreadsheet to be rebuilt
-			 * @param i {Integer} Spreadsheet index
+			 * @param {Boolean} forceRebuild Enforces the spreadsheet to be rebuilt
+			 * @param {Integer} i Spreadsheet index
 			 * @methodOf jS
 			 * @name spreadsheetToArray
 			 */
@@ -624,14 +655,14 @@ jQuery.sheet = {
 
 			/**
 			 * Creates a single cell within
-			 * @param td {jQuery|HTMLElement} td object
-			 * @param sheet {Integer}
-			 * @param row {Integer}
-			 * @param col {Integer}
-			 * @param value {String}
-			 * @param formula {String}
-			 * @param calcCount {Integer}
-			 * @param calcLast {Date}
+			 * @param {jQuery|HTMLElement} td td object
+			 * @param {Integer} sheet
+			 * @param {Integer} row
+			 * @param {Integer} col
+			 * @param {String} value
+			 * @param {String} formula
+			 * @param {Integer} calcCount
+			 * @param {Date} calcLast
 			 * @returns {Object} cell
 			 * @methodOf jS
 			 * @name createCell
@@ -676,7 +707,7 @@ jQuery.sheet = {
 
 			/**
 			 * Turns off all intercept keystroke navigation instances, with exception of supplied instance index
-			 * @param nav {Integer} Instance index
+			 * @param {Integer} nav Instance index
 			 * @methodOf jS
 			 * @name setNav
 			 */
@@ -698,9 +729,9 @@ jQuery.sheet = {
 			controlFactory: {
 				/**
 				 * Creates multi rows
-				 * @param qty {Integer} the number of cells you'd like to add, if not specified, a dialog will ask
-				 * @param isBefore {Boolean} places cells before the selected cell if set to true, otherwise they will go after, or at end
-				 * @param skipFormulaReparse {Boolean} re-parses formulas if needed
+				 * @param {Integer} qty the number of cells you'd like to add, if not specified, a dialog will ask
+				 * @param {Boolean} isBefore places cells before the selected cell if set to true, otherwise they will go after, or at end
+				 * @param {Boolean} skipFormulaReparse re-parses formulas if needed
 				 * @methodOf jS.controlFactory
 				 * @name addRowMulti
 				 */
@@ -716,9 +747,9 @@ jQuery.sheet = {
 
 				/**
 				 * Creates multi columns
-				 * @param qty {Integer} the number of cells you'd like to add, if not specified, a dialog will ask
-				 * @param isBefore {Boolean} places cells before the selected cell if set to true, otherwise they will go after, or at end
-				 * @param skipFormulaReparse {Boolean} re-parses formulas if needed
+				 * @param {Integer} qty the number of cells you'd like to add, if not specified, a dialog will ask
+				 * @param {Boolean} isBefore places cells before the selected cell if set to true, otherwise they will go after, or at end
+				 * @param {Boolean} skipFormulaReparse re-parses formulas if needed
 				 * @methodOf jS.controlFactory
 				 * @name addColumnMulti
 				 */
@@ -734,11 +765,11 @@ jQuery.sheet = {
 
 				/**
 				 * Creates cells for sheet and the bars that go along with them
-				 * @param eq {Integer} optional, position where cells should be added, if null, cells go to end
-				 * @param isBefore {Boolean} places cells before the selected cell if set to true, otherwise they will go after, or at end;
-				 * @param qty {Integer} how many rows/columsn to add
-				 * @param type {String} "row" or "col", default "col"
-				 * @param skipFormulaReparse {Boolean} re-parses formulas if needed
+				 * @param {Integer} eq optional, position where cells should be added, if null, cells go to end
+				 * @param {Boolean} isBefore places cells before the selected cell if set to true, otherwise they will go after, or at end;
+				 * @param {Integer} qty how many rows/columsn to add
+				 * @param {String} type "row" or "col", default "col"
+				 * @param {Boolean} skipFormulaReparse re-parses formulas if needed
 				 * @methodOf jS.controlFactory
 				 * @name addCells
 				 */
@@ -935,8 +966,8 @@ jQuery.sheet = {
 
 				/**
 				 * creates single row
-				 * @param atRow {Integer} Index of row
-				 * @param isBefore {Boolean} places cells before the selected cell if set to true, otherwise they will go after, or at end
+				 * @param {Integer} atRow Index of row
+				 * @param {Boolean} isBefore places cells before the selected cell if set to true, otherwise they will go after, or at end
 				 * @methodOf jS.controlFactory
 				 * @name addRow
 				 */
@@ -947,8 +978,8 @@ jQuery.sheet = {
 
 				/**
 				 * creates single column
-				 * @param atColumn {Integer} Index of row
-				 * @param isBefore {Boolean} places cells before the selected cell if set to true, otherwise they will go after, or at end
+				 * @param {Integer} atColumn Index of row
+				 * @param {Boolean} isBefore places cells before the selected cell if set to true, otherwise they will go after, or at end
 				 * @methodOf jS.controlFactory
 				 * @name addColumn
 				 */
@@ -959,7 +990,7 @@ jQuery.sheet = {
 
 				/**
 				 * Creates all the bars to the left of the spreadsheet, if they exist, they are first removed
-				 * @param sheet {jQuery|HTMLElement} Table of spreadsheet
+				 * @param {jQuery|HTMLElement} sheet Table of spreadsheet
 				 * @methodOf jS.controlFactory
 				 * @name barLeft
 				 */
@@ -975,7 +1006,7 @@ jQuery.sheet = {
 
 				/**
 				 * Creates all the bars to the top of the spreadsheet on colgroup col elements, if they exist, they are first removed
-				 * @param sheet {jQuery|HTMLElement} Table of spreadsheet
+				 * @param {jQuery|HTMLElement} sheet Table of spreadsheet
 				 * @methodOf jS.controlFactory
 				 * @name barTop
 				 */
@@ -1014,7 +1045,7 @@ jQuery.sheet = {
 				barHandleFreeze: {
 
 					/**
-					 * @param pane {jQuery|HTMLElement}
+					 * @param {jQuery|HTMLElement} pane
 					 * @returns {Boolean}
 					 * @methodOf jS.controlFactory.barHandleFreeze
 					 * @name top
@@ -1055,7 +1086,7 @@ jQuery.sheet = {
 
 					/**
 					 *
-					 * @param pane {jQuery|HTMLElement}
+					 * @param {jQuery|HTMLElement} pane
 					 * @returns {Boolean}
 					 * @methodOf jS.controlFactory.barHandleFreeze
 					 * @name left
@@ -1164,9 +1195,9 @@ jQuery.sheet = {
 				barMenu: {
 
 					/**
-					 * @param e {Object} jQuery event
-					 * @param i {Integer} column
-					 * @param target {jQuery|HTMLElement}
+					 * @param {Object} e jQuery event
+					 * @param {Integer} i column
+					 * @param {jQuery|HTMLElement} target
 					 * @returns {*}
 					 * @methodOf jS.controlFactory.barMenu
 					 * @name top
@@ -1317,7 +1348,7 @@ jQuery.sheet = {
 
 				/**
 				 * Creates contextual menus for cells (a right click menu)
-				 * @param e {Object} jQuery event
+				 * @param {Object} e jQuery event
 				 * @returns {Boolean}
 				 * @methodOf jS.controlFactory
 				 * @name cellMenu
@@ -1414,63 +1445,54 @@ jQuery.sheet = {
 						firstRowTr = $('<tr />');
 					
 					if (s.title) {
-						var title;
 						if ($.isFunction(s.title)) {
-							title = jS.title(jS);
-						} else {
-							title = s.title;
+							s.title = jS.title(jS, I);
 						}
-						firstRowTr.append(jS.controls.title = $('<td class="' + jS.cl.title + '" />').html(title));
+						firstRowTr.append(jS.controls.title = $('<td class="' + jS.cl.title + '" />').html(s.title));
 					}
-					
-					if (s.inlineMenu && jS.isSheetEditable()) {
-						var inlineMenu;
-						if ($.isFunction(s.inlineMenu)) {
-							inlineMenu = s.inlineMenu(jS);
+
+					//Sheet Menu Control
+					function makeMenu(menu) {
+						if ($.isFunction(menu)) {
+							menu = $(menu(jS, I));
 						} else {
-							inlineMenu = s.inlineMenu;
+							menu = $(menu
+								.replace(/sheetInstance/g, "jQuery.sheet.instance[" + I + "]")
+								.replace(/menuInstance/g, I));
 						}
-						firstRowTr.append(jS.controls.inlineMenu[jS.i] = $('<td id="' + jS.id.inlineMenu + '" class="' + jS.cl.inlineMenu + '" />').html(inlineMenu));
+
+						if (menu.is('ul')) {
+							menu
+								.find("ul").hide()
+								.addClass(jS.cl.uiMenuUl);
+
+							menu
+								.find("li")
+								.addClass(jS.cl.uiMenuLi)
+								.hover(function(){
+									$(this).find('ul:first')
+										.hide()
+										.show();
+								},function(){
+									$(this).find('ul:first')
+										.hide();
+								});
+						}
+						return menu;
 					}
 					
 					if (jS.isSheetEditable()) {
-						//Sheet Menu Control
-						function makeMenu(ulMenu) {
-							var menu = jS.controls.menu[jS.i] = $('<td id="' + jS.id.menu + '" class="' + jS.cl.menu + ' ' + jS.cl.menuFixed + '" />')
-								.html(
-									ulMenu
-										.replace(/sheetInstance/g, "jQuery.sheet.instance[" + I + "]")
-										.replace(/menuInstance/g, I));
-										
-								menu
-									.prependTo(firstRowTr)
-									.find("ul").hide()
-									.addClass(jS.cl.uiMenuUl)
-									.first().show();
-								
-								menu
-									.find("li")
-										.addClass(jS.cl.uiMenuLi)
-										.hover(function(){
-											$(this).find('ul:first')
-												.hide()
-												.show();
-										},function(){
-											$(this).find('ul:first')
-												.hide();
-										});
-							return menu;
-						}
-						
-						if (s.menu) {
-							makeMenu(s.menu);
-						} else {
-							$('<div />').load(s.urlMenu, function() {
-								makeMenu($(this).html());
-								jS.sheetSyncSize();
-							});
+						if (s.menuLeft) {
+							jS.controls.menuLeft[jS.i] = $('<td id="' + jS.id.menuLeft + '" class="' + jS.cl.menu + ' ' + jS.cl.menuFixed + '" />')
+								.append(makeMenu(s.menuLeft))
+								.prependTo(firstRowTr);
 						}
 
+						if (s.menuRight) {
+							jS.controls.menuRight[jS.i] = $('<td id="' + jS.id.menuRight + '" class="' + jS.cl.menu + ' ' + jS.cl.menuFixed + '" />')
+								.append(makeMenu(s.menuRight))
+								.appendTo(firstRowTr);
+						}
 
 						var label = $('<td id="' + jS.id.label + '" class="' + jS.cl.label + '"></td>');
 						jS.controls.label = label;
@@ -1563,6 +1585,12 @@ jQuery.sheet = {
 
 					if (jS.isSheetEditable()) {
 						var addSheet = $('<span class="' + jS.cl.uiTab + ' ui-corner-bottom" title="Add a spreadsheet" i="-1">+</span>')
+							.click(function() {
+								jS.addSheet({
+									rows: 25,
+									cols: 10
+								});
+							})
 							.appendTo(tabContainer);
 
 						if ($.fn.sortable) {
@@ -1694,6 +1722,8 @@ jQuery.sheet = {
 								jS.scrolledArea.row.end = indexes.pop() || 1;
 							});
 
+					if (!$.fn.mousewheel) return;
+
 					pane
 						.append(scrollStyleX)
 						.append(scrollStyleY)
@@ -1776,21 +1806,19 @@ jQuery.sheet = {
 
 				/**
 				 * Creates the spreadsheet user interface
-				 * @param sheet {jQuery|HTMLElement} raw table
-				 * @param i {Integer} the new count for spreadsheets in this instance
-				 * @param fn {Function} called after the spreadsheet is created and tuned for use
+				 * @param {jQuery|HTMLElement} sheet raw table
+				 * @param {Integer} i the new count for spreadsheets in this instance
 				 * @returns {jQuery|HTMLElement} table
 				 * @methodOf jS.controlFactory
 				 * @name sheetUI
 				 */
-				sheetUI: function(sheet, i, fn) {
+				sheetUI: function(sheet, i) {
 					if (!i) {
 						jS.sheetCount = 0;
 						jS.i = 0;
 					} else {
-						jS.sheetCount = parseInt(i);
-						jS.i = jS.sheetCount;
-						i = jS.i;
+						jS.sheetCount++;
+						jS.i = i;
 					}
 					
 					jS.tuneTableForSheetUse(sheet);
@@ -1906,10 +1934,6 @@ jQuery.sheet = {
 
 					jS.setChanged(true);
 
-					if (fn) {
-						fn(sheet, pane);
-					}
-
 					//jS.log('Sheet Initialized');
 
 					return sheet;
@@ -1953,7 +1977,7 @@ jQuery.sheet = {
 
 				/**
 				 * Creates a teaxtarea for a user to put a value in that floats on top of the current selected cell
-				 * @param td {jQuery|HTMLElement} the td to be edited
+				 * @param {jQuery|HTMLElement} td the td to be edited
 				 * @methodOf jS.controlFactory
 				 * @name inPlaceEdit
 				 */
@@ -2124,7 +2148,7 @@ jQuery.sheet = {
 
 					/**
 					 *
-					 * @param e {Object} jQuery event
+					 * @param {Object} e jQuery event
 					 * @returns {*}
 					 * @methodOf jS.evt.keyDownHandler
 					 * @name enterOnInPlaceEdit
@@ -2139,7 +2163,7 @@ jQuery.sheet = {
 
 					/**
 					 *
-					 * @param e {Object} jQuery event
+					 * @param {Object} e jQuery event
 					 * @returns {*}
 					 * @methodOf jS.evt.keyDownHandler
 					 * @name enter
@@ -2155,7 +2179,7 @@ jQuery.sheet = {
 
 					/**
 					 *
-					 * @param e {Object} jQuery event
+					 * @param {Object} e jQuery event
 					 * @returns {*}
 					 * @methodOf jS.evt.keyDownHandler
 					 * @name tab
@@ -2166,7 +2190,7 @@ jQuery.sheet = {
 
 					/**
 					 *
-					 * @param e {Object} jQuery event
+					 * @param {Object} e jQuery event
 					 * @returns {*}
 					 * @methodOf jS.evt.keyDownHandler
 					 * @name findCell
@@ -2181,7 +2205,7 @@ jQuery.sheet = {
 
 					/**
 					 *
-					 * @param e {Object} jQuery event
+					 * @param {Object} e jQuery event
 					 * @returns {*}
 					 * @methodOf jS.evt.keyDownHandler
 					 * @name redo
@@ -2196,7 +2220,7 @@ jQuery.sheet = {
 
 					/**
 					 *
-					 * @param e {Object} jQuery event
+					 * @param {Object} e jQuery event
 					 * @returns {*}
 					 * @methodOf jS.evt.keyDownHandler
 					 * @name undo
@@ -2211,7 +2235,7 @@ jQuery.sheet = {
 
 					/**
 					 * Manages the page up and down buttons
-					 * @param reverse {Boolean} Go up or down
+					 * @param {Boolean} reverse Go up or down
 					 * @returns {Boolean}
 					 * @methodOf jS.evt.keyDownHandler
 					 * @name pageUpDown
@@ -2243,7 +2267,7 @@ jQuery.sheet = {
 
 					/**
 					 *
-					 * @param e {Object} jQuery event
+					 * @param {Object} e jQuery event
 					 * @returns {*}
 					 * @methodOf jS.evt.keyDownHandler
 					 * @name formulaKeydown
@@ -2263,7 +2287,7 @@ jQuery.sheet = {
 
 					/**
 					 * Helper for events
-					 * @param ifTrue {Boolean}
+					 * @param {Boolean} ifTrue
 					 * @param e {Object} jQuery event
 					 * @returns {*}
 					 * @methodOf jS.evt.keyDownHandler
@@ -2279,7 +2303,7 @@ jQuery.sheet = {
 
 					/**
 					 *
-					 * @param e {Object} jQuery event
+					 * @param {Object} e jQuery event
 					 * @returns {*}
 					 * @methodOf jS.evt.keyDownHandler
 					 * @name documentKeydown
@@ -2330,7 +2354,7 @@ jQuery.sheet = {
 
 				/**
 				 * Used for pasting from other spreadsheets
-				 * @param e {Object} jQuery event
+				 * @param {Object} e jQuery event
 				 * @returns {Boolean}
 				 * @methodOf jS.evt
 				 * @name pasteOverCells
@@ -2361,7 +2385,7 @@ jQuery.sheet = {
 
 				/**
 				 * Edits the textarea that appears over cells for in place edit
-				 * @param e {Object} jQuery event
+				 * @param {Object} e jQuery event
 				 * @returns {*}
 				 * @methodOf jS.evt
 				 * @name inPlaceEditOnKeyDown
@@ -2379,7 +2403,7 @@ jQuery.sheet = {
 
 				/**
 				 * On formula change
-				 * @param e {Object} jQuery event
+				 * @param {Object} e jQuery event
 				 * @methodOf jS.evt
 				 * @name formulaChange
 				 */
@@ -2389,7 +2413,7 @@ jQuery.sheet = {
 
 				/**
 				 * On in place edit change
-				 * @param e {Object} jQuery event
+				 * @param {Object} e jQuery event
 				 * @methodOf jS.evt
 				 * @name inPlaceEditChange
 				 */
@@ -2399,7 +2423,7 @@ jQuery.sheet = {
 
 				/**
 				 * Updates a cell after edit afterward event "afterCellEdit" is called w/ params (td, row, col, spreadsheetIndex, sheetIndex)
-				 * @param forceCalc {Boolean} if set to true forces a calculation of the selected sheet
+				 * @param {Boolean} forceCalc if set to true forces a calculation of the selected sheet
 				 * @methodOf jS.evt
 				 * @name cellEditDone
 				 */
@@ -2468,7 +2492,7 @@ jQuery.sheet = {
 
 				/**
 				 * Abandons a cell edit
-				 * @param skipCalc {Boolean} if set to true will skip sheet calculation;
+				 * @param {Boolean} skipCalc if set to true will skip sheet calculation;
 				 * @methodOf jS.evt
 				 * @name cellEditAbandon
 				 */
@@ -2499,8 +2523,8 @@ jQuery.sheet = {
 
 				/**
 				 * Sets active cell from a pixel location
-				 * @param left {Integer} pixels left
-				 * @param top {Integer} pixels top
+				 * @param {Integer} left pixels left
+				 * @param {Integer} top pixels top
 				 * @returns {Boolean}
 				 * @methodOf jS.evt
 				 * @name cellSetFocusFromXY
@@ -2517,7 +2541,7 @@ jQuery.sheet = {
 
 				/**
 				 * Highlights a cell from a key code
-				 * @param e {Object} jQuery event
+				 * @param {Object} e jQuery event
 				 * @returns {Boolean}
 				 * @methodOf jS.evt
 				 * @name cellSetHighlightFromKeyCode
@@ -2556,7 +2580,7 @@ jQuery.sheet = {
 
 				/**
 				 * Activates a cell from a key code
-				 * @param e {Object} jQuery event
+				 * @param {Object} e jQuery event
 				 * @returns {Boolean}
 				 * @methodOf jS.evt
 				 * @name cellSetFocusFromKeyCode
@@ -2644,7 +2668,7 @@ jQuery.sheet = {
 
 				/**
 				 * Cell on mouse down
-				 * @param e {Object} jQuery event
+				 * @param {Object} e jQuery event
 				 * @methodOf jS.evt
 				 * @name cellOnMouseDown
 				 */
@@ -2661,7 +2685,7 @@ jQuery.sheet = {
 
 				/**
 				 * Cell on double click
-				 * @param e {Object} jQuery event
+				 * @param {Object} e jQuery event
 				 * @methodOf jS.evt
 				 * @name cellOnDblClick
 				 */
@@ -2702,7 +2726,7 @@ jQuery.sheet = {
 
 					/**
 					 * Manages the bar selection
-					 * @param o {Object} target
+					 * @param {Object} o target
 					 * @returns {*}
 					 * @methodOf jS.evt.barInteraction
 					 * @name select
@@ -2762,9 +2786,9 @@ jQuery.sheet = {
 
 					/**
 					 * prepairs everything needed for a scroll, needs activated every time spreadsheet changes in size
-					 * @param axis {String} x or y
-					 * @param pane {jQuery|HTMLElement} pane object
-					 * @param sheet {jQuery|HTMLElement} sheet object
+					 * @param {String} axis x or y
+					 * @param {jQuery|HTMLElement} pane pane object
+					 * @param {jQuery|HTMLElement} sheet sheet object
 					 * @methodOf jS.evt.scroll
 					 * @name start
 					 */
@@ -2823,7 +2847,7 @@ jQuery.sheet = {
 
 					/**
 					 * Scrolls to a position within the spreadsheet
-					 * @param pos {Object} {axis, value, pixel} if value not set, pixel is used
+					 * @param {Object} pos {axis, value, pixel} if value not set, pixel is used
 					 * @methodOf jS.evt.scroll
 					 * @name scrollTo
 					 */
@@ -2841,6 +2865,7 @@ jQuery.sheet = {
 						if (pos.value == me.value && me.value !== u) return;
 
 						if (!pos.value) {
+							if (!me.p) return;
 							pos.value = me.p[arrHelpers.getClosestValues(me.v, Math.abs(pos.pixel / (me.sheetArea - me.area)) * 100)];
 						}
 
@@ -2855,9 +2880,9 @@ jQuery.sheet = {
 						}
 
 						if (indexes.length) {
-							me.scrollStyle.trigger('updateStyle', [indexes]);
+							if (me.scrollStyle) me.scrollStyle.trigger('updateStyle', [indexes]);
 						} else {
-							me.scrollStyle.trigger('updateStyle');
+							if (me.scrollStyle) me.scrollStyle.trigger('updateStyle');
 						}
 
 						me.value = pos.value;
@@ -2869,8 +2894,8 @@ jQuery.sheet = {
 					 * @name stop
 					 */
 					stop: function() {
-						this.axis.x.scrollUpdate();
-						this.axis.y.scrollUpdate();
+						if (this.axis.x.scrollUpdate) this.axis.x.scrollUpdate();
+						if (this.axis.y.scrollUpdate) this.axis.y.scrollUpdate();
 
 						if (jS.evt.scroll.td) {
 							jS.evt.scroll.td = null;
@@ -2882,7 +2907,7 @@ jQuery.sheet = {
 
 			/**
 			 * Refreshed scroll system
-			 * @param pos {Object} {row, col} needs at least one
+			 * @param {Object} pos {row, col} needs at least one
 			 * @methodOf jS
 			 * @name scrollRefresh
 			 */
@@ -2903,7 +2928,7 @@ jQuery.sheet = {
 
 			/**
 			 *
-			 * @param start {Integer} index to start from
+			 * @param {Integer} start index to start from
 			 * @methodOf jS
 			 * @name refreshColumnLabels
 			 */
@@ -2922,7 +2947,7 @@ jQuery.sheet = {
 
 			/**
 			 *
-			 * @param start {Integer} index to start from
+			 * @param {Integer} start index to start from
 			 * @methodOf jS
 			 * @name refreshRowLabels
 			 */
@@ -2940,7 +2965,7 @@ jQuery.sheet = {
 
 			/**
 			 * Detects if an object is a td within a spreadsheet's table
-			 * @param o {jQuery|HTMLElement} target
+			 * @param {jQuery|HTMLElement} o target
 			 * @returns {Boolean}
 			 * @methodOf jS
 			 * @name isTd
@@ -2961,7 +2986,7 @@ jQuery.sheet = {
 
 			/**
 			 * Detects if an object is a bar td within a spreadsheet's table
-			 * @param o {jQuery|HTMLElement} target
+			 * @param {jQuery|HTMLElement} o target
 			 * @returns {Boolean}
 			 * @methodOf jS
 			 * @name isBar
@@ -2989,7 +3014,7 @@ jQuery.sheet = {
 
 			/**
 			 * Detects read state of a spreadsheet
-			 * @param i {Integer} index of spreadsheet within instance
+			 * @param {Integer} i index of spreadsheet within instance
 			 * @returns {Boolean}
 			 * @methodOf jS
 			 * @name isSheetEditable
@@ -3003,7 +3028,7 @@ jQuery.sheet = {
 
 			/**
 			 * Detects read state of formula of an object
-			 * @param o {jQuery|HTMLElement} target
+			 * @param {jQuery|HTMLElement} o target
 			 * @returns {Boolean}
 			 * @methodOf jS
 			 * @name isFormulaEditable
@@ -3081,7 +3106,7 @@ jQuery.sheet = {
 
 			/**
 			 * Switches spreadsheet
-			 * @param i {Integer} index of spreadsheet within instance
+			 * @param {Integer} i index of spreadsheet within instance
 			 * @methodOf jS
 			 * @name switchSpreadsheet
 			 */
@@ -3101,7 +3126,7 @@ jQuery.sheet = {
 
 			/**
 			 * Makes table object usable by sheet
-			 * @param o {jQuery|HTMLElement} table
+			 * @param {jQuery|HTMLElement} o table
 			 * @returns {*}
 			 * @methodOf jS
 			 * @name tuneTableForSheetUse
@@ -3123,9 +3148,9 @@ jQuery.sheet = {
 
 			/**
 			 * Cycles through all the td's and turns table into spreadsheet
-			 * @param sheet {jQuery|HTMLElement} spreadsheet table
-			 * @param i {Integer} spreadsheet index within instance
-			 * @param start {Object} {row, col}, index of column and or row to start at, can be null
+			 * @param {jQuery|HTMLElement} sheet spreadsheet table
+			 * @param {Integer} i spreadsheet index within instance
+			 * @param {Object} start {row, col}, index of column and or row to start at, can be null
 			 * @methodOf jS
 			 * @name createSpreadsheet
 			 */
@@ -3310,9 +3335,9 @@ jQuery.sheet = {
 
 			/**
 			 * Fills values down or up to highlighted cells from active cell;
-			 * @param goUp {Boolean} default is down, when set to true value are filled from bottom, up;
-			 * @param skipOffsetForumals {Boolean} default is formulas will offest, when set to true formulas will stay static;
-			 * @param v {String} the value to set cells to, if not set, formula will be used;
+			 * @param {Boolean} goUp default is down, when set to true value are filled from bottom, up;
+			 * @param {Boolean} skipOffsetForumals default is formulas will offest, when set to true formulas will stay static;
+			 * @param {String} v the value to set cells to, if not set, formula will be used;
 			 * @methodOf jS
 			 * @name fillUpOrDown
 			 */
@@ -3383,9 +3408,9 @@ jQuery.sheet = {
 
 			/**
 			 * Makes cell formulas increment within a range
-			 * @param loc {Object} {row: int, col: int}
-			 * @param offset {Object} {row: int,col: int} offsets increment
-			 * @param isBefore {Boolean} inserted before location
+			 * @param {Object} loc {row: int, col: int}
+			 * @param {Object} offset {row: int,col: int} offsets increment
+			 * @param {Boolean} isBefore inserted before location
 			 * @methodOf jS
 			 * @name offsetFormulas
 			 */
@@ -3455,8 +3480,8 @@ jQuery.sheet = {
 			/**
 			 * Reparses a formula
 			 * @param formula
-			 * @param offset {Object} {row: int,col: int} offsets increment
-			 * @param fn {Function} Sent the current location of what is being reparsed
+			 * @param {Object} offset {row: int,col: int} offsets increment
+			 * @param {Function} fn Sent the current location of what is being reparsed
 			 * @returns {String}
 			 * @methodOf jS
 			 * @name reparseFormula
@@ -3487,8 +3512,8 @@ jQuery.sheet = {
 
 			/**
 			 * Reconstructs a formula
-			 * @param loc {Object} {row: i, col: i}
-			 * @param offset {Object} {row: i, col: i}
+			 * @param {Object} loc {row: i, col: i}
+			 * @param {Object} offset {row: i, col: i}
 			 * @returns {String}
 			 * @methodOf jS
 			 * @name makeForumla
@@ -3509,10 +3534,10 @@ jQuery.sheet = {
 
 			/**
 			 * Cylces through a certain group of td objects in a spreadsheet table and applies a function to them
-			 * @param fn {Function} the function to apply to a cell
-			 * @param firstLoc {Object} {row: 0, col: 0} the cell to start at
-			 * @param lastLoc {Object} {row: 0, col: 0} the cell to end at
-			 * @param i {Integer} spreadsheet index within instance
+			 * @param {Function} fn the function to apply to a cell
+			 * @param {Object} firstLoc {row: 0, col: 0} the cell to start at
+			 * @param {Object} lastLoc {row: 0, col: 0} the cell to end at
+			 * @param {Integer} i spreadsheet index within instance
 			 * @methodOf jS
 			 * @name cycleCells
 			 */
@@ -3551,9 +3576,9 @@ jQuery.sheet = {
 
 			/**
 			 * Cylces through a certain group of td objects in a spreadsheet table and applies a function to them, firstLoc can be bigger then lastLoc, this is more dynamic
-			 * @param fn {Function} the function to apply to a cell
-			 * @param firstLoc {Object} {row: 0, col: 0} the cell to start at
-			 * @param lastLoc {Object} {row: 0, col: 0} the cell to end at
+			 * @param {Function} fn the function to apply to a cell
+			 * @param {Object} firstLoc {row: 0, col: 0} the cell to start at
+			 * @param {Object} lastLoc {row: 0, col: 0} the cell to end at
 			 * @returns {Array} of td objects
 			 * @methodOf jS
 			 * @name cycleCellsAndMaintainPoint
@@ -3577,7 +3602,7 @@ jQuery.sheet = {
 
 			/**
 			 * Prepairs a table for use as a sheet
- 			 * @param o {jQuery|HTMLElement} table object
+ 			 * @param {jQuery|HTMLElement} o table object
 			 * @methodOf jS
 			 * @name sheetDecorate
 			 */
@@ -3588,7 +3613,7 @@ jQuery.sheet = {
 
 			/**
 			 * Adds tbody, colgroup, heights and widths to different parts of a spreadsheet
-			 * @param o {jQuery|HTMLElement} table object
+			 * @param {jQuery|HTMLElement} o table object
 			 * @methodOf jS
 			 * @name formatSheet
 			 */
@@ -3625,7 +3650,7 @@ jQuery.sheet = {
 
 			/**
 			 * Ensure sheet minimums have been met, if not add columns and rows
-			 * @param o {jQuery|HTMLElement} table object
+			 * @param {jQuery|HTMLElement} o table object
 			 * @methodOf jS
 			 * @name checkMinSize
 			 */
@@ -3661,7 +3686,7 @@ jQuery.sheet = {
 
 				/**
 				 * Starts themeroller integration
-				 * @param sheet {jQuery|HTMLElement} spreadsheet table
+				 * @param {jQuery|HTMLElement} sheet spreadsheet table
 				 * @methodOf jS.themeRoller
 				 * @name start
 				 */
@@ -3698,7 +3723,7 @@ jQuery.sheet = {
 
 					/**
 					 * Highlights td object
-					 * @param td {jQuery|HTMLElement} td object
+					 * @param {jQuery|HTMLElement} td td object
 					 * @methodOf jS.themeRoller.cell
 					 * @name setHighlighted
 					 */
@@ -3757,7 +3782,7 @@ jQuery.sheet = {
 
 					/**
 					 * Adds initial style to bar
-					 * @param o {jQuery|HTMLElement} bar object
+					 * @param {jQuery|HTMLElement} o bar object
 					 * @methodOf jS.themeRoller.bar
 					 * @name style
 					 */
@@ -3767,8 +3792,8 @@ jQuery.sheet = {
 
 					/**
 					 * Sets a bar to be active
-					 * @param direction {String} left or top
-					 * @param i {Integer} index of bar
+					 * @param {String} direction left or top
+					 * @param {Integer} i index of bar
 					 * @methodOf jS.themeRoller.bar
 					 * @name setActive
 					 */
@@ -3807,7 +3832,7 @@ jQuery.sheet = {
 
 					/**
 					 * Sets a tab to be active
-					 * @param o {jQuery|HTMLElement} tab object
+					 * @param {jQuery|HTMLElement} o tab object
 					 * @methodOf jS.themeRoller.tab
 					 * @name setActive
 					 */
@@ -3830,8 +3855,8 @@ jQuery.sheet = {
 
 			/**
 			 * jQuery ui resizeable integration
-			 * @param o {jQuery|HTMLElement} To set resizable
-			 * @param settings {Object} the settings used with jQuery ui resizable
+			 * @param {jQuery|HTMLElement} o To set resizable
+			 * @param {Object} settings the settings used with jQuery ui resizable
 			 * @methodOf jS
 			 * @name resizable
 			 */
@@ -3850,8 +3875,8 @@ jQuery.sheet = {
 
 			/**
 			 * jQuery ui draggable integration
-			 * @param o {jQuery|HTMLElement} To set resizable
-			 * @param settings {Object} the settings used with jQuery ui resizable
+			 * @param {jQuery|HTMLElement} o To set resizable
+			 * @param {Object} settings the settings used with jQuery ui resizable
 			 * @methodOf jS
 			 * @name draggable
 			 */
@@ -3884,10 +3909,10 @@ jQuery.sheet = {
 
 				/**
 				 * Provides the top bar with ability to resize
-				 * @param bar {jQuery|HTMLElement} td bar object
-				 * @param i {Integer} index of bar
-				 * @param pane {jQuery|HTMLElement} spreadsheet pane
-				 * @param sheet {jQuery|HTMLElement} spreadsheet table
+				 * @param {jQuery|HTMLElement} bar td bar object
+				 * @param {Integer} i index of bar
+				 * @param {jQuery|HTMLElement} pane spreadsheet pane
+				 * @param {jQuery|HTMLElement} sheet spreadsheet table
 				 * @methodOf jS.resizeBar
 				 * @name top
 				 */
@@ -3921,10 +3946,10 @@ jQuery.sheet = {
 
 				/**
 				 * Provides the left bar with ability to resize
-				 * @param bar {jQuery|HTMLElement} td bar object
-				 * @param i {Integer} index of bar
-				 * @param pane {jQuery|HTMLElement} spreadsheet pane
-				 * @param sheet {jQuery|HTMLElement} spreadsheet table
+				 * @param {jQuery|HTMLElement} bar td bar object
+				 * @param {Integer} i index of bar
+				 * @param {jQuery|HTMLElement} pane spreadsheet pane
+				 * @param {jQuery|HTMLElement} sheet spreadsheet table
 				 * @methodOf jS.resizeBar
 				 * @name left
 				 */
@@ -3966,8 +3991,8 @@ jQuery.sheet = {
 
 			/**
 			 * Removes sheet decorations
-			 * @param makeClone {Boolean} creates a clone rather than the actual object
-			 * @param sheets {jQuery|HTMLElement} spreadsheet table object to remove decorations from
+			 * @param {Boolean} makeClone creates a clone rather than the actual object
+			 * @param {jQuery|HTMLElement} sheets spreadsheet table object to remove decorations from
 			 * @returns {jQuery|HTMLElement}
 			 * @methodOf jS
 			 * @name sheetDecorateRemove
@@ -3987,7 +4012,7 @@ jQuery.sheet = {
 
 			/**
 			 * Removed bars from spreadsheet table
-			 * @param sheet {jQuery|HTMLElement} spreadsheet table object to remove bars from
+			 * @param {jQuery|HTMLElement} sheet spreadsheet table object to remove bars from
 			 * @returns {jQuery|HTMLElement}
 			 * @methodOf jS
 			 * @name sheetBarsRemove
@@ -4001,8 +4026,8 @@ jQuery.sheet = {
 
 			/**
 			 * Updates the label so that the user knows where they are currently positioned
-			 * @param v {String|Object} Value to update to, if object {col, row}
-			 * @param setDirect {Boolean}
+			 * @param {String|Object} v Value to update to, if object {col, row}
+			 * @param {Boolean} setDirect
 			 * @methodOf jS
 			 * @name labelUpdate
 			 */
@@ -4016,8 +4041,8 @@ jQuery.sheet = {
 
 			/**
 			 * Starts td to be edited
-			 * @param td {jQuery|HTMLElement}
-			 * @param isDrag {Boolean} should be determined by if the user is dragging their mouse around setting cells
+			 * @param {jQuery|HTMLElement} td
+			 * @param {Boolean} isDrag should be determined by if the user is dragging their mouse around setting cells
 			 */
 			cellEdit: function(td, isDrag) {
 				jS.autoFillerNotGroup = true; //make autoFiller directional again.
@@ -4045,11 +4070,11 @@ jQuery.sheet = {
 
 			/**
 			 * sets cell active to sheet, and highlights it for the user, shouldn't be called directly, should use cellEdit
-			 * @param td {jQuery|HTMLElement}
-			 * @param loc {Object} {col, row}
-			 * @param isDrag {Boolean} should be determined by if the user is dragging their mouse around setting cells
-			 * @param directional {Boolean} makes highlighting directional, only left/right or only up/down
-			 * @param fnDone {Function} called after the cells are set active
+			 * @param {jQuery|HTMLElement} td
+			 * @param {Object} loc {col, row}
+			 * @param {Boolean} isDrag should be determined by if the user is dragging their mouse around setting cells
+			 * @param {Boolean} directional makes highlighting directional, only left/right or only up/down
+			 * @param {Function} fnDone called after the cells are set active
 			 * @memberOf jS
 			 * @name cellSetActive
 			 */
@@ -4189,8 +4214,8 @@ jQuery.sheet = {
 
 			/**
 			 * sets a cells class for styling
-			 * @param setClass {String} class(es) to set cells to
-			 * @param removeClass {String} class(es) to remove from cell if the setClass would conflict with
+			 * @param {String} setClass class(es) to set cells to
+			 * @param {String} removeClass class(es) to remove from cell if the setClass would conflict with
 			 * @returns {Boolean}
 			 * @methodOf jS
 			 * @name cellStyleToggle
@@ -4221,7 +4246,7 @@ jQuery.sheet = {
 
 			/**
 			 * Resizes fonts in a cell by 1 pixel
-			 * @param direction {String} "up" or "down"
+			 * @param {String} direction "up" or "down"
 			 * @methodOf jS
 			 * @name fontReSize
 			 */
@@ -4261,9 +4286,9 @@ jQuery.sheet = {
 
 			/**
 			 * Ignites calculation with cell, is recursively called if cell uses value from another cell
-			 * @param sheet {Integer} sheet index within instance
-			 * @param row {Integer} row index
-			 * @param col {Integer} col index
+			 * @param {Integer} sheet sheet index within instance
+			 * @param {Integer} row row index
+			 * @param {Integer} col col index
 			 * @returns {*} cell value after calculated
 			 * @name updateCellValue
 			 * @methodOf jS
@@ -4338,10 +4363,10 @@ jQuery.sheet = {
 
 			/**
 			 * Fillters cell's value so correct entity is displayed
-			 * @param cell {Object} cell
-			 * @param sheet {Integer} sheet index within instance
-			 * @param row {Integer} row index
-			 * @param col {Integer} col index
+			 * @param {Object} cell cell
+			 * @param {Integer} sheet sheet index within instance
+			 * @param {Integer} row row index
+			 * @param {Integer} col col index
 			 * @returns {Object} cell
 			 * @methodOf jS
 			 * @name filterValue
@@ -4396,8 +4421,8 @@ jQuery.sheet = {
 
 				/**
 				 * time to fraction of day 1 / 0-24
-				 * @param time {Time}
-				 * @param isAMPM {Boolean}
+				 * @param {Time} time
+				 * @param {Boolean} isAMPM
 				 * @returns {*}
 				 * @methodOf jS.cellHandler
 				 * @name time
@@ -4419,7 +4444,7 @@ jQuery.sheet = {
 
 				/**
 				 * Get cell value
-				 * @param id {String} example "A1"
+				 * @param {String} id example "A1"
 				 * @returns {*}
 				 * @methodOf jS.cellHandler
 				 * @name cellValue
@@ -4431,8 +4456,8 @@ jQuery.sheet = {
 
 				/**
 				 * Get cell values as an array
-				 * @param start {String} example "A1"
-				 * @param end {String} example "B1"
+				 * @param {String} start example "A1"
+				 * @param {String} end example "B1"
 				 * @returns {Array}
 				 * @methodOf jS.cellHandler
 				 * @name cellRangeValue
@@ -4452,7 +4477,7 @@ jQuery.sheet = {
 
 				/**
 				 * Get cell value
-				 * @param id {String} example "$A$1"
+				 * @param {String} id example "$A$1"
 				 * @returns {*}
 				 * @methodOf jS.cellHandler
 				 * @name fixedCellValue
@@ -4464,8 +4489,8 @@ jQuery.sheet = {
 
 				/**
 				 * Get cell values as an array
-				 * @param start {String} example "$A$1"
-				 * @param end {String} example "$B$1"
+				 * @param {String} start example "$A$1"
+				 * @param {String} end example "$B$1"
 				 * @returns {Array}
 				 * @methodOf jS.cellHandler
 				 * @name fixedCellRangeValue
@@ -4478,8 +4503,8 @@ jQuery.sheet = {
 
 				/**
 				 * Get cell value from a different sheet within an instance
-				 * @param sheet {String} example "SHEET1"
-				 * @param id {String} example "A1"
+				 * @param {String} sheet example "SHEET1"
+				 * @param {String} id example "A1"
 				 * @returns {*}
 				 * @methodOf jS.cellHandler
 				 * @name remoteCellValue
@@ -4492,9 +4517,9 @@ jQuery.sheet = {
 
 				/**
 				 * Get cell values as an array from a different sheet within an instance
-				 * @param sheet {String} example "SHEET1"
-				 * @param start {String} example "A1"
-				 * @param end {String} example "B1"
+				 * @param {String} sheet example "SHEET1"
+				 * @param {String} start example "A1"
+				 * @param {String} end example "B1"
 				 * @returns {Array}
 				 * @methodOf jS.cellHandler
 				 * @name remoteCellRangeValue
@@ -4517,9 +4542,9 @@ jQuery.sheet = {
 
 				/**
 				 * Calls a function either from jQuery.sheet.engine or defined in jQuery sheet setting formulaFunctions.  When calling a function the cell being called from is "this".
-				 * @param fn {String} function name (Will be converted to upper case)
-				 * @param args {Array} arguments needing to be sent to function
-				 * @param cell {Object} cell
+				 * @param {String} fn function name (Will be converted to upper case)
+				 * @param {Array} args arguments needing to be sent to function
+				 * @param {Object} cell cell
 				 * @returns {*}
 				 * @methodOf jS.cellHandler
 				 * @name callFunction
@@ -4577,7 +4602,7 @@ jQuery.sheet = {
 			cellLookupHandlers: {
 
 				/**
-				 * @param id {String} example "$A$1"
+				 * @param {String} id example "$A$1"
 				 * @returns {Array} [sheet, startCell, endCell]
 				 * @methodOf jS.cellLookupHandlers
 				 * @name fixedCellValue
@@ -4587,9 +4612,9 @@ jQuery.sheet = {
 				},
 
 				/**
-				 * @param sheet {String} example "SHEET1"
-				 * @param start {String} example "$A$1"
-				 * @param end {String} example "$B$1"
+				 * @param {String} sheet example "SHEET1"
+				 * @param {String} start example "$A$1"
+				 * @param {String} end example "$B$1"
 				 * @returns {Array} [sheet, startCell, endCell]
 				 * @methodOf jS.cellLookupHandlers
 				 * @name fixedCellRangeValue
@@ -4609,9 +4634,9 @@ jQuery.sheet = {
 				},
 
 				/**
-				 * @param sheet {String} example "SHEET1"
-				 * @param start {String} example "A1"
-				 * @param end {String} example "B1"
+				 * @param {String} sheet example "SHEET1"
+				 * @param {String} start example "A1"
+				 * @param {String} end example "B1"
 				 * @returns {Array} [sheet, startCell, endCell]
 				 * @methodOf jS.cellLookupHandlers
 				 * @name cellRangeValue
@@ -4621,8 +4646,8 @@ jQuery.sheet = {
 				},
 
 				/**
-				 * @param sheet  {String} example "SHEET1"
-				 * @param id {String} example "A1"
+				 * @param {String} sheet example "SHEET1"
+				 * @param {String} id example "A1"
 				 * @returns {Array} [sheet, startCell, endCell]
 				 * @methodOf jS.cellLookupHandlers
 				 * @name remoteCellValue
@@ -4633,9 +4658,9 @@ jQuery.sheet = {
 
 				/**
 				 *
-				 * @param sheet {String} example "SHEET1"
-				 * @param start {String} example "A1"
-				 * @param end {String} example "B1"
+				 * @param {String} sheet example "SHEET1"
+				 * @param {String} start example "A1"
+				 * @param {String} end example "B1"
 				 * @returns {Array} [sheet, startCell, endCell]
 				 * @methodOf jS.cellLookupHandlers
 				 * @name remoteCellRangeValue
@@ -4685,7 +4710,7 @@ jQuery.sheet = {
 
 			/**
 			 *
-			 * @param msg {String}
+			 * @param {String} msg
 			 * @methodOf jS
 			 * @name alertFormulaError
 			 */
@@ -4706,7 +4731,7 @@ jQuery.sheet = {
 
 			/**
 			 * Where jS.spreadsheets are calculated, and returned to their td counterpart
-			 * @param tableI {Integer} table index
+			 * @param {Integer} tableI table index
 			 * @methodOf jS
 			 * @name calc
 			 */
@@ -4728,26 +4753,31 @@ jQuery.sheet = {
 
 			/**
 			 * adds a spreadsheet table
-			 * @param size {String} example "10x100" which means 10 columns by 100 rows
+			 * @param {Object} size, optional, size example "10x100" which means 10 columns by 100 rows
 			 * @methodOf jS
 			 * @name addSheet
 			 */
 			addSheet: function(size) {
-				size = (size ? size : prompt(jS.msg.newSheet));
+				if (!size) {
+					size = prompt(jS.msg.newSheet);
+					size = size.toLowerCase().split('x');
+					size = {cols:$.trim(size[0]) * 1, rows: $.trim(size[1]) * 1};
+				}
+
 				if (size) {
 					jS.evt.cellEditAbandon();
 					jS.setDirty(true);
-					var newSheetControl = jS.controlFactory.sheetUI($.sheet.makeTable.fromSize(size), jS.sheetCount + 1, function(o) {
-						jS.setActiveSheet(jS.sheetCount);
-					}, true);
-					
+					var newSheetControl = jS.controlFactory.sheetUI($.sheet.makeTable.fromSize(size), jS.sheetCount + 1);
+
+					jS.setActiveSheet(jS.sheetCount);
+
 					jS.trigger('addSheet', [jS.i]);
 				}
 			},
 
 			/**
 			 * deletes a spreadsheet table
-			 * @param i {Integer} optional spraedsheet index within instance
+			 * @param {Integer} i optional spraedsheet index within instance
 			 * @methodOf jS
 			 * @name deleteSheet
 			 */
@@ -4772,7 +4802,7 @@ jQuery.sheet = {
 			/**
 			 * removes the currently selected row
 			 * TODO: Needs refactor to use jS.spreadsheets
-			 * @param skipCalc {Boolean}
+			 * @param {Boolean} skipCalc
 			 * @methodOf jS
 			 * @name deleteRow
 			 */
@@ -4810,7 +4840,7 @@ jQuery.sheet = {
 			/**
 			 * removes the currently selected column
 			 * TODO: Needs refactor to jS.spreadsheets
-			 * @param skipCalc {Boolean}
+			 * @param {Boolean} skipCalc
 			 * @methodOf jS
 			 * @name deleteColumn
 			 */
@@ -4863,7 +4893,7 @@ jQuery.sheet = {
 
 			/**
 			 * manages a tabs inner value
-			 * @param get {Bool} makes return the current value of the tab
+			 * @param {Bool} get makes return the current value of the tab
 			 * @returns {jQuery|HTMLElement}
 			 * @methodOf jS
 			 * @name sheetTab
@@ -4875,7 +4905,7 @@ jQuery.sheet = {
 				if (get) {
 					sheetTab = jS.obj.sheet().attr('title');
 					sheetTab = (sheetTab ? sheetTab : 'Spreadsheet ' + (jS.i + 1));
-				} else if (jS.isSheetEditable() && s.editableTabs) { //ensure that the sheet is editable, then let them change the sheet's name
+				} else if (jS.isSheetEditable() && s.editableNames) { //ensure that the sheet is editable, then let them change the sheet's name
 					var newTitle = prompt(jS.msg.newSheetTitle, jS.sheetTab(true));
 					if (!newTitle) { //The user didn't set the new tab name
 						sheetTab = jS.obj.sheet().attr('title');
@@ -4893,7 +4923,7 @@ jQuery.sheet = {
 
 			/**
 			 * prints a value in a new window
-			 * @param o {String} anything
+			 * @param {String} o anything
 			 * @methodOf jS
 			 * @name print
 			 */
@@ -4905,7 +4935,7 @@ jQuery.sheet = {
 
 			/**
 			 * prints the source of a sheet for a user to see
-			 * @param pretty {Boolean} makes html a bit easier for the user to see
+			 * @param {Boolean} pretty makes html a bit easier for the user to see
 			 * @returns {Boolean}
 			 * @methofOf jS
 			 * @name viewSource
@@ -4953,7 +4983,7 @@ jQuery.sheet = {
 
 			/**
 			 * prints html to 1 line
-			 * @param node {HTMLElement}
+			 * @param {HTMLElement} node
 			 * @returns {String}
 			 * @constructor
 			 * @methodOf jS
@@ -5009,8 +5039,8 @@ jQuery.sheet = {
 
 			/**
 			 *  prints html to many lines, formatted for easy viewing
-			 * @param node {HTMLElement}
-			 * @param prefix {String}
+			 * @param {HTMLElement} node
+			 * @param {String} prefix
 			 * @returns {String}
 			 * @constructor
 			 * @methodOf jS
@@ -5063,7 +5093,7 @@ jQuery.sheet = {
 
 			/**
 			 * scrolls the sheet to the selected cell
-			 * @param td {jQuery|HTMLElement}
+			 * @param {jQuery|HTMLElement} td
 			 * @methodOf jS
 			 * @name followMe
 			 */
@@ -5149,9 +5179,9 @@ jQuery.sheet = {
 
 			/**
 			 * moves autoFiller to a selected cell
-			 * @param td {jQuery|HTMLElement}
-			 * @param tdHeight {Integer} optional, height of a td object
-			 * @param tdWidth {Integer} optional, width of a td object
+			 * @param {jQuery|HTMLElement} td
+			 * @param {Integer} tdHeight optional, height of a td object
+			 * @param {Integer} tdWidth optional, width of a td object
 			 * @methodOf jS
 			 * @name autoFillerGoToTd
 			 */
@@ -5186,7 +5216,7 @@ jQuery.sheet = {
 
 			/**
 			 * sets active a spreadsheet inside of a sheet instance
-			 * @param i {Integer} a sheet integer desired to show
+			 * @param {Integer} i a sheet integer desired to show
 			 * @methodOf jS
 			 * @name setActiveSheet
 			 */
@@ -5215,68 +5245,31 @@ jQuery.sheet = {
 			},
 
 			/**
-			 * requests a table object from a url, then opens it
-			 * @param url {String}
-			 * @returns {Boolean}
-			 * @methodOf jS
-			 * @name openSheetURL
-			 */
-			openSheetURL: function ( url ) {
-				s.urlGet = url;
-				return jS.openSheet();
-			},
-
-			/**
 			 * opens a spreadsheet into the active sheet instance
-			 * @param o {jQuery|HTMLElement} a table objec
-			 * @param reloadBarsOverride {Boolean}
+			 * @param tables
 			 * @returns {Boolean} if set to true, foces bars on left and top not be reloaded
 			 * @methodOf jS
 			 * @name openSheet
 			 */
-			openSheet: function(o, reloadBarsOverride) {
+			openSheet: function(tables) {
 				if (!jS.isDirty ? true : confirm(jS.msg.openSheet)) {
 					var header = jS.controlFactory.header(),
 						ui = jS.controlFactory.ui(),
 						tabContainer = jS.controlFactory.tabContainer();
 
 					s.parent
-						.html(header)
+						.append(header)
 						.append(ui)
-						.after(tabContainer);
-					
-					var fnAfter = function(i, l) {
-						if (i == l) {
-							jS.i = 0;
-							jS.setActiveSheet();
-							//jS.themeRoller.resize();
+						.append(tabContainer);
 
-							jS.trigger('sheetOpened', [i]);
+					tables.each(function(i) {
+						jS.controlFactory.sheetUI($(this), i);
+						jS.calc(i);
+						jS.trigger('sheetOpened', [i, jS]);
+					});
 
-							for (var i = 0; i <= jS.sheetCount; i++) {
-								jS.calc(i);
-							}
-						}
-					};
-					
-					if (!o) {
-						$('<div />').load(s.urlGet, function() {
-							var sheets = $(this).children('table');
-							sheets.each(function(i) {
-								jS.controlFactory.sheetUI($(this), i, function() {
-									fnAfter(i, sheets.length - 1);
-								}, true);
-							});
-						});
-					} else {
-						var sheets = $('<div />').html(o).children('table');
-						sheets.show().each(function(i) {
-							jS.controlFactory.sheetUI($(this), i,  function() {
-								fnAfter(i, sheets.length);
-							}, (reloadBarsOverride ? true : false));
-						});
-					}
-					
+					jS.setActiveSheet(0);
+
 					jS.setDirty(false);
 					
 					return true;
@@ -5300,7 +5293,7 @@ jQuery.sheet = {
 			/**
 			 * creates a new row and then applies an array's values to each of it's new values, not currently working
 			 * TODO: Needs refactored to use jS.spreadsheets
-			 * @param rowArray {Array} values to import
+			 * @param {Array} rowArray values to import
 			 * @methodOf jS
 			 * @name importRow
 			 */
@@ -5333,7 +5326,7 @@ jQuery.sheet = {
 			/**
 			 * creates a new column and then applies an array's values to each of it's new values
 			 * TODO: needs refactored to use jS.spreadsheets
-			 * @param columnArray {Array} values to import
+			 * @param {Array} columnArray values to import
 			 * @methodOf jS
 			 * @name importColumn
 			 */
@@ -5522,7 +5515,7 @@ jQuery.sheet = {
 			},
 
 			/**
-			 * Sync's the called parent's controls so that they fit correctlty within the origParent
+			 * Sync's the called parent's controls so that they fit correctly within the origParent
 			 * @function sheetSyncSize
 			 * @methodOf jS
 			 * @name sheetSyncSize
@@ -5537,11 +5530,13 @@ jQuery.sheet = {
 				s.parent
 					.height(h)
 					.width(s.width);
-					
-				var w = s.width - s.boxModelCorrection;
+
+				var w = s.width;
 				
-				h = h - jS.obj.header().outerHeight() - jS.obj.barTopParent().outerHeight() - s.boxModelCorrection;
-				
+				h -= jS.obj.header().outerHeight();
+				h -= jS.obj.barTopParent().outerHeight();
+				h -= jS.obj.tabContainer().outerHeight();
+
 				jS.obj.panes()
 					.height(h - window.scrollBarSize.height - s.boxModelCorrection)
 					.width(w - window.scrollBarSize.width);
@@ -5575,7 +5570,7 @@ jQuery.sheet = {
 
 			/**
 			 * Finds a cell in a sheet from a value
-			 * @param v {String} value to look for within a cell
+			 * @param {String} v value to look for within a cell
 			 * @methodOf jS
 			 * @name cellFind
 			 */
@@ -5607,9 +5602,9 @@ jQuery.sheet = {
 
 			/**
 			 * Sets active bar
-			 * @param type {String} "col" || "row" || "all"
-			 * @param start {Integer} start highlighting from
-			 * @param end {Integer} end highlighting to
+			 * @param {String} type "col" || "row" || "all"
+			 * @param {Integer} start start highlighting from
+			 * @param {Integer} end end highlighting to
 			 * @methodOf jS
 			 * @name cellSetActiveBar
 			 */
@@ -5685,8 +5680,8 @@ jQuery.sheet = {
 
 			/**
 			 * gets a range of selected cells, then returns it
-			 * @param e {Object} jQuery event, optional, when in use, is during mouse down
-			 * @param v {String} Value to preserve and return
+			 * @param {Object} e jQuery event, optional, when in use, is during mouse down
+			 * @param {String} v Value to preserve and return
 			 * @param newFn
 			 * @param notSetFormula
 			 * @returns {String}
@@ -5781,9 +5776,9 @@ jQuery.sheet = {
 
 			/**
 			 * Gets the td element within a spreadsheet instance
-			 * @param table {Integer} table index
-			 * @param row {Integer} row index
-			 * @param col {Integer} column index
+			 * @param {Integer} table table index
+			 * @param {Integer} row row index
+			 * @param {Integer} col column index
 			 * @returns {Element}
 			 * @methodOf
 			 * @name getTd
@@ -5812,24 +5807,20 @@ jQuery.sheet = {
 				var result = {col: 0, row: 0};
 				if (!td && !td[0]) return result;
 
-				if (td[0]) {
-					return {
-						col: parseInt(td[0].cellIndex),
-						row: parseInt(td[0].parentNode.rowIndex)
-					};
-				} else {
-					if (!td.cellIndex && !td.parentNode && !td.parentNode.rowIndex) return result;
-					return {
-						col: parseInt(td.cellIndex),
-						row: parseInt(td.parentNode.rowIndex)
-					};
-				}
+				td = td[0] || td;
+
+				if (!td.cellIndex || !td.parentNode || !td.parentNode.rowIndex) return result;
+				return {
+					col: parseInt(td.cellIndex),
+					row: parseInt(td.parentNode.rowIndex)
+				};
 			},
 
 			/**
 			 * Get a td from a pixel location
-			 * @param left {Integer} pixels from left
-			 * @param top {Integer} pixels from top
+			 * @param {Integer} left pixels from left
+			 * @param {Integer} top pixels from top
+			 * @param {Boolean} isBar
 			 * @returns {Element|Boolean} Boolean if not found
 			 * @methodOf jS
 			 * @name getTdFromXY
@@ -5970,7 +5961,7 @@ jQuery.sheet = {
 
 			/**
 			 * Sets changed
-			 * @param changed {Boolean} changed state
+			 * @param {Boolean} changed changed state
 			 * @name setChanged
 			 * @methodOf jS
 			 */
@@ -6036,7 +6027,7 @@ jQuery.sheet = {
 				stack: [],
 
 				/**
-				 * @param undo {Boolean}
+				 * @param {Boolean} undo
 				 * @methodOf jS.cellUndoable
 				 * @name undoOrRedo
 				 */
@@ -6085,7 +6076,7 @@ jQuery.sheet = {
 
 				/**
 				 * adds elements to the stack
-				 * @param tds {jQuery|HTMLElement}
+				 * @param {jQuery|HTMLElement} tds
 				 * @name add
 				 * @methodOf jS.cellUndoable
 				 */
@@ -6118,7 +6109,7 @@ jQuery.sheet = {
 
 			/**
 			 * get cols associated with a sheet/table within an instance
-			 * @param o {jQuery|HTMLElement} table
+			 * @param {jQuery|HTMLElement} o table
 			 * @returns {Element}
 			 * @name cols
 			 * @methodOf jS
@@ -6137,8 +6128,8 @@ jQuery.sheet = {
 
 			/**
 			 * get col associated with a sheet/table within an instance
-			 * @param o {jQuery|HTMLElement} table
-			 * @param eq {Integer} Index of column
+			 * @param {jQuery|HTMLElement} o table
+			 * @param {Integer} eq Index of column
 			 * @returns {Element}
 			 * @methodOf jS
 			 * @name col
@@ -6157,8 +6148,8 @@ jQuery.sheet = {
 
 			/**
 			 * get cells of a table row
-			 * @param o {jQuery|HTMLElement} table
-			 * @param row {Index} Index of row
+			 * @param {jQuery|HTMLElement} o table
+			 * @param {Index} row Index of row
 			 * @returns {Element}
 			 * @methodOf jS
 			 * @name rowCells
@@ -6181,7 +6172,7 @@ jQuery.sheet = {
 
 			/**
 			 * Get rows of a sheet/table
-			 * @param o {jQuery|HTMLElement} table
+			 * @param {jQuery|HTMLElement} o table
 			 * @returns {Element}
 			 * @methodOf jS
 			 * @name rows
@@ -6198,7 +6189,7 @@ jQuery.sheet = {
 
 			/**
 			 *
-			 * @param o {jQuery|HTMLElement} table
+			 * @param {jQuery|HTMLElement} o table
 			 * @returns {Object} {cols, rows}
 			 * @methodOf jS
 			 * @name sheetSize
@@ -6258,24 +6249,6 @@ jQuery.sheet = {
 				}
 				
 				jS.calc();
-			},
-
-			/**
-			 * TODO: Needs refactored into several small functions rather than 1 function doing all building of sheets
-			 * @returns {*}
-			 * @methodOf jS
-			 * @name buildSheet
-			 */
-			buildSheet: function() {
-				if (jS.s.buildSheet) {//override urlGet, this has some effect on how the topbar is sized
-					if (typeof(jS.s.buildSheet) == 'object') {
-						return jS.s.buildSheet;
-					} else if (jS.s.buildSheet == true || jS.s.buildSheet == 'true') {
-						return $(jS.s.origHtml);
-					} else if (jS.s.buildSheet.match(/x/i)) {
-						return $.sheet.makeTable.fromSize(jS.s.buildSheet);
-					}
-				}
 			}
 		};
 		
@@ -6303,10 +6276,9 @@ jQuery.sheet = {
 		//We need to take the sheet out of the parent in order to get an accurate reading of it's height and width
 		//$(this).html(s.loading);
 		s.origParent = origParent;
-		s.origHtml = origParent.html();
-		s.parent
-			.html('')
-			.addClass(jS.cl.parent);
+		s.origHtml = origParent.children().detach();
+
+		s.parent.addClass(jS.cl.parent);
 		
 		origParent
 			.unbind('switchSpreadsheet')
@@ -6390,9 +6362,12 @@ jQuery.sheet = {
 		if (!s.allowCellsLineBreaks) {
 			origParent.addClass('noBreak');
 		}
-		
+
+		s.title = s.title || origParent.attr('title') || '';
+
 		jS.s = s;
-		jS.openSheet(jS.buildSheet(), s.forceColWidthsOnStartup);
+
+		jS.openSheet(s.origHtml);
 
 		return jS;
 	},
@@ -6550,42 +6525,29 @@ jQuery.sheet = {
 			}
 			return tables.children();
 		},
-		fromSize: function(size, h, w) { /* creates a spreadsheet object from a size given 
+		fromSize: function(size) { /* creates a spreadsheet object from a size given
 											size: string, example "10x100" which means 10 columns by 100 rows;
 											h: int, height for each new row;
 											w: int, width of each new column;
 										*/
-			if (!size) {
-				size = "5x10";
-			}
-			size = size.toLowerCase().split('x');
-
-			var columnsCount = parseInt(size[0]);
-			var rowsCount = parseInt(size[1]);
+			size = size || {rows: 25, cols: 10};
 			
 			//Create elements before loop to make it faster.
-			var newSheet = jQuery('<table />');
-			var standardTd = '<td></td>';
-			var tds = '';
-			
-			//Using -- is many times faster than ++
-			for (var i = columnsCount; i >= 1; i--) {
-				tds += standardTd;
+			var table = jQuery('<table />')
+				td = '<td></td>',
+				tds = '';
+
+			for (var i = size.cols; i >= 1; i--) {
+				tds += td;
 			}
 
-			var standardTr = '<tr' + (h ? ' height="' + h + 'px" style="height: ' + h + 'px;"' : '') + '>' + tds + '</tr>';
+			var tr = '<tr style="height: ' + 15 + 'px;">' + tds + '</tr>';
 			var trs = '';
-			for (var i = rowsCount; i >= 1; i--) {
-				trs += standardTr;
+			for (var i = size.rows; i >= 1; i--) {
+				trs += tr;
 			}
 			
-			newSheet.html('<tbody>' + trs + '</tbody>');
-			
-			if (w) {
-				newSheet.width(columnsCount * w);
-			}
-			
-			return newSheet;
+			return table.html('<tbody>' + trs + '</tbody>');
 		}
 	},
 	killAll: function() { /* removes all sheets */
@@ -6668,31 +6630,6 @@ jQuery.sheet = {
 		};
 	}
 };
-
-(function ($){
-	var check=false, isRelative=true;
-
-	$.elementFromPoint = function(x,y) {
-		if(!document.elementFromPoint) return null;
-
-		if(!check) {
-			var sl;
-			if((sl = $(document).scrollTop()) >0) {
-				isRelative = (document.elementFromPoint(0, sl + $(window).height() -1) == null);
-			} else if((sl = $(document).scrollLeft()) >0) {
-				isRelative = (document.elementFromPoint(sl + $(window).width() -1, 0) == null);
-			}
-			check = (sl>0);
-		}
-
-		if(!isRelative) {
-			x += $(document).scrollLeft();
-			y += $(document).scrollTop();
-		}
-
-		return document.elementFromPoint(x,y);
-	};
-})(jQuery);
 
 var jSE = jQuery.sheet.engine = { //Formula Engine
 	calc: function(tableI, spreadsheets, ignite, freshCalc) { //spreadsheets are array, [spreadsheet][row][cell], like A1 = o[0][0][0];
