@@ -85,12 +85,13 @@
 							output += '<column>';
 
 							if (this.formula) output += '<formula>=' + this.formula + '</formula>';
-							if (this.value) output += '<value>' + this.value + '</value>'
-							if (this.td.attr('style')) output += '<style>' + this.td.attr('style') + '</style>'
+							if (this.value) output += '<value>' + this.value + '</value>';
+							if (this.td.attr('style')) output += '<style>' + this.td.attr('style') + '</style>';
+							if (this.td.attr('class')) output += '<class>' + this.td.attr('class') + '</class>';
 							output += '</column>';
 
 							if (row * 1 == 1) {
-								metadata[column] = '<width>' + $(jS.col(null, column)).css('width') + '</width>'
+								metadata[column] = '<width>' + $(jS.col(null, column)).css('width') + '</width>';
 							}
 						});
 						output += '</row>';
