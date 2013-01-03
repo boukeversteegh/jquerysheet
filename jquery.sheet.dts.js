@@ -1,7 +1,7 @@
 (function($) {
 	jQuery.sheet.dts = {
 		toTable: {
-			json: function(jS) {},
+			json: function(json) {},
 			xml: function(xml) {
 				xml = $(xml);
 
@@ -65,6 +65,7 @@
 		},
 		fromTable: {
 			json: function(jS) {
+
 			},
 			xml: function(jS) {
 				var output = '<spreadsheets title="' + (jS.s.title || '') + '">';
