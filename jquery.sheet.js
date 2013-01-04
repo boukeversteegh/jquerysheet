@@ -18,40 +18,57 @@ jQuery.fn.extend({
 	/**
 	 * The jQuery.sheet plugin
 	 * @name sheet
-	 * @param {Object} settings supports the following attributes
+	 * @param {Object} settings supports the following attributes:
 	 * editable {Boolean}, default true, Makes the sheet editable or viewable
 	 * editableNames {Boolean}, default true, Allows sheets to have their names changed, depends on settings.editable being true
 	 * barMenus {Boolean}, default true, Turns bar menus on/off
-	 * freezableCells
-	 * allowToggleState
-	 * menu
-	 * newColumnWidth
-	 * title
-	 * menuRight
-	 //bool true - build sheet inside of parent
-	 //string  - '{number_of_cols}x{number_of_rows} (5x100)
-	 //object - table
-	 * calcOff
-	 * log
-	 * lockFormulas
-	 * parent
-	 * colMargin
-	 * fnSave
-	 * fnOpen
-	 * fnClose
-	 * boxModelCorrection
-	 * formulaFunctions
-	 * formulaVariables
-	 * cellSelectModel
-	 * autoAddCells
-	 * resizable
-	 * autoFiller
-	 * minSize
-	 * alertFormulaErrors
-	 * error
-	 * encode
-	 * allowCellsLineBreaks
-	 * frozenAt
+	 * freezableCells {Boolean}, default true, Turns ability to freeze cells on/off
+	 * allowToggleState {Boolean}, default true, allows the spreadsheet to be toggled from write/read
+	 * newColumnWidth {Integer}, default 120, width of new columns
+	 * title {String|Function}, title of spreadsheet, if function, expects string and is sent jS
+	 * menuRight {String|Function}, default '', if function expects string and is sent jS. If string 'sheetIndex' is replaced with sheet index number, 'sheetInstance' is replaced by the instance number, if ul object as string, will attempt to create menu
+	 * menuLeft {String|Function}, default '', if function expects string and is sent jS. If string 'sheetIndex' is replaced with sheet index number, 'sheetInstance' is replaced by the instance number, if ul object as string, will attempt to create menu
+	 * calcOff {Boolean} default false, turns turns off ability to calculate
+	 * log {Boolean} turns on/off debug mode
+	 * lockFormulas {Boolean} default false, turns on/off the ability to edit formulas
+	 * colMargin {Integer} default 18, size of height of new cells, and width of cell bars
+	 * boxModelCorrection {Integer} default 2, if box model is detected, it adds these pixels to ensure the size of the spreadsheet controls are correct
+	 * formulaFunctions {Object} default {}, Additional functions for formulas. Will overwrite default functions if named the same.
+	 *      Javascript Example:
+	 *          $(obj).sheet({
+	 *              NEWFUNCTION: function(arg1, arg2) {
+	 *                  //this = the jS.spreadsheet[sheetIndex][rowIndex][cellIndex] object
+	 *                  return 'string'; //can return a string
+	 *                  return $('<div />'); //can return an object
+	 *                  return { //can also return an object {value: '', html: ''}
+	 *                      value: 'my value seen by other cells or if accessed directly',
+	 *                      html: $('<div>What the end user will see on the cell this is called in</div>')
+	 *                  };
+	 *              }
+	 *          });
+	 *
+	 *      Formula Example:
+	 *          =NEWFUNCTION(A1:B1, C3);
+	 *
+	 * formulaVariables {Object} default {}, Additional variables that formulas can access.
+	 *      Javascript Example:
+	 *          $(obj).sheet({
+	 *              newVariable: 100
+	 *          });
+	 *
+	 *      Formula Example (will output 200)
+	 *          =newVariable + 100
+	 *
+	 * cellSelectModel {String} default 'excel', accepts 'excel', 'oo', or 'gdrive', makes the select model act differently
+	 * autoAddCells {Boolean} default true, allows you to add cells by selecting the last row/column and add cells by pressing either tab (column) or enter (row)
+	 * resizable {Boolean} default true, turns resizing on and off, depends on jQuery ui
+	 * autoFiller {Boolean} default true, turns on/off the auto filler, the little square that follows the active cell around that you can drag and fill the values of other cells in with.
+	 * minSize {Object} default {rows: 15, cols: 5}, the minimum size of a spreadsheet
+	 * alertFormulaErrors {Boolean} default false, if true triggers jS.alertFormulaError, which alerts the end user of an error via an alert
+	 * error {Function} default function(e) { return e.error; }, is triggered on errors from the formula engine
+	 * encode {Function} default is a special characters handler for strings only, is a 1 way encoding of the html if entered manually by the editor.  If you want to use html with a function, return an object rather than a string
+	 * allowCellsLineBreaks {Boolean} default true, allows cells to accept line breaks, otherwise they are stripped
+	 * frozenAt {Object} default {row: 0,col: 0}, Gives the ability to freeze cells at a certain row/col
 	 * @methodOf jQuery.fn
 	 * @namespace
 	 *
@@ -60,40 +77,28 @@ jQuery.fn.extend({
 		jQuery(this).each(function() {
 			var parent = jQuery(this);
 			var set = jQuery.extend({
-				editable: 			true, 							//bool, Makes the jSheetControls_formula & jSheetControls_fx appear
-				editableNames:		true,							//bool, If sheet is editable, this allows users to change the tabs by second click
-				barMenus:			true,							//bool, if sheet is editable, this will show the mini menu in barTop and barLeft for sheet manipulation
-				freezableCells:		true,							//bool, if sheet is editable, this will show the barHandles and allow user to drag them to freeze cells, not yet working.
-				allowToggleState: 	true,							//allows the function that changes the spreadsheet's state from static to editable and back
+				editable: 			true,
+				editableNames:		true,
+				barMenus:			true,
+				freezableCells:		true,
+				allowToggleState: 	true,
 				menuLeft:   	    null,
-				newColumnWidth: 	120, 							//int, the width of new columns or columns that have no width assigned
-				title: 				null, 							//html, general title of the sheet group
-				menuRight:			null, 							//html, menu for editing sheet
-																		//bool true - build sheet inside of parent
-																		//string  - '{number_of_cols}x{number_of_rows} (5x100)
-																		//object - table
-				calcOff: 			false, 							//bool, turns calculationEngine off (no spreadsheet, just grid)
-				log: 				false, 							//bool, turns some debugging logs on (jS.log('msg'))
-				lockFormulas: 		false, 							//bool, turns the ability to edit any formula off
-				parent: 			parent, 					//object, sheet's parent, DON'T CHANGE
-				colMargin: 			18, 							//int, the height and the width of all bar items, and new rows
-				fnSave: 			function() { parent.getSheet().saveSheet(); }, //fn, default save function, more of a proof of concept
-				fnOpen: 			function() { 					//fn, by default allows you to paste table html into a javascript prompt for you to see what it looks likes if you where to use sheet
-										var t = prompt('Paste your table html here');
-										if (t) {
-											parent.getSheet().openSheet(t);
-										}
-				},
-				fnClose: 			function() {}, 					//fn, default clase function, more of a proof of concept
-				
-				boxModelCorrection: 2, 								//int, attempts to correct the differences found in heights and widths of different browsers, if you mess with this, get ready for the must upsetting and delacate js ever
-				formulaFunctions:		{},							//object, used to extend the standard functions that come with sheet
+				newColumnWidth: 	120,
+				title: 				null,
+				menuRight:			null,
+				calcOff: 			false,
+				log: 				false,
+				lockFormulas: 		false,
+				parent: 			parent,
+				colMargin: 			18,
+				boxModelCorrection: 2,
+				formulaFunctions:		{},
 				formulaVariables:       {},
-				cellSelectModel: 	'excel',						//string, 'excel' || 'oo' || 'gdocs' Excel sets the first cell onmousedown active, openoffice sets the last, now you can choose how you want it to be ;)
-				autoAddCells:		true,							//bool, when user presses enter on the last row/col, this will allow them to add more cells, thus improving performance and optimizing modification speed
-				resizable: 			true,							//bool, makes the $(obj).sheet(); object resizeable, also adds a resizable formula textarea at top of sheet
-				autoFiller: 		false,							//bool, the little guy that hangs out to the bottom right of a selected cell, users can click and drag the value to other cells
-				minSize: 			{rows: 15, cols: 5},			//object - {rows: int, cols: int}, Makes the sheet stay at a certain size when loaded in edit mode, to make modification more productive
+				cellSelectModel: 	'excel',
+				autoAddCells:		true,
+				resizable: 			true,
+				autoFiller: 		true,
+				minSize: 			{rows: 15, cols: 5},
 				alertFormulaErrors:	false,
 				error:              function(e) { return e.error; },
 				encode:             function(val) {
@@ -108,10 +113,8 @@ jQuery.fn.extend({
 						.replace(/\n/g, '\n<br>');
 				},
 				allowCellsLineBreaks: true,
-				frozenAt: {
-					row: 0,
-					col: 0
-				}
+				frozenAt: {row: 0,col: 0},
+				headerHeight: 0
 			}, settings);
 			
 			var jS = parent.getSheet();
@@ -236,6 +239,42 @@ jQuery.sheet = {
 	 * @memberOf jQuery.sheet
 	 */
 	instance: [],
+
+	dependencies: {
+		coreCss: {css: 'jquery.sheet.css'},
+		globalize: {script: 'plugins/globalize.js'},
+		parser: {script: 'parser/parser.js'},
+		mousewheel: {script: 'plugins/jquery.mousewheel.min.js'},
+		nearest: {script: 'plugins/jquery.nearest.min.js'}
+	},
+	optional: {
+		raphael: {script: 'plugins/raphael-min.js'},
+		gRaphael: {script: 'plugins/g.raphael-min.js'},
+		colorPicker: {css: 'plugins/jquery.colorPicker.css'},
+		colorPicker: {script: 'plugins/jquery.colorPicker.min.js'},
+		elastic: {script: 'plugins/jquery.elastic.min.js'},
+		advancedfn: {script: 'plugins/jquery.sheet.advancedfn.js'},
+		financefn: {script: 'plugins/jquery.sheet.financefn.js'},
+		dts: {script: 'plugins/jquery.sheet.dts.js'}
+	},
+
+	preLoad: function(path) {
+		var g = function() {
+			if (this.script) {
+				document.write('<script src="' + path + this.script + '"></script>');
+			} else if (this.css) {
+				document.write('<link rel="stylesheet" type="text/css" href="' + path + this.css + '"></link>');
+			}
+		};
+
+		$.each(this.dependencies, function (){
+			g.apply(this);
+		});
+
+		$.each(this.optional, function (){
+			g.apply(this);
+		});
+	},
 
 	/**
 	 * The instance creator of jQuery.sheet
@@ -803,6 +842,7 @@ jQuery.sheet = {
 
 					if (eq == u) {
 						eq = (type == 'row' ? jS.sheetSize().rows : jS.sheetSize().cols);
+						isLast = true;
 					}
 
 					switch (type) {
@@ -863,7 +903,7 @@ jQuery.sheet = {
 						case "col":
 							o = {
 								cells: function() {
-									var cellStart = jS.rowCells(sheet, 0)[eq];
+									var cellStart = jS.rowCells(sheet, 1)[eq];
 									var lastRow = jS.rowCells(sheet);
 									var cellEnd = lastRow[lastRow.length - 1];
 
@@ -1074,8 +1114,8 @@ jQuery.sheet = {
 								jS.busy = true;
 							},
 							stop: function(e, ui) {
-								var target = jS.nearest(handle, jS.controls.bar.x.tds());
 								jS.busy = false;
+								var target = jS.nearest(handle, jS.controls.bar.x.tds());
 								jS.obj.barHelper().remove();
 								jS.s.frozenAt.col = jS.getTdLocation(target).col - 1;
 								jS.evt.scroll.start('x', pane);
@@ -1115,8 +1155,8 @@ jQuery.sheet = {
 								jS.busy = true;
 							},
 							stop: function(e, ui) {
-								var target = jS.nearest(handle, jS.controls.bar.y.tds());
 								jS.busy = false;
+								var target = jS.nearest(handle, jS.controls.bar.y.tds());
 								jS.obj.barHelper().remove();
 								jS.s.frozenAt.row = jS.getTdLocation(target).row - 1;
 								jS.evt.scroll.start('y', pane);
@@ -1443,7 +1483,11 @@ jQuery.sheet = {
 					var header = jS.controls.header = $('<div id="' + jS.id.header + '" class="' + jS.cl.header + '"></div>'),
 						firstRow = $('<table><tr /></table>').prependTo(header),
 						firstRowTr = $('<tr />');
-					
+
+					if (jS.s.headerHeight) {
+						header.height(jS.s.headerHeight);
+					}
+
 					if (s.title) {
 						if ($.isFunction(s.title)) {
 							s.title = jS.title(jS, I);
@@ -1454,11 +1498,11 @@ jQuery.sheet = {
 					//Sheet Menu Control
 					function makeMenu(menu) {
 						if ($.isFunction(menu)) {
-							menu = $(menu(jS, I));
+							menu = $(menu(jS));
 						} else {
 							menu = $(menu
 								.replace(/sheetInstance/g, "jQuery.sheet.instance[" + I + "]")
-								.replace(/menuInstance/g, I));
+								.replace(/sheetIndex/g, I));
 						}
 
 						if (menu.is('ul')) {
@@ -3056,12 +3100,8 @@ jQuery.sheet = {
 					var h = s.parent.height();
 					s.width = w;
 					s.height = h;
-					
-					jS.obj.tabContainer()
-						.insertAfter(
-							s.parent.append(jS.obj.fullScreen().children())
-						)
-						.removeClass(jS.cl.tabContainerFullScreen);
+
+					s.parent.append(jS.obj.fullScreen().children())
 					
 					jS.obj.fullScreen().remove();
 					
@@ -3072,18 +3112,14 @@ jQuery.sheet = {
 					$body.addClass('bodyNoScroll');
 					
 					var w = $window.width() - 15;
-					var h = $window.height() - 35;
+					var h = $window.height() - 15;
 
 					s.width = w;
 					s.height = h;
-					
-					jS.obj.tabContainer()
-						.insertAfter(
-							jS.controls.fullscreen[jS.i] = $('<div class="' + jS.cl.fullScreen + ' ' + jS.cl.uiFullScreen + '" />')
-								.append(s.parent.children())
-								.appendTo($body)
-						)
-						.addClass(jS.cl.tabContainerFullScreen);
+
+					jS.controls.fullscreen[jS.i] = $('<div class="' + jS.cl.fullScreen + ' ' + jS.cl.uiFullScreen + '" />')
+						.append(s.parent.children())
+						.appendTo($body)
 					
 					s.parent = jS.obj.fullScreen();
 
@@ -3659,20 +3695,12 @@ jQuery.sheet = {
 					addRows = 0,
 					addCols = 0;
 				
-				if ((size.cols) < s.minSize.cols) {
-					addCols = s.minSize.cols - size.cols;
+				if (size.cols < s.minSize.cols) {
+					jS.controlFactory.addColumnMulti(s.minSize.cols - size.cols);
 				}
 				
-				if (addCols) {
-					jS.controlFactory.addColumnMulti(addCols, false, true);
-				}
-				
-				if ((size.rows) < s.minSize.rows) {
-					addRows = s.minSize.rows - size.rows;
-				}
-				
-				if (addRows) {
-					jS.controlFactory.addRowMulti(addRows, false, true);
+				if (size.rows < s.minSize.rows) {
+					jS.controlFactory.addRowMulti(s.minSize.rows - size.rows);
 				}
 			},
 
@@ -4104,7 +4132,7 @@ jQuery.sheet = {
 					
 					switch (s.cellSelectModel) {
 						case 'excel':
-						case 'gdocs':
+						case 'gdrive':
 							selectModel = function() {};
 							clearHighlightedModel = jS.themeRoller.cell.clearHighlighted;
 							break;
@@ -4941,7 +4969,7 @@ jQuery.sheet = {
 			 * @name viewSource
 			 */
 			viewSource: function(pretty) {
-				var sheetClone = jS.sheetDecorateRemove(true);
+				var sheetClone = jS.tables();
 				sheetClone = jS.sheetBarsRemove(sheetClone);
 				
 				var s = "";
@@ -4956,29 +4984,6 @@ jQuery.sheet = {
 				jS.print(s);
 				
 				return false;
-			},
-
-			/**
-			 * saves the sheet, default is post to jQuery sheet setting urlSave with parameter s as the spreadsheet's html
-			 * @methodOf jS
-			 * @name saveSheet
-			 */
-			saveSheet: function() { /* saves the sheet */
-				var v = jS.sheetDecorateRemove(true);
-				v = jS.sheetBarsRemove(v);
-				var d = $('<div />').html(v).html();
-
-				$.ajax({
-					url: s.urlSave,
-					type: 'POST',
-					data: 's=' + d,
-					dataType: 'html',
-					success: function(data) {
-						jS.setDirty(false);
-						jS.setChanged(false);
-						jS.trigger('saveSheet');
-					}
-				});
 			},
 
 			/**
@@ -5357,162 +5362,6 @@ jQuery.sheet = {
 				jS.calc();
 			},
 
-			/**
-			 * Sheet export. These generally work with the jS.spreadsheets (or jQuery.sheet.instance[index].spreadsheets) for a data transformation service into json/xml/or html
-			 * @namespace
-			 * @name exportSheet
-			 * @memberOf jS
-			 */
-			exportSheet: {
-
-				/**
-				 * Xml output.  Needs refactored.
-				 * @param skipCData
-				 * @returns {String}
-				 * @methodOf jS.exportSheet
-				 * @name xml
-				 */
-				xml: function (skipCData) {
-					var sheetClone = jS.sheetDecorateRemove(true);
-					sheetClone = jS.sheetBarsRemove(sheetClone);
-							
-					var document = "";
-					
-					var cdata = ['<![CDATA[',']]>'];
-					
-					if (skipCData) {
-						cdata = ['',''];
-					}
-
-					$(sheetClone).each(function() {
-						var row = '';
-						var table = $(this);
-						var colCount = 0;
-						var col_widths = '';
-
-						table.find('colgroup').children().each(function (i) {
-							col_widths += '<c' + i + '>' + ($(this).attr('width') + '').replace('px', '') + '</c' + i + '>';
-						});
-						
-						var trs = table.find('tr');
-						var rowCount = trs.length;
-						
-						trs.each(function(i){
-							var col = '';
-							
-							var tr = $(this);
-							var h = tr.attr('height');
-							var height = (h ? h : s.colMargin);
-							var tds = tr.find('td');
-							colCount = tds.length;
-							
-							tds.each(function(j){
-								var td = $(this);
-								var colSpan = td.attr('colspan');
-								colSpan = (colSpan > 1 ? colSpan : '');
-								
-								var formula = td.attr('formula');
-								var text = (formula ? formula : td.text());
-								var cl = td.attr('class');
-								var style = td.attr('style');
-									
-								//Add to current row
-								col += '<c' + j +
-									(style ? ' style=\"' + style + '\"' : '') + 
-									(cl ? ' class=\"' + cl + '\"' : '') +
-									(colSpan ? ' colspan=\"' + colSpan + '\"' : '') +
-								'>' + text + '</c' + j + '>';
-							});
-							
-							row += '<r' + i + ' h=\"' + height + '\">' + col + '</r' + i + '>';
-						});
-
-						document += '<document title="' + table.attr('title') + '">' +
-									'<metadata>' +
-										'<columns>' + colCount + '</columns>' +  //length is 1 based, index is 0 based
-										'<rows>' + rowCount + '</rows>' +  //length is 1 based, index is 0 based
-										'<col_widths>' + col_widths + '</col_widths>' +
-									'</metadata>' +
-									'<data>' + row + '</data>' +
-								'</document>';
-					});
-
-					return '<documents>' + document + '</documents>';
-				},
-
-				/**
-				 * THe json output.  Needs refactored.
-				 * @returns {Array}
-				 * @methodOf jS.exportSheet
-				 * @name json
-				 */
-				json: function() {
-					var sheetClone = jS.sheetDecorateRemove(true);
-					sheetClone = jS.sheetBarsRemove(sheetClone);
-					var documents = []; //documents
-					
-					$(sheetClone).each(function() {
-						var document = {}; //document
-						document['metadata'] = {};
-						document['data'] = {};
-						
-						var table = $(this);
-						
-						var trs = table.find('tr');
-						var rowCount = trs.length;
-						var colCount = 0;
-						var col_widths = '';
-						
-						trs.each(function(i) {
-							var tr = $(this);
-							var tds = tr.find('td');
-							colCount = tds.length;
-							
-							document['data']['r' + i] = {};
-							document['data']['r' + i]['h'] = tr.attr('height');
-							
-							tds.each(function(j) {
-								var td = $(this);
-								var colSpan = td.attr('colspan');
-								colSpan = (colSpan > 1 ? colSpan : null);
-								var formula = td.attr('formula');
-
-								document['data']['r' + i]['c' + j] = {
-									'value': (formula ? formula : td.text()),
-									'style': td.attr('style'),
-									'colspan': colSpan,
-									'cl': td.attr('class')
-								};
-							});
-						});
-						document['metadata'] = {
-							'columns': colCount, //length is 1 based, index is 0 based
-							'rows': rowCount, //length is 1 based, index is 0 based
-							'title': table.attr('title'),
-							'col_widths': {}
-						};
-						
-						table.find('colgroup').children().each(function(i) {
-							document['metadata']['col_widths']['c' + i] = ($(this).attr('width') + '').replace('px', '');
-						});
-						
-						documents.push(document); //append to documents
-					});
-					return documents;
-				},
-
-				/**
-				 * Html output.  Needs refactoring.
-				 * @returns {*}
-				 * @methodOf jS.exportSheet
-				 * @name html
-				 */
-				html: function() {
-					var sheetClone = jS.sheetDecorateRemove(true);
-					sheetClone = jS.sheetBarsRemove(sheetClone);
-					return sheetClone;
-				}
-			},
 
 			/**
 			 * Sync's the called parent's controls so that they fit correctly within the origParent
@@ -5532,10 +5381,8 @@ jQuery.sheet = {
 					.width(s.width);
 
 				var w = s.width;
-				
-				h -= jS.obj.header().outerHeight();
-				h -= jS.obj.barTopParent().outerHeight();
-				h -= jS.obj.tabContainer().outerHeight();
+				h -= jS.s.headerHeight || jS.obj.header().outerHeight();
+				h -= jS.obj.tabContainer().outerHeight() + jS.s.boxModelCorrection;
 
 				jS.obj.panes()
 					.height(h - window.scrollBarSize.height - s.boxModelCorrection)
@@ -5809,7 +5656,7 @@ jQuery.sheet = {
 
 				td = td[0] || td;
 
-				if (!td.cellIndex || !td.parentNode || !td.parentNode.rowIndex) return result;
+				if (td.cellIndex == u || td.parentNode == u || td.parentNode.rowIndex == u) return result;
 				return {
 					col: parseInt(td.cellIndex),
 					row: parseInt(td.parentNode.rowIndex)
@@ -6126,6 +5973,16 @@ jQuery.sheet = {
 				return o[0].children[0].children
 			},
 
+			tables: function(o) {
+				o = o || jS.obj.sheets();
+				o = o.clone();
+				o.find('.' + jS.cl.barTopParent).remove();
+				o.find('.' + jS.cl.barLeft).remove();
+				o.find('col:first').remove();
+				o = jS.sheetDecorateRemove(false, o)
+				return o;
+			},
+
 			/**
 			 * get col associated with a sheet/table within an instance
 			 * @param {jQuery|HTMLElement} o table
@@ -6209,27 +6066,23 @@ jQuery.sheet = {
 			/**
 			 * Toggles from editable to viewable and back
 			 * TODO: refactor, not working
-			 * @param replacementSheets
+			 * @param replacementTables
 			 * @methodOf jS
 			 * @name toggleState
 			 */
-			toggleState:  function(replacementSheets) {
+			toggleState:  function(replacementTables) {
 				if (s.allowToggleState) {
+					var tables = replacementTables || jS.tables();
 					if (s.editable) {
 						jS.evt.cellEditAbandon();
-						jS.saveSheet();
+						origParent.trigger('saveSheet', [tables]);
 					}
 					jS.setDirty(false);
 					jS.setChanged(true);
 					s.editable = !s.editable;
-					jS.obj.tabContainer().remove();
-					var sheets = (replacementSheets ? replacementSheets : jS.obj.sheets().clone());
-					sheets.find('tr:first').remove();
-					sheets.find('tr').each(function() {
-						$(this).find('td:first').remove();
-					});
-					origParent.children().remove();
-					jS.openSheet(sheets, true);
+
+					origParent.html('');
+					jS.openSheet(tables);
 				}
 			},
 
@@ -6367,164 +6220,13 @@ jQuery.sheet = {
 
 		jS.s = s;
 
-		jS.openSheet(s.origHtml);
+		if (s.origHtml.length) {
+			jS.openSheet(s.origHtml);
+		}
 
 		return jS;
 	},
 	makeTable : {
-		xml: function (data) { /* creates a table from xml, note: will not accept CDATA tags
-								data: object, xml object;
-								*/
-			var tables = jQuery('<div />');
-		
-			jQuery(data).find('document').each(function(i) { //document
-				var table = jQuery('<table />');
-				var tableWidth = 0;
-				var colgroup = jQuery('<colgroup />').appendTo(table);
-				var tbody = jQuery('<tbody />');
-			
-				var metaData = jQuery(this).find('metadata');
-				var columnCount = metaData.find('columns').text();
-				var rowCount = metaData.find('rows').text();
-				var title = jQuery(this).attr('title');
-				var data = jQuery(this).find('data');
-				var col_widths = metaData.find('col_widths').children();
-				
-				//go ahead and make the cols for colgroup
-				for (var i = 0; i < parseInt(jQuery.trim(columnCount)); i++) {
-					var w = parseInt(col_widths.eq(i).text().replace('px', ''));
-					w = (w ? w : 120); //if width doesn't exist, grab default
-					tableWidth += w;
-					colgroup.append('<col width="' + w + 'px" style="width: ' + w + 'px;" />');
-				}
-				
-				table
-					.width(tableWidth)
-					.attr('title', title);
-				
-				for (var i = 0; i < rowCount; i++) { //rows
-					var tds = data.find('r' + i);
-					var height = (data.attr('h') + '').replace('px', '');
-					height = parseInt(height);
-					
-					var thisRow = jQuery('<tr height="' + (height ? height : 18) + 'px" />');
-					
-					for (var j = 0; j < columnCount; j++) { //cols, they need to be counted because we don't send them all on export
-						var newTd = '<td />'; //we give td a default empty td
-						var td = tds.find('c' + j);
-						
-						if (td) {
-							var text = td.text() + '';
-							var cl = td.attr('class');
-							var style = td.attr('style');
-							var colSpan = td.attr('colspan');
-
-							
-							var formula = '';
-							if (text.charAt(0) == '=') {
-								formula = ' formula="' + text + '"';
-							}
-							
-							newTd = '<td' + formula + 
-								(style ? ' style=\"' + style + '\"' : '') + 
-								(cl ? ' class=\"' + cl + '\"' : '') +
-								(colSpan ? ' colspan=\"' + colSpan + '\"' : '') +
-								(height ? ' height=\"' + height + 'px\"' : '') +
-							'>' + text + '</td>';
-						}
-						thisRow.append(newTd);
-					}	
-					tbody.append(thisRow);
-				}
-				table
-					.append(tbody)
-					.appendTo(tables);
-			});
-			
-			return tables.children();
-		},
-		json: function(data, makeEval) { /* creates a sheet from json data, for format see top
-											data: json;
-											makeEval: bool, if true evals json;
-										*/
-			sheet = (makeEval == true ? eval('(' + data + ')') : data);
-			
-			var tables = jQuery('<div />');
-			
-			sheet = (jQuery.isArray(sheet) ? sheet : [sheet]);
-			
-			for (var i = 0; i < sheet.length; i++) {
-				var colCount = parseInt(sheet[i].metadata.columns);
-				var rowCount = parseInt(sheet[i].metadata.rows);
-				title = sheet[i].metadata.title;
-				title = (title ? title : "Spreadsheet " + i);
-			
-				var table = jQuery("<table />");
-				var tableWidth = 0;
-				var colgroup = jQuery('<colgroup />').appendTo(table);
-				var tbody = jQuery('<tbody />');
-				
-				//go ahead and make the cols for colgroup
-				if (sheet[i]['metadata']['col_widths']) {
-					for (var x = 0; x < colCount; x++) {
-						var w = 120;
-						if (sheet[i]['metadata']['col_widths']['c' + x]) {
-							var newW = parseInt(sheet[i]['metadata']['col_widths']['c' + x].replace('px', ''));
-							w = (newW ? newW : 120); //if width doesn't exist, grab default
-							tableWidth += w;
-						}
-						colgroup.append('<col width="' + w + 'px" style="width: ' + w + 'px;" />');
-					}
-				}
-				
-				table
-					.attr('title', title)
-					.width(tableWidth);
-				
-				for (var x = 0; x < rowCount; x++) { //tr
-					var tr = jQuery('<tr />').appendTo(table);
-					tr.attr('height', (sheet[i]['data']['r' + x].h ? sheet[i]['data']['r' + x].h : 18));
-					
-					for (var y = 0; y < colCount; y++) { //td
-						var cell = sheet[i]['data']['r' + x]['c' + y];
-						var cur_val;
-						var colSpan;
-						var style;
-						var cl;
-						
-						if (cell) {
-							cur_val = cell.value + '';
-							colSpan = cell.colSpan + '';
-							style = cell.style + '';
-							cl = cell.cl + '';
-						}
-
-						var cur_td = jQuery('<td' + 
-								(style ? ' style=\"' + style + '\"' : '' ) + 
-								(cl ? ' class=\"' + cl + '\"' : '' ) + 
-								(colSpan ? ' colspan=\"' + colSpan + '\"' : '' ) + 
-							' />');
-						try {
-							if(typeof(cur_val) == "number") {
-								cur_td.html(cur_val);
-							} else {
-								if (cur_val.charAt(0) == '=') {
-									cur_td.attr("formula", cur_val);
-								} else {
-									cur_td.html(cur_val);
-								}
-							}
-						} catch (e) {}
-					
-						tr.append(cur_td);
-
-					}
-				}
-				
-				tables.append(table);
-			}
-			return tables.children();
-		},
 		fromSize: function(size) { /* creates a spreadsheet object from a size given
 											size: string, example "10x100" which means 10 columns by 100 rows;
 											h: int, height for each new row;
@@ -6563,15 +6265,15 @@ jQuery.sheet = {
 			}
 		}
 	},
-	paneScrollLocker: function(e, jS) { //This can be used with setting fnPaneScroll to lock all loaded sheets together when scrolling, useful in history viewing
-		var pane = jS.obj.pane();
-		
-		jQuery(jQuery.sheet.instance).each(function(i) {
-			if (jS.I == i) return;
-			
-			this.obj.pane()
-				.scrollLeft(pane.scrollLeft())
-				.scrollTop(pane.scrollTop());
+	scrollLocker: function(jS) {
+		var scroll = jS.obj.scroll().scroll(function() {
+			jQuery(jQuery.sheet.instance).each(function(i) {
+				if (jS.I == i) return;
+
+				this.obj.scroll()
+					.scrollLeft(scroll.scrollLeft())
+					.scrollTop(scroll.scrollTop());
+			});
 		});
 	},
 	switchSheetLocker: function(e, jS) { //This can be used with event switchSheet to locks sheets together when switching, useful in history viewing

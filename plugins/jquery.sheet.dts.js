@@ -1,6 +1,6 @@
 (function($) {
 	jQuery.sheet.dts = {
-		toTable: {
+		toTables: {
 			json: function(json) {
 
 				var tables = $([]);
@@ -121,7 +121,7 @@
 			},
 			size: function() {}
 		},
-		fromTable: {
+		fromTables: {
 			json: function(jS) {
 				var output = [];
 
@@ -140,7 +140,7 @@
 					$.each(jS.spreadsheets[sheet], function (row) {
 						if (row == 0) return;
 						var Row = {
-							"height": (this[1].td.parent().css('height') || jS.s.colMargin),
+							"height": (jS.spreadsheets[sheet][row][1].td.parent().attr('height') || jS.s.colMargin + 'px'),
 							"columns": []
 						};
 						spreadsheet.rows.push(Row);
@@ -176,7 +176,7 @@
 					$.each(jS.spreadsheets[sheet], function (row) {
 						if (row == 0) return;
 
-						output += '<row height="' + (this[1].td.parent().css('height') || jS.s.colMargin) + '">';
+						output += '<row height="' + (jS.spreadsheets[sheet][row][1].td.parent().attr('height') || jS.s.colMargin + 'px') + '">';
 						output += '<columns>';
 						$.each(jS.spreadsheets[sheet][row], function(column) {
 							if (column == 0) return;
