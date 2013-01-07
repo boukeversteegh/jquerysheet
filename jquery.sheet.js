@@ -7329,6 +7329,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				jQuery('#' + id)
 					.change(function() {
 						cell.value = jQuery(this).val();
+						jS.setChanged(true);
 						jS.calc();
 					});
 			});
@@ -7371,6 +7372,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 						jQuery('.' + id)
 							.change(function() {
 								cell.value = jQuery(this).val();
+								jS.setChanged(true);
 								jS.calc();
 							});
 					});
@@ -7419,6 +7421,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				jQuery('.' + id)
 					.change(function() {
 						cell.value = (jQuery(this).is(':checked') ? jQuery(this).val() : '');
+						jS.setChanged(true);
 						jS.calc();
 					});
 			});
