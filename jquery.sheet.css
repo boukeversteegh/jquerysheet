@@ -1,5 +1,5 @@
 /* Controls styling */
-.jSheetLoc
+.jSLoc
 {
 	border-width: 0px ! important;
 	background: none ! important;
@@ -7,18 +7,18 @@
 	text-align: right;
 }
 
-.jSheetFormula
+.jSFormula
 {
 	width: 99%;
     height: 17px;
 }
 
-.jSheetFormulaParent
+.jSFormulaParent
 {
 	border: none ! important;
 }
 
-.jSheetHeader, .jSheetHeader table
+.jSHeader, .jSHeader table
 {
 	padding: 0px ! important;
 	border: none ! important;
@@ -27,7 +27,7 @@
 }
 
 /* Menu */
-.jSheetBarHelper {
+.jSBarHelper {
 	float: right;
 	position: relative;
 	z-index: 99999;
@@ -37,7 +37,7 @@
 	width: 0px;
 	padding-left: 0px ! important;
 }
-.jSheetBarHelper * {
+.jSBarHelper * {
 	position: absolute;
 	z-index: 99999;
 	cursor: pointer;
@@ -46,18 +46,18 @@
 	background-color: inherit ! important;
 }
 
-.jSheetMenuFixed {
+.jSMenuFixed {
 	position: relative ! important;
 }
 
-.jSheetMenu {
+.jSMenu {
 	padding: 3px;
 	background-image: none;
 	border: none ! important;
 	position: absolute;
 	z-index: 999999;
 }
-.jSheetMenu *
+.jSMenu *
 {
 	border-color: inherit ! important;
 	border-width: 1px;
@@ -66,7 +66,7 @@
 	width: auto;
 }
 
-.jSheetMenu ul,.jSheetMenu div
+.jSMenu ul,.jSMenu div
 {
 	cursor: pointer;
 	padding: 0px ! important;
@@ -80,12 +80,12 @@
 	list-style-position:outside;
 }
 
-.jSheetMenu a
+.jSMenu a
 {
 	padding:0px 5px;
 }
 
-.jSheetMenu li
+.jSMenu li
 {
 	float:left;
 	position:relative;
@@ -94,92 +94,64 @@
 	border-width: 1px;
 	width: inherit;
 }
-.jSheetMenu li:hover,.jSheetMenu div:hover {
+.jSMenu li:hover,.jSMenu div:hover {
 	background-image: inherit;
 }
 
-.jSheetMenu ul ul {
+.jSMenu ul ul {
 	position:absolute;
 	display:none;
 	width:12em;
 	top:1.5em;
 }
 
-.jSheetMenu li ul a{
+.jSMenu li ul a{
 	width:12em;
 	height:auto;
 	float:left;
 }
 
-.jSheetMenu ul ul{
+.jSMenu ul ul{
 	top:auto;
 }	
 
-.jSheetMenu li ul ul {
+.jSMenu li ul ul {
 	left:12em;
 	margin:0px 0 0 10px;
 }
 
-.jSheetMenu li:hover ul ul, .jSheetMenu li:hover ul ul ul, .jSheetMenu li:hover ul ul ul ul{
+.jSMenu li:hover ul ul, .jSMenu li:hover ul ul ul, .jSMenu li:hover ul ul ul ul{
 	display:none;
 }
-.jSheetMenu li:hover ul, .jSheetMenu li li:hover ul, .jSheetMenu li li li:hover ul, .jSheetMenu li li li li:hover ul{
+.jSMenu li:hover ul, .jSMenu li li:hover ul, .jSMenu li li li:hover ul, .jSMenu li li li li:hover ul{
 	display:block;
 }
 
-.menu
-{
-	display: none;
-}
-#titleHolder
-{
-	padding-left: 10px;
-}
-.jSheetUI
+
+.jSUI
 {
 	width: inherit ! important;
 	border-color: inherit ! important;
 }
-.jSheetTabContainer
+.jSTabContainer
 {
 	vertical-align: bottom;
 	text-align: left ! important;
 	position: absolute;
 }
-.jSheetTabContainer span
+.jSTabContainer span
 {
 	
 	padding: 2px 5px 0 5px ! important;
 	cursor: pointer;
 }
-.jSheetTabContainer *, .Div *
+.jSTabContainer *, .Div *
 {
 	font-size: 1em ! important;
 }
 
-.jSheetScrollerBottom {
-	width: 100px ! important;
-	cursor: e-resize;
-	border-width: 0px ! important;
-}
 
-.jSheetScrollerRight {
-	cursor: s-resize;
-	border-width: 0px ! important;
-	height: 100px ! important;
-}
-.jSheetScrollerParentRight {
-	vertical-align: top;
-	border-right-width: 0px ! important;
-	border-bottom-width: 0px ! important;
-	background: none ! important;
-}
-.jSheetScrollerParentBottom {
-	border-right-width: 0px ! important;
-	border-bottom-width: 0px ! important;
-	background: none ! important;
-}
-.jSheetScroll {
+.jSScroll {
 	position: absolute;
 	overflow: scroll;
 	height: inherit;
@@ -188,7 +160,7 @@
 }
 
 /* Sheet styling */
-.jSheet
+.jS
 {
     table-layout: fixed;
     empty-cells: show;
@@ -198,18 +170,18 @@
 	*border-collapse: collapse; /* IE7 and below */
 	width: 0px ! important;
 }
-.jSheet tbody
+.jS tbody
 {
 	background-color: transparent;
 	color: inherit ! important;
 	border-color: inherit ! important;
 }
 
-.jSheet tr {
+.jS tr {
 	border-color: inherit ! important;
 	color:  inherit ! important;
 }
-.jSheet td:not(.jSheetBarLeft):not(.jSheetBarTop):not(.jSheetBarCorner), .jSheet th {
+.jS td:not(.jSBarLeft):not(.jSBarTop):not(.jSBarCorner), .jS th {
 	height: inherit;
 	border-width: 1px ! important;
 	border-color: inherit;
@@ -220,7 +192,7 @@
 	color:  inherit;
 }
 
-.noBreak .jSheet td, .noBreak .jSheet th
+.noBreak .jS td, .noBreak .jS th
 {
 	-moz-border-radius: 0px 0px 0px 0px;
 	overflow: hidden;
@@ -228,17 +200,11 @@
 	white-space: nowrap ! important;
 }
 
-.jSheetCellHighighted {
+.jSCellHighighted {
 	background-image: none ! important;
 }
 
-tr.rowHidden, tr.rowHidden td {
-	display: none;
-	opacity:0.01;
-	filter:alpha(opacity=01);
-}
-
-.jSheetError {
+.jSError {
 	text-align: left;
 	overflow: hidden;
 	padding: 0px;
@@ -246,24 +212,13 @@ tr.rowHidden, tr.rowHidden td {
 }
 
 /* Containers styleing*/
-.jSheetBarCorner
+.jSBarCorner
 {
 	cursor: pointer;
 	border-width: 1px ! important;
 }
 
-.jSheetBarCornerParent
-{
-	border: none ! important;
-}
-
-.sheetPane
-{
-	border: none ! important;
-	vertical-align: top;
-}
-
-.jSheetEditPane
+.jSEditPane
 {
     overflow: hidden ! important;
 	background-image: none ! important;
@@ -273,7 +228,7 @@ tr.rowHidden, tr.rowHidden td {
 }
 /* Bar item styling */
 
-.jSheetBarTopParent
+.jSBarTopParent
 {
 	font-size: 0.8em ! important;
 	text-align: center;
@@ -281,20 +236,22 @@ tr.rowHidden, tr.rowHidden td {
 	height: 18px;
 }
 
-.jSheetBarTopParent .barController .ui-resizable-handle {
+.jSBarTopParent .jSBarController .ui-resizable-handle {
 	height: 16px;
 }
-.jSheetBarLeft .barController {
+.jSBarLeft .jSBarController {
 	width: 0px;
 	height: 0px;
 	position: absolute;
-	top: 0px;
 }
-.jSheetBarLeft .barController .ui-resizable-handle {
+.jSBarLeft .jSBarController {
+	width: 0px ! important;
+}
+.jSBarLeft .jSBarController .ui-resizable-handle {
 	width: 16px;
 	display: inline ! important;
 }
-.jSheetBarHandleFreezeTop
+.jSBarHandleFreezeTop
 {
 	top: 0em ! important;
 	cursor: move ! important;
@@ -303,7 +260,7 @@ tr.rowHidden, tr.rowHidden td {
 	background-image: none ! important;
 }
 
-.jSheetBarHandleFreezeLeft
+.jSBarHandleFreezeLeft
 {
 	right: 0em ! important;
 	cursor: move ! important;
@@ -311,7 +268,7 @@ tr.rowHidden, tr.rowHidden td {
 	position: absolute;
 	background-image: none ! important;
 }
-.jSheetBarLeft
+.jSBarLeft
 {
 	font-size: 0.8em ! important;
 	text-align: center;
@@ -320,19 +277,7 @@ tr.rowHidden, tr.rowHidden td {
 	overflow: visible ! important;
 }
 
-.jSheetControls img
-{
-	border: none;
-}
-
-.safeImg
-{
-	display: inline;
-	height: inherit ! important;
-	width: inherit ! important;
-}
-
-.jSheetInPlaceEdit
+.jSInPlaceEdit
 {
 	position: absolute;
 	background-image: none ! important;
@@ -347,7 +292,7 @@ tr.rowHidden, tr.rowHidden td {
 	background-color: transparent ! important;
 }
 
-.jSheetFullScreen
+.jSFullScreen
 {
 	top: 5px;
 	left: 5px;
@@ -357,16 +302,7 @@ tr.rowHidden, tr.rowHidden td {
 	z-index: 9999;
 }
 
-.jSheetFullScreenTabContainer
-{
-	bottom: 10px;
-	left: 10px;
-	position: fixed;
-	top: expression(eval(document.body.scrollTop + 15) + "px");
-	left: expression(eval(document.body.scrollLeft) + "px");
-}
-
-.jSheetAutoFiller
+.jSAutoFiller
 {
 	position: absolute;
 	height: 8px;
@@ -378,31 +314,26 @@ tr.rowHidden, tr.rowHidden td {
 	z-index: 10;
 }
 
-.jSheetTitle, .jSheetInlineMenu
+.jSTitle
 {
 	width: auto;
 	text-align: center;
 	border: none ! important;
 }
 
-.jSheetChart
+.jSChart
 {
 	width: inherit;
 	height: inherit;
 }
 
-.jSheetChart svg {
+.jSChart svg {
 	position: relative ! important;
 }
 
 .bodyNoScroll
 {
 	overflow: hidden ! important;
-}
-
-body.bodyHandlesHide .ui-resizable-handle,body.bodyHandlesHide .ui-draggable
-{
-	display: none ! important;
 }
 
 

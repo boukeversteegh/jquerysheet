@@ -377,6 +377,7 @@ jQuery.sheet = {
 					helper: [],
 					corner: [],
 					x: {
+						controls: [],
 						handleFreeze: [],
 						menu: [],
 						menuParent: [],
@@ -392,6 +393,7 @@ jQuery.sheet = {
 						}
 					},
 					y: {
+						controls: [],
 						handleFreeze: [],
 						menu: [],
 						parent: [],
@@ -447,10 +449,12 @@ jQuery.sheet = {
 				barCorner:			function() { return jS.controls.bar.corner[jS.i] || $([]); },
 				barHelper:			function() { return jS.controls.bar.helper[jS.i] || (jS.controls.bar.helper[jS.i] = $([])); },
 				barLeft: 			function(i) { return jS.controls.bar.y.td[jS.i][i] || $([]); },
+				barLeftControls:    function() { return jS.controls.bar.y.controls[jS.i] || $([]); },
 				barLefts:			function() { return jS.controls.bar.y.tds(); },
 				barHandleFreezeLeft:function() { return jS.controls.bar.y.handleFreeze[jS.i] || $([]); },
 				barMenuLeft:		function() { return jS.controls.bar.y.menu[jS.i] || $([]); },
 				barTop: 			function(i) { return jS.controls.bar.x.td[jS.i][i] || $([]); },
+				barTopControls:     function() { return jS.controls.bar.x.controls[jS.i] || $([]); },
 				barTops:			function() { return jS.controls.bar.x.tds(); },
 				barTopParent: 		function() { return jS.controls.bar.x.parent[jS.i] || $([]); },
 				barHandleFreezeTop: function() { return jS.controls.bar.x.handleFreeze[jS.i] || $([]); },
@@ -496,32 +500,32 @@ jQuery.sheet = {
 					id = id's references
 					Note that these are all dynamically set
 				*/
-				autoFiller:			'jSheetAutoFiller_' + I + '_',
-				barCorner:			'jSheetBarCorner_' + I + '_',
-				barLeft: 			'jSheetBarLeft_' + I + '_',
-				barHandleFreezeLeft:'jSheetBarHandleFreezeLeft_' + I + '_',
-				barMenuLeft:		'jSheetBarMenuLeft_' + I,
-				barTop: 			'jSheetBarTop_' + I + '_',
-				barTopParent: 		'jSheetBarTopParent_' + I + '_',
-				barHandleFreezeTop:	'jSheetBarHandleFreezeTop_' + I + '_',
-				barMenuTop:			'jSheetBarMenuTop_' + I,
-				barMenuParentTop:	'jSheetBarMenuParentTop_' + I,
-				cellMenu:			'jSheetCellMenu_' + I,
-				formula: 			'jSheetFormula_' + I,
-				header: 			'jSheetHeader_' + I,
-				menuRight:			'jSheetMenuRight_' + I,
-				inPlaceEdit:		'jSheetInPlaceEdit_' + I,
-				label: 				'jSheetLoc_' + I,
-				menuLeft:			'jSheetMenuLeft_' + I,
-				pane: 				'jSheetEditPane_' + I + '_',
-				scrollStyleX:       'jSheetScrollStyleX_' + I + '_',
-				scrollStyleY:       'jSheetScrollStyleY_' + I + '_',
-				scroll:		        'jSheetScroll_' + I + '_',
-				sheet: 				'jSheet_' + I + '_',
-				tab:				'jSheetTab_' + I + '_',
-				tabContainer:		'jSheetTabContainer_' + I,
-				title:				'jSheetTitle_' + I,
-				ui:					'jSheetUI_' + I
+				autoFiller:			'jSAutoFiller_' + I + '_',
+				barCorner:			'jSBarCorner_' + I + '_',
+				barLeft: 			'jSBarLeft_' + I + '_',
+				barHandleFreezeLeft:'jSBarHandleFreezeLeft_' + I + '_',
+				barMenuLeft:		'jSBarMenuLeft_' + I,
+				barTop: 			'jSBarTop_' + I + '_',
+				barTopParent: 		'jSBarTopParent_' + I + '_',
+				barHandleFreezeTop:	'jSBarHandleFreezeTop_' + I + '_',
+				barMenuTop:			'jSBarMenuTop_' + I,
+				barMenuParentTop:	'jSBarMenuParentTop_' + I,
+				cellMenu:			'jSCellMenu_' + I,
+				formula: 			'jSFormula_' + I,
+				header: 			'jSHeader_' + I,
+				menuRight:			'jSMenuRight_' + I,
+				inPlaceEdit:		'jSInPlaceEdit_' + I,
+				label: 				'jSLoc_' + I,
+				menuLeft:			'jSMenuLeft_' + I,
+				pane: 				'jSEditPane_' + I + '_',
+				scrollStyleX:       'jSScrollStyleX_' + I + '_',
+				scrollStyleY:       'jSScrollStyleY_' + I + '_',
+				scroll:		        'jSScroll_' + I + '_',
+				sheet: 				'jS_' + I + '_',
+				tab:				'jSTab_' + I + '_',
+				tabContainer:		'jSTabContainer_' + I,
+				title:				'jSTitle_' + I,
+				ui:					'jSUI_' + I
 			},
 
 			/**
@@ -534,62 +538,52 @@ jQuery.sheet = {
 				/*
 					cl = class references
 				*/
-				autoFiller:				'jSheetAutoFiller',
-				autoFillerHandle:		'jSheetAutoFillerHandle',
-				autoFillerConver:		'jSheetAutoFillerCover',
-				barCorner:				'jSheetBarCorner',
-				barHelper:				'jSheetBarHelper',
-				barLeftTd:				'jSheetBarLeftTd',
-				barLeft: 				'jSheetBarLeft',
-				barHandleFreezeLeft:    'jSheetBarHandleFreezeLeft',
-				barTop: 				'jSheetBarTop',
-				barHandleFreezeTop: 	'jSheetBarHandleFreezeTop',
-				barTopParent: 			'jSheetBarTopParent',
-				barTopTd:				'jSheetBarTopTd',
-				bodyHandlesHide:        'bodyHandlesHide',
-				cellActive:				'jSheetCellActive',
-				cellHighlighted: 		'jSheetCellHighighted',
-				chart:					'jSheetChart',
-				error:					'jSheetError',
-				formula: 				'jSheetFormula',
-				formulaParent:			'jSheetFormulaParent',
-				header:                 'jSheetHeader',
-				menuRight:				'jSheetMenuRight',
-				fullScreen:				'jSheetFullScreen',
-				inPlaceEdit:			'jSheetInPlaceEdit',
-				menu:					'jSheetMenu',
-				menuFixed:  			'jSheetMenuFixed',
-				parent:					'jSheetParent',
-				scroll:			        'jSheetScroll',
-				sheet: 					'jSheet',
-				label: 					'jSheetLoc',
-				pane: 					'jSheetEditPane',
-				tab:					'jSheetTab',
-				tabContainer:			'jSheetTabContainer',
-				tabContainerFullScreen: 'jSheetFullScreenTabContainer',
-				title:					'jSheetTitle',
-				toggle:					'cellStyleToggle',
-				enclosure:              'jSheetEnclosure',
-				ui:						'jSheetUI',
+				autoFiller:				'jSAutoFiller',
+				autoFillerHandle:		'jSAutoFillerHandle',
+				autoFillerCover:		'jSAutoFillerCover',
+				barCorner:				'jSBarCorner',
+				barController:          'jSBarController',
+				barHelper:				'jSBarHelper',
+				barLeft: 				'jSBarLeft',
+				barHandleFreezeLeft:    'jSBarHandleFreezeLeft',
+				barTop: 				'jSBarTop',
+				barHandleFreezeTop: 	'jSBarHandleFreezeTop',
+				barTopParent: 			'jSBarTopParent',
+				cellActive:				'jSCellActive',
+				cellHighlighted: 		'jSCellHighighted',
+				chart:					'jSChart',
+				formula: 				'jSFormula',
+				formulaParent:			'jSFormulaParent',
+				header:                 'jSHeader',
+				fullScreen:				'jSFullScreen',
+				inPlaceEdit:			'jSInPlaceEdit',
+				menu:					'jSMenu',
+				menuFixed:  			'jSMenuFixed',
+				parent:					'jSParent',
+				scroll:			        'jSScroll',
+				sheet: 					'jS',
+				label: 					'jSLoc',
+				pane: 					'jSEditPane',
+				tab:					'jSTab',
+				tabContainer:			'jSTabContainer',
+				title:					'jSTitle',
+				enclosure:              'jSEnclosure',
+				ui:						'jSUI',
 				uiAutoFiller:			'ui-state-active',
 				uiBar: 					'ui-widget-header',
 				uiBarHighlight: 		'ui-state-active',
 				uiBarHandleFreezeLeft:  'ui-state-default',
-				uiBarMenuLeft:			'ui-state-default ui-corner-top',
 				uiBarHandleFreezeTop:	'ui-state-default',
 				uiBarMenuTop:			'ui-state-default',
 				uiCellActive:			'ui-state-active',
 				uiCellHighlighted: 		'ui-state-highlight',
 				uiControl: 				'ui-widget-header ui-corner-top',
 				uiControlTextBox:		'ui-widget-content',
-				uiError:				'ui-state-error',
 				uiFullScreen:			'ui-widget-content ui-corner-all',
 				uiInPlaceEdit:			'ui-state-highlight',
 				uiMenu:					'ui-widget-header',
 				uiMenuUl: 				'ui-widget-header',
 				uiMenuLi: 				'ui-widget-header',
-				uiMenuHighlighted: 		'ui-state-highlight',
-				uiPane: 				'ui-widget-content',
 				uiParent: 				'ui-widget-content ui-corner-all',
 				uiSheet:				'ui-widget-content',
 				uiTab:					'ui-widget-header',
@@ -1058,7 +1052,7 @@ jQuery.sheet = {
 					var parent = sheet.find('tr:first');
 					
 					//corner
-					barTopParent.append('<td />'); 
+					barTopParent.append('<td />');
 
 					parent.find('td').each(function(i) {
 						barTopParent.append('<td />');
@@ -3937,11 +3931,13 @@ jQuery.sheet = {
 				 * @name top
 				 */
 				top: function(bar, i, pane, sheet) {
-					bar.find('.barController').remove();
-					var barController = $('<div class="barController" />')
+					jS.obj.barTopControls().remove();
+					var barController = $('<div class="' + jS.cl.barController + '" />')
 						.width(bar.width())
 						.height(0)
 						.prependTo(bar);
+
+					jS.controls.bar.x.controls[jS.i] = jS.obj.barTopControls().add(barController);
 					
 					jS.resizable(barController, {
 						handles: 'e',
@@ -3974,28 +3970,20 @@ jQuery.sheet = {
 				 * @name left
 				 */
 				left: function(bar, i, pane, sheet) {
-					bar.find('.barController').remove();
+					jS.obj.barLeftControls().remove();
 					var offset = bar.offset();
-					var barController = $('<div class="barController"></div>')
+					var barController = $('<div class="' + jS.cl.barController + '"></div>')
 						.prependTo(bar)
 						.offset({
 							top: offset.top,
 							left: offset.left
 						});
 
+					jS.controls.bar.y.controls[jS.i] = jS.obj.barLeftControls().add(barController);
+
 					var child = $('<div class="barControllerChild"></div>')
-						.width(bar.width())
 						.height(bar.height())
-						.prependTo(barController)
-						.mouseenter(function() {
-							bar.mouseenter();
-						})
-						.mouseleave(function() {
-							bar.mouseleave();
-						})
-						.mousedown(function() {
-							bar.mousedown();
-						});
+						.prependTo(barController);
 					
 					var me = bar.parent().add(bar).add(barController);
 					jS.resizable(child, {
@@ -4070,7 +4058,8 @@ jQuery.sheet = {
 			 */
 			labelUpdate: function(v, setDirect) {
 				if (!setDirect) {
-					jS.obj.label().text(jSE.parseCellName(v.col, v.row));
+					v = jSE.parseCellName(v.col, v.row);
+					if (v) jS.obj.label().text(v);
 				} else {
 					jS.obj.label().text(v);
 				}
@@ -6373,7 +6362,7 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 		return ((locStr + '').replace('SHEET','') * 1) - 1;
 	},
 	parseCellName: function(col, row){
-		return jSE.columnLabelString(col) + (row);
+		return jSE.columnLabelString(col) + (row || '');
 	},
 	labels: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
 	columnLabelIndex: function(str) {
@@ -6411,7 +6400,7 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 			}
 		}
 
-		return this.indexes[index];
+		return this.indexes[index] || '';
 	},
 	regEx: {
 		n: 			/[\$,\s]/g,
