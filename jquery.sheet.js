@@ -119,7 +119,9 @@ jQuery.fn.extend({
 						.replace(/&/gi, '&amp;')
 						.replace(/>/gi, '&gt;')
 						.replace(/</gi, '&lt;')
-						.replace(/\n/g, '\n<br>');
+						.replace(/\n/g, '\n<br>')
+						.replace(/\t/g, '&nbsp;&nbsp;')
+						.replace(/ /g, '&nbsp;');
 				},
 				allowCellsLineBreaks: true,
 				frozenAt: {row: 0,col: 0},
@@ -134,10 +136,10 @@ jQuery.fn.extend({
 			}
 			
 			if (jQuery.sheet.instance.length) {
-				parent.sheetInstance = jQuery.sheet.createInstance(jQuery, set, jQuery.sheet.instance.length, parent);
+				parent.sheetInstance = jQuery.sheet.createInstance(jQuery, set, jQuery.sheet.instance.length);
 				jQuery.sheet.instance.push(parent.sheetInstance);
 			} else {
-				parent.sheetInstance = jQuery.sheet.createInstance(jQuery, set, 0, parent);
+				parent.sheetInstance = jQuery.sheet.createInstance(jQuery, set, 0);
 				jQuery.sheet.instance = [parent.sheetInstance];
 			}
 			parent.data('sheetInstance', jQuery.sheet.instance.length - 1);
@@ -291,10 +293,9 @@ jQuery.sheet = {
 	 * @param {Object} $ jQuery
 	 * @param {Object} s settings from jQuery.fn.sheet
 	 * @param {Integer} I the index of the instance
-	 * @param {jQuery|HTMLElement} origParent the caller
 	 * @returns {Object} jS jQuery sheet instance
 	 */
-	createInstance: function($, s, I, origParent) {
+	createInstance: function($, s, I) {
 
 		/**
 		 * A single instance of a spreadsheet, shorthand, also accessible from jQuery.sheet.instance[index]
@@ -360,11 +361,12 @@ jQuery.sheet = {
 			spreadsheets: [],
 
 			/**
-			 * track cells with formulas, to make calculations much faster
+			 * cell dependencies, so we don't have to recalculate the entire spreadsheet every time we make a single edit
+			 * TODO: make work
 			 * @memberOf jS
-			 * @name spreadsheetDependencies
+			 * @name spreadsheetsDependencies
 			 */
-			spreadsheetsCellsWithFormulas: [],
+			spreadsheetsDependencies: [],
 
 			/**
 			 * Internal storage array of controls for an instance
@@ -635,7 +637,7 @@ jQuery.sheet = {
 			kill: function() {
 				jS.obj.fullScreen().remove();
 				jS.obj.inPlaceEdit().remove();
-				origParent
+				s.parent
 					.removeClass(jS.cl.uiParent)
 					.html('')
 					.removeData('sheetInstance');
@@ -651,9 +653,9 @@ jQuery.sheet = {
 			 * @name trigger
 			 */
 			trigger: function(eventType, extraParameters) {
-				//wrapper for $ trigger of origParent, in case of further mods in the future
+				//wrapper for $ trigger of parent, in case of further mods in the future
 				extraParameters = extraParameters || [];
-				origParent.trigger(eventType, [jS].concat(extraParameters));
+				s.parent.trigger(eventType, [jS].concat(extraParameters));
 			},
 
 			/**
@@ -3078,18 +3080,19 @@ jQuery.sheet = {
 			 * @name toggleFullScreen
 			 */
 			toggleFullScreen: function() {
-				if (jS.obj.fullScreen().is(':visible')) {
+				var fullScreen = jS.obj.fullScreen();
+				if (fullScreen.is(':visible')) {
 					$body.removeClass('bodyNoScroll');
-					s.parent = origParent;
+					s.parent = fullScreen.data('parent');
 					
 					var w = s.parent.width();
 					var h = s.parent.height();
 					s.width = w;
 					s.height = h;
 
-					s.parent.append(jS.obj.fullScreen().children())
-					
-					jS.obj.fullScreen().remove();
+					s.parent.append(fullScreen.children())
+
+					fullScreen.remove();
 					
 					jS.sheetSyncSize();
 
@@ -3103,11 +3106,10 @@ jQuery.sheet = {
 					s.width = w;
 					s.height = h;
 
-					jS.controls.fullscreen[jS.i] = $('<div class="' + jS.cl.fullScreen + ' ' + jS.cl.uiFullScreen + '" />')
+					s.parent = jS.controls.fullscreen[jS.i] = $('<div class="' + jS.cl.fullScreen + ' ' + jS.cl.uiFullScreen + '" />')
 						.append(s.parent.children())
 						.appendTo($body)
-					
-					s.parent = jS.obj.fullScreen();
+						.data('parent', s.parent);
 
 					jS.obj.pane().trigger('resizeScroll');
 					jS.sheetSyncSize();
@@ -5364,7 +5366,7 @@ jQuery.sheet = {
 
 
 			/**
-			 * Sync's the called parent's controls so that they fit correctly within the origParent
+			 * Sync's the called parent's controls so that they fit correctly within the parent
 			 * @function sheetSyncSize
 			 * @methodOf jS
 			 * @name sheetSyncSize
@@ -6075,13 +6077,13 @@ jQuery.sheet = {
 					var tables = replacementTables || jS.tables();
 					if (s.editable) {
 						jS.evt.cellEditAbandon();
-						origParent.trigger('saveSheet', [tables]);
+						s.parent.trigger('saveSheet', [tables]);
 					}
 					jS.setDirty(false);
 					jS.setChanged(true);
 					s.editable = !s.editable;
 
-					origParent.html('');
+					s.parent.html('');
 					jS.openSheet(tables);
 				}
 			},
@@ -6128,12 +6130,11 @@ jQuery.sheet = {
 		
 		//We need to take the sheet out of the parent in order to get an accurate reading of it's height and width
 		//$(this).html(s.loading);
-		s.origParent = origParent;
-		s.origHtml = origParent.children().detach();
+		s.origHtml = s.parent.children().detach();
 
 		s.parent.addClass(jS.cl.parent);
 		
-		origParent
+		s.parent
 			.unbind('switchSpreadsheet')
 			.bind('switchSpreadsheet', function(e, js, i){
 				jS.switchSpreadsheet(i);
@@ -6213,10 +6214,10 @@ jQuery.sheet = {
 		}
 
 		if (!s.allowCellsLineBreaks) {
-			origParent.addClass('noBreak');
+			s.parent.addClass('noBreak');
 		}
 
-		s.title = s.title || origParent.attr('title') || '';
+		s.title = s.title || s.parent.attr('title') || '';
 
 		jS.s = s;
 
@@ -6472,7 +6473,7 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 	
 		o.legend = (o.legend ? o.legend : o.data);
 
-		this.s.origParent.one('calculation', function() {
+		this.s.parent.one('calculation', function() {
 			var width = o.chart.width();
 			var height = o.chart.height();
 			var r = Raphael(o.chart[0]);			
@@ -7324,7 +7325,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				cell.value = jS.spreadsheets[this.sheet][this.row][this.col].value;
 			}
 
-			jS.s.origParent.one('calculation', function() {
+			jS.s.parent.one('calculation', function() {
 				jQuery('#' + id)
 					.change(function() {
 						cell.value = jQuery(this).val();
@@ -7366,7 +7367,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 						.append('<span>' + v[i] + '</span>')
 						.append('<br />');
 					
-					jS.s.origParent.one('calculation', function() {
+					jS.s.parent.one('calculation', function() {
 						jQuery('.' + id)
 							.change(function() {
 								cell.value = jQuery(this).val();
@@ -7414,7 +7415,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 				}
 			}
 			
-			jS.s.origParent.one('calculation', function() {
+			jS.s.parent.one('calculation', function() {
 				jQuery('.' + id)
 					.change(function() {
 						cell.value = (jQuery(this).is(':checked') ? jQuery(this).val() : '');
@@ -7501,7 +7502,7 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	},
 	CALCTIME: function() {
 		var owner = this;
-		this.s.origParent.one('calculation', function() {
+		this.s.parent.one('calculation', function() {
 			owner.jS.getTd(owner.sheet, owner.row, owner.col)
 				.text(owner.jS.time.diff());
 		});
