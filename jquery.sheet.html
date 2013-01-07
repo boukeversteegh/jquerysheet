@@ -56,41 +56,45 @@
                 //Here is where we initiate the sheets
                 //every time sheet is created it creates a new jQuery.sheet.instance (array), to manipulate each sheet, the jQuery object is returned
 
-                $.get('sheets/numberstesting.html', function(tables) {
-                    $.get('menu.left.html', function(menuLeft) {
-                        $.get('menu.right.html', function(menuRight) {
-                            $('#sheet')
-                                .html(tables)
-                                .sheet({
-                                    title: 'Spreadsheet Playground',
-                                    menuLeft: menuLeft,
-                                    menuRight: function (jS, I){
-                                        I = (I ? I.length : 0);
+	            window.loadSheet = function (url) {
+		            $.get(url, function(tables) {
+	                    $.get('menu.left.html', function(menuLeft) {
+	                        $.get('menu.right.html', function(menuRight) {
+	                            $('#sheet')
+			                        .html(tables)
+	                                .sheet({
+	                                    title: 'Spreadsheet Playground',
+	                                    menuLeft: menuLeft,
+	                                    menuRight: function (jS, I){
+	                                        I = (I ? I.length : 0);
 
-                                        //we want to be able to edit the html for the menu to make them multi-instance
-                                        var menu = menuRight.replace(/sheetInstance/g, "$.sheet.instance[" + I + "]");
-                                        menu = $(menu);
+	                                        //we want to be able to edit the html for the menu to make them multi-instance
+	                                        var menu = menuRight.replace(/sheetInstance/g, "$.sheet.instance[" + I + "]");
+	                                        menu = $(menu);
 
-                                        //The following is just so you get an idea of how to style cells
-                                        menu.find('.colorPickerCell').colorPicker().change(function(){
-                                            $.sheet.instance[I].cellChangeStyle('background-color', $(this).val());
-                                        });
+	                                        //The following is just so you get an idea of how to style cells
+	                                        menu.find('.colorPickerCell').colorPicker().change(function(){
+	                                            $.sheet.instance[I].cellChangeStyle('background-color', $(this).val());
+	                                        });
 
-                                        menu.find('.colorPickerFont').colorPicker().change(function(){
-                                            $.sheet.instance[I].cellChangeStyle('color', $(this).val());
-                                        });
+	                                        menu.find('.colorPickerFont').colorPicker().change(function(){
+	                                            $.sheet.instance[I].cellChangeStyle('color', $(this).val());
+	                                        });
 
-                                        menu.find('.colorPickers').children().eq(1).css('background-image', "url('images/palette.png')");
-                                        menu.find('.colorPickers').children().eq(3).css('background-image', "url('images/palette_bg.png')");
+	                                        menu.find('.colorPickers').children().eq(1).css('background-image', "url('images/palette.png')");
+	                                        menu.find('.colorPickers').children().eq(3).css('background-image', "url('images/palette_bg.png')");
 
-                                        return menu;
-                                    },
-                                    autoFiller: true,
-			                        headerHeight: 60
-                                });
-                        });
-                    });
-                });
+	                                        return menu;
+	                                    },
+	                                    autoFiller: true,
+				                        headerHeight: 60
+	                                });
+	                        });
+	                    });
+	                });
+	            };
+
+	            loadSheet('sheets/numberstesting.html');
                 
                 //examples of how to use jQuery.sheet
                 /*
@@ -200,13 +204,13 @@
                             <span id="themeSwitcher"></span>
                             <ul style="padding-left: 15px;">
                                 <li>
-                                    <a href="#" onclick="$('#sheet').getSheet().openSheetURL('sheets/numberstesting.html'); return false;">Playground</a>
+                                    <a href="#" onclick="loadSheet('sheets/numberstesting.html'); return false;">Playground</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="$('#sheet').getSheet().openSheetURL('sheets/enduser.documentation.html'); return false;">Enduser Documentation</a>
+                                    <a href="#" onclick="loadSheet('sheets/enduser.documentation.html'); return false;">Enduser Documentation</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="$('#sheet').getSheet().openSheetURL('sheets/developer.documentation.html');return false;">Developer Documentation</a>
+                                    <a href="#" onclick="loadSheet('sheets/developer.documentation.html');return false;">Developer Documentation</a>
                                 </li>
                             </ul>
 							<div style="text-align: center;">

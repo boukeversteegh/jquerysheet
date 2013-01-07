@@ -36,28 +36,28 @@
         </tr>
         <tr><!--bracket handling-->
             <td>Bracket Handling</td>
-            <td formula="='<b>b</b>'"></td>
+            <td data-formula="='<b>b</b>'"></td>
             <td>&lt;b&gt;b&lt;/b&gt;</td>
-            <td formula="=IF(THISROWCELL('B') = THISROWCELL('C'), TRUE, FALSE)"></td>
+            <td data-formula="=IF(THISROWCELL('B') = THISROWCELL('C'), TRUE, FALSE)"></td>
             <td></td>
         </tr>
         <tr><!--concat with format-->
             <td>Concat with format</td>
-            <td formula="=CONCATENATE('Dollar Amount: ',DOLLAR(SUM(200)))"></td>
+            <td data-formula="=CONCATENATE('Dollar Amount: ',DOLLAR(SUM(200)))"></td>
             <td>Dollar Amount: 200</td>
-            <td formula="=IF(THISROWCELL('B') = THISROWCELL('C'), TRUE, FALSE)"></td>
+            <td data-formula="=IF(THISROWCELL('B') = THISROWCELL('C'), TRUE, FALSE)"></td>
             <td>For now concatenation makes formatting cells somewhat difficult, so for the time being the formatting is lost on concatenation. Same as example below.</td>
         </tr>
         <tr><!--concat operator with format-->
             <td>Concat operator with format</td>
-            <td formula="='Dollar Amount: ' + DOLLAR(SUM(200))"></td>
+            <td data-formula="='Dollar Amount: ' + DOLLAR(SUM(200))"></td>
             <td>Dollar Amount: 200</td>
-            <td formula="=IF(THISROWCELL('B') = THISROWCELL('C'), TRUE, FALSE)"></td>
+            <td data-formula="=IF(THISROWCELL('B') = THISROWCELL('C'), TRUE, FALSE)"></td>
             <td></td>
         </tr>
         <tr><!--line breaks-->
             <td>Line Breaks</td>
-            <td formula="='Test
+            <td data-formula="='Test
 
 
 Test'"></td>
@@ -65,7 +65,7 @@ Test'"></td>
 
 
 Test</td>
-            <td formula="=IF(THISROWCELL('B') = THISROWCELL('C'), TRUE, FALSE)"></td>
+            <td data-formula="=IF(THISROWCELL('B') = THISROWCELL('C'), TRUE, FALSE)"></td>
             <td></td>
         </tr>
         </tbody>

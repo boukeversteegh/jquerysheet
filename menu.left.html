@@ -25,8 +25,8 @@
 					<li><a onclick="sheetInstance.controlFactory.addRow(); return false;" title="Adds an additional row to bottom of the spreadsheet.">Add Row</a></li>
 					<li><a onclick="sheetInstance.controlFactory.addRowMulti(); return false;" title="Adds an additional rows to bottom of the spreadsheet.">Add Multi-Rows</a></li>
 					<li><a onclick="sheetInstance.deleteRow(); return false;" title="Delets the current row thats highlighted.">Delete Row</a></li>
-					<li><a onclick="sheetInstance.controlFactory.addRow(null, true); return false;" title="Inserts an additional row after currently selected row.">Insert Row Before</a></li>
-					<li><a onclick="sheetInstance.controlFactory.addRow(); return false;" title="Inserts an additional row after currently selected row.">Insert Row After</a></li>
+					<li><a onclick="sheetInstance.controlFactory.addRow(sheetInstance.cellLast.row, true); return false;" title="Inserts an additional row after currently selected row.">Insert Row Before</a></li>
+					<li><a onclick="sheetInstance.controlFactory.addRow(sheetInstance.cellLast.row); return false;" title="Inserts an additional row after currently selected row.">Insert Row After</a></li>
 					<!--<li><a onclick="sheetInstance.toggleHide.rowAll();" title="Unhides all the hidden rows.">Show All</a></li>
 					<li><a onclick="sheetInstance.toggleHide.row();" title="Hides or shows the currently selected row.">Toggle Hide Row</a></li>-->
 				</ul>
@@ -37,8 +37,8 @@
 					<li><a onclick="sheetInstance.controlFactory.addColumn(); return false;" title="Adds an additional column to the right of the spreadsheet.">Add Column</a></li>
 					<li><a onclick="sheetInstance.controlFactory.addColumnMulti(); return false;" title="Adds an additional columns to the right of the spreadsheet.">Add Multi-Columns</a></li>
 					<li><a onclick="sheetInstance.deleteColumn(); return false;" title="Deletes the current column thats highlighted.">Delete Column</a></li>
-					<li><a onclick="sheetInstance.controlFactory.addColumn(null, true); return false;" title="Inserts an additional column after currently selected column.">Insert Column Before</a></li>
-					<li><a onclick="sheetInstance.controlFactory.addColumn(); return false;" title="Inserts an additional column after currently selected column.">Insert Column After</a></li>
+					<li><a onclick="sheetInstance.controlFactory.addColumn(sheetInstance.cellLast.col, true); return false;" title="Inserts an additional column after currently selected column.">Insert Column Before</a></li>
+					<li><a onclick="sheetInstance.controlFactory.addColumn(sheetInstance.cellLast.col); return false;" title="Inserts an additional column after currently selected column.">Insert Column After</a></li>
 					<li><a onclick="sheetInstance.fillUpOrDown(); return false;" title="Fill down current cell value.">Fill Down</a></li>
 					<li><a onclick="sheetInstance.fillUpOrDown(true); return false;" title="Fill up current cell value.">Fill Up</a></li>
 					<li><a onclick="sheetInstance.toggleHide.columnAll();" title="Unhides all the hidden columns.">Show All</a></li>

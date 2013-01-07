@@ -281,15 +281,18 @@ tr.rowHidden, tr.rowHidden td {
 	height: 18px;
 }
 
-.barController {
-	position: absolute !important;
-}
 .jSheetBarTopParent .barController .ui-resizable-handle {
 	height: 16px;
 }
+.jSheetBarLeft .barController {
+	width: 0px;
+	height: 0px;
+	position: absolute;
+	top: 0px;
+}
 .jSheetBarLeft .barController .ui-resizable-handle {
 	width: 16px;
-	height: inherit ! important;
+	display: inline ! important;
 }
 .jSheetBarHandleFreezeTop
 {
@@ -312,7 +315,7 @@ tr.rowHidden, tr.rowHidden td {
 {
 	font-size: 0.8em ! important;
 	text-align: center;
-	vertical-align: middle;
+	vertical-align: middle ! important;
 	cursor: pointer ! important;
 	overflow: visible ! important;
 }

@@ -26,8 +26,8 @@ jQuery.fn.extend({
 	 * allowToggleState {Boolean}, default true, allows the spreadsheet to be toggled from write/read
 	 * newColumnWidth {Integer}, default 120, width of new columns
 	 * title {String|Function}, title of spreadsheet, if function, expects string and is sent jS
-	 * menuRight {String|Function}, default '', if function expects string and is sent jS. If string 'sheetIndex' is replaced with sheet index number, 'sheetInstance' is replaced by the instance number, if ul object as string, will attempt to create menu
-	 * menuLeft {String|Function}, default '', if function expects string and is sent jS. If string 'sheetIndex' is replaced with sheet index number, 'sheetInstance' is replaced by the instance number, if ul object as string, will attempt to create menu
+	 * menuRight {String|Function}, default '', if function expects string and is sent jS. If ul object as string, will attempt to create menu
+	 * menuLeft {String|Function}, default '', if function expects string and is sent jS. If ul object as string, will attempt to create menu
 	 * calcOff {Boolean} default false, turns turns off ability to calculate
 	 * log {Boolean} turns on/off debug mode
 	 * lockFormulas {Boolean} default false, turns on/off the ability to edit formulas
@@ -104,8 +104,17 @@ jQuery.fn.extend({
 				encode:             function(val) {
 					switch( typeof val ) {
 						case 'object':
-						case 'number': return val;
+						case 'number':
+							return val;
 					}
+
+					if (!val) {
+						return val || '';
+					}
+					if (!val.replace) {
+						return val || '';
+					}
+
 					return val
 						.replace(/&/gi, '&amp;')
 						.replace(/>/gi, '&gt;')
@@ -119,9 +128,9 @@ jQuery.fn.extend({
 			
 			var jS = parent.getSheet();
 			if (jS) {
-				parent.html(jS.obj.sheets()); //degrade to just sheets in parent
-				jS.obj.tabContainer().remove();
-				delete jS;
+				var tables = parent.children();
+				jS.kill();
+				parent.html(tables);
 			}
 			
 			if (jQuery.sheet.instance.length) {
@@ -131,7 +140,7 @@ jQuery.fn.extend({
 				parent.sheetInstance = jQuery.sheet.createInstance(jQuery, set, 0, parent);
 				jQuery.sheet.instance = [parent.sheetInstance];
 			}
-			parent.attr('sheetInstance', jQuery.sheet.instance.length - 1);
+			parent.data('sheetInstance', jQuery.sheet.instance.length - 1);
 		});
 		return this;
 	},
@@ -154,7 +163,7 @@ jQuery.fn.extend({
 	 * @returns {*}
 	 */
 	getSheet: function() {
-		var I = parseInt(jQuery(this).attr('sheetInstance'));
+		var I = parseInt(jQuery(this).data('sheetInstance'));
 		if (!isNaN(I)) {
 			return jQuery.sheet.instance[I];
 		}
@@ -351,12 +360,11 @@ jQuery.sheet = {
 			spreadsheets: [],
 
 			/**
-			 * Dependencies will be tracked here
-			 * TODO: Make work ;)
+			 * track cells with formulas, to make calculations much faster
 			 * @memberOf jS
 			 * @name spreadsheetDependencies
 			 */
-			spreadsheetDependencies: [],
+			spreadsheetsCellsWithFormulas: [],
 
 			/**
 			 * Internal storage array of controls for an instance
@@ -631,16 +639,12 @@ jQuery.sheet = {
 			 * @name kill
 			 */
 			kill: function() {
-				jS.obj.tabContainer().remove();
 				jS.obj.fullScreen().remove();
 				jS.obj.inPlaceEdit().remove();
 				origParent
 					.removeClass(jS.cl.uiParent)
 					.html('')
-					.removeAttr('sheetInstance');
-				jSE = s = $.sheet.instance[I] = jS = null;
-				delete jSE;
-				delete s;
+					.removeData('sheetInstance');
 				delete $.sheet.instance[I];
 				delete jS;
 			},
@@ -669,7 +673,7 @@ jQuery.sheet = {
 				if (forceRebuild || jS.spreadsheets.length == 0) {
 					jS.cycleCellsAll(function(sheet, row, col) {
 						var td = $(this);
-						jS.createCell(td, sheet, row, col, td.text(), td.attr('formula'));
+						jS.createCell(td, sheet, row, col, td.text(), td.data('formula'));
 					});
 				}
 				return jS.spreadsheets;
@@ -687,7 +691,7 @@ jQuery.sheet = {
 				if (forceRebuild || !jS.spreadsheets[i]) {
 					jS.cycleCells(function(sheet, row, col) {
 						var td = $(this);
-						jS.createCell(td, sheet, row, col, td.text(), td.attr('formula'));
+						jS.createCell(td, sheet, row, col, td.text(), td.data('formula'));
 					});
 				}
 			},
@@ -774,13 +778,13 @@ jQuery.sheet = {
 				 * @methodOf jS.controlFactory
 				 * @name addRowMulti
 				 */
-				addRowMulti: function(qty, isBefore, skipFormulaReparse) {
+				addRowMulti: function(eq, qty, isBefore, skipFormulaReparse) {
 					if (!qty) {
 						qty = prompt(jS.msg.addRowMulti);
 					}
 					if (qty) {
 						if (!isNaN(qty))
-							jS.controlFactory.addCells(null, isBefore, parseInt(qty), 'row', skipFormulaReparse);
+							jS.controlFactory.addCells(eq, isBefore, parseInt(qty), 'row', skipFormulaReparse);
 					}
 				},
 
@@ -792,13 +796,13 @@ jQuery.sheet = {
 				 * @methodOf jS.controlFactory
 				 * @name addColumnMulti
 				 */
-				addColumnMulti: function(qty, isBefore, skipFormulaReparse) {
+				addColumnMulti: function(eq, qty, isBefore, skipFormulaReparse) {
 					if (!qty) {
 						qty = prompt(jS.msg.addColumnMulti);
 					}
 					if (qty) {
 						if (!isNaN(qty))
-							jS.controlFactory.addCells(null, isBefore, parseInt(qty), 'col', skipFormulaReparse);
+							jS.controlFactory.addCells(eq, isBefore, parseInt(qty), 'col', skipFormulaReparse);
 					}
 				},
 
@@ -829,16 +833,6 @@ jQuery.sheet = {
 					
 					qty = qty || 1;
 					type = type || 'col';
-					
-					//var barLast = (type == 'row' ? jS.rowLast : jS.colLast);
-					var cellLastBar = (type == 'row' ? jS.cellLast.row : jS.cellLast.col);
-					
-					if (eq === u) {
-						if (cellLastBar != 0) {
-							eq = cellLastBar;
-							isLast = true;
-						}
-					}
 
 					if (eq == u) {
 						eq = (type == 'row' ? jS.sheetSize().rows : jS.sheetSize().cols);
@@ -1500,9 +1494,7 @@ jQuery.sheet = {
 						if ($.isFunction(menu)) {
 							menu = $(menu(jS));
 						} else {
-							menu = $(menu
-								.replace(/sheetInstance/g, "jQuery.sheet.instance[" + I + "]")
-								.replace(/sheetIndex/g, I));
+							menu = $(menu);
 						}
 
 						if (menu.is('ul')) {
@@ -2142,14 +2134,14 @@ jQuery.sheet = {
 
 							if ((col[j] + '').charAt(0) == '=') { //we need to know if it's a formula here
 								cell.formula = col[j];
-								td.attr('formula', col[j]);
+								td.data('formula', col[j]);
 							} else {
 								cell.formula = null;
 								cell.value = col[j];
 
 								td
 									.html(col[j])
-									.removeAttr('formula');
+									.removeData('formula');
 							}
 
 							tdsAfter.append(td.clone());
@@ -2491,13 +2483,13 @@ jQuery.sheet = {
 										var cell = jS.spreadsheets[jS.i][jS.cellLast.row][jS.cellLast.col];
 										if (v.charAt(0) == '=') {
 											td
-												.attr('formula', v)
+												.data('formula', v)
 												.html('');
 											cell.value = v;
 											cell.formula = v;
 										} else {
 											td
-												.removeAttr('formula')
+												.removeData('formula')
 												.html(s.encode(v));
 											cell.value = v;
 											cell.formula = null;
@@ -3079,7 +3071,7 @@ jQuery.sheet = {
 			 */
 			isFormulaEditable: function(o) {
 				if (s.lockFormulas) {
-					if(o.attr('formula') !== u) {
+					if(o.data('formula') !== u) {
 						return false;
 					}
 				}
@@ -3204,7 +3196,7 @@ jQuery.sheet = {
 						var td = $(this);
 						
 						if (row > 0 && col > 0) {
-							jS.createCell(td, i, row, col, td.text(), td.attr('formula'));
+							jS.createCell(td, i, row, col, td.text(), td.data('formula'));
 						} else {
 							if (col == 0 && row > 0) { //barleft
 								td
@@ -3312,7 +3304,7 @@ jQuery.sheet = {
 							cell.html = '';
 
 							td
-								.attr('formula', '')
+								.removeData('formula')
 								.html('')
 								.hide();
 						}
@@ -3338,7 +3330,7 @@ jQuery.sheet = {
 			unmerge: function() {
 				var cell = jS.obj.cellHighlighted().first();
 				var loc = jS.getTdLocation(cell);
-				var formula = cell.attr('formula');
+				var formula = cell.data('formula');
 				var v = cell.text();
 				v = (formula ? formula : v);
 				
@@ -3413,7 +3405,7 @@ jQuery.sheet = {
 						
 						jS.spreadsheets[sheet][row][col].formula = newV;
 						
-						td.attr('formula', newV).html('');
+						td.data('formula', newV).html('');
 					};
 				} else {
 					if (goUp && !isNaN(newV)) {
@@ -3427,7 +3419,7 @@ jQuery.sheet = {
 						jS.spreadsheets[sheet][row][col].formula = null;
 						jS.spreadsheets[sheet][row][col].value = newV;
 						
-						td.removeAttr('formula').html(newV);
+						td.removeData('formula').html(newV);
 						if (!isNaN(newV) && newV != '') newV++;
 					};
 				}
@@ -3492,7 +3484,7 @@ jQuery.sheet = {
 
 				jS.cycleCells(function (sheet, row, col) {
 					var td = $(this);
-					var formula = td.attr('formula');
+					var formula = td.data('formula');
 
 					if (formula && jS.isFormulaEditable(td)) {
 						formula = jS.reparseFormula(formula, offset, function(thisLoc){
@@ -3503,7 +3495,7 @@ jQuery.sheet = {
 						});
 						
 						jS.spreadsheets[sheet][row][col].formula = formula;
-						td.attr('formula', formula);
+						td.data('formula', formula);
 					}
 
 				}, affectedRange.first, affectedRange.last);
@@ -3696,11 +3688,11 @@ jQuery.sheet = {
 					addCols = 0;
 				
 				if (size.cols < s.minSize.cols) {
-					jS.controlFactory.addColumnMulti(s.minSize.cols - size.cols);
+					jS.controlFactory.addColumnMulti(null, s.minSize.cols - size.cols);
 				}
 				
 				if (size.rows < s.minSize.rows) {
-					jS.controlFactory.addRowMulti(s.minSize.rows - size.rows);
+					jS.controlFactory.addRowMulti(null, s.minSize.rows - size.rows);
 				}
 			},
 
@@ -3983,20 +3975,37 @@ jQuery.sheet = {
 				 */
 				left: function(bar, i, pane, sheet) {
 					bar.find('.barController').remove();
-					var barController = $('<div class="barController" />')
-						.width(0)
+					var offset = bar.offset();
+					var barController = $('<div class="barController"></div>')
+						.prependTo(bar)
+						.offset({
+							top: offset.top,
+							left: offset.left
+						});
+
+					var child = $('<div class="barControllerChild"></div>')
+						.width(bar.width())
 						.height(bar.height())
-						.prependTo(bar);
+						.prependTo(barController)
+						.mouseenter(function() {
+							bar.mouseenter();
+						})
+						.mouseleave(function() {
+							bar.mouseleave();
+						})
+						.mousedown(function() {
+							bar.mousedown();
+						});
 					
-					var parent = bar.parent().add(bar);
-					jS.resizable(barController, {
+					var me = bar.parent().add(bar).add(barController);
+					jS.resizable(child, {
 						handles: 's',
 						start: function() {
 							jS.autoFillerHide();
 							jS.busy = true;
 						},
 						resize: function(e, ui) {
-							parent
+							me
 								.height(ui.size.height)
 								.attr('height', (ui.size.height))
 								.css('height', ui.size.height + 'px');
@@ -4083,10 +4092,14 @@ jQuery.sheet = {
 				
 				//Show where we are to the user
 				jS.labelUpdate(loc);
+
+				if ( !jS.spreadsheets[jS.i] || !jS.spreadsheets[jS.i][loc.row] || !jS.spreadsheets[jS.i][loc.row][loc.col] ) return;
 				
-				var v = td.attr('formula');
-				if (!v) {
-					v = td.text();
+				var v;
+				if (jS.spreadsheets[jS.i][loc.row][loc.col].formula) {
+					v = '=' + jS.spreadsheets[jS.i][loc.row][loc.col].formula;
+				} else {
+					v = jS.spreadsheets[jS.i][loc.row][loc.col].value;
 				}
 				
 				var formula = jS.obj.formula()
@@ -4926,9 +4939,7 @@ jQuery.sheet = {
 			 * @methodOf jS
 			 * @name sheetTab
 			 */
-			sheetTab: function(get) { /*
-											get: bool,
-										*/
+			sheetTab: function(get) {
 				var sheetTab = '';
 				if (get) {
 					sheetTab = jS.obj.sheet().attr('title');
@@ -5303,15 +5314,15 @@ jQuery.sheet = {
 			 * @name importRow
 			 */
 			importRow: function(rowArray) {
-				jS.controlFactory.addRow(null, null, null);
+				jS.controlFactory.addRow();
 
 				var error = "";
 				jS.obj.sheet().find('tr:last td').each(function(i) {
-					$(this).removeAttr('formula');
+					$(this).removeData('formula');
 					try {
 						//To test this, we need to first make sure it's a string, so converting is done by adding an empty character.
 						if ((rowArray[i] + '').charAt(0) == "=") {
-							$(this).attr('formula', rowArray[i]);
+							$(this).data('formula', rowArray[i]);
 						} else {
 							$(this).html(rowArray[i]);
 						}
@@ -5344,7 +5355,7 @@ jQuery.sheet = {
 					try {
 						//To test this, we need to first make sure it's a string, so converting is done by adding an empty character.
 						if ((columnArray[i] + '').charAt(0) == "=") {
-							o.attr('formula', columnArray[i]);					
+							o.data('formula', columnArray[i]);
 						} else {
 							o.html(columnArray[i]);
 						}
@@ -7278,8 +7289,10 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	},
 	//html function
 	IMG: function(v) {
-		return jQuery('<img />')
-			.attr('src', v);
+		return {
+			html: jQuery('<img />')
+				.attr('src', v)
+		};
 	},
 	GETHTML: function() {
 		return this.html[0];
@@ -7292,7 +7305,9 @@ var jFN = jQuery.sheet.fn = {//fn = standard functions used in cells
 	},
 	HYPERLINK: function(link, name) {
 		name = (name ? name : 'LINK');
-		return jQuery('<a href="' + link + '" target="_new">' + name + '</a>');
+		return {
+			html: jQuery('<a href="' + link + '" target="_new">' + name + '</a>')
+		};
 	},
 	DROPDOWN: function() {
 		var cell = this.obj,
@@ -7572,28 +7587,6 @@ var key = { /* key objects, makes it easier to develop */
 };
 
 var arrHelpers = {
-	foldPrepare: function(firstArg, theArguments, unique) { // Computes the best array-like arguments for calling fold().
-		var result;
-		if (firstArg != null &&
-			firstArg instanceof Object &&
-			firstArg["length"] != null) {
-			result = firstArg;
-		} else {
-			result = theArguments;
-		}
-		
-		if (unique) {
-			result = this.unique(result);
-		}
-		
-		return result;
-	},
-	fold: function(arr, funcOfTwoArgs, result, castToN, N) {
-		for (var i = 0; i < arr.length; i++) {
-			result = funcOfTwoArgs(result, (castToN == true ? N(arr[i]): arr[i]));
-		}
-		return result;
-	},
 	toNumbers: function(arr) {
 		arr = this.flatten(arr);
 		
