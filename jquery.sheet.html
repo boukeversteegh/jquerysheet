@@ -57,41 +57,45 @@
                 //every time sheet is created it creates a new jQuery.sheet.instance (array), to manipulate each sheet, the jQuery object is returned
 
 	            window.loadSheet = function (url) {
-		            $.get(url, function(tables) {
-	                    $.get('menu.left.html', function(menuLeft) {
-	                        $.get('menu.right.html', function(menuRight) {
-	                            $('#sheet')
-			                        .html(tables)
-	                                .sheet({
-	                                    title: 'Spreadsheet Playground',
-	                                    menuLeft: menuLeft,
-	                                    menuRight: function (jS, I){
-	                                        I = (I ? I.length : 0);
+                    var urls = {tables: url, menuLeft: 'menu.left.html', menuRight: 'menu.right.html'}, results = {}, loadCount = 3, loaded = 0;
 
-	                                        //we want to be able to edit the html for the menu to make them multi-instance
-	                                        var menu = menuRight.replace(/sheetInstance/g, "$.sheet.instance[" + I + "]");
-	                                        menu = $(menu);
+                    for(var i in urls) {
+                        $.get(urls[i], function(result) {
+                            var myUrl = this.url;
+                            results[Object.keys(urls).filter(function(key) {return urls[key] === myUrl})[0]] = result;
+                            loaded++;
+                            if (loadCount == loaded) {
+                                $('#sheet')
+                                        .html(results.tables)
+                                        .sheet({
+                                            title: 'Spreadsheet Playground',
+                                            menuLeft: results.menuLeft,
+                                            menuRight: function (jS, I){
+                                                I = (I ? I.length : 0);
 
-	                                        //The following is just so you get an idea of how to style cells
-	                                        menu.find('.colorPickerCell').colorPicker().change(function(){
-	                                            $.sheet.instance[I].cellChangeStyle('background-color', $(this).val());
-	                                        });
+                                                //we want to be able to edit the html for the menu to make them multi-instance
+                                                var menu = results.menuRight.replace(/sheetInstance/g, "$.sheet.instance[" + I + "]");
+                                                menu = $(menu);
 
-	                                        menu.find('.colorPickerFont').colorPicker().change(function(){
-	                                            $.sheet.instance[I].cellChangeStyle('color', $(this).val());
-	                                        });
+                                                //The following is just so you get an idea of how to style cells
+                                                menu.find('.colorPickerCell').colorPicker().change(function(){
+                                                    $.sheet.instance[I].cellChangeStyle('background-color', $(this).val());
+                                                });
 
-	                                        menu.find('.colorPickers').children().eq(1).css('background-image', "url('images/palette.png')");
-	                                        menu.find('.colorPickers').children().eq(3).css('background-image', "url('images/palette_bg.png')");
+                                                menu.find('.colorPickerFont').colorPicker().change(function(){
+                                                    $.sheet.instance[I].cellChangeStyle('color', $(this).val());
+                                                });
 
-	                                        return menu;
-	                                    },
-	                                    autoFiller: true,
-				                        headerHeight: 60
-	                                });
-	                        });
-	                    });
-	                });
+                                                menu.find('.colorPickers').children().eq(1).css('background-image', "url('images/palette.png')");
+                                                menu.find('.colorPickers').children().eq(3).css('background-image', "url('images/palette_bg.png')");
+
+                                                return menu;
+                                            },
+                                            headerHeight: 60
+                                        });
+                            }
+                        });
+                    }
 	            };
 
 	            loadSheet('sheets/numberstesting.html');

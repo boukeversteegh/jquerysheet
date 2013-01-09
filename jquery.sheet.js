@@ -36,14 +36,15 @@ jQuery.fn.extend({
 	 * formulaFunctions {Object} default {}, Additional functions for formulas. Will overwrite default functions if named the same.
 	 *      Javascript Example:
 	 *          $(obj).sheet({
-	 *              NEWFUNCTION: function(arg1, arg2) {
-	 *                  //this = the jS.spreadsheet[sheetIndex][rowIndex][cellIndex] object
-	 *                  return 'string'; //can return a string
-	 *                  return $('<div />'); //can return an object
-	 *                  return { //can also return an object {value: '', html: ''}
-	 *                      value: 'my value seen by other cells or if accessed directly',
-	 *                      html: $('<div>What the end user will see on the cell this is called in</div>')
-	 *                  };
+	 *              formulaFunctions: {
+	 *                  NEWFUNCTION: function(arg1, arg2) {
+	 *                      //this = the jS.spreadsheet[sheetIndex][rowIndex][cellIndex] object
+	 *                      return 'string'; //can return a string
+	 *                      return { //can also return an object {value: '', html: ''}
+	 *                          value: 'my value seen by other cells or if accessed directly',
+	 *                          html: $('<div>What the end user will see on the cell this is called in</div>')
+	 *                      }
+	 *                  }
 	 *              }
 	 *          });
 	 *
@@ -53,7 +54,9 @@ jQuery.fn.extend({
 	 * formulaVariables {Object} default {}, Additional variables that formulas can access.
 	 *      Javascript Example:
 	 *          $(obj).sheet({
-	 *              newVariable: 100
+	 *              formulaVariables: {
+	 *                  newVariable: 100
+	 *              }
 	 *          });
 	 *
 	 *      Formula Example (will output 200)
@@ -134,15 +137,12 @@ jQuery.fn.extend({
 				jS.kill();
 				parent.html(tables);
 			}
-			
-			if (jQuery.sheet.instance.length) {
-				parent.sheetInstance = jQuery.sheet.createInstance(jQuery, set, jQuery.sheet.instance.length);
-				jQuery.sheet.instance.push(parent.sheetInstance);
-			} else {
-				parent.sheetInstance = jQuery.sheet.createInstance(jQuery, set, 0);
-				jQuery.sheet.instance = [parent.sheetInstance];
-			}
-			parent.data('sheetInstance', jQuery.sheet.instance.length - 1);
+
+			if (!jQuery.sheet.instance.length) jQuery.sheet.instance = $([]);
+
+			var instance = jQuery.sheet.createInstance(jQuery, set, jQuery.sheet.instance.length);
+			jQuery.sheet.instance = jQuery.sheet.instance.add(instance);
+			parent.data('sheetInstance', instance);
 		});
 		return this;
 	},
@@ -165,11 +165,7 @@ jQuery.fn.extend({
 	 * @returns {*}
 	 */
 	getSheet: function() {
-		var I = parseInt(jQuery(this).data('sheetInstance'));
-		if (!isNaN(I)) {
-			return jQuery.sheet.instance[I];
-		}
-		return false;
+		return jQuery(this).data('sheetInstance');
 	},
 
 	/**
@@ -626,7 +622,8 @@ jQuery.sheet = {
 				notFoundColumn:         "Column not found",
 				notFoundRow:            "Row not found",
 				notFoundSheet:          "Sheet not found",
-				setCellRef:             "'Enter the name you would like to reference the cell by.'"
+				setCellRef:             "Enter the name you would like to reference the cell by.",
+				sheetTitleDefault:      "Spreadsheet {index}"
 			},
 
 			/**
@@ -751,7 +748,7 @@ jQuery.sheet = {
 			 * @name setNav
 			 */
 			setNav: function(nav) {
-				$($.sheet.instance).each(function() {
+				$.sheet.instance.each(function() {
 					this.nav = false;
 				});
 			
@@ -768,6 +765,7 @@ jQuery.sheet = {
 			controlFactory: {
 				/**
 				 * Creates multi rows
+				 * @param {Integer} eq, optional
 				 * @param {Integer} qty the number of cells you'd like to add, if not specified, a dialog will ask
 				 * @param {Boolean} isBefore places cells before the selected cell if set to true, otherwise they will go after, or at end
 				 * @param {Boolean} skipFormulaReparse re-parses formulas if needed
@@ -786,6 +784,7 @@ jQuery.sheet = {
 
 				/**
 				 * Creates multi columns
+				 * @param {Integer} eq, optional
 				 * @param {Integer} qty the number of cells you'd like to add, if not specified, a dialog will ask
 				 * @param {Boolean} isBefore places cells before the selected cell if set to true, otherwise they will go after, or at end
 				 * @param {Boolean} skipFormulaReparse re-parses formulas if needed
@@ -1027,7 +1026,8 @@ jQuery.sheet = {
 				barLeft: function(sheet) {
 					jS.obj.barLefts().remove();
 
-					sheet.find('tr').each(function(i) {
+					//table / tbody / tr
+					sheet.children('tbody').children('tr').each(function(i) {
 						if (i > 0) {//top loads first, then we load barleft, the first cell is corner
 							$(this).prepend('<td  />');
 						}
@@ -1041,7 +1041,7 @@ jQuery.sheet = {
 				 * @name barTop
 				 */
 				barTop: function(sheet) {
-					var colgroup = sheet.find('colgroup');
+					var colgroup = sheet.children('colgroup');
 					var col = $('<col />')
 						.attr('width', s.colMargin)
 						.css('width', s.colMargin + 'px')
@@ -1051,12 +1051,12 @@ jQuery.sheet = {
 					var barTopParent = $('<tr class="' + jS.cl.barTopParent + '" />');
 					jS.controls.barTopParent[jS.i] = barTopParent;
 					
-					var parent = sheet.find('tr:first');
+					var parent = sheet.children('tbody').children('tr:first');
 					
 					//corner
 					barTopParent.append('<td />');
 
-					parent.find('td').each(function(i) {
+					parent.children('td').each(function(i) {
 						barTopParent.append('<td />');
 					});
 					
@@ -1572,7 +1572,7 @@ jQuery.sheet = {
 							}
 						});
 						
-						$($.sheet.instance).each(function() {
+						$.sheet.instance.each(function() {
 							this.nav = false;
 						});
 						
@@ -1606,17 +1606,23 @@ jQuery.sheet = {
 				tabContainer: function () {
 					var tabContainer = jS.controls.tabContainer = $('<div id="' + jS.id.tabContainer + '" class="' + jS.cl.tabContainer + '"></div>')
 						.mousedown(function(e) {
-							jS.trigger('switchSpreadsheet', [$(e.target).data('i') * 1]);
+							var i = $(e.target).data('i') * 1;
+							if (i >= 0) {
+								jS.trigger('switch', [i]);
+							}
 							return false;
 						})
 						.dblclick(function(e) {
-							jS.trigger('renameSpreadsheet', [$(e.target).data('i') * 1]);
+							var i = $(e.target).data('i') * 1;
+							if (i >= 0) {
+								jS.trigger('rename', [$(e.target).data('i') * 1]);
+							}
 							return false;
 						});
 
 
 					if (jS.isSheetEditable()) {
-						var addSheet = $('<span class="' + jS.cl.uiTab + ' ui-corner-bottom" title="Add a spreadsheet" i="-1">+</span>')
+						var addSheet = $('<span class="' + jS.cl.uiTab + ' ui-corner-bottom" title="Add a spreadsheet" data-i="-1">+</span>')
 							.click(function() {
 								jS.addSheet({
 									rows: 25,
@@ -1664,6 +1670,7 @@ jQuery.sheet = {
 								'<div></div>' +
 							'</div>')
 							.scroll(function() {
+								console.log(jS.i);
 								jS.evt.scroll.scrollTo({axis: 'x', pixel: this.scrollLeft}, 0);
 								jS.evt.scroll.scrollTo({axis: 'y', pixel: this.scrollTop}, 0);
 
@@ -1798,8 +1805,8 @@ jQuery.sheet = {
 								}
 
 								scroll
-									.scrollTop(scroll.scrollTop() + top)
-									.scrollLeft(scroll.scrollLeft() + left)
+									.scrollTop(scroll[0].scrollTop + top)
+									.scrollLeft(scroll[0].scrollLeft + left)
 									.scroll();
 							}
 
@@ -2654,7 +2661,7 @@ jQuery.sheet = {
 							}
 							break;
 						case key.HOME:		c = 1; break;
-						case key.END:		c = jS.obj.cellActive().parent().find('td').length - 1; break;
+						case key.END:		c = jS.obj.cellActive().parent().children('td').length - 1; break;
 					}
 
 					//we check here and make sure all values are above 0, so that we get a selected cell
@@ -3119,9 +3126,9 @@ jQuery.sheet = {
 			/**
 			 * Assists in rename of spreadsheet
 			 * @methodOf jS
-			 * @name renameSpreadsheet
+			 * @name renameSheet
 			 */
-			renameSpreadsheet: function(i) {
+			renameSheet: function(i) {
 				if (isNaN(i)) return false;
 				
 				if (i > -1)
@@ -3132,9 +3139,9 @@ jQuery.sheet = {
 			 * Switches spreadsheet
 			 * @param {Integer} i index of spreadsheet within instance
 			 * @methodOf jS
-			 * @name switchSpreadsheet
+			 * @name switchSheet
 			 */
-			switchSpreadsheet: function(i) {
+			switchSheet: function(i) {
 				if (isNaN(i)) return false;
 				
 				if (i == -1) {
@@ -3143,9 +3150,6 @@ jQuery.sheet = {
 					jS.setActiveSheet(i);
 					jS.calc(i);
 				}
-				
-				jS.trigger('switchSheet', [i]);
-				return false;
 			},
 
 			/**
@@ -3165,7 +3169,7 @@ jQuery.sheet = {
 
 				jS.controls.sheets = jS.obj.sheets().add(o);
 					
-				o.find('td.' + jS.cl.cellActive).removeClass(jS.cl.cellActive);
+				o.children('tbody').children('tr').children('td.' + jS.cl.cellActive).removeClass(jS.cl.cellActive);
 				
 				return o;
 			},
@@ -3642,29 +3646,34 @@ jQuery.sheet = {
 			 * @name formatSheet
 			 */
 			formatSheet: function(o) {
-				var w = s.newColumnWidth, h = s.colMargin;
+				var w = s.newColumnWidth,
+					h = s.colMargin,
+					tbody = o.children('tbody');
 
-				if (o.find('tbody').length < 1) {
-					o.wrapInner('<tbody />');
+				if (tbody.length < 1) {
+					tbody = $('<tbody />');
+					o.wrapInner(tbody);
 				}
-				
-				if (o.find('colgroup').length < 1 || o.find('col').length < 1) {
+
+				var colgroup = o.children('colgroup');
+				if (colgroup.length < 1 || colgroup.children('col').length < 1) {
 					o.remove('colgroup');
-					var colgroup = $('<colgroup />');
-					o.find('tr:first').children().each(function() {
+					colgroup = $('<colgroup />')
+						.prependTo(o);
+					var firstRow = tbody.children('tr:first');
+					firstRow.children().each(function() {
 						$('<col />')
 							.width(w)
 							.css('width', w + 'px')
 							.attr('width', w + 'px')
 							.appendTo(colgroup);
 					});
-					o.find('tr').each(function() {
+					tbody.children('tr').each(function() {
 						$(this)
 							.height(h)
 							.css('height', h + 'px')
 							.attr('height', h + 'px');
 					});
-					colgroup.prependTo(o);
 				}
 				
 				o
@@ -3888,6 +3897,17 @@ jQuery.sheet = {
 			 * @name busy
 			 */
 			busy: false,
+
+
+			/**
+			 * Set the spreadsheet's busy status
+			 * @param {Boolean} busy
+			 * @memberOf jS
+			 * @name setBusy
+			 */
+			setBusy: function(busy) {
+				jS.busy = busy;
+			},
 
 			/**
 			 * jQuery ui draggable integration
@@ -4803,7 +4823,9 @@ jQuery.sheet = {
 
 					jS.setActiveSheet(jS.sheetCount);
 
-					jS.trigger('addSheet', [jS.i]);
+					jS.sheetSyncSize();
+
+					jS.trigger('add', [jS.i]);
 				}
 			},
 
@@ -4828,7 +4850,7 @@ jQuery.sheet = {
 				jS.setDirty(true);
 				jS.setChanged(true);
 				
-				jS.trigger('deleteSheet', [oldI]);
+				jS.trigger('delete', [oldI]);
 			},
 
 			/**
@@ -4934,12 +4956,12 @@ jQuery.sheet = {
 				var sheetTab = '';
 				if (get) {
 					sheetTab = jS.obj.sheet().attr('title');
-					sheetTab = (sheetTab ? sheetTab : 'Spreadsheet ' + (jS.i + 1));
+					sheetTab = (sheetTab ? sheetTab : jS.msg.sheetTitleDefault.replace(/[{]index[}]/gi, jS.i + 1));
 				} else if (jS.isSheetEditable() && s.editableNames) { //ensure that the sheet is editable, then let them change the sheet's name
 					var newTitle = prompt(jS.msg.newSheetTitle, jS.sheetTab(true));
 					if (!newTitle) { //The user didn't set the new tab name
 						sheetTab = jS.obj.sheet().attr('title');
-						newTitle = (sheetTab ? sheetTab : 'Spreadsheet' + (jS.i + 1));
+						newTitle = (sheetTab ? sheetTab : jS.msg.sheetTitleDefault.replace(/[{]index[}]/gi, jS.i + 1));
 					} else {
 						jS.setDirty(true);
 						jS.obj.sheet().attr('title', newTitle);
@@ -5228,7 +5250,7 @@ jQuery.sheet = {
 			 * @name setActiveSheet
 			 */
 			setActiveSheet: function(i) {
-				i = (i ? i : 0);
+				i = i || 0;
 				
 				if (jS.cellLast.row > 0 || jS.cellLast.col > 0) {
 					jS.evt.cellEditDone();
@@ -5247,7 +5269,6 @@ jQuery.sheet = {
 				
 				jS.readOnly[i] = jS.obj.sheet().hasClass('readonly');
 
-				jS.sheetSyncSize();
 				jS.obj.pane().trigger('resizeScroll');
 			},
 
@@ -5272,13 +5293,14 @@ jQuery.sheet = {
 					tables.each(function(i) {
 						jS.controlFactory.sheetUI($(this), i);
 						jS.calc(i);
-						jS.trigger('sheetOpened', [i, jS]);
+						jS.trigger('sheetOpened', [i]);
 					});
+
+					jS.sheetSyncSize();
 
 					jS.setActiveSheet(0);
 
 					jS.setDirty(false);
-					
 					return true;
 				} else {
 					return false;
@@ -5383,7 +5405,7 @@ jQuery.sheet = {
 					.width(s.width);
 
 				var w = s.width;
-				h -= jS.s.headerHeight || jS.obj.header().outerHeight();
+				h -= jS.obj.header().outerHeight();
 				h -= jS.obj.tabContainer().outerHeight() + jS.s.boxModelCorrection;
 
 				jS.obj.panes()
@@ -5429,15 +5451,19 @@ jQuery.sheet = {
 				if(!v) {
 					v = prompt(jS.msg.cellFind);
 				}
+				var trs = jS.obj.sheet()
+					.children('tbody')
+					.children('tr');
+
 				if (v) {//We just do a simple uppercase/lowercase search.
-					var o = jS.obj.sheet().find('td:contains("' + v + '")');
+					var o = trs.children('td:contains("' + v + '")');
 					
 					if (o.length < 1) {
-						o = jS.obj.sheet().find('td:contains("' + v.toLowerCase() + '")');
+						o = trs.children('td:contains("' + v.toLowerCase() + '")');
 					}
 					
 					if (o.length < 1) {
-						o = jS.obj.sheet().find('td:contains("' + v.toUpperCase() + '")');
+						o = trs.children('td:contains("' + v.toUpperCase() + '")');
 					}
 					
 					o = o.eq(0);
@@ -5693,7 +5719,7 @@ jQuery.sheet = {
 							left <= paneOffset.left + pane.width()
 						)
 				) {
-					var td = $.nearest({x: left, y: top}, jS.obj.sheet().find('td'));
+					var td = $.nearest({x: left, y: top}, jS.obj.sheet().children('tbody').children('tr').children('td'));
 					
 					//I use this snippet to help me know where the point was positioned
 					/*var o = $('<div class="ui-widget-content" style="position: absolute;">TESTING TESTING</div>')
@@ -5980,7 +6006,7 @@ jQuery.sheet = {
 				o = o.clone();
 				o.find('.' + jS.cl.barTopParent).remove();
 				o.find('.' + jS.cl.barLeft).remove();
-				o.find('col:first').remove();
+				o.children('colgroup').children('col:first').remove();
 				o = jS.sheetDecorateRemove(false, o)
 				return o;
 			},
@@ -6077,7 +6103,7 @@ jQuery.sheet = {
 					var tables = replacementTables || jS.tables();
 					if (s.editable) {
 						jS.evt.cellEditAbandon();
-						s.parent.trigger('saveSheet', [tables]);
+						s.parent.trigger('save', [tables]);
 					}
 					jS.setDirty(false);
 					jS.setChanged(true);
@@ -6135,13 +6161,13 @@ jQuery.sheet = {
 		s.parent.addClass(jS.cl.parent);
 		
 		s.parent
-			.unbind('switchSpreadsheet')
-			.bind('switchSpreadsheet', function(e, js, i){
-				jS.switchSpreadsheet(i);
+			.unbind('switch')
+			.bind('switch', function(e, js, i){
+				jS.switchSheet(i);
 			})
-			.unbind('renameSpreadsheet')
-			.bind('renameSpreadsheet', function(e, js, i){
-				jS.renameSpreadsheet(i);
+			.unbind('rename')
+			.bind('rename', function(e, js, i){
+				jS.renameSheet(i);
 			});
 		
 		//Use the setting height/width if they are there, otherwise use parent's
@@ -6256,32 +6282,35 @@ jQuery.sheet = {
 	killAll: function() { /* removes all sheets */
 		if (jQuery.sheet) {
 			if (jQuery.sheet.instance) {
-				for (var i = 0; i < jQuery.sheet.instance.length; i++) {
-					if (jQuery.sheet.instance[i]) {
-						if (jQuery.sheet.instance[i].kill) {
-							jQuery.sheet.instance[i].kill();
-						}
+				jQuery.sheet.instance.each(function() {
+					if (this.kill) {
+						this.kill();
 					}
-				}
+				});
 			}
 		}
 	},
-	scrollLocker: function(jS) {
-		var scroll = jS.obj.scroll().scroll(function() {
-			jQuery(jQuery.sheet.instance).each(function(i) {
-				if (jS.I == i) return;
-
-				this.obj.scroll()
-					.scrollLeft(scroll.scrollLeft())
-					.scrollTop(scroll.scrollTop());
+	scrollLocker: function(I) {
+		jQuery.sheet.instance[I].obj.scrolls().each(function(i) {
+			var me = this;
+			$(this).bind('scroll', function() {
+				jQuery.sheet.instance.each(function(j) {
+					if (j != I) {
+						this.controls.scroll[i]
+							.scrollLeft(me.scrollLeft)
+							.scrollTop(me.scrollTop);
+					}
+				});
 			});
 		});
 	},
-	switchSheetLocker: function(e, jS) { //This can be used with event switchSheet to locks sheets together when switching, useful in history viewing
-		jQuery(jQuery.sheet.instance).each(function(i) {
-			if (jS.I == i) return;
-			
-			this.setActiveSheet(jS.i);
+	switchSheetLocker: function(I) {
+		jQuery.sheet.instance.each(function() {
+			this.s.parent.bind('switch', function(e, jS, i) {
+				jQuery.sheet.instance.each(function() {
+					this.setActiveSheet(i);
+				});
+			});
 		});
 	},
 	I: function() {
