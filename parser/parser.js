@@ -34,7 +34,11 @@ break;
 case 7:this.$ = $$[$0-2] == $$[$0];
 break;
 case 8:
-			this.$ = yy.lexer.handler.concatenate.apply(yy.lexer.obj, [$$[$0-2],$$[$0]]); //js
+			if (!isNaN($$[$0-2]) || !isNaN($$[$0])) { //js
+				this.$ = $$[$0-2] + $$[$0]; //js
+			} else { //js
+				this.$ = yy.lexer.handler.concatenate.apply(yy.lexer.obj, [$$[$0-2],$$[$0]]); //js
+			} //js
 
 			//php if (is_number($$[$0-2]) && is_numeric($$[$0])) {
 			//php   this.$ = $$[$0-2] + $$[$0];
