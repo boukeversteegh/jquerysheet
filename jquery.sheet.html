@@ -69,7 +69,9 @@
                                         .html(results.tables)
                                         .sheet({
                                             title: 'Spreadsheet Playground',
-                                            menuLeft: results.menuLeft,
+                                            menuLeft: function(jS, I) {
+                                                return results.menuLeft.replace(/sheetInstance/g, "$.sheet.instance[" + I + "]");
+                                            },
                                             menuRight: function (jS, I){
                                                 I = (I ? I.length : 0);
 

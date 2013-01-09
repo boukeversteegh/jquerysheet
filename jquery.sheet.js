@@ -714,7 +714,8 @@ jQuery.sheet = {
 					value: value || '',
 					calcCount: calcCount || 0,
 					calcLast: calcLast || -1,
-					html: []
+					html: [],
+					sheet: sheet
 				};
 
 				//now create row
@@ -1670,7 +1671,6 @@ jQuery.sheet = {
 								'<div></div>' +
 							'</div>')
 							.scroll(function() {
-								console.log(jS.i);
 								jS.evt.scroll.scrollTo({axis: 'x', pixel: this.scrollLeft}, 0);
 								jS.evt.scroll.scrollTo({axis: 'y', pixel: this.scrollTop}, 0);
 
@@ -2504,7 +2504,7 @@ jQuery.sheet = {
 										jS.setChanged(true);
 
 										if (v != prevVal || forceCalc) {
-											jS.calc();
+											jS.calcMinimum(jS.i, jS.cellLast.row, jS.cellLast.col);
 										}
 
 										//Save the newest version of that cell
@@ -2516,13 +2516,7 @@ jQuery.sheet = {
 										jS.setDirty(true);
 
 										//perform final function call
-										jS.trigger('afterCellEdit', [{
-											td: jS.cellLast.td,
-											row: jS.cellLast.row,
-											col: jS.cellLast.col,
-											spreadsheetIndex: jS.i,
-											sheetIndex: I
-										}]);
+										jS.trigger('afterCellEdit', [cell]);
 									}
 							}
 							break;
@@ -4358,16 +4352,26 @@ jQuery.sheet = {
 					delete cell.result;
 				}
 
-				if (cell.state) {
-					return s.error({error: jS.msg.loopDetected});
+
+				switch (cell.state) {
+					case 'updating': return s.error({error: jS.msg.loopDetected});
+					case 'updatingDependencies': return cell.value;
 				}
 				
 				cell.state = 'updating';
 				cell.html = [];
 				cell.fnCount = 0;
 				
-				if (cell.calcCount < 1 && cell.calcLast != jS.calcLast) {
-					cell.calcLast = jS.calcLast;
+				if (
+					cell.calcCount < 1 && (
+						cell.calcLast != jS.calcLast &&
+						cell.calcLast != jS.calcMinimumLast
+					)
+				) {
+					if (cell.dependencies) {
+						//cell.dependencies = [];
+					}
+					cell.calcLast = Math.max(jS.calcLast, jS.calcMinimumLast);
 					cell.calcCount++;
 					if (cell.formula) {
 						try {
@@ -4411,6 +4415,20 @@ jQuery.sheet = {
 				
 				cell.state = null;
 				return cell.value;
+			},
+
+			updateCellDependencies: function(sheet, row, col) {
+				var cell = jS.spreadsheets[sheet][row][col];
+				if (cell.state) return;
+				cell.state = 'updatingDependencies';
+				for(var i in cell.dependencies) {
+					var dependantCell = cell.dependencies[i];
+					var dependantCellLoc = jS.getTdLocation(dependantCell.td);
+					dependantCell.calcCount = 0;
+					jS.updateCellValue(dependantCell.sheet, dependantCellLoc.row, dependantCellLoc.col);
+					jS.updateCellDependencies(dependantCell.sheet, dependantCellLoc.row, dependantCellLoc.col);
+				}
+				cell.state = null;
 			},
 
 			/**
@@ -4503,7 +4521,27 @@ jQuery.sheet = {
 				 */
 				cellValue: function(id) { //Example: A1
 					var loc = jSE.parseLocation(id);
+
+					jS.cellHandler.createDependency.apply(this, [this.sheet, loc]);
+
 					return jS.updateCellValue(this.sheet, loc.row, loc.col);
+				},
+
+				createDependency: function(sheet, loc) {
+					if (!jS.spreadsheets[sheet]) return;
+					if (!jS.spreadsheets[sheet][loc.row]) return;
+					if (!jS.spreadsheets[sheet][loc.row][loc.col]) return;
+
+					if (!jS.spreadsheets[this.sheet]) return;
+					if (!jS.spreadsheets[this.sheet][this.row]) return;
+					if (!jS.spreadsheets[this.sheet][this.row][this.col]) return;
+
+					if (!jS.spreadsheets[sheet][loc.row][loc.col].dependencies) jS.spreadsheets[sheet][loc.row][loc.col].dependencies = [];
+					if (!jS.spreadsheets[this.sheet][this.row][this.col].dependencies) jS.spreadsheets[this.sheet][this.row][this.col].dependencies = [];
+
+
+					jS.spreadsheets[sheet][loc.row][loc.col].dependencies.push(jS.spreadsheets[this.sheet][this.row][this.col]);
+					jS.spreadsheets[this.sheet][this.row][this.col].dependencies.push(jS.spreadsheets[sheet][loc.row][loc.col]);
 				},
 
 				/**
@@ -4521,6 +4559,8 @@ jQuery.sheet = {
 					
 					for (var i = start.row; i <= end.row; i++) {
 						for (var j = start.col; j <= end.col; j++) {
+							jS.cellHandler.createDependency.apply(this, [this.sheet, {row: i, col: j}]);
+
 							result.push(jS.updateCellValue(this.sheet, i, j));
 						}
 					}
@@ -4564,6 +4604,9 @@ jQuery.sheet = {
 				remoteCellValue: function(sheet, id) {//Example: SHEET1:A1
 					var loc = jSE.parseLocation(id);
 					sheet = jSE.parseSheetLocation(sheet);
+
+					jS.cellHandler.createDependency.apply(this, [sheet, loc]);
+
 					return jS.updateCellValue(sheet, loc.row, loc.col);
 				},
 
@@ -4782,6 +4825,12 @@ jQuery.sheet = {
 			calcLast: 0,
 
 			/**
+			 * @memberOf jS
+			 * @name calcMinimumLast
+			 */
+			calcMinimumLast: 0,
+
+			/**
 			 * Where jS.spreadsheets are calculated, and returned to their td counterpart
 			 * @param {Integer} tableI table index
 			 * @methodOf jS
@@ -4801,6 +4850,12 @@ jQuery.sheet = {
 				jS.isSheetEdit = false;
 				jS.setChanged(false);
 				jS.log('Calculation Ended');
+			},
+
+			calcMinimum: function(sheet, row, cell) {
+				jS.calcMinimumLast = new Date();
+				jS.updateCellValue(sheet, row, cell);
+				jS.updateCellDependencies(sheet, row, cell);
 			},
 
 			/**
