@@ -123,7 +123,7 @@
 		},
 		fromTables: {
 			json: function(jS) {
-				var output = [];
+				var output = [], i = 1 * jS.i;
 
 				$.each(jS.spreadsheets, function(sheet) {
 					jS.i = sheet;
@@ -161,11 +161,12 @@
 						});
 					});
 				});
+				jS.i = i;
 
 				return output;
 			},
 			xml: function(jS) {
-				var output = '<spreadsheets>';
+				var output = '<spreadsheets>', i = 1 * jS.i;
 
 				$.each(jS.spreadsheets, function(sheet) {
 					jS.i = sheet;
@@ -205,6 +206,7 @@
 
 				output += '</spreadsheets>';
 
+				jS.i = i;
 				return output;
 			}
 		}
