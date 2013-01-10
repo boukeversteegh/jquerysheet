@@ -6483,12 +6483,12 @@ jQuery.sheet = {
 		s.parent.addClass(jS.cl.parent);
 		
 		s.parent
-			.unbind('switch')
-			.bind('switch', function(e, js, i){
+			.unbind('sheetSwitch')
+			.bind('sheetSwitch', function(e, js, i){
 				jS.switchSheet(i);
 			})
-			.unbind('rename')
-			.bind('rename', function(e, js, i){
+			.unbind('sheetRename')
+			.bind('sheetRename', function(e, js, i){
 				jS.renameSheet(i);
 			});
 		
