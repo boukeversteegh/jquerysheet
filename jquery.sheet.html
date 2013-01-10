@@ -68,6 +68,9 @@
                                 $('#sheet')
                                         .html(results.tables)
                                         .sheet({
+                                            sheetAllOpened: function() {
+                                                alert('t');
+                                            },
                                             title: 'Spreadsheet Playground',
                                             menuLeft: function(jS, I) {
                                                 return results.menuLeft.replace(/sheetInstance/g, "$.sheet.instance[" + I + "]");
