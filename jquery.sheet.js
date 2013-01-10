@@ -2605,7 +2605,7 @@ jQuery.sheet = {
 				},
 
 				/**
-				 * Updates a cell after edit afterward event "afterCellEdit" is called w/ params (td, row, col, spreadsheetIndex, sheetIndex)
+				 * Updates a cell after edit afterward event "sheetCellEdited" is called w/ params (td, row, col, spreadsheetIndex, sheetIndex)
 				 * @param {Boolean} forceCalc if set to true forces a calculation of the selected sheet
 				 * @methodOf jS.evt
 				 * @name cellEditDone
