@@ -23,92 +23,104 @@ jQuery.fn.extend({
 	 * sheetAddRow - occurs just after a row has been added
 	 *      arguments: jS, eq, isBefore, qty
 	 *      example:
-	 *          $(obj).sheet().bind('addRow', function(jS, eq, isBefore, qty) {
+	 *          $(obj).bind('sheetAddRow', function(jS, eq, isBefore, qty) {
 	 *
-	 *          });
+	 *          })
+	 *          .sheet();
 	 *
 	 * sheetAddColumn - occurs just after a column has been added
 	 *      arguments: jS, eq, isBefore, qty
 	 *      example:
-	 *          $(obj).sheet().bind('addColumn', function(jS, eq, isBefore, qty) {
+	 *          $(obj).bind('sheetAddColumn', function(jS, eq, isBefore, qty) {
 	 *
-	 *          });
+	 *          })
+	 *          .sheet();
 	 *
 	 * sheetSwitch - occurs after a spreadsheet has been switched
 	 *      arguments: jS (jQuery.sheet instance), i (spreadsheet index)
 	 *      example:
-	 *          $(obj).sheet().bind('switch', function(jS, i) {
+	 *          $(obj).bind('sheetSwitch', function(jS, i) {
 	 *
-	 *          });
+	 *          })
+	 *          .sheet();
 	 *
 	 * sheetRename - occurs just after a spreadsheet is renamed, to obtain new title jS.obj.sheet().attr('title');
 	 *      arguments: jS (jQuery.sheet instance), i (spreadsheet index)
 	 *      example:
-	 *          $(obj).sheet().bind('rename', function(jS, i) {
+	 *          $(obj).bind('sheetRename', function(jS, i) {
 	 *
-	 *          });
+	 *          })
+	 *          .sheet();
 	 *
 	 * sheetTabSortStart - occurs at the beginning of a sort for moving a spreadsheet around in order
 	 *      arguments: jS (jQuery.sheet instance), e (jQuery sortable event), ui, (jQuery ui event)
 	 *      example:
-	 *          $(obj).sheet().bind('tabSortStart', function(jS, e, ui) {
+	 *          $(obj).bind('sheetTabSortStart', function(jS, e, ui) {
 	 *
-	 *          });
+	 *          })
+	 *          .sheet();
 	 *
 	 * sheetTabSortUpdate - occurs after a sort of a spreadsheet has been completed
 	 *      arguments: jS (jQuery.sheet instance), e (jQuery sotable event), ui, (jQuery ui event), i (original index)
 	 *      example:
-	 *          $(obj).sheet().bind('tabSortUpdate', function(jS, e, ui) {
+	 *          $(obj).bind('sheetTabSortUpdate', function(jS, e, ui) {
 	 *
-	 *          });
+	 *          })
+	 *          .sheet();
 	 *
 	 *
-	 * sheetAfterCellEdit - occurs just after a cell has been updated
+	 * sheetCellEdited - occurs just after a cell has been updated
 	 *      arguments: jS (jQuery.sheet instance), cell (jQuery.sheet.instance.spreadsheet cell)
 	 *      example:
-	 *          $(obj).sheet().bind('afterCellEdit', function(jS, cell) {
+	 *          $(obj).bind('sheetCellEdited', function(jS, cell) {
 	 *
-	 *          });
+	 *          })
+	 *          .sheet();
 	 *
 	 * sheetCalculation - occurs just after a spreadsheet has been fully calculated
 	 *      arguments: jS (jQuery.sheet instance)
 	 *      example:
-	 *          $(obj).sheet().bind('calculation', function(jS) {
+	 *          $(obj).bind('sheetCalculation', function(jS) {
 	 *
-	 *          });
+	 *          })
+	 *          .sheet();
 	 *
 	 * sheetAdd - occurs just after a spreadsheet has been added
 	 *      arguments: jS (jQuery.sheet instance), i (new sheet index)
 	 *      example:
-	 *          $(obj).sheet().bind('add', function(jS, i) {
+	 *          $(obj).bind('sheetAdd', function(jS, i) {
 	 *
-	 *          });
+	 *          })
+	 *          .sheet();
 	 *
 	 * sheetDelete - occurs just after a spreadsheet has been deleted
 	 *      arguments: jS (jQuery.sheet instance), i (old sheet index)
 	 *      example:
-	 *          $(obj).sheet().bind('delete', function(jS, i) {
+	 *          $(obj).bind('sheetDelete', function(jS, i) {
 	 *
-	 *          });
+	 *          })
+	 *          .sheet();
 	 *
 	 * sheetDeleteRow - occurs just after a row has been deleted
 	 *      arguments: jS (jQuery.sheet instance), i (old row index)
 	 *      example:
-	 *          $(obj).sheet().bind('deleteRow', function(jS, i) {
+	 *          $(obj).bind('sheetDeleteRow', function(jS, i) {
 	 *
-	 *          });
+	 *          })
+	 *          .sheet();
 	 *
 	 * sheetDeleteColumn - occurs just after a column as been deleted
 	 *      arguments: jS (jQuery.sheet instance), i (old column index)
 	 *      example:
-	 *          $(obj).sheet().bind('deleteColumn', function(jS, i) {
+	 *          $(obj).bind('sheetDeleteColumn', function(jS, i) {
 	 *
-	 *          });
+	 *          })
+	 *          .sheet();
 	 *
 	 * sheetOpen - occurs just after a single sheet within a set of sheets has been opened, this is triggered when calling sheet, so it needs to be bound beforehand
 	 *      arguments: jS (jQuery.sheet instance), i (new sheet index)
 	 *      example:
-	 *          var sheet = $(obj).bind('sheetOpened', function(jS, i) {
+	 *          var sheet = $(obj).bind('sheetOpen', function(jS, i) {
 	 *
 	 *          })
 	 *          .sheet();
@@ -116,7 +128,7 @@ jQuery.fn.extend({
 	 * sheetAllOpened - occurs just after all sheets have been loaded and complete user interface has been created, this is triggered when calling sheet, so it needs to be bound beforehand
 	 *      arguments: jS (jQuery.sheet instance)
 	 *      example:
-	 *          $(obj).bind('allOpened', function(jS) {
+	 *          $(obj).bind('sheetAllOpened', function(jS) {
 	 *
 	 *          })
 	 *          .sheet();
@@ -124,9 +136,10 @@ jQuery.fn.extend({
 	 * sheetSave - an assistance event called when calling jS.toggleState(), but not tied to anything internally
 	 *      arguments: jS (jQuery.sheet instance), tables (tables from spreadsheet)
 	 *      example:
-	 *          $(obj).sheet().bind('save', function(jS, tables) {
+	 *          $(obj).bind('sheetSave', function(jS, tables) {
 	 *
-	 *          });
+	 *          })
+	 *          .sheet();
 	 *
 	 * @name sheet
 	 * @param {Object} settings supports the following properties/methods:
@@ -2647,7 +2660,7 @@ jQuery.sheet = {
 										jS.setDirty(true);
 
 										//perform final function call
-										jS.trigger('sheetAfterCellEdit', [cell]);
+										jS.trigger('sheetCellEdited', [cell]);
 									}
 							}
 							break;
