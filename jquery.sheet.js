@@ -21,212 +21,212 @@ jQuery.fn.extend({
 	 * Supports the following jQuery events
 	 *
 	 * sheetAddRow - occurs just after a row has been added
-	 *      arguments: jS, i (row index), isBefore, qty
+	 *      arguments: e (jQuery event), jS, i (row index), isBefore, qty
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetAddRow: function(jS, i, isBefore, qty) {
+	 *              sheetAddRow: function(e, jS, i, isBefore, qty) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetAddRow', function(jS, i, isBefore, qty) {
+	 *          $(obj).bind('sheetAddRow', function(e, jS, i, isBefore, qty) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 * sheetAddColumn - occurs just after a column has been added
-	 *      arguments: jS, i (column index), isBefore, qty
+	 *      arguments: e (jQuery event), jS, i (column index), isBefore, qty
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetAddRow: function(jS, i, isBefore, qty) {
+	 *              sheetAddColumn: function(e, jS, i, isBefore, qty) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetAddColumn', function(jS, i, isBefore, qty) {
+	 *          $(obj).bind('sheetAddColumn', function(e, jS, i, isBefore, qty) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 * sheetSwitch - occurs after a spreadsheet has been switched
-	 *      arguments: jS (jQuery.sheet instance), i (spreadsheet index)
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), i (spreadsheet index)
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetAddRow: function(jS, i) {
+	 *              sheetSwitch: function(e, jS, i) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetSwitch', function(jS, i) {
+	 *          $(obj).bind('sheetSwitch', function(e, jS, i) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 * sheetRename - occurs just after a spreadsheet is renamed, to obtain new title jS.obj.sheet().attr('title');
-	 *      arguments: jS (jQuery.sheet instance), i (spreadsheet index)
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), i (spreadsheet index)
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetAddRow: function(jS, i) {
+	 *              sheetRename: function(e, jS, i) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetRename', function(jS, i) {
+	 *          $(obj).bind('sheetRename', function(e, jS, i) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 * sheetTabSortStart - occurs at the beginning of a sort for moving a spreadsheet around in order
-	 *      arguments: jS (jQuery.sheet instance), e (jQuery sortable event), ui, (jQuery ui event)
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), E (jQuery sortable event), ui, (jQuery ui event)
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetAddRow: function(jS, e, ui) {
+	 *              sheetTabSortStart: function(e, jS, E, ui) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetTabSortStart', function(jS, e, ui) {
+	 *          $(obj).bind('sheetTabSortStart', function(e, jS, E, ui) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 * sheetTabSortUpdate - occurs after a sort of a spreadsheet has been completed
-	 *      arguments: jS (jQuery.sheet instance), e (jQuery sotable event), ui, (jQuery ui event), i (original index)
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), E (jQuery sotable event), ui, (jQuery ui event), i (original index)
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetAddRow: function(jS, e, ui) {
+	 *              sheetTabSortUpdate: function(e, jS, E, ui) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetTabSortUpdate', function(jS, e, ui) {
+	 *          $(obj).bind('sheetTabSortUpdate', function(e, jS, E, ui) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 *
 	 * sheetCellEdited - occurs just after a cell has been updated
-	 *      arguments: jS (jQuery.sheet instance), cell (jQuery.sheet.instance.spreadsheet cell)
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), cell (jQuery.sheet.instance.spreadsheet cell)
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetAddRow: function(jS, cell) {
+	 *              sheetCellEdited: function(e, jS, cell) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetCellEdited', function(jS, cell) {
+	 *          $(obj).bind('sheetCellEdited', function(e, jS, cell) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 * sheetCalculation - occurs just after a spreadsheet has been fully calculated
-	 *      arguments: jS (jQuery.sheet instance)
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance)
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetAddRow: function(jS) {
+	 *              sheetCalculation: function(e, jS) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetCalculation', function(jS) {
+	 *          $(obj).bind('sheetCalculation', function(e, jS) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 * sheetAdd - occurs just after a spreadsheet has been added
-	 *      arguments: jS (jQuery.sheet instance), i (new sheet index)
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), i (new sheet index)
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetAddRow: function(jS, i) {
+	 *              sheetAdd: function(e, jS, i) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetAdd', function(jS, i) {
+	 *          $(obj).bind('sheetAdd', function(e, jS, i) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 * sheetDelete - occurs just after a spreadsheet has been deleted
-	 *      arguments: jS (jQuery.sheet instance), i (old sheet index)
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), i (old sheet index)
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetDelete: function(jS, i) {
+	 *              sheetDelete: function(e, jS, i) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetDelete', function(jS, i) {
+	 *          $(obj).bind('sheetDelete', function(e, jS, i) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 * sheetDeleteRow - occurs just after a row has been deleted
-	 *      arguments: jS (jQuery.sheet instance), i (old row index)
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), i (old row index)
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetDeleteRow: function(jS, i) {
+	 *              sheetDeleteRow: function(e, jS, i) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetDeleteRow', function(jS, i) {
+	 *          $(obj).bind('sheetDeleteRow', function(e, jS, i) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 * sheetDeleteColumn - occurs just after a column as been deleted
-	 *      arguments: jS (jQuery.sheet instance), i (old column index)
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), i (old column index)
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetDeleteColumn: function(jS, i) {
+	 *              sheetDeleteColumn: function(e, jS, i) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetDeleteColumn', function(jS, i) {
+	 *          $(obj).bind('sheetDeleteColumn', function(e, jS, i) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 * sheetOpen - occurs just after a single sheet within a set of sheets has been opened, this is triggered when calling sheet, so it needs to be bound beforehand
-	 *      arguments: jS (jQuery.sheet instance), i (new sheet index)
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), i (new sheet index)
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetOpen: function(jS, i) {
+	 *              sheetOpen: function(e, jS, i) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetOpen', function(jS, i) {
+	 *          $(obj).bind('sheetOpen', function(e, jS, i) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 * sheetAllOpened - occurs just after all sheets have been loaded and complete user interface has been created, this is triggered when calling sheet, so it needs to be bound beforehand
-	 *      arguments: jS (jQuery.sheet instance)
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance)
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetAllOpened: function(jS) {
+	 *              sheetAllOpened: function(e, jS) {
 	 *
 	 *              }
 	 *          });
 	 *      or:
-	 *          $(obj).bind('sheetAllOpened', function(jS) {
+	 *          $(obj).bind('sheetAllOpened', function(e, jS) {
 	 *
 	 *          })
 	 *          .sheet();
 	 *
 	 * sheetSave - an assistance event called when calling jS.toggleState(), but not tied to anything internally
-	 *      arguments: jS (jQuery.sheet instance), tables (tables from spreadsheet)
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), tables (tables from spreadsheet)
 	 *      example:
 	 *          $(obj).sheet({
-	 *              sheetSave: function(jS, tables) {
+	 *              sheetSave: function(e, jS, tables) {
 	 *
 	 *              });
 	 *          }
 	 *      or:
-	 *          $(obj).bind('sheetSave', function(jS, tables) {
+	 *          $(obj).bind('sheetSave', function(e, jS, tables) {
 	 *
 	 *          })
 	 *          .sheet();
@@ -299,7 +299,7 @@ jQuery.fn.extend({
 	 *
 	 * autoFiller {Boolean} default true, turns on/off the auto filler, the little square that follows the active cell around that you can drag and fill the values of other cells in with.
 	 *
-	 * minSize {Object} default {rows: 15, cols: 5}, the minimum size of a spreadsheet
+	 * minSize {Object} default {rows: 1, cols: 1}, the minimum size of a spreadsheet
 	 *
 	 * alertFormulaErrors {Boolean} default false, if true triggers jS.alertFormulaError, which alerts the end user of an error via an alert
 	 *
@@ -316,6 +316,7 @@ jQuery.fn.extend({
 	 *
 	 */
 	sheet: function(settings) {
+		settings = settings || {};
 		jQuery(this).each(function() {
 			var me = jQuery(this),
 				defaults = {
@@ -340,7 +341,7 @@ jQuery.fn.extend({
 					autoAddCells:		true,
 					resizable: 			true,
 					autoFiller: 		true,
-					minSize: 			{rows: 15, cols: 5},
+					minSize: 			{rows: 1, cols: 1},
 					alertFormulaErrors:	false,
 					error:              function(e) { return e.error; },
 					encode:             function(val) {
@@ -4619,10 +4620,6 @@ jQuery.sheet = {
 						cell.calcLast != jS.calcDependenciesLast
 					)
 				) {
-					//We remove the dependencies so they can be re-added
-					if (cell.dependencies) {
-						cell.dependencies = [];
-					}
 					cell.calcLast = Math.max(jS.calcLast, jS.calcDependenciesLast);
 					cell.calcCount++;
 					if (cell.formula) {
@@ -4673,9 +4670,8 @@ jQuery.sheet = {
 				var cell = jS.spreadsheets[sheet][row][col];
 				if (cell.state) return;
 				cell.state = 'updatingDependencies';
-				var dependencies = $.extend({}, cell.dependencies);
-				for(var i in dependencies) {
-					var dependantCell = dependencies[i];
+				for(var i in cell.dependencies) {
+					var dependantCell = cell.dependencies[i];
 					var dependantCellLoc = jS.getTdLocation(dependantCell.td);
 					dependantCell.calcCount = 0;
 					jS.updateCellValue(dependantCell.sheet, dependantCellLoc.row, dependantCellLoc.col);
@@ -6575,12 +6571,18 @@ jQuery.sheet = {
 
 		return jS;
 	},
+	/**
+	 * @namespace
+	 * @name jQuery.sheet.makeTable
+	 */
 	makeTable : {
-		fromSize: function(size) { /* creates a spreadsheet object from a size given
-											size: string, example "10x100" which means 10 columns by 100 rows;
-											h: int, height for each new row;
-											w: int, width of each new column;
-										*/
+		/**
+		 * creates a spreadsheet object from a size given
+		 * @methodOf
+		 * @param {Object} size {rows: int, cols: int}
+		 * @return {jQuery|HTMLElement}
+		 */
+		fromSize: function(size) {
 			size = size || {rows: 25, cols: 10};
 			
 			//Create elements before loop to make it faster.
@@ -6601,6 +6603,12 @@ jQuery.sheet = {
 			return table.html('<tbody>' + trs + '</tbody>');
 		}
 	},
+
+	/**
+	 * Destroy all spreadsheets loaded
+	 * @methodOf jQuery.sheet
+	 * @name killAll
+	 */
 	killAll: function() { /* removes all sheets */
 		if (jQuery.sheet) {
 			if (jQuery.sheet.instance) {
@@ -6612,6 +6620,13 @@ jQuery.sheet = {
 			}
 		}
 	},
+
+	/**
+	 * Make 2 or more spreadsheets scroll to together, useful for history viewing or spreadsheet comparison
+	 * @param {Integer} I instance index
+	 * @method Of jQuery.sheet
+	 * @name scrollLocker
+	 */
 	scrollLocker: function(I) {
 		jQuery.sheet.instance[I].obj.scrolls().each(function(i) {
 			var me = this;
@@ -6626,6 +6641,13 @@ jQuery.sheet = {
 			});
 		});
 	},
+
+	/**
+	 * Make 2 or more spreadsheets switch together, just like clicking their tabs at the same time
+	 * @param {Integer} I instance index
+	 * @method Of jQuery.sheet
+	 * @name switchSheetLocker
+	 */
 	switchSheetLocker: function(I) {
 		jQuery.sheet.instance.each(function() {
 			this.s.parent.bind('switch', function(e, jS, i) {
@@ -6635,6 +6657,13 @@ jQuery.sheet = {
 			});
 		});
 	},
+
+	/**
+	 * Get current instance count
+	 * @return {Number}
+	 * @methodOf jQuery.sheet
+	 * @name I
+	 */
 	I: function() {
 		var I = 0;
 		if ( this.instance ) {
@@ -6644,6 +6673,13 @@ jQuery.sheet = {
 		}
 		return I;
 	},
+
+	/**
+	 * Get scrollbar size
+	 * @return {Object} {height: int, width: int}
+	 * @methodOf jQuery.sheet
+	 * @name getScrollBarSize
+	 */
 	getScrollBarSize: function() {
 		var inner = $('<p></p>').css({
 			width:'100%',
@@ -6685,8 +6721,22 @@ jQuery.sheet = {
 	}
 };
 
-var jSE = jQuery.sheet.engine = { //Formula Engine
-	calc: function(tableI, spreadsheets, ignite, freshCalc) { //spreadsheets are array, [spreadsheet][row][cell], like A1 = o[0][0][0];
+/**
+ * jQuery.sheet's default formula engine
+ * @namespace
+ * @name engine
+ * @memberOf jQuery.sheet
+ */
+var jSE = jQuery.sheet.engine = {
+	/**
+	 * Calculate a spreadsheet
+	 * @param {Integer} tableI
+	 * @param {Array} spreadsheets [spreadsheet][row][cell], [0][1][1] = SHEET1!A1
+	 * @param {Function} ignite, function to run on every cell
+	 * @methodOf jQuery.sheet.engine
+	 * @name calc
+	 */
+	calc: function(tableI, spreadsheets, ignite) {
 		for (var j = 1; j < spreadsheets.length; j++) {
 			for (var k = 1; k < spreadsheets[j].length; k++) {
 				spreadsheets[j][k].calcCount = 0;
@@ -6699,7 +6749,15 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 			}
 		}
 	},
-	parseLocation: function(locStr) { // With input of "A1", "B4", "F20", will return {row: 0,col: 0}, {row: 3,col: 1}, {row: 19,col: 5}.
+
+	/**
+	 * Parse a cell name to it's location
+	 * @param {String} locStr, "A1" = {row: 1, col: 1}
+	 * @return {Object} {row: 1, col: 1}
+	 * @methodOf jQuery.sheet.engine
+	 * @name parseLocation
+	 */
+	parseLocation: function(locStr) {
 		for (var firstNum = 0; firstNum < locStr.length; firstNum++) {
 			if (locStr.charCodeAt(firstNum) <= 57) {// 57 == '9'
 				break;
@@ -6710,28 +6768,71 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 			col: jSE.columnLabelIndex(locStr.substring(0, firstNum))
 		};
 	},
+
+	/**
+	 * Parse a sheet name to it's index
+	 * @param {String} locStr, SHEET1 = 0
+	 * @return {Integer}
+	 * @methodOf jQuery.sheet.engine
+	 * @name parseSheetLocation
+	 */
 	parseSheetLocation: function(locStr) {
 		return ((locStr + '').replace('SHEET','') * 1) - 1;
 	},
+
+	/**
+	 *
+	 * @param {Integer} col, 1 = A
+	 * @param {Integer} row, 1 = 1
+	 * @return {String}
+	 * @methodOf jQuery.sheet.engine
+	 * @name parseCellName
+	 */
 	parseCellName: function(col, row){
 		return jSE.columnLabelString(col) + (row || '');
 	},
-	labels: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-	columnLabelIndex: function(str) {
-		// Converts A to 1, B to 2, Z to 26, AA to 27
 
+	/**
+	 * Available labels, used for their index
+	 * @memberOf jQuery.sheet.engine
+	 * @name columnLabels
+	 */
+	columnLabels: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+
+	/**
+	 * Get index of a column label
+	 * @param {String} str, A to 1, B to 2, Z to 26, AA to 27
+	 * @return {Number}
+	 * @methodOf jQuery.sheet.engine
+	 * @name columnLabelIndex
+	 */
+	columnLabelIndex: function(str) {
 		var num = 0,
 			str = str.toUpperCase();
 
 		for (var i = 0; i < str.length; i++) {
-			var digit = this.labels.indexOf(str[i]);
+			var digit = this.columnLabels.indexOf(str[i]);
 			num = (num * 26) + digit;
 		}
 		return (num >= 0 ? num : 0) + 1;
 	},
-	indexes: [],
-	columnLabelString: function(index) {//1 = A, 2 = B
-		if (!this.indexes.length) { //cache the indexes to save on processing
+
+	/**
+	 * Available indexes, used for their labels
+	 * @memberOf jQuery.sheet.engine
+	 * @name columnIndexes
+	 */
+	columnIndexes: [],
+
+	/**
+	 * Get label of a column index
+	 * @param {Integer} index, 1 = A, 2 = B, 26 = Z, 27 = AA
+	 * @return {String}
+	 * @name columnLabelString
+	 * @methodOf jQuery.sheet.engine
+	 */
+	columnLabelString: function(index) {
+		if (!this.columnIndexes.length) { //cache the indexes to save on processing
 			var s = '', i, j, k, l;
 			i = j = k = -1;
 			for (l = 1; l < 16385; ++l) {
@@ -6745,15 +6846,21 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 						++i;
 					}
 				}
-				if (i >= 0) s += this.labels[i];
-				if (j >= 0) s += this.labels[j];
-				if (k >= 0) s += this.labels[k];
-				this.indexes[l] = s;
+				if (i >= 0) s += this.columnLabels[i];
+				if (j >= 0) s += this.columnLabels[j];
+				if (k >= 0) s += this.columnLabels[k];
+				this.columnIndexes[l] = s;
 			}
 		}
 
-		return this.indexes[index] || '';
+		return this.columnIndexes[index] || '';
 	},
+
+	/**
+	 * Regular expressions cache
+	 * @memberOf jQuery.sheet.engine
+	 * @name regEx
+	 */
 	regEx: {
 		n: 			/[\$,\s]/g,
 		cell: 			/\$?([a-zA-Z]+)\$?([0-9]+)/gi, //a1
@@ -6766,19 +6873,20 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 		lt: 			/>/g,
 		nbsp: 			/&nbsp;/g
 	},
-	chart: function(o) { /* creates a chart for use inside of a cell
-													piggybacks RaphealJS
-							options:
-								type
 
-								data
-								legend
-								title
-								x {data, legend}
-
-								y {data, legend}
-								owner
-												*/
+	/**
+	 * Creates a chart, piggybacks RaphealJS
+	 * @param {Object} o, options
+	 * x: { legend: "", data: [0]}, //x data
+	 * y: { legend: "", data: [0]}, //y data
+	 * title: "",
+	 * data: [0], //chart data
+	 * legend: "",
+	 * td: jS.getTd(this.sheet, this.row, this.col), //td container for cell
+	 * chart: jQuery('<div class="' + jS.cl.chart + '" />') //chart
+	 * @return {jQuery|HTMLElement}
+	 */
+	chart: function(o) {
 		var jS = this.jS,
 			owner = this;
 		
@@ -6805,10 +6913,10 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 			title: "",
 			data: [0],
 			legend: "",
-			cell: jS.getTd(this.sheet, this.row, this.col),
+			td: jS.getTd(this.sheet, this.row, this.col),
 			chart: jQuery('<div class="' + jS.cl.chart + '" />')
 				.mousedown(function() {
-					o.cell.mousedown();
+					o.td.mousedown();
 				}),
 			gR: {}
 		}, o);
@@ -6932,11 +7040,11 @@ var jSE = jQuery.sheet.engine = { //Formula Engine
 
 			o.gR
 				.mousedown(function() {
-					o.cell.mousedown().mouseup();
+					o.td.mousedown().mouseup();
 				});
 
 			o.chart.mousemove(function() {
-				o.cell.mousemove();
+				o.td.mousemove();
 				return false;
 			});
 

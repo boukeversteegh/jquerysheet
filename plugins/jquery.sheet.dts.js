@@ -1,6 +1,72 @@
+/**
+ * @project jQuery.sheet() The Web Based Spreadsheet - http://code.google.com/p/jquerysheet/
+ * @author RobertLeePlummerJr@gmail.com
+ * $Id$
+ * Copyright (c) 2012 Robert Plummer, RobertLeePlummerJr@gmail.com
+ * Licensed under MIT
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ */
+
 (function($) {
+	/**
+	 * @namespace
+	 * @name dts
+	 * @type {Object}
+	 * @memberOf jQuery.sheet
+	 */
 	jQuery.sheet.dts = {
+		/**
+		 * @memberOf jQuery.sheet.dts
+		 * @name toTables
+		 * @namespace
+		 */
 		toTables: {
+
+			/**
+			 * Create a table from json
+			 * @param {Array} json array of spreadsheets - schema:
+			 * [{ // sheet 1, can repeat
+			 *  "title": "Title of spreadsheet",
+			 *  "metadata": {
+			 *      "widths": [
+			 *          "120px", //widths for each column, required
+			 *          "80px"
+			 *      ]
+			 *  },
+			 *  "rows": [
+			 *      { // row 1, repeats for each column of the spreadsheet
+			 *          "height": "18px", //optional
+			 *          "columns": [
+			 *              { //column A
+			 *                  "class": "css classes", //optional
+			 *                  "formula": "=cell formula", //optional
+			 *                  "value": "value", //optional
+			 *                  "style": "css cell style" //optional
+			 *              },
+			 *              {} //column B
+			 *          ]
+			 *      },
+			 *      { // row 2
+			 *          "height": "18px", //optional
+			 *          "columns": [
+			 *              { // column A
+			 *                  "class": "css classes", //optional
+			 *                  "formula": "=cell formula", //optional
+			 *                  "value": "value", //optional
+			 *                  "style": "css cell style" //optional
+			 *              },
+			 *              {} // column B
+			 *          ]
+			 *      }
+			 *  ]
+			 * }]
+			 * @returns {*|jQuery|HTMLElement} a simple html table
+			 * @methodOf jQuery.sheet.dts.toTables
+			 * @name json
+			 */
 			json: function(json) {
 
 				var tables = $([]);
@@ -38,6 +104,48 @@
 
 				return tables;
 			},
+
+			/**
+			 *
+			 * @param {String|jQuery|HTMLElement} xml - schema:
+			 * &lt;spreadsheets&gt;
+			 *     &lt;spreadsheet title="spreadsheet title"&gt;
+			 *         &lt;metadata&gt;
+			 *             &lt;widths&gt;
+			 *                 &lt;width&gt;120px&lt;/width&gt;
+			 *                 &lt;width&gt;80px&lt;/width&gt;
+			 *             &lt;/widths&gt;
+			 *         &lt;/metadata&gt;
+			 *         &lt;rows&gt;
+			 *             &lt;row height="15px"&gt;
+			 *                  &lt;columns&gt;
+			 *                      &lt;column&gt;
+			 *                          &lt;formula&gt;=cell formula&lt;/formula&gt;
+			 *                          &lt;value&gt;cell value&lt;/value&gt;
+			 *                          &lt;style&gt;cells style&lt;/style&gt;
+			 *                          &lt;class&gt;cells class&lt;/class&gt;
+			 *                      &lt;/column&gt;
+			 *                      &lt;column&gt;&lt;/column&gt;
+			 *                  &lt;/columns&gt;
+			 *              &lt;/row&gt;
+			 *             &lt;row height="15px"&gt;
+			 *                  &lt;columns&gt;
+			 *                      &lt;column&gt;
+			 *                          &lt;formula&gt;=cell formula&lt;/formula&gt;
+			 *                          &lt;value&gt;cell value&lt;/value&gt;
+			 *                          &lt;style&gt;cells style&lt;/style&gt;
+			 *                          &lt;class&gt;cells class&lt;/class&gt;
+			 *                      &lt;/column&gt;
+			 *                      &lt;column&gt;&lt;/column&gt;
+			 *                  &lt;/columns&gt;
+			 *              &lt;/row&gt;
+			 *         &lt;/rows&gt;
+			 *     &lt;/spreadsheet&gt;
+			 * &lt;/spreadsheets&gt;
+			 * @returns {*|jQuery|HTMLElement} a simple html table
+			 * @name xml
+			 * @methodOf jQuery.sheet.dts.toTables
+			 */
 			xml: function(xml) {
 				xml = $(xml);
 
@@ -118,10 +226,57 @@
 				});
 
 				return tables;
-			},
-			size: function() {}
+			}
 		},
+
+		/**
+		 * @namespace
+		 * @name fromTables
+		 * @memberOf jQuery.sheet.dts
+		 */
 		fromTables: {
+			/**
+			 * Create a table from json
+			 * @param {Object} jS, required, the jQuery.sheet instance
+			 * @returns {Array}  - schema:
+			 * [{ // sheet 1, can repeat
+			 *  "title": "Title of spreadsheet",
+			 *  "metadata": {
+			 *      "widths": [
+			 *          "120px", //widths for each column, required
+			 *          "80px"
+			 *      ]
+			 *  },
+			 *  "rows": [
+			 *      { // row 1, repeats for each column of the spreadsheet
+			 *          "height": "18px", //optional
+			 *          "columns": [
+			 *              { //column A
+			 *                  "class": "css classes", //optional
+			 *                  "formula": "=cell formula", //optional
+			 *                  "value": "value", //optional
+			 *                  "style": "css cell style" //optional
+			 *              },
+			 *              {} //column B
+			 *          ]
+			 *      },
+			 *      { // row 2
+			 *          "height": "18px", //optional
+			 *          "columns": [
+			 *              { // column A
+			 *                  "class": "css classes", //optional
+			 *                  "formula": "=cell formula", //optional
+			 *                  "value": "value", //optional
+			 *                  "style": "css cell style" //optional
+			 *              },
+			 *              {} // column B
+			 *          ]
+			 *      }
+			 *  ]
+			 * }]
+			 * @methodOf jQuery.sheet.dts.fromTables
+			 * @name json
+			 */
 			json: function(jS) {
 				var output = [], i = 1 * jS.i;
 
@@ -165,6 +320,48 @@
 
 				return output;
 			},
+
+			/**
+			 * Create a table from xml
+			 * @param {Object} jS, required, the jQuery.sheet instance
+			 * @returns {String} - schema:
+			 * &lt;spreadsheets&gt;
+			 *     &lt;spreadsheet title="spreadsheet title"&gt;
+			 *         &lt;metadata&gt;
+			 *             &lt;widths&gt;
+			 *                 &lt;width&gt;120px&lt;/width&gt;
+			 *                 &lt;width&gt;80px&lt;/width&gt;
+			 *             &lt;/widths&gt;
+			 *         &lt;/metadata&gt;
+			 *         &lt;rows&gt;
+			 *             &lt;row height="15px"&gt;
+			 *                  &lt;columns&gt;
+			 *                      &lt;column&gt;
+			 *                          &lt;formula&gt;=cell formula&lt;/formula&gt;
+			 *                          &lt;value&gt;cell value&lt;/value&gt;
+			 *                          &lt;style&gt;cells style&lt;/style&gt;
+			 *                          &lt;class&gt;cells class&lt;/class&gt;
+			 *                      &lt;/column&gt;
+			 *                      &lt;column&gt;&lt;/column&gt;
+			 *                  &lt;/columns&gt;
+			 *              &lt;/row&gt;
+			 *             &lt;row height="15px"&gt;
+			 *                  &lt;columns&gt;
+			 *                      &lt;column&gt;
+			 *                          &lt;formula&gt;=cell formula&lt;/formula&gt;
+			 *                          &lt;value&gt;cell value&lt;/value&gt;
+			 *                          &lt;style&gt;cells style&lt;/style&gt;
+			 *                          &lt;class&gt;cells class&lt;/class&gt;
+			 *                      &lt;/column&gt;
+			 *                      &lt;column&gt;&lt;/column&gt;
+			 *                  &lt;/columns&gt;
+			 *              &lt;/row&gt;
+			 *         &lt;/rows&gt;
+			 *     &lt;/spreadsheet&gt;
+			 * &lt;/spreadsheets&gt;
+			 * @methodOf jQuery.sheet.dts.fromTables
+			 * @name xml
+			 */
 			xml: function(jS) {
 				var output = '<spreadsheets>', i = 1 * jS.i;
 
