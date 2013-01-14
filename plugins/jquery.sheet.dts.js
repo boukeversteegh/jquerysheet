@@ -71,33 +71,33 @@
 				var tables = $([]);
 
 				$.each(json, function() {
-					var table = $('<table />').attr('title', this.title || '');
+					var table = $('<table />').attr('title', this['title'] || '');
 
 					tables = tables.add(table);
 
-					$.each(this.rows, function() {
+					$.each(this['rows'], function() {
 						var tr = $('<tr />')
-							.attr('height', this.height)
-							.css('height', this.height)
+							.attr('height', this['height'])
+							.css('height', this['height'])
 							.appendTo(table);
-						$.each(this.columns, function() {
+						$.each(this['columns'], function() {
 							var td = $('<td />')
-								.attr('class', this.class || '')
-								.attr('style', this.style || '')
-								.attr('formula', this.formula || '')
-								.html(this.value || '')
+								.attr('class', this['class'] || '')
+								.attr('style', this['style'] || '')
+								.data('formula', '=' + (this['formula'] || ''))
+								.html(this['value'] || '')
 								.appendTo(tr);
 						});
 					});
 
-					if (!this.metadata) return;
-					if (!this.metadata.width) return;
+					if (!this['metadata']) return;
+					if (!this['metadata']['width']) return;
 
 					var colgroup = $('<colgroup />');
-					$.each(this.metadata.widths, function() {
+					$.each(this['metadata']['widths'], function() {
 						var col = $('<col />')
-							.attr('width', this.width)
-							.css('width', this.width);
+							.attr('width', this['width'])
+							.css('width', this['width']);
 					});
 				});
 
@@ -146,48 +146,49 @@
 			 * @methodOf jQuery.sheet.dts.toTables
 			 */
 			xml: function(xml) {
-				xml = $(xml);
+				xml = $.parseXML(xml);
+				console.log(xml);
 
 				var tables = $([]);
 
-				xml.each(function(spreadsheet) { //spreadsheets
-					$(this).children().each(function() { //spreadsheet
-						var table = $('<table />').attr('title', $(this).attr('title') || ''),
+				$.each(xml.childNodes, function(i, spreadsheets) {
+					$.each(this.childNodes, function(j,  spreadsheet) {
+						var table = $('<table />').attr('title', (this.attributes['title'] ? this.attributes['title'].nodeValue : '')),
 							colgroup = $('<colgroup/>').appendTo(table),
 							tbody = $('<tbody />').appendTo(table);
 
 						tables = tables.add(table);
-						$(this).children().each(function(){ //rows
+
+						$.each(this.childNodes, function(k, rows){ //rows
 							switch (this.nodeName.toLowerCase()) {
 								case 'rows':
-									$(this).children().each(function() { //row
+									$.each(this.childNodes, function(l, row) { //row
 										switch (this.nodeName.toLowerCase()) {
 											case 'row':
-												var tr = $('<tr/>').appendTo(tbody);
-												tr
-													.css('height', $(this).attr('height'))
-													.attr('height', $(this).attr('height'));
-												$(this).children().each(function() {
+												var tr = $('<tr/>').appendTo(tbody)
+													.css('height', (this.attributes['height'] ? this.attributes['height'].nodeValue : ''))
+													.attr('height', (this.attributes['height'] ? this.attributes['height'].nodeValue : ''));
+												$.each(this.childNodes, function(m, columns) {
 													switch (this.nodeName.toLowerCase()) {
 														case 'columns':
-															$(this).children().each(function() {
+															$.each(this.childNodes, function(n, column) {
 																switch (this.nodeName.toLowerCase()) {
 																	case 'column':
 																		//console.log(this.nodeName.toLowerCase());
 																		var td = $('<td />').appendTo(tr);
-																		$(this).children().each(function() { //formula or value or style
+																		$.each(this.childNodes, function(p, attr) { //formula or value or style
 																			switch (this.nodeName.toLowerCase()) {
 																				case 'formula':
-																					td.attr('formula', $(this).html());
+																					td.data('formula', '=' + (this.textContent || this.text));
 																					break
 																				case 'value':
-																					td.html($(this).html());
+																					td.html(this.textContent || this.text);
 																					break;
 																				case 'style':
-																					td.attr('style', $(this).html());
+																					td.attr('style', this.textContent || this.text);
 																					break;
 																				case 'class':
-																					td.attr('class', $(this).html());
+																					td.attr('class', this.textContent || this.text);
 																			}
 																		});
 																		break;
@@ -202,15 +203,15 @@
 									});
 									break;
 								case 'metadata':
-									$(this).children().each(function() {
+									$.each(this.childNodes, function() {
 										switch (this.nodeName.toLowerCase()) {
 											case 'widths':
-												$(this).children().each(function() {
+												$.each(this.childNodes, function() {
 													switch (this.nodeName.toLowerCase()) {
 														case 'width':
 															$('<col/>')
-																.attr('width', $(this).text())
-																.css('width', $(this).text())
+																.attr('width', this.textContent || this.text)
+																.css('width', this.textContent || this.text)
 																.appendTo(colgroup);
 															break;
 													}
@@ -304,10 +305,10 @@
 							var Column = {};
 							Row.columns.push(Column);
 
-							if (this.formula) Column.formula = '=' + this.formula;
-							if (this.value) Column.value = this.value;
-							if (this.td.attr('style')) Column.style = this.td.attr('style');
-							if (this.td.attr('class')) Column.class = this.td.attr('class');
+							if (this['formula']) Column['formula'] = this['formula'];
+							if (this['value']) Column['value'] = this['value'];
+							if (this.td.attr('style')) Column['style'] = this.td.attr('style');
+							if (this.td.attr('class')) Column['class'] = this.td.attr('class');
 
 							if (row * 1 == 1) {
 								spreadsheet.metadata.widths.push($(jS.col(null, column)).css('width'));
@@ -380,7 +381,7 @@
 
 							output += '<column>';
 
-							if (this.formula) output += '<formula>=' + this.formula + '</formula>';
+							if (this.formula) output += '<formula>' + this.formula + '</formula>';
 							if (this.value) output += '<value>' + this.value + '</value>';
 							if (this.td.attr('style')) output += '<style>' + this.td.attr('style') + '</style>';
 							if (this.td.attr('class')) output += '<class>' + this.td.attr('class') + '</class>';

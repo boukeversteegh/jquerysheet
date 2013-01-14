@@ -680,7 +680,7 @@ jQuery.sheet = {
 				tabContainer: null,
 				tabs: null,
 				title: null,
-				ui: []
+				ui: null
 			},
 
 			/**
@@ -5997,6 +5997,7 @@ jQuery.sheet = {
 			 */
 			getTdLocation: function(td) {
 				var result = {col: 0, row: 0};
+				td = td || '';
 				if (!td && !td[0]) return result;
 
 				td = td[0] || td;

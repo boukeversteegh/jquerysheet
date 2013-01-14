@@ -14,9 +14,9 @@
 
 			var jS = sheetOrig.getSheet();
 			var json = $.sheet.dts.fromTables.json(jS);
-			console.log(json);
-			var tables = $.sheet.dts.toTables.json(json, jS);
-			console.log(tables.html());
+			if (window.console) console.log(json);
+			var tables = $.sheet.dts.toTables.json(json);
+			if (window.console) console.log(tables.html());
 			$('#sheetFromJson')
 				.html(tables)
 				.height($(window).height() - 30)

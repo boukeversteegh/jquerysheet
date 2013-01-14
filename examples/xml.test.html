@@ -14,9 +14,9 @@
 
             var jS = sheetOrig.getSheet();
             var xml = $.sheet.dts.fromTables.xml(jS);
-	        console.log(xml);
-            var tables = $.sheet.dts.toTables.xml(xml, jS);
-	        console.log(tables.html());
+            if (window.console) console.log(xml);
+            var tables = $.sheet.dts.toTables.xml(xml);
+            if (window.console) console.log(tables.html());
             $('#sheetFromXml')
                 .html(tables)
 		        .height($(window).height() - 30)
