@@ -1154,8 +1154,8 @@ jQuery.sheet = {
 									//we get the first cell then get all the other cells directly... faster ;)
 									var cells = $([]);
 									cells = cells.add(jS.obj.barTop(loc1.col));
-									for (var i = 1; i <= loc2.row; i++) {
-										cells = cells.add(jS.getTd(jS.i, i, loc1.col));
+									for (var j = 1; j <= loc2.row; j++) {
+										cells = cells.add(jS.getTd(jS.i, j, loc1.col));
 									}
 									
 									return cells;
@@ -8084,11 +8084,13 @@ var arrHelpers = {
 		a = a || [];
 		x = x || 0;
 		for (var i = 0; i < a.length;i++) {
-			if (closest == null || Math.abs(a[i] - x) < Math.abs(closest - x)) {
+			if (closest == null || Math.abs(a[i] - x) <= Math.abs(closest - x)) {
 				closest = a[i];
 			}
 		}
-		
+		console.log("closest:" + closest);
+		console.log(["a", a]);
+		console.log(["x", x]);
 		return closest;
 	}
 };

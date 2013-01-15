@@ -55,27 +55,26 @@
 	            window.loadSheet = function (url) {
                     var urls = {tables: url, menuLeft: 'menu.left.html', menuRight: 'menu.right.html'}, results = {}, loadCount = 3, loaded = 0;
 
-                    for(var i in urls) {
+                    $.each(urls, function(i) {
                         $.get(urls[i], function(result) {
-                            var myUrl = this.url;
-                            results[Object.keys(urls).filter(function(key) {return urls[key] === myUrl})[0]] = result;
+                            results[this.url] = result;
                             loaded++;
                             if (loadCount == loaded) {
                                 $('#sheet')
-                                        .html(results.tables)
+                                        .html(results[url])
                                         .sheet({
                                             sheetAllOpened: function() {
                                                 console.log('All sheets loaded.');
                                             },
                                             title: 'Spreadsheet Playground',
                                             menuLeft: function(jS, I) {
-                                                return results.menuLeft.replace(/sheetInstance/g, "$.sheet.instance[" + I + "]");
+                                                return  results['menu.left.html'].replace(/sheetInstance/g, "$.sheet.instance[" + I + "]");
                                             },
                                             menuRight: function (jS, I){
                                                 I = (I ? I.length : 0);
 
                                                 //we want to be able to edit the html for the menu to make them multi-instance
-                                                var menu = results.menuRight.replace(/sheetInstance/g, "$.sheet.instance[" + I + "]");
+                                                var menu = results['menu.right.html'].replace(/sheetInstance/g, "$.sheet.instance[" + I + "]");
                                                 menu = $(menu);
 
                                                 //The following is just so you get an idea of how to style cells
@@ -96,7 +95,7 @@
                                         });
                             }
                         });
-                    }
+                    });
 	            };
 
 	            loadSheet('sheets/numberstesting.html');
