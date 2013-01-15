@@ -147,7 +147,6 @@
 			 */
 			xml: function(xml) {
 				xml = $.parseXML(xml);
-				console.log(xml);
 
 				var tables = $([]);
 
@@ -174,7 +173,6 @@
 															$.each(this.childNodes, function(n, column) {
 																switch (this.nodeName.toLowerCase()) {
 																	case 'column':
-																		//console.log(this.nodeName.toLowerCase());
 																		var td = $('<td />').appendTo(tr);
 																		$.each(this.childNodes, function(p, attr) { //formula or value or style
 																			switch (this.nodeName.toLowerCase()) {
