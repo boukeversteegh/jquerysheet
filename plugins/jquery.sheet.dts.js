@@ -84,7 +84,7 @@
 							var td = $('<td />')
 								.attr('class', this['class'] || '')
 								.attr('style', this['style'] || '')
-								.data('formula', '=' + (this['formula'] || ''))
+								.data('formula', (this['formula'] ? '=' + this['formula'] : ''))
 								.html(this['value'] || '')
 								.appendTo(tr);
 						});
