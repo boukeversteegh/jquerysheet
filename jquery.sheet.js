@@ -1931,6 +1931,11 @@ jQuery.sheet = {
 							.disableSelectionSpecial();
 					jS.controls.scrolls = jS.obj.scrolls().add(scroll);
 
+					function repeat( str, num )
+					{
+						return new Array( num ).join( str );
+					}
+
 					var scrollChild = scroll.children(),
 						scrollStyleX = jS.controls.bar.x.scroll[jS.i] = $('<style type="text/css" id="' + jS.id.scrollStyleX + jS.i + '"></style>')
 							.bind('updateStyle', function(e, indexes, styleOverride) {
@@ -1941,14 +1946,15 @@ jQuery.sheet = {
 
 								if (this.styleSheet) { //IE compatibility
 									for (var index in indexes) {
-										var nthColSelector = 'col:first-child', nthTdSelector = 'tr td:first-child', i = 1;
-										while (i < indexes[index] && indexes[index] > (jS.s.frozenAt.col + 1)) {
-											nthColSelector += '+col';
-											nthTdSelector += '+td';
-											i++;
+										var nthColSelector = '', nthTdSelector = '';
+										if (indexes[index] > (jS.s.frozenAt.col + 1)) {
+											nthColSelector += repeat('+col', indexes[index]);
+											nthTdSelector += repeat('+td', indexes[index]);
 										}
-										style.push('#' + jS.id.sheet + jS.i + ' ' + nthColSelector);
-										style.push('#' + jS.id.sheet + jS.i + ' ' + nthTdSelector);
+										if (nthColSelector && nthTdSelector) {
+											style.push('#' + jS.id.sheet + jS.i + ' ' + 'col:first-child' + nthColSelector);
+											style.push('#' + jS.id.sheet + jS.i + ' ' + 'tr td:first-child' + nthTdSelector);
+										}
 									}
 									if (style.length || styleOverride) {
 										this.styleSheet.cssText = styleOverride || style.join(',') + '{display: none;}';
@@ -1982,12 +1988,13 @@ jQuery.sheet = {
 
 								if (this.styleSheet) { //IE compatibility
 									for (var index in indexes) {
-										var nthSelector = 'tr:first-child+tr', i = 2;
-										while (i < indexes[index] && indexes[index] > (jS.s.frozenAt.row + 1)) {
-											nthSelector += '+tr';
-											i++;
+										var nthSelector = '';
+										if (indexes[index]> (jS.s.frozenAt.row + 1)) {
+											nthSelector += repeat('+tr', indexes[index]);
 										}
-										style.push('#' + jS.id.sheet + jS.i + ' ' + nthSelector);
+										if (nthSelector) {
+											style.push('#' + jS.id.sheet + jS.i + ' ' + 'tr:first-child' + nthSelector);
+										}
 									}
 									if (style.length || styleOverride) {
 										this.styleSheet.cssText = styleOverride || style.join(',') + '{display: none;}';
@@ -2012,11 +2019,13 @@ jQuery.sheet = {
 								jS.scrolledArea.row.end = indexes.pop() || 1;
 							});
 
+					pane
+						.append(scrollStyleX)
+						.append(scrollStyleY);
+
 					if (!$.fn.mousewheel) return;
 
 					pane
-						.append(scrollStyleX)
-						.append(scrollStyleY)
 						.mousewheel(function(e,o) {
 							var E = e.originalEvent, e, c;
 
@@ -8088,9 +8097,6 @@ var arrHelpers = {
 				closest = a[i];
 			}
 		}
-		console.log("closest:" + closest);
-		console.log(["a", a]);
-		console.log(["x", x]);
 		return closest;
 	}
 };
