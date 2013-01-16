@@ -2613,6 +2613,7 @@ jQuery.sheet = {
 					 * @name documentKeydown
 					 */
 					documentKeydown: function(e) {
+						if (!jS) return false;
 						if (jS.readOnly[jS.i]) return false;
 						if (jS.cellLast.row < 0 || jS.cellLast.col < 0) return false;
 
@@ -3074,6 +3075,7 @@ jQuery.sheet = {
 						jS.evt.barInteraction.selecting = true;
 						$document
 							.one('mouseup', function() {
+								if (!jS) return true;
 								jS.evt.barInteraction.selecting = false;
 							});
 						
@@ -4497,7 +4499,8 @@ jQuery.sheet = {
 						
 						$document
 							.one('mouseup', function() {
-	
+								if (!jS) return true;
+
 								jS.obj.pane()
 									.unbind('mousemove')
 									.unbind('mouseup');
