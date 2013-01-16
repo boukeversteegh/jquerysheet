@@ -886,8 +886,8 @@ jQuery.sheet = {
 					.removeClass(jS.cl.uiParent)
 					.html('')
 					.removeData('sheetInstance');
-				delete $.sheet.instance[I];
-				delete jS;
+				$.sheet.instance[I] = null;
+				jS = null;
 			},
 
 			/**
