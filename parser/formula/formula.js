@@ -1,5 +1,5 @@
 /* Jison generated parser */
-var parser = (function(){
+var formula = (function(){
 var parser = {trace: function trace() { },
 yy: {},
 symbols_: {"error":2,"expressions":3,"expression":4,"EOF":5,"variableSequence":6,"TIME_AMPM":7,"TIME_24":8,"number":9,"STRING":10,"=":11,"+":12,"(":13,")":14,"<":15,">":16,"NOT":17,"-":18,"*":19,"/":20,"^":21,"E":22,"FUNCTION":23,"expseq":24,"cell":25,"FIXEDCELL":26,":":27,"CELL":28,"SHEET":29,"!":30,";":31,",":32,"VARIABLE":33,"DECIMAL":34,"NUMBER":35,"%":36,"$accept":0,"$end":1},
@@ -638,9 +638,9 @@ function Parser () { this.yy = {}; }Parser.prototype = parser;parser.Parser = Pa
 return new Parser;
 })();
 if (typeof require !== 'undefined' && typeof exports !== 'undefined') {
-exports.parser = parser;
-exports.Parser = parser.Parser;
-exports.parse = function () { return parser.parse.apply(parser, arguments); }
+exports.parser = formula;
+exports.Parser = formula.Parser;
+exports.parse = function () { return formula.parse.apply(formula, arguments); }
 exports.main = function commonjsMain(args) {
     if (!args[1])
         throw new Error('Usage: '+args[0]+' FILE');

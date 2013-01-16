@@ -500,7 +500,8 @@ jQuery.sheet = {
 	dependencies: {
 		coreCss: {css: 'jquery.sheet.css'},
 		globalize: {script: 'plugins/globalize.js'},
-		parser: {script: 'parser/formula/parser.js'},
+		formulaParser: {script: 'parser/formula/formula.js'},
+		tsvParser: {script: 'parser/tsv/tsv.js'},
 		mousewheel: {script: 'plugins/jquery.mousewheel.min.js'},
 		nearest: {script: 'plugins/jquery.nearest.min.js'}
 	},
@@ -880,7 +881,7 @@ jQuery.sheet = {
 			 */
 			kill: function() {
 				jS.obj.fullScreen().remove();
-				jS.obj.inPlaceEdit().remove();
+				jS.obj.inPlaceEdit().trigger('remove');
 				s.parent
 					.removeClass(jS.cl.uiParent)
 					.html('')
@@ -2283,13 +2284,13 @@ jQuery.sheet = {
 				inPlaceEdit: function(td) {
 					td = td || jS.obj.cellActive();
 
-					jS.obj.inPlaceEdit().remove();
+					jS.obj.inPlaceEdit().trigger('remove');
 					var formula = jS.obj.formula();
 					var offset = td.offset();
 					var style = td.attr('style');
 					var w = td.width();
 					var h = td.height();
-					var textarea = jS.controls.inPlaceEdit[jS.i] = $('<textarea id="' + jS.id.inPlaceEdit + '" class="' + jS.cl.inPlaceEdit + ' ' + jS.cl.uiInPlaceEdit + '" />')
+					var textarea = jS.controls.inPlaceEdit[jS.i] = $('<textarea id="' + jS.id.inPlaceEdit + '" class="' + jS.cl.inPlaceEdit + ' ' + jS.cl.uiInPlaceEdit + '" data-i="' + jS.i + '"/>')
 						.css('left', offset.left)
 						.css('top', offset.top)
 						.width(w)
@@ -2314,7 +2315,11 @@ jQuery.sheet = {
 						.appendTo($body)
 						.val(formula.val())
 						.focus()
-						.select();
+						.select()
+						.bind('remove', function() {
+							jS.controls.inPlaceEdit[textarea.data('i')] = false;
+							textarea.remove();
+						});
 
 					//Make the textarrea resizable automatically
 					if ($.fn.elastic) {
@@ -2372,7 +2377,7 @@ jQuery.sheet = {
 				var newValCount = 0;
 				var formula = jS.obj.formula();
 
-				oldVal = (oldVal ? oldVal : formula.val());
+				oldVal = oldVal ||formula.val();
 
 				var loc = {row: jS.cellLast.row, col: jS.cellLast.col};
 				var val = formula.val(); //once ctrl+v is hit formula now has the data we need
@@ -2628,23 +2633,51 @@ jQuery.sheet = {
 								case key.HOME:
 								case key.END:		jS.evt.cellSetFocusFromKeyCode(e);
 									break;
-								case key.V:		return jS.evt.keyDownHandler.formulaKeydownIf(!jS.evt.pasteOverCells(e), e);
+								case key.V:
+									if (e.ctrlKey) {
+										return jS.evt.keyDownHandler.formulaKeydownIf(!jS.evt.pasteOverCells(e), e);
+									} else {
+										jS.obj.cellActive().dblclick();
+										return true;
+									}
 									break;
-								case key.Y:		return jS.evt.keyDownHandler.formulaKeydownIf(!jS.evt.keyDownHandler.redo(e), e);
+								case key.Y:
+									if (e.ctrlKey) {
+										return jS.evt.keyDownHandler.formulaKeydownIf(!jS.evt.keyDownHandler.redo(e), e);
+									} else {
+										jS.obj.cellActive().dblclick();
+										return true;
+									}
 									break;
-								case key.Z:		return jS.evt.keyDownHandler.formulaKeydownIf(!jS.evt.keyDownHandler.undo(e), e);
+								case key.Z:
+									if (e.ctrlKey) {
+										return jS.evt.keyDownHandler.formulaKeydownIf(!jS.evt.keyDownHandler.undo(e), e);
+									} else {
+										jS.obj.cellActive().dblclick();
+										return true;
+									}
 									break;
 								case key.ESCAPE: 	jS.evt.cellEditAbandon();
 									break;
-								case key.F:		return jS.evt.keyDownHandler.formulaKeydownIf(jS.evt.keyDownHandler.findCell(e), e);
+								case key.F:
+									if (e.ctrlKey) {
+										return jS.evt.keyDownHandler.formulaKeydownIf(jS.evt.keyDownHandler.findCell(e), e);
+									} else {
+										jS.obj.cellActive().dblclick();
+										return true;
+									}
 									break;
-								case key.CONTROL: //we need to filter these to keep cell state
 								case key.CAPS_LOCK:
 								case key.SHIFT:
 								case key.ALT:
+									break;
+								case key.CONTROL: //we need to filter these to keep cell state
 												jS.obj.formula().focus().select(); return true;
 									break;
-								default:		jS.obj.cellActive().dblclick(); return true;
+								default:
+									jS.obj.cellActive().dblclick();
+									return true;
+									break;
 							}
 							return false;
 						}
@@ -2729,7 +2762,7 @@ jQuery.sheet = {
 				cellEditDone: function(forceCalc) {
 					switch (jS.cellLast.isEdit || forceCalc) {
 						case true:
-							jS.obj.inPlaceEdit().remove();
+							jS.obj.inPlaceEdit().trigger('remove');
 							var formula = jS.obj.formula();
 
 							var td = jS.obj.cellActive();
@@ -2790,7 +2823,7 @@ jQuery.sheet = {
 				 * @name cellEditAbandon
 				 */
 				cellEditAbandon: function(skipCalc) {
-					jS.obj.inPlaceEdit().remove();
+					jS.obj.inPlaceEdit().trigger('remove');
 					jS.themeRoller.cell.clearActive();
 					jS.themeRoller.bar.clearActive();
 					jS.themeRoller.cell.clearHighlighted();
@@ -2892,7 +2925,7 @@ jQuery.sheet = {
 							if (jS.highlightedLast.td.length > 1) {
 								var inPlaceEdit = jS.obj.inPlaceEdit();
 								var v = inPlaceEdit.val();
-								inPlaceEdit.remove();
+								inPlaceEdit.trigger('remove');
 								jS.updateCellsAfterPasteToFormula(v);
 								return true;
 							} else if (s.autoAddCells) {
@@ -4366,7 +4399,7 @@ jQuery.sheet = {
 				} else {
 					v = jS.spreadsheets[jS.i][loc.row][loc.col].value;
 				}
-				
+
 				var formula = jS.obj.formula()
 					.val(v)
 					.blur();
@@ -4399,7 +4432,7 @@ jQuery.sheet = {
 					jS.themeRoller.cell.setActive(); //themeroll the cell and bars
 					jS.themeRoller.bar.setActive('left', jS.cellLast.row);
 					jS.themeRoller.bar.setActive('top', jS.cellLast.col);
-					
+
 					var selectModel;
 					var clearHighlightedModel;
 					
@@ -4636,18 +4669,18 @@ jQuery.sheet = {
 								cell.formula = cell.formula.substring(1, cell.formula.length);
 							}
 							
-							var Parser;
+							var formulaParser;
 							if (jS.callStack) { //we prevent parsers from overwriting each other
-								if (!cell.parser) { //cut down on un-needed parser creation
-									cell.parser = (new jS.parser);
+								if (!cell.formulaParser) { //cut down on un-needed parser creation
+									cell.formulaParser = (new jS.formulaParser);
 								}
-								Parser = cell.parser
+								formulaParser = cell.formulaParser
 							} else {//use the sheet's parser if there aren't many calls in the callStack
-								Parser = jS.Parser;
+								formulaParser = jS.FormulaParser;
 							}
 							
 							jS.callStack++
-							Parser.lexer.obj = {
+							formulaParser.lexer.obj = {
 								type: 'cell',
 								sheet: sheet,
 								row: row,
@@ -4658,8 +4691,8 @@ jQuery.sheet = {
 								jS: jS,
 								error: s.error
 							};
-							Parser.lexer.handler = jS.cellHandler;
-							cell.result = Parser.parse(cell.formula);
+							formulaParser.lexer.handler = jS.cellHandler;
+							cell.result = formulaParser.parse(cell.formula);
 						} catch(e) {
 							cell.result = e.toString();
 							jS.alertFormulaError(cell.value);
@@ -4713,7 +4746,7 @@ jQuery.sheet = {
 			},
 
 			/**
-			 * Object handler for parser
+			 * Object handler for formulaParser
 			 * @name cellHandler
 			 * @memberOf jS
 			 * @namespace
@@ -4721,7 +4754,7 @@ jQuery.sheet = {
 			cellHandler: {
 
 				/**
-				 * Variable handler for parser, arguments are the variable split by '.'.  Expose variables by using jQuery.sheet setting formulaVariables
+				 * Variable handler for formulaParser, arguments are the variable split by '.'.  Expose variables by using jQuery.sheet setting formulaVariables
 				 * @returns {*}
 				 * @methodOf jS.cellHandler
 				 * @name variable
@@ -5045,11 +5078,11 @@ jQuery.sheet = {
 			 * @name cellLookup
 			 */
 			cellLookup: function() {
-				var parser = (new jS.parser);
-				parser.lexer.obj = this.obj;
-				parser.lexer.handler = $.extend(parser.lexer.handler, jS.cellLookupHandlers);
+				var formulaParser = (new jS.formulaParser);
+				formulaParser.lexer.obj = this.obj;
+				formulaParser.lexer.handler = $.extend(formulaParser.lexer.handler, jS.cellLookupHandlers);
 				
-				var args = parser.parse(this.obj.formula);
+				var args = formulaParser.parse(this.obj.formula);
 				var lookupTable = [];
 				
 				for(var row = args[1].row; row <= args[2].row; row++) {
@@ -6471,15 +6504,15 @@ jQuery.sheet = {
 			u = undefined;
 		
 		//ready the sheet's parser
-		jS.lexer = function() {};
-		jS.lexer.prototype = parser.lexer;
-		jS.parser = function() {
-			this.lexer = new jS.lexer();
+		jS.formulaLexer = function() {};
+		jS.formulaLexer.prototype = formula.lexer;
+		jS.formulaParser = function() {
+			this.lexer = new jS.formulaLexer();
 			this.yy = {};
 		};
-		jS.parser.prototype = parser;
+		jS.formulaParser.prototype = formula;
 		
-		jS.Parser = new jS.parser;
+		jS.FormulaParser = new jS.formulaParser;
 		
 		//We need to take the sheet out of the parent in order to get an accurate reading of it's height and width
 		//$(this).html(s.loading);

@@ -99,56 +99,50 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 				if (obj.calcCount < 1 && obj.calcLast != jP.calcLast) {
 					obj.calcLast = jP.calcLast;
 					obj.calcCount++;
-					var Parser;
+					var formulaParser;
 					if (jP.callStack) { //we prevent parsers from overwriting each other
-						if (!obj.parser) { //cut down on un-needed parser creation
-							obj.parser = (new jP.parser);
+						if (!obj.formulaParser) { //cut down on un-needed parser creation
+							obj.formulaParser = (new jP.formulaParser);
 						}
-						Parser = obj.parser
+						formulaParser = obj.formulaParser
 					} else {//use the sheet's parser if there aren't many calls in the callStack
-						Parser = jP.Parser;
+						formulaParser = jP.FormulaParser;
 					}
 
 					jP.callStack++
-					Parser.lexer.obj = {
+					formulaParser.lexer.obj = {
 						obj: obj,
 						type: 'object',
 						jP: jP
 					};
-					Parser.lexer.handler = jP.objHandler;
+					formulaParser.lexer.handler = jP.objHandler;
 
 					var data = $obj.data();
 					jQuery.each(data, function(i) {
 						if (s.dataHandler[i]) {
 							var canParse = (data[i].charAt(0) == '='),
 								formula = (data[i].charAt(0) == '=' ? data[i].substring(1, data[i].length) : data[i]),
-								result = function () {
-									if (!canParse) return false;
-									obj.result = Parser.parse(formula);
-									var result = jP.filterValue(obj);
-									if (typeof result.val.value != 'undefined') {
-										return result.val.value;
-									} else {
-										return result.val;
-									}
-								}();
+								resultFn = function () {
+									var result = jP.filterValue({result: formulaParser.parse(formula)});
+									return result.val;
+								};
 
 							s.dataHandler[i].apply({
 								obj: obj,
 								$obj: $obj,
 								formula: formula
-							}, [result]);
+							}, [resultFn()]);
 						}
 					});
 
-					obj.formula = $obj.data('formula');
-					if (obj.formula) {
+
+					if (data.formula) {
 						try {
-							if (obj.formula.charAt(0) == '=') {
-								obj.formula = obj.formula.substring(1, obj.formula.length);
+							if (data.formula.charAt(0) == '=') {
+								data.formula = data.formula.substring(1, data.formula.length);
 							}
 
-							obj.result = Parser.parse(obj.formula);
+							obj.result = formulaParser.parse(data.formula);
 						} catch(e) {
 							console.log(e);
 							obj.val = e.toString().replace(/\n/g, '<br />'); //error
@@ -258,6 +252,9 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 					}
 
 					return jP.updateObjectValue($obj[0]);
+				},
+				concatenate: function() {
+					return jFN.CONCATENATE.apply(this, arguments).value;
 				}
 			}
 		};
@@ -281,16 +278,16 @@ jQuery.pseudoSheet = { //jQuery.pseudoSheet
 			}
 		}
 
-		//ready the sheet's parser
-		jP.lexer = function() {};
-		jP.lexer.prototype = parser.lexer;
-		jP.parser = function() {
-			this.lexer = new jP.lexer();
+		//ready the sheet's formulaParser
+		jP.formulaLexer = function() {};
+		jP.formulaLexer.prototype = formula.lexer;
+		jP.formulaParser = function() {
+			this.lexer = new jP.formulaLexer();
 			this.yy = {};
 		};
-		jP.parser.prototype = parser;
+		jP.formulaParser.prototype = formula;
 
-		jP.Parser = new jP.parser;
+		jP.FormulaParser = new jP.formulaParser;
 
 		return jP;
 	}

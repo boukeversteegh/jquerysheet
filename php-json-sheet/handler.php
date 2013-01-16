@@ -1,7 +1,7 @@
 <?php
-require_once('../parser/formula/parser.php');
+require_once('../parser/formula/formula.php');
 
-Class ParserHandler extends Parser
+Class ParserHandler extends Formula
 {
 	public $spreadsheets = array();
 	public $spreadsheetsType = 'cell';

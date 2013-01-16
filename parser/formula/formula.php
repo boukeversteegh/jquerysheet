@@ -1,7 +1,7 @@
 <?php
 /* Jison generated parser */
 
-class Parser
+class Formula
 {
 	var $symbols_ = array();
 	var $terminals_ = array();

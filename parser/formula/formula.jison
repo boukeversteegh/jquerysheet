@@ -1,5 +1,5 @@
+//phpOption parserClass:Formula
 /* description: Parses end evaluates mathematical expressions. */
-
 /* lexical grammar */
 %lex
 %%
