@@ -6659,7 +6659,7 @@ jQuery.sheet = {
 						this.kill();
 					}
 				});
-				jQuery.sheet.instance = null;
+				jQuery.sheet.instance = $([]);
 			}
 		}
 	},
