@@ -40,7 +40,7 @@ case 8:
 				this.$ = yy.lexer.handler.concatenate.apply(yy.lexer.obj, [$$[$0-2],$$[$0]]); //js
 			} //js
 
-			//php if (is_number($$[$0-2]) && is_numeric($$[$0])) {
+			//php if (is_numeric($$[$0-2]) && is_numeric($$[$0])) {
 			//php   this.$ = $$[$0-2] + $$[$0];
 			//php } else {
 			//php   this.$ = $$[$0-2] . $$[$0];
@@ -552,15 +552,24 @@ case 6:
 	if (yy.lexer.obj.type == 'cell') return 29; //js
 	return 'VARIABLE'; //js
 
+	//php if ($this->type == 'cell') return 'SHEET';
+	//php return 'VARIABLE';
+
 break;
 case 7:
 	if (yy.lexer.obj.type == 'cell') return 26; //js
-	return 'VARIABLE';
+	return 'VARIABLE'; //js
+
+	//php if ($this->type == 'cell') return 'FIXEDCELL';
+    //php return 'VARIABLE';
 
 break;
 case 8:
 	if (yy.lexer.obj.type == 'cell') return 28; //js
-	return 'VARIABLE';
+	return 'VARIABLE'; //js
+
+	//php if ($this->type == 'cell') return 'CELL';
+    //php return 'VARIABLE';
 
 break;
 case 9:return 23;

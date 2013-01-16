@@ -66,7 +66,7 @@ case 7:$thisS = $S[$O-2] == $S[$O];
 break;
 case 8:
 
-			if (is_number($S[$O-2]) && is_numeric($S[$O])) {
+			if (is_numeric($S[$O-2]) && is_numeric($S[$O])) {
 			  $thisS = $S[$O-2] + $S[$O];
 			} else {
 			  $thisS = $S[$O-2] . $S[$O];
@@ -639,13 +639,20 @@ case 5:return 8;
 break;
 case 6:
 
-break;
-case 7:
+	if ($this->type == 'cell') return 'SHEET';
 	return 'VARIABLE';
 
 break;
+case 7:
+
+	if ($this->type == 'cell') return 'FIXEDCELL';
+    return 'VARIABLE';
+
+break;
 case 8:
-	return 'VARIABLE';
+
+	if ($this->type == 'cell') return 'CELL';
+    return 'VARIABLE';
 
 break;
 case 9:return 23;

@@ -500,7 +500,7 @@ jQuery.sheet = {
 	dependencies: {
 		coreCss: {css: 'jquery.sheet.css'},
 		globalize: {script: 'plugins/globalize.js'},
-		parser: {script: 'parser/parser.js'},
+		parser: {script: 'parser/formula/parser.js'},
 		mousewheel: {script: 'plugins/jquery.mousewheel.min.js'},
 		nearest: {script: 'plugins/jquery.nearest.min.js'}
 	},
@@ -1831,7 +1831,6 @@ jQuery.sheet = {
 						jS.setNav(true);
 						
 						$document
-							.unbind('keydown')
 							.keydown(jS.evt.keyDownHandler.documentKeydown);
 					}
 					
@@ -2148,6 +2147,7 @@ jQuery.sheet = {
 
 						pane
 							.mousedown(function(e) {
+								jS.setNav(true);
 								if (jS.busy) return false;
 
 								if (jS.isTd(e.target)) {
@@ -2731,7 +2731,7 @@ jQuery.sheet = {
 						case true:
 							jS.obj.inPlaceEdit().remove();
 							var formula = jS.obj.formula();
-							//formula.unbind('keydown'); //remove any lingering events from inPlaceEdit
+
 							var td = jS.obj.cellActive();
 							switch(jS.isFormulaEditable(td)) {
 								case true:
@@ -6626,6 +6626,7 @@ jQuery.sheet = {
 						this.kill();
 					}
 				});
+				jQuery.sheet.instance = null;
 			}
 		}
 	},

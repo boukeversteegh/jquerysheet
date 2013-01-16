@@ -3,7 +3,7 @@
 ini_set('error_reporting', E_ALL);
 ini_set('display_errors', 1);
 
-include_once 'parser.php';
+include_once '../parser/formula/parser.php';
 include_once 'handler.php';
 include_once 'formulas.php';
 
@@ -16,7 +16,7 @@ $spreadsheets = json_decode($_REQUEST['ss']);
 
 $formulas = new formulas();
 
-$handler = ParserHandler::init($spreadsheets, $formulas);
+$handler = ParserHandler::initSimpleJson($spreadsheets, $formulas);
 $handler->calc();
 
 if (isset($_REQUEST['c'])) {

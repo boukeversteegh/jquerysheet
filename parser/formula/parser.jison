@@ -15,16 +15,25 @@
 %{
 	if (yy.lexer.obj.type == 'cell') return 'SHEET'; //js
 	return 'VARIABLE'; //js
+
+	//php if ($this->type == 'cell') return 'SHEET';
+	//php return 'VARIABLE';
 %}
 '$'[A-Za-z]+'$'[0-9]+
 %{
 	if (yy.lexer.obj.type == 'cell') return 'FIXEDCELL'; //js
-	return 'VARIABLE';
+	return 'VARIABLE'; //js
+
+	//php if ($this->type == 'cell') return 'FIXEDCELL';
+    //php return 'VARIABLE';
 %}
 [A-Za-z]+[0-9]+
 %{
 	if (yy.lexer.obj.type == 'cell') return 'CELL'; //js
-	return 'VARIABLE';
+	return 'VARIABLE'; //js
+
+	//php if ($this->type == 'cell') return 'CELL';
+    //php return 'VARIABLE';
 %}
 [A-Za-z]+(?=[(])    				{return 'FUNCTION';}
 [A-Za-z]{1,}[A-Za-z_0-9]+			{return 'VARIABLE';}
@@ -108,7 +117,7 @@ expression :
 				$$ = yy.lexer.handler.concatenate.apply(yy.lexer.obj, [$1,$3]); //js
 			} //js
 
-			//php if (is_number($1) && is_numeric($3)) {
+			//php if (is_numeric($1) && is_numeric($3)) {
 			//php   $$ = $1 + $3;
 			//php } else {
 			//php   $$ = $1 . $3;
