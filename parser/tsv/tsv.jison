@@ -2,13 +2,30 @@
 
 /* lexical grammar */
 %lex
+%s d s
 %%
-\s+									{/* skip whitespace */}
-'"'				                    {return 'DOUBLE_PARENTHESES';}
-"'"				                    {return 'SINGLE_PARENTHESES';}
-\n                                  {return 'END_OF_LINE';}
-\t                                  {return 'TAB';}
-.                                   {return 'VALUE';}
+<d>'"' {
+	this.popState('d');
+	return 'DOUBLE_PARENTHESES';
+}
+'"' {
+	this.begin('d');
+	return 'DOUBLE_PARENTHESES';
+}
+<s>"'" {
+	this.popState('s');
+	return 'SINGLE_PARENTHESES';
+}
+"'" {
+	this.begin('s');
+	return 'SINGLE_PARENTHESES';
+}
+<s>(\n|"\n")                        {return 'CHAR';}
+<d>(\n|"\n")                        {return 'CHAR';}
+(\n|"\n")                           {return 'END_OF_LINE';}
+(\t)                                {return 'COLUMN';}
+(\s)								{return 'CHAR';}
+.                                   {return 'CHAR';}
 <<EOF>>								{return 'EOF';}
 
 
@@ -18,51 +35,65 @@
 
 %% /* language grammar */
 
-cells
-: cells EOF
-     {return $1;}
-;
-
 cells :
-	rows
-		{
-			$$ = yy.lexer.handler.variable.apply(yy.lexer.obj, $1);//js
-            //php $$ = $this->variable($1);
-		}
-	| cells rows
-		{
-
-		}
+	rows EOF {
+        return $1;
+    }
 ;
 
 rows :
-	END_OF_LINE
-		{
-			$$ = [$1]; //js
-			//php $$ = array($1);
-		}
-	| columns END_OF_LINE
-		{
-			$$ = ($.isArray($1) ? $1 : [$1]);//js
-            $$.push($3);//js
+	row {
+		$$ = [$1];
+	}
+	| rows row {
+		$1 = $1 || [];
+		$1.push($2);
+	}
+;
 
-            //php $$ = (is_array($1) ? $1 : array());
-            //php $$[] = $3;
-		}
+row :
+	END_OF_LINE {
+		$$ = [];
+	}
+	| columns {
+		$$ = [$1];
+	}
+	| row columns {
+		$1 = $1 || [];
+		$1.push($2);
+		$$ = $1;
+	}
 ;
 
 columns :
-	COLUMN
-		{
-			$$ = [$1]; //js
-			//php $$ = array($1);
-		}
-	| columns COLUMN
-		{
-			$$ = ($.isArray($1) ? $1 : [$1]);//js
-            $$.push($3);//js
+	COLUMN {
+		$$ = '';
+	}
+	| string {
+		$$ = $1;
+    }
+	| columns string {
+		$$ = $2;
+	}
+;
 
-            //php $$ = (is_array($1) ? $1 : array());
-            //php $$[] = $3;
-		}
+string :
+	DOUBLE_PARENTHESES chars DOUBLE_PARENTHESES {
+		$$ = $2;
+	}
+	| SINGLE_PARENTHESES chars SINGLE_PARENTHESES {
+		$$ = $2;
+	}
+	| chars {
+		$$ = $1;
+	}
+;
+
+chars :
+	CHAR {
+		$$ = $1;
+	}
+	| chars CHAR {
+		$$ = $1 + $2;
+	}
 ;

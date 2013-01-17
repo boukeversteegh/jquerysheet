@@ -2388,36 +2388,36 @@ jQuery.sheet = {
 				var tdsBefore = $('<div />'),
 					tdsAfter = $('<div />');
 
-				//console.log(tsv.parse(val));
-
-				var row = val.split(/\n/g); //break at rows
-
+				var row = tsv.parse(val);
 				for (var i = 0; i < row.length; i++) {
-					var col = row[i].split(/\t/g); //break at columns
+					var col = row[i];
 					for (var j = 0; j < col.length; j++) {
 						newValCount++;
 						var td = jS.getTd(jS.i, i + loc.row, j + loc.col);
 
 						if (td.length) {
+							if (!jS.spreadsheets[jS.i] || !jS.spreadsheets[jS.i][i + loc.row] || !jS.spreadsheets[jS.i][i + loc.row][j + loc.col]) continue;
 							var cell = jS.spreadsheets[jS.i][i + loc.row][j + loc.col];
-							tdsBefore.append(td.clone());
+							if (cell) {
+								tdsBefore.append(td.clone());
 
-							if ((col[j] + '').charAt(0) == '=') { //we need to know if it's a formula here
-								cell.formula = col[j];
-								td.data('formula', col[j]);
-							} else {
-								cell.formula = null;
-								cell.value = col[j];
+								if ((col[j] + '').charAt(0) == '=') { //we need to know if it's a formula here
+									cell.formula = col[j].substring(1, cell.formula.length - 1);
+									td.data('formula', col[j]);
+								} else {
+									cell.formula = null;
+									cell.value = col[j];
 
-								td
-									.html(col[j])
-									.removeData('formula');
-							}
+									td
+										.html(col[j])
+										.removeData('formula');
+								}
 
-							tdsAfter.append(td.clone());
+								tdsAfter.append(td.clone());
 
-							if (i == 0 && j == 0) { //we have to finish the current edit
-								firstValue = col[j];
+								if (i == 0 && j == 0) { //we have to finish the current edit
+									firstValue = col[j];
+								}
 							}
 						}
 					}
