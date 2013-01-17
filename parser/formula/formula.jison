@@ -111,8 +111,8 @@ expression :
 		{$$ = $1 == $3;}
 	| expression '+' expression
 		{
-			if (!isNaN($1) || !isNaN($3)) { //js
-				$$ = $1 + $3; //js
+			if (!isNaN($1) && !isNaN($3)) { //js
+				$$ = ($1 * 1) + ($3 * 1); //js
 			} else { //js
 				$$ = yy.lexer.handler.concatenate.apply(yy.lexer.obj, [$1,$3]); //js
 			} //js
