@@ -230,6 +230,20 @@ jQuery.fn.extend({
 	 *          })
 	 *          .sheet();
 	 *
+	 * sheetFullScreen - triggered when the sheet goes full screen
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), isFullScreen (boolean, true if full screen, false if not)
+	 *      example:
+	 *          $(obj).sheet({
+	 *              sheetFullScreen: function(e, jS, isFullScreen) {
+	 *
+	 *              });
+	 *          }
+	 *      or:
+	 *          $(obj).bind('sheetFullScreen', function(e, jS, isFullScreen) {
+	 *
+	 *          })
+	 *          .sheet();
+	 *
 	 * @name sheet
 	 * @param {Object} settings supports the following properties/methods:
 	 *
@@ -427,7 +441,7 @@ jQuery.fn.extend({
 	 * @returns {*}
 	 */
 	getCellValue: function(row, col, sheet) {
-		var jS = $(this).getSheet();
+		var jS = jQuery(this).getSheet();
 		sheet = (sheet ? sheet : 0);
 		try {
 			return jS.updateCellValue(sheet, row, col);
@@ -445,7 +459,7 @@ jQuery.fn.extend({
 	 * @param sheet
 	 */
 	setCellValue: function(value, row, col, sheet) {
-		var jS = $(this).getSheet();
+		var jS = jQuery(this).getSheet();
 		sheet = (sheet ? sheet : 0);
 		try {
 			jS.spreadsheets[sheet][row][col].value = value;
@@ -461,7 +475,7 @@ jQuery.fn.extend({
 	 * @param sheet
 	 */
 	setCellFormula: function(formula, row, col, sheet) {
-		var jS = $(this).getSheet();
+		var jS = jQuery(this).getSheet();
 		sheet = (sheet ? sheet : 0);
 		try {
 			jS.spreadsheets[sheet][row][col].formula = formula;
@@ -477,11 +491,25 @@ jQuery.fn.extend({
 	 * @param sheet
 	 */
 	setCellHtml: function(html, row, col, sheet) {
-		var jS = $(this).getSheet();
+		var jS = jQuery(this).getSheet();
 		sheet = (sheet ? sheet : 0);
 		try {
-			jS.spreadsheets[sheet][row][col].html = html;
+			jS.spreadsheets[sheet][row][col].td.html(html);
 		} catch(e) {}
+	},
+
+	/**
+	 * Detect if spreadsheet is full screen
+	 * @memberOf jQueryPlugins
+	 * @return {Boolean}
+	 */
+	isSheetFullScreen: function() {
+		var jS = $(this).getSheet();
+		if (jS.obj.fullScreen().is(':visible')) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 });
 
@@ -520,7 +548,7 @@ jQuery.sheet = {
 	 * events list
 	 * @memberOf jQuery.sheet
 	 */
-	events: ['sheetAddRow','sheetAddColumn','sheetSwitch','sheetRename','sheetTabSortStart','sheetTabSortUpdate','sheetCellEdited','sheetCalculation','sheetAdd','sheetDelete','sheetDeleteRow','sheetDeleteColumn','sheetOpen','sheetAllOpened','sheetSave'],
+	events: ['sheetAddRow','sheetAddColumn','sheetSwitch','sheetRename','sheetTabSortStart','sheetTabSortUpdate','sheetCellEdited','sheetCalculation','sheetAdd','sheetDelete','sheetDeleteRow','sheetDeleteColumn','sheetOpen','sheetAllOpened','sheetSave', 'sheetFullScreen'],
 
 	preLoad: function(path) {
 		var g = function() {
@@ -665,7 +693,7 @@ jQuery.sheet = {
 				enclosure: [],
 				enclosures: null,
 				formula: null,
-				fullscreen: [],
+				fullScreen: [],
 				header: null,
 				inPlaceEdit: [],
 				label: null,
@@ -694,12 +722,12 @@ jQuery.sheet = {
 				autoFiller:			function() { return jS.controls.autoFiller[jS.i] || $([]); },
 				barCorner:			function() { return jS.controls.bar.corner[jS.i] || $([]); },
 				barHelper:			function() { return jS.controls.bar.helper[jS.i] || (jS.controls.bar.helper[jS.i] = $([])); },
-				barLeft: 			function(i) { return jS.controls.bar.y.td[jS.i][i] || $([]); },
+				barLeft: 			function(i) { return (jS.controls.bar.y.td[jS.i] && jS.controls.bar.y.td[jS.i][i] ? jS.controls.bar.y.td[jS.i][i] : $([])); },
 				barLeftControls:    function() { return jS.controls.bar.y.controls[jS.i] || $([]); },
 				barLefts:			function() { return jS.controls.bar.y.tds(); },
 				barHandleFreezeLeft:function() { return jS.controls.bar.y.handleFreeze[jS.i] || $([]); },
 				barMenuLeft:		function() { return jS.controls.bar.y.menu[jS.i] || $([]); },
-				barTop: 			function(i) { return jS.controls.bar.x.td[jS.i][i] || $([]); },
+				barTop: 			function(i) { return (jS.controls.bar.x.td[jS.i] && jS.controls.bar.x.td[jS.i][i] ? jS.controls.bar.x.td[jS.i][i] : $([])); },
 				barTopControls:     function() { return jS.controls.bar.x.controls[jS.i] || $([]); },
 				barTops:			function() { return jS.controls.bar.x.tds(); },
 				barTopParent: 		function() { return jS.controls.bar.x.parent[jS.i] || $([]); },
@@ -713,7 +741,7 @@ jQuery.sheet = {
 				enclosure:          function() { return jS.controls.enclosure[jS.i] || $([]); },
 				enclosures:         function() { return jS.controls.enclosures || $([]); },
 				formula: 			function() { return jS.controls.formula || $([]); },
-				fullScreen:			function() { return jS.controls.fullscreen[jS.i] || $([]); },
+				fullScreen:			function() { return jS.controls.fullScreen[jS.i] || $([]); },
 				header: 			function() { return jS.controls.header || $([]); },
 				menuRight:			function() { return jS.controls.menuRight[jS.i] || $([]); },
 				inPlaceEdit:		function() { return jS.controls.inPlaceEdit[jS.i] || $([]); },
@@ -3372,22 +3400,26 @@ jQuery.sheet = {
 					jS.sheetSyncSize();
 
 					jS.obj.pane().trigger('resizeScroll');
+
+					jS.trigger('sheetFullScreen', [false]);
 				} else { //here we make a full screen
 					$body.addClass('bodyNoScroll');
 					
-					var w = $window.width() - 15;
-					var h = $window.height() - 15;
+					var w = $window.width() - 15,
+						h = $window.height() - 15,
+						parent = s.parent;
 
 					s.width = w;
 					s.height = h;
 
-					s.parent = jS.controls.fullscreen[jS.i] = $('<div class="' + jS.cl.fullScreen + ' ' + jS.cl.uiFullScreen + '" />')
+					s.parent = jS.controls.fullScreen[jS.i] = $('<div class="' + jS.cl.fullScreen + ' ' + jS.cl.uiFullScreen + '" />')
 						.append(s.parent.children())
 						.appendTo($body)
 						.data('parent', s.parent);
 
 					jS.obj.pane().trigger('resizeScroll');
 					jS.sheetSyncSize();
+					parent.trigger('sheetFullScreen', [true]);
 				}
 			},
 

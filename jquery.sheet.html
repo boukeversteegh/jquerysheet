@@ -64,6 +64,9 @@
                                 $('#sheet')
                                         .html(results[url])
                                         .sheet({
+                                            sheetFullScreen: function(e, jS) {
+                                                console.log($(this).isSheetFullScreen());
+                                            },
                                             sheetAllOpened: function() {
                                                 console.log('All sheets loaded.');
                                             },
