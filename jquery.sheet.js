@@ -881,7 +881,7 @@ jQuery.sheet = {
 			 */
 			kill: function() {
 				jS.obj.fullScreen().remove();
-				jS.obj.inPlaceEdit().trigger('remove');
+				jS.obj.inPlaceEdit().trigger('destroy');
 				s.parent
 					.removeClass(jS.cl.uiParent)
 					.html('')
@@ -2284,7 +2284,7 @@ jQuery.sheet = {
 				inPlaceEdit: function(td) {
 					td = td || jS.obj.cellActive();
 
-					jS.obj.inPlaceEdit().trigger('remove');
+					jS.obj.inPlaceEdit().trigger('destroy');
 					var formula = jS.obj.formula();
 					var offset = td.offset();
 					var style = td.attr('style');
@@ -2316,9 +2316,9 @@ jQuery.sheet = {
 						.val(formula.val())
 						.focus()
 						.select()
-						.bind('remove', function() {
-							jS.controls.inPlaceEdit[textarea.data('i')] = false;
+						.bind('destroy', function() {
 							textarea.remove();
+							jS.controls.inPlaceEdit[textarea.data('i')] = false;
 						});
 
 					//Make the textarrea resizable automatically
@@ -2613,7 +2613,6 @@ jQuery.sheet = {
 					 * @name documentKeydown
 					 */
 					documentKeydown: function(e) {
-						if (!jS) return false;
 						if (jS.readOnly[jS.i]) return false;
 						if (jS.cellLast.row < 0 || jS.cellLast.col < 0) return false;
 
@@ -2763,7 +2762,7 @@ jQuery.sheet = {
 				cellEditDone: function(forceCalc) {
 					switch (jS.cellLast.isEdit || forceCalc) {
 						case true:
-							jS.obj.inPlaceEdit().trigger('remove');
+							jS.obj.inPlaceEdit().trigger('destroy');
 							var formula = jS.obj.formula();
 
 							var td = jS.obj.cellActive();
@@ -2824,7 +2823,7 @@ jQuery.sheet = {
 				 * @name cellEditAbandon
 				 */
 				cellEditAbandon: function(skipCalc) {
-					jS.obj.inPlaceEdit().trigger('remove');
+					jS.obj.inPlaceEdit().trigger('destroy');
 					jS.themeRoller.cell.clearActive();
 					jS.themeRoller.bar.clearActive();
 					jS.themeRoller.cell.clearHighlighted();
@@ -2926,7 +2925,7 @@ jQuery.sheet = {
 							if (jS.highlightedLast.td.length > 1) {
 								var inPlaceEdit = jS.obj.inPlaceEdit();
 								var v = inPlaceEdit.val();
-								inPlaceEdit.trigger('remove');
+								inPlaceEdit.trigger('destroy');
 								jS.updateCellsAfterPasteToFormula(v);
 								return true;
 							} else if (s.autoAddCells) {
@@ -2964,31 +2963,10 @@ jQuery.sheet = {
 						//if the td exists, lets go to it
 						if (td) {
 							jS.themeRoller.cell.clearHighlighted();
-							td = $(td);
-							if (td.data('hidden')) {
-								function getNext(o, reverse) {
-									if (reverse) {
-										c++;
-										o = o.next()
-									}
-									else {
-										c--;
-										o = o.prev();
-									}
-
-									if (o.data('hidden') && o.length) {
-										return getNext(o, reverse);
-									}
-									return o;
-								}
-
-								td = getNext(td, c > jS.cellLast.col);
-							}
 							jS.cellEdit(td);
 							return false;
 						}
 					}
-
 					//default, can be overridden above
 					return true;
 				},
@@ -3075,7 +3053,6 @@ jQuery.sheet = {
 						jS.evt.barInteraction.selecting = true;
 						$document
 							.one('mouseup', function() {
-								if (!jS) return true;
 								jS.evt.barInteraction.selecting = false;
 							});
 						
@@ -4405,7 +4382,7 @@ jQuery.sheet = {
 				var formula = jS.obj.formula()
 					.val(v)
 					.blur();
-				
+
 				jS.cellSetActive(td, loc, isDrag);
 			},
 
@@ -4459,7 +4436,7 @@ jQuery.sheet = {
 							clearHighlightedModel = function() {};
 							break;
 					}
-					
+
 					if (isDrag) {
 						var lastLoc = loc; //we keep track of the most recent location because we don't want tons of recursion here
 						jS.obj.pane()
@@ -4499,8 +4476,6 @@ jQuery.sheet = {
 						
 						$document
 							.one('mouseup', function() {
-								if (!jS) return true;
-
 								jS.obj.pane()
 									.unbind('mousemove')
 									.unbind('mouseup');
@@ -6663,6 +6638,7 @@ jQuery.sheet = {
 					}
 				});
 				jQuery.sheet.instance = $([]);
+				jQuery(document).unbind('keydown');
 			}
 		}
 	},

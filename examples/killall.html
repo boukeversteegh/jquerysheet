@@ -15,13 +15,17 @@
 		$.sheet.preLoad('../');
 		$(function() {
 			$.get('../sheets/numberstesting.html', function(html) {
-				for (var i = 0; i < 10; i++) {
+				for (var i = 0; i < 2; i++) {
 					$('#sheetParent')
 						.html(html)
 						.sheet();
 
 					$.sheet.killAll();
 				}
+
+                $('#sheetParent')
+                    .html(html)
+                    .sheet();
 			});
 		});
 	</script>
