@@ -71,14 +71,12 @@
                                                 console.log('All sheets loaded.');
                                             },
                                             title: 'Spreadsheet Playground',
-                                            menuLeft: function(jS, I) {
-                                                return  results['menu.left.html'].replace(/sheetInstance/g, "$.sheet.instance[" + I + "]");
+                                            menuLeft: function(jS) {
+                                                return  results['menu.left.html'].replace(/sheetInstance/g, "$.sheet.instance[" + jS.I + "]");
                                             },
-                                            menuRight: function (jS, I){
-                                                I = (I ? I.length : 0);
-
+                                            menuRight: function (jS){
                                                 //we want to be able to edit the html for the menu to make them multi-instance
-                                                var menu = results['menu.right.html'].replace(/sheetInstance/g, "$.sheet.instance[" + I + "]");
+                                                var menu = results['menu.right.html'].replace(/sheetInstance/g, "$.sheet.instance[" + jS.I + "]");
                                                 menu = $(menu);
 
                                                 //The following is just so you get an idea of how to style cells
