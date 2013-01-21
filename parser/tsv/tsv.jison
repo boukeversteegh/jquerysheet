@@ -2,26 +2,25 @@
 
 /* lexical grammar */
 %lex
-%s d s
+%s DOUBLE_QUOTATION_ON SINGLE_QUOTATION_ON
 %%
-<d>'"' {
+<DOUBLE_QUOTATION_ON>'"' {
 	this.popState('d');
-	return 'DOUBLE_PARENTHESES';
-}
+	return 'DOUBLE_QUOTATION';
 '"' {
 	this.begin('d');
-	return 'DOUBLE_PARENTHESES';
+	return 'DOUBLE_QUOTATION';
 }
-<s>"'" {
+<SINGLE_QUOTATION_ON>"'" {
 	this.popState('s');
-	return 'SINGLE_PARENTHESES';
+	return 'SINGLE_QUOTATION';
 }
 "'" {
 	this.begin('s');
-	return 'SINGLE_PARENTHESES';
+	return 'SINGLE_QUOTATION';
 }
-<s>(\n|"\n")                        {return 'CHAR';}
-<d>(\n|"\n")                        {return 'CHAR';}
+<DOUBLE_QUOTATION_ON>(\n|"\n")      {return 'CHAR';}
+<SINGLE_QUOTATION_ON>(\n|"\n")      {return 'CHAR';}
 (\n|"\n")                           {return 'END_OF_LINE';}
 (\t)                                {return 'COLUMN';}
 (\s)								{return 'CHAR';}
@@ -78,10 +77,10 @@ columns :
 ;
 
 string :
-	DOUBLE_PARENTHESES chars DOUBLE_PARENTHESES {
+	DOUBLE_QUOTATION chars DOUBLE_QUOTATION {
 		$$ = $2;
 	}
-	| SINGLE_PARENTHESES chars SINGLE_PARENTHESES {
+	| SINGLE_QUOTATION chars SINGLE_QUOTATION {
 		$$ = $2;
 	}
 	| chars {
