@@ -654,6 +654,42 @@ jQuery.sheet = {
 		});
 	},
 
+
+	repeat: function(str, num) {
+		return new Array( num ).join( str );
+	},
+
+
+	nthCss: function(elementName, parentSelectorString, me, indexes, limit, css) {
+		var style = [];
+		css = css || '{display: none;}';
+		if (me.styleSheet) { //IE compatibility
+			for (var index in indexes) {
+				var nthColSelector = '', nthTdSelector = '';
+				if (indexes[index] > limit) {
+					nthTdSelector += jQuery.sheet.repeat('+' + elementName, indexes[index]);
+				}
+				if (nthColSelector && nthTdSelector) {
+					style.push(parentSelectorString + ' ' +  elementName + ':first-child' + nthTdSelector);
+				}
+			}
+			if (style.length) {
+				return style.join(',') + css;
+			}
+		} else {
+			for (var index in indexes) {
+				if (indexes[index] > limit) {
+					style.push(parentSelectorString + ' ' + elementName + ':nth-child(' + indexes[index] + ')');
+				}
+			}
+			if (style.length) {
+				return style.join(',') + css;
+			}
+		}
+
+		return '';
+	},
+
 	/**
 	 * The instance creator of jQuery.sheet
 	 * @methodOf jQuery.sheet
@@ -1933,37 +1969,13 @@ jQuery.sheet = {
 								indexes = indexes || [];
 
 								jS.obj.barHelper().remove();
-								var style = [];
+								var style = styleOverride || $.sheet.nthCss('col', '#' + jS.id.sheet + jS.i, this, indexes, jS.s.frozenAt.col + 1) +
+									$.sheet.nthCss('td', '#' + jS.id.sheet + jS.i + ' ' + 'tr', this, indexes, jS.s.frozenAt.col + 1);
 
-								if (this.styleSheet) { //IE compatibility
-									for (var index in indexes) {
-										var nthColSelector = '', nthTdSelector = '';
-										if (indexes[index] > (jS.s.frozenAt.col + 1)) {
-											nthColSelector += jS.repeat('+col', indexes[index]);
-											nthTdSelector += jS.repeat('+td', indexes[index]);
-										}
-										if (nthColSelector && nthTdSelector) {
-											style.push('#' + jS.id.sheet + jS.i + ' ' + 'col:first-child' + nthColSelector);
-											style.push('#' + jS.id.sheet + jS.i + ' ' + 'tr td:first-child' + nthTdSelector);
-										}
-									}
-									if (style.length || styleOverride) {
-										this.styleSheet.cssText = styleOverride || style.join(',') + '{display: none;}';
-									} else {
-										this.styleSheet.cssText = '';
-									}
+								if (this.styleSheet) {
+									this.styleSheet.cssText = style;
 								} else {
-									for (var index in indexes) {
-										if (indexes[index] > (jS.s.frozenAt.col + 1)) {
-											style.push('#' + jS.id.sheet + jS.i + ' col:nth-child(' + indexes[index] + ')');
-											style.push('#' + jS.id.sheet + jS.i + ' tr td:nth-child(' + indexes[index] + ')');
-										}
-									}
-									if (style.length || styleOverride) {
-										scrollStyleX.text(styleOverride || style.join(',') + '{display: none;}');
-									} else {
-										scrollStyleX.text('');
-									}
+									scrollStyleX.text(style);
 								}
 
 								jS.scrolledArea.col.start = indexes[0] || 1;
@@ -1975,35 +1987,12 @@ jQuery.sheet = {
 
 								jS.obj.barHelper().remove();
 
-								var style = [];
+								var style = styleOverride || $.sheet.nthCss('tr', '#' + jS.id.sheet + jS.i, this, indexes, jS.s.frozenAt.row + 1);
 
 								if (this.styleSheet) { //IE compatibility
-									for (var index in indexes) {
-										var nthSelector = '';
-										if (indexes[index]> (jS.s.frozenAt.row + 1)) {
-											nthSelector += repeat('+tr', indexes[index]);
-										}
-										if (nthSelector) {
-											style.push('#' + jS.id.sheet + jS.i + ' ' + 'tr:first-child' + nthSelector);
-										}
-									}
-									if (style.length || styleOverride) {
-										this.styleSheet.cssText = styleOverride || style.join(',') + '{display: none;}';
-									} else {
-										this.styleSheet.cssText = '';
-									}
+									this.styleSheet.cssText = style;
 								} else {
-									for (var index in indexes) {
-										if (indexes[index] > (jS.s.frozenAt.row + 1)) {
-											style.push('#' + jS.id.sheet + jS.i + ' tr:nth-child(' + indexes[index] + ')');
-										}
-									}
-
-									if (style.length || styleOverride) {
-										scrollStyleY.text(styleOverride || style.join(',') + '{display: none;}');
-									} else {
-										scrollStyleY.text('');
-									}
+									scrollStyleY.text(style);
 								}
 
 								jS.scrolledArea.row.start = indexes[0] || 1;
@@ -7105,9 +7094,6 @@ var jSE = jQuery.sheet.engine = {
 		});
 		
 		return o.chart;
-	},
-	repeat: function(str, num) {
-		return new Array( num ).join( str );
 	}
 };
 
