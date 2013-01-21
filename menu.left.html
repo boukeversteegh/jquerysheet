@@ -27,8 +27,8 @@
 					<li><a onclick="sheetInstance.deleteRow(); return false;" title="Delets the current row thats highlighted.">Delete Row</a></li>
 					<li><a onclick="sheetInstance.controlFactory.addRow(sheetInstance.cellLast.row, true); return false;" title="Inserts an additional row after currently selected row.">Insert Row Before</a></li>
 					<li><a onclick="sheetInstance.controlFactory.addRow(sheetInstance.cellLast.row); return false;" title="Inserts an additional row after currently selected row.">Insert Row After</a></li>
-					<!--<li><a onclick="sheetInstance.toggleHide.rowAll();" title="Unhides all the hidden rows.">Show All</a></li>
-					<li><a onclick="sheetInstance.toggleHide.row();" title="Hides or shows the currently selected row.">Toggle Hide Row</a></li>-->
+					<li><a onclick="sheetInstance.toggleHide.rowShowAll();" title="Show all the hidden rows.">Show All</a></li>
+					<li><a onclick="sheetInstance.toggleHide.row();" title="Hides or shows the currently selected row.">Toggle Hide Row</a></li>
 				</ul>
 			</li>
 			<li>
@@ -41,7 +41,7 @@
 					<li><a onclick="sheetInstance.controlFactory.addColumn(sheetInstance.cellLast.col); return false;" title="Inserts an additional column after currently selected column.">Insert Column After</a></li>
 					<li><a onclick="sheetInstance.fillUpOrDown(); return false;" title="Fill down current cell value.">Fill Down</a></li>
 					<li><a onclick="sheetInstance.fillUpOrDown(true); return false;" title="Fill up current cell value.">Fill Up</a></li>
-					<li><a onclick="sheetInstance.toggleHide.columnAll();" title="Unhides all the hidden columns.">Show All</a></li>
+					<li><a onclick="sheetInstance.toggleHide.columnShowAll();" title="Show all the hidden columns.">Show All</a></li>
 					<li><a onclick="sheetInstance.toggleHide.column();" title="Hides or shows the currently selected column.">Toggle Hide Column</a></li>
 				</ul>
 			</li>

@@ -381,7 +381,93 @@ jQuery.fn.extend({
 					},
 					allowCellsLineBreaks: true,
 					frozenAt: {row: 0,col: 0},
-					headerHeight: 0
+					headerHeight: 0,
+					contextmenuTopDefault: {
+						"Toggle freeze columns to here": function() {
+							var col = jS.getTdLocation(jS.obj.cellActive()).col;
+							jS.s.frozenAt.col = (jS.s.frozenAt.col == col ? 0 : col);
+						},
+						"Insert column after": function(){
+							jS.controlFactory.addColumn(jS.colLast);
+							return false;
+						},
+						"Insert column before": function(){
+							jS.controlFactory.addColumn(jS.colLast, true);
+							return false;
+						},
+						"Add column to end": function(){
+							jS.controlFactory.addColumn();
+							return false;
+						},
+						"Delete this column": function(){
+							jS.deleteColumn();
+							return false;
+						}
+					},
+					contextmenuLeftDefault: {
+						"Toggle freeze rows to here": function() {
+							var row = jS.getTdLocation(jS.obj.cellActive()).row;
+							jS.s.frozenAt.row = (jS.s.frozenAt.row == row ? 0 : row);
+						},
+						"Insert row after": function(){
+							jS.controlFactory.addRow(jS.rowLast);
+							return false;
+						},
+						"Insert row before": function(){
+							jS.controlFactory.addRow(jS.rowLast, true);
+							return false;
+						},
+						"Add row to end": function(){
+							jS.controlFactory.addRow();
+							return false;
+						},
+						"Delete this row": function(){
+							jS.deleteRow();
+							return false;
+						}
+					},
+					contextmenuCellDefault: {
+						"Insert column after": function(){
+							jS.controlFactory.addColumn(jS.colLast);
+							return false;
+						},
+						"Insert column before": function(){
+							jS.controlFactory.addColumn(jS.colLast, true);
+							return false;
+						},
+						"Add column to end": function(){
+							jS.controlFactory.addColumn();
+							return false;
+						},
+						"Delete this column": function(){
+							jS.deleteColumn();
+							return false;
+						},
+						"line1": "line",
+						"Insert row after": function(){
+							jS.controlFactory.addRow();
+							return false;
+						},
+						"Insert row before": function(){
+							jS.controlFactory.addRow(jS.rowLast, true);
+							return false;
+						},
+						"Add row to end": function(){
+							jS.controlFactory.addRow();
+							return false;
+						},
+						"Delete this row": function(){
+							jS.deleteRow();
+							return false;
+						},
+						"line2": 'line',
+						"Add spreadsheet": function() {
+							jS.addSheet('5x10');
+						},
+						"Delete spreadsheet": function() {
+							jS.deleteSheet();
+						}
+					}
 				},
 				events = jQuery.sheet.events;
 
@@ -709,6 +795,10 @@ jQuery.sheet = {
 				tabContainer: null,
 				tabs: null,
 				title: null,
+				toggleHide: {
+					x: [],
+					y: []
+				},
 				ui: null
 			},
 
@@ -759,6 +849,8 @@ jQuery.sheet = {
 				tab:				function() { return jS.controls.tab[jS.i] || $([]); },
 				tabs:				function() { return jS.controls.tabs || $([]); },
 				tabContainer:		function() { return jS.controls.tabContainer || $([]); },
+				toggleHideStyleX:   function() { return jS.controls.toggleHide.x[jS.i] || $([]); },
+				toggleHideStyleY:   function() { return jS.controls.toggleHide.y[jS.i] || $([]); },
 				title:				function() { return jS.controls.title || $([]); },
 				ui:					function() { return jS.controls.ui || $([]); }
 			},
@@ -798,6 +890,8 @@ jQuery.sheet = {
 				sheet: 				'jS_' + I + '_',
 				tab:				'jSTab_' + I + '_',
 				tabContainer:		'jSTabContainer_' + I,
+				toggleHideStyleX:   'jSToggleHideX_' + I + '_',
+				toggleHideStyleY:   'jSToggleHideY_' + I + '_',
 				title:				'jSTitle_' + I,
 				ui:					'jSUI_' + I
 			},
@@ -870,7 +964,7 @@ jQuery.sheet = {
 			 * @name msg
 			 * @type {Object}
 			 */
-			msg: { /*msg = messages used throught sheet, for easy access to change them for other languages*/
+			msg: {
 				addRowMulti: 			"How many rows would you like to add?",
 				addColumnMulti: 		"How many columns would you like to add?",
 				cellFind:               "What are you looking for in this spreadsheet?",
@@ -882,18 +976,6 @@ jQuery.sheet = {
 				toggleHideRow:			"No row selected.",
 				toggleHideColumn: 		"Now column selected.",
 				loopDetected:           "Loop Detected",
-				menuFreezeColumnToHere: "Toggle freeze columns to here",
-				menuFreezeRowToHere:    "Toggle freeze rows to here",
-				menuInsertColumnAfter: 	"Insert column after",
-				menuInsertColumnBefore: "Insert column before",
-				menuAddColumnEnd:		"Add column to end",
-				menuDeleteColumn:		"Delete this column",
-				menuInsertRowAfter: 	"Insert row after",
-				menuInsertRowBefore:	"Insert row before",
-				menuAddRowEnd:			"Add row to end",
-				menuDeleteRow:			"Delete this row",
-				menuAddSheet:			"Add spreadsheet",
-				menuDeleteSheet:		"Delete spreadsheet",
 				newSheetTitle:          "What would you like the sheet's title to be?",
 				notFoundColumn:         "Column not found",
 				notFoundRow:            "Row not found",
@@ -1454,19 +1536,6 @@ jQuery.sheet = {
 				 */
 				makeMenu: function(bar, menuItems) {
 					var menu;
-					function addLink(msg, fn) {
-						switch (msg) {
-							case "line":
-								$('<hr />').appendTo(menu);
-								break;
-							default:
-								$('<div>' + msg + '</div>').click(function() {
-									fn();
-									return false;
-								}).appendTo(menu);
-						}
-							
-					}
 					
 					switch (bar) {
 						case "top":
@@ -1490,8 +1559,19 @@ jQuery.sheet = {
 						.appendTo($body)
 						.hide();
 					
-					$(menuItems).each(function() {
-						addLink(this.msg, this.fn);
+					$.each(menuItems, function(i) {
+						if ($.isFunction(menuItems[i])) {
+							$('<div />')
+								.text(i)
+								.click(function() {
+									menuItems[i]();
+									return false;
+								})
+								.appendTo(menu);
+
+						} else if (menuItems[i] == 'line') {
+							$('<hr />').appendTo(menu);
+						}
 					});
 					
 					return menu;
@@ -1518,37 +1598,7 @@ jQuery.sheet = {
 						var menu = jS.obj.barMenuTop().hide();
 						
 						if (!menu.length) {
-							menu = jS.controlFactory.makeMenu('top', [{
-								msg: jS.msg.menuFreezeColumnToHere,
-								fn: function() {
-									var col = jS.getTdLocation(jS.obj.cellActive()).col;
-									jS.s.frozenAt.col = (jS.s.frozenAt.col == col ? 0 : col);
-								}
-							}, {
-								msg: jS.msg.menuInsertColumnAfter,
-								fn: function(){
-									jS.controlFactory.addColumn(jS.colLast);
-									return false;
-								}
-							}, {
-								msg: jS.msg.menuInsertColumnBefore,
-								fn: function(){
-									jS.controlFactory.addColumn(jS.colLast, true);
-									return false;
-								}
-							}, {
-								msg: jS.msg.menuAddColumnEnd,
-								fn: function(){
-									jS.controlFactory.addColumn();
-									return false;
-								}
-							}, {
-								msg: jS.msg.menuDeleteColumn,
-								fn: function(){
-									jS.deleteColumn();
-									return false;
-								}
-							}]);
+							menu = jS.controlFactory.makeMenu('top', s.contextmenuTopDefault);
 						}
 						
 						if (!target) {
@@ -1609,37 +1659,7 @@ jQuery.sheet = {
 						menu = jS.obj.barMenuLeft();
 						
 						if (!menu.length) {
-							menu = jS.controlFactory.makeMenu('left', [{
-									msg: jS.msg.menuFreezeRowToHere,
-									fn: function() {
-										var row = jS.getTdLocation(jS.obj.cellActive()).row;
-										jS.s.frozenAt.row = (jS.s.frozenAt.row == row ? 0 : row);
-									}
-								}, {
-									msg: jS.msg.menuInsertRowAfter,
-									fn: function(){
-										jS.controlFactory.addRow(jS.rowLast);
-										return false;
-									}
-								}, {
-									msg: jS.msg.menuInsertRowBefore,
-									fn: function(){
-										jS.controlFactory.addRow(jS.rowLast, true);
-										return false;
-									}
-								}, {
-									msg: jS.msg.menuAddRowEnd,
-									fn: function(){
-										jS.controlFactory.addRow();
-										return false;
-									}
-								}, {
-									msg: jS.msg.menuDeleteRow,
-									fn: function(){
-										jS.deleteRow();
-										return false;
-									}
-								}]);
+							menu = jS.controlFactory.makeMenu('left', s.contextmenuLeftDefault);
 						}
 						
 						menu
@@ -1657,6 +1677,7 @@ jQuery.sheet = {
 					corner: function() {}
 				},
 
+
 				/**
 				 * Creates contextual menus for cells (a right click menu)
 				 * @param {Object} e jQuery event
@@ -1671,69 +1692,7 @@ jQuery.sheet = {
 					var menu = jS.obj.cellMenu();
 					
 					if (!menu.length) {
-						menu = jS.controlFactory.makeMenu('cell', [{
-								msg: jS.msg.menuInsertColumnAfter,
-								fn: function(){
-									jS.controlFactory.addColumn(jS.colLast);
-									return false;
-								}
-							}, {
-								msg: jS.msg.menuInsertColumnBefore,
-								fn: function(){
-									jS.controlFactory.addColumn(jS.colLast, true);
-									return false;
-								}
-							}, {
-								msg: jS.msg.menuAddColumnEnd,
-								fn: function(){
-									jS.controlFactory.addColumn();
-									return false;
-								}
-							}, {
-								msg: jS.msg.menuDeleteColumn,
-								fn: function(){
-									jS.deleteColumn();
-									return false;
-								}
-							}, {
-								msg: "line"
-							},{
-								msg: jS.msg.menuInsertRowAfter,
-								fn: function(){
-									jS.controlFactory.addRow();
-									return false;
-								}
-							}, {
-								msg: jS.msg.menuInsertRowBefore,
-								fn: function(){
-									jS.controlFactory.addRow(jS.rowLast, true);
-									return false;
-								}
-							}, {
-								msg: jS.msg.menuAddRowEnd,
-								fn: function(){
-									jS.controlFactory.addRow();
-									return false;
-								}
-							}, {
-								msg: jS.msg.menuDeleteRow,
-								fn: function(){
-									jS.deleteRow();
-									return false;
-								}
-							}, {
-								msg: 'line'
-							}, {
-								msg: jS.msg.menuAddSheet,
-								fn: function() {
-									jS.addSheet('5x10');
-								}
-							}, {
-								msg: jS.msg.menuDeleteSheet,
-								fn: function() {
-									jS.deleteSheet();
-								}
-							}]);
+						menu = jS.controlFactory.makeMenu('cell', s.contextmenuCellDefault);
 					}
 					
 					menu
@@ -1741,6 +1700,7 @@ jQuery.sheet = {
 						.css('top', (e.pageY - 5) + 'px')
 						.show();
 				},
+
 
 				/**
 				 * Creates the control/container for everything above the spreadsheet, removes them if they already exist
@@ -1799,12 +1759,20 @@ jQuery.sheet = {
 							jS.controls.menuLeft[jS.i] = $('<td id="' + jS.id.menuLeft + '" class="' + jS.cl.menu + ' ' + jS.cl.menuFixed + '" />')
 								.append(makeMenu(s.menuLeft))
 								.prependTo(firstRowTr);
+
+							jS.controls.menuLeft[jS.i].find('img').load(function() {
+								jS.sheetSyncSize();
+							});
 						}
 
 						if (s.menuRight) {
 							jS.controls.menuRight[jS.i] = $('<td id="' + jS.id.menuRight + '" class="' + jS.cl.menu + ' ' + jS.cl.menuFixed + '" />')
 								.append(makeMenu(s.menuRight))
 								.appendTo(firstRowTr);
+
+							jS.controls.menuRight[jS.i].find('img').load(function() {
+								jS.sheetSyncSize();
+							});
 						}
 
 						var label = $('<td id="' + jS.id.label + '" class="' + jS.cl.label + '"></td>');
@@ -1959,11 +1927,6 @@ jQuery.sheet = {
 							.disableSelectionSpecial();
 					jS.controls.scrolls = jS.obj.scrolls().add(scroll);
 
-					function repeat( str, num )
-					{
-						return new Array( num ).join( str );
-					}
-
 					var scrollChild = scroll.children(),
 						scrollStyleX = jS.controls.bar.x.scroll[jS.i] = $('<style type="text/css" id="' + jS.id.scrollStyleX + jS.i + '"></style>')
 							.bind('updateStyle', function(e, indexes, styleOverride) {
@@ -1976,8 +1939,8 @@ jQuery.sheet = {
 									for (var index in indexes) {
 										var nthColSelector = '', nthTdSelector = '';
 										if (indexes[index] > (jS.s.frozenAt.col + 1)) {
-											nthColSelector += repeat('+col', indexes[index]);
-											nthTdSelector += repeat('+td', indexes[index]);
+											nthColSelector += jS.repeat('+col', indexes[index]);
+											nthTdSelector += jS.repeat('+td', indexes[index]);
 										}
 										if (nthColSelector && nthTdSelector) {
 											style.push('#' + jS.id.sheet + jS.i + ' ' + 'col:first-child' + nthColSelector);
@@ -2131,6 +2094,28 @@ jQuery.sheet = {
 					});
 				},
 
+				hide: function(enclosure, pane, sheet) {
+					pane = pane || jS.obj.pane();
+
+					jS.controls.toggleHide.y[jS.i] = $('<style id="' + jS.id.toggleHideStyleY + jS.i + '"></style>')
+						.appendTo(pane)
+						.bind('update', function(e, ids) {
+							var style = [];
+
+							jS.toggleHide.hiddenRows[jS.i].each(function() {
+								style.push('#' + jS.id.sheet + jS.i + ' tr:nth-child(' + (this.rowIndex + 1) + ')');
+							});
+
+							jS.controls.toggleHide.y[jS.i].text(style.join(',') + '{display:none;}');
+						});
+
+					jS.controls.toggleHide.x[jS.i] = $('<style id="' + jS.id.toggleHideStyleX + jS.i + '"></style>')
+						.appendTo(pane)
+						.bind('update', function() {
+
+						});
+				},
+
 				/**
 				 * Creates the spreadsheet user interface
 				 * @param {jQuery|HTMLElement} sheet raw table
@@ -2156,6 +2141,8 @@ jQuery.sheet = {
 						pane = jS.obj.pane().html(sheet);
 
 					jS.controlFactory.scroll(enclosure, pane, sheet);
+
+					jS.controlFactory.hide(enclosure, pane, sheet)
 
 					if (jS.isSheetEditable()) {
 						var autoFiller = jS.controlFactory.autoFiller();
@@ -3272,6 +3259,8 @@ jQuery.sheet = {
 
 				var tds = jS.controls.bar.x.td[jS.i];
 
+				if (!tds) return;
+
 				for (var i = start; i < tds.length; i++) {
 					if (i) {//greater than 1 (corner)
 						$(tds[i]).text(jSE.columnLabelString(i));
@@ -3290,6 +3279,8 @@ jQuery.sheet = {
 				start = start || 0;
 
 				var tds = jS.controls.bar.y.td[jS.i];
+
+				if (!tds) return;
 
 				for (var i = start; i < tds.length; i++) {
 					if (i) {
@@ -3534,28 +3525,32 @@ jQuery.sheet = {
 			 * @name toggleHide
 			 */
 			toggleHide: {
+				hiddenRows: [],
 				row: function(i) {
-					if (!i) {//If i is empty, lets get the current row
-						i = jS.obj.cellActive().parent().attr('rowIndex');
-					}
-					if (i) {//Make sure that i equals something
-						var o = jS.obj.barLeft(i);
-						if (o.is(':visible')) {//This hides the current row
-							o.hide();
-							jS.obj.sheet().find('tr').eq(i).hide();
-						} else {//This unhides
-							//This unhides the currently selected row
-							o.show();
-							jS.obj.sheet().find('tr').eq(i).show();
-						}
+					i = i || jS.rowLast;
+					var row = $(jS.rows()[i]),
+						style = [];
+
+					if (!this.hiddenRows[jS.i]) this.hiddenRows[jS.i] = $([]);
+
+					if (row.length && row.is(':visible')) {
+						this.hiddenRows[jS.i] = this.hiddenRows[jS.i].add(row);
 					} else {
-						alert(jS.msg.toggleHideRow);
+						this.hiddenRows[jS.i].each(function(j) {
+							if (row.is(this)) {
+								this.hiddenRows[jS.i].splice(j, 1);
+							}
+						});
 					}
+
+					jS.obj.toggleHideStyleY().trigger('update')
 				},
-				rowAll: function() {
-					jS.obj.sheet().find('tr').show();
-					jS.obj.barLefts().show();
+				rowShowAll: function() {
+					jS.obj.toggleHideStyleY().html('');
+					this.hiddenRows[jS.i] = $([]);
 				},
+
+				hiddenColumns: [],
 				column: function(i) {
 					if (!i) {
 						i = jS.obj.cellActive().attr('cellIndex');
@@ -3575,7 +3570,7 @@ jQuery.sheet = {
 					}
 				},
 				columnAll: function() {
-				
+
 				}
 			},
 
@@ -7110,6 +7105,9 @@ var jSE = jQuery.sheet.engine = {
 		});
 		
 		return o.chart;
+	},
+	repeat: function(str, num) {
+		return new Array( num ).join( str );
 	}
 };
 
