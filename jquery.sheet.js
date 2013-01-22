@@ -3567,7 +3567,6 @@ jQuery.sheet = {
 			 */
 			toggleHide: {
 				hiddenRows: [],
-				rowIndexOffset: [],
 				row: function(i) {
 					i = i || jS.rowLast;
 					var row = jS.rows()[i],
@@ -3575,25 +3574,15 @@ jQuery.sheet = {
 						style = [];
 
 					if (!this.hiddenRows[jS.i]) this.hiddenRows[jS.i] = [];
-					if (!this.rowIndexOffset[jS.i]) this.rowIndexOffset[jS.i] = [];
 
 					if ($row.length && !$row.data('hidden')) {
 						$row.data('hidden', true);
 						this.hiddenRows[jS.i].push(i + 1);
-						/*for (var j = 1; j <= i; j++) {
-							if (!this.rowIndexOffset[jS.i][j]) this.rowIndexOffset[jS.i][j] = 0;
-							this.rowIndexOffset[jS.i][j]++;
-						}*/
 					} else {
 						$.each(this.hiddenRows[jS.i], function(j) {
 							if ($row.is(this)) {
 								$row.removeData('hidden');
 								jS.toggleHide.hiddenRows[jS.i].splice(j, 1);
-								/*for (var h = 1; h <= i; h++) {
-									if (!this.rowIndexOffset[jS.i][h]) this.rowIndexOffset[jS.i][h] = 1;
-									this.rowIndexOffset[jS.i][h]--;
-									this.rowIndexOffset[jS.i][h] = Math.max(this.rowIndexOffset[jS.i][h], 0);
-								}*/
 							}
 						});
 					}
@@ -3658,21 +3647,33 @@ jQuery.sheet = {
 					var merged = jS.merged[jS.i + '_' + tdFirstLoc.row + '_' + tdFirstLoc.col];
 
 					for (var row = tdFirstLoc.row; row <= tdLastLoc.row; row++) {
-						if (row) rowI++;
+						if (row) {
+							rowI++;
+						}
 						for (var col = tdFirstLoc.col; col <= tdLastLoc.col; col++) {
-							if (row == tdFirstLoc.row) colI++;
-							var td = jS.getTd(jS.i, tdLastLoc.row, col),
-								cell = jS.spreadsheets[jS.i][row][col];
+							if (row == tdFirstLoc.row) {
+								colI++;
+							}
+							var td = jS.getTd(jS.i, row, col),
+								cell = jS.spreadsheets[jS.i][row][col],
+								cellLeft = jS.spreadsheets[jS.i][row][tdFirstLoc.col - 1] || jS.spreadsheets[jS.i][row][tdFirstLoc.col],
+								cellRight = jS.spreadsheets[jS.i][row][tdLastLoc.col + 1] || jS.spreadsheets[jS.i][row][tdLastLoc.col],
+								cellUp = jS.spreadsheets[jS.i][tdLastLoc.row - 1][tdLastLoc.col] || jS.spreadsheets[jS.i][tdLastLoc.row][tdLastLoc.col],
+								cellDown = jS.spreadsheets[jS.i][tdLastLoc.row + 1][tdLastLoc.col] || jS.spreadsheets[jS.i][tdLastLoc.row][tdLastLoc.col];
 
 							merged.push(cell);
 
 							cellsValue.push(cell.formula ? "(" + cell.formula.substring(1) + ")" : cell.value);
 
-							if (col != tdFirstLoc.col) {
+							if (col != tdFirstLoc.col || row != tdFirstLoc.row) {
 								cell.formula = null;
 								cell.value = '';
 								cell.html = '';
 								cell.defer = firstCell;
+								cell.right = cellRight;
+								cell.down = cellDown;
+								cell.left = cellLeft;
+								cell.up = cellUp;
 
 								td
 									.removeData('formula')
@@ -3690,8 +3691,8 @@ jQuery.sheet = {
 
 					tds.first()
 						.show()
-						.attr('rowspan', rowI)
-						.attr('colspan', colI);
+						.attr('rowSpan', rowI)
+						.attr('colSpan', colI);
 
 					jS.calcDependencies(jS.i, tdFirstLoc.row, tdFirstLoc.col);
 					jS.evt.cellEditDone();
@@ -3706,24 +3707,25 @@ jQuery.sheet = {
 			unmerge: function() {
 				var td = jS.obj.cellHighlighted().first();
 				var loc = jS.getTdLocation(td);
-				var cellFirst = jS.spreadsheets[jS.i][loc.row][loc.col]
+				var cellFirst = jS.spreadsheets[jS.i][loc.row][loc.col];
 				var formula = td.data('formula');
 
-				var rowMax = Math.max(td.attr('rowspan'), 1);
-				var colMax = Math.max(td.attr('colspan'), 1);
+				var rowMax = Math.max(td.attr('rowSpan') * 1, 1);
+				var colMax = Math.max(td.attr('colSpan') * 1, 1);
 
 				for (var row = loc.row; row <= loc.row + rowMax; row++) {
 					for (var col = loc.col; col <= loc.col + colMax; col++) {
-						jS.getTd(jS.i, row, row).show();
-						var cell = jS.spreadsheets[jS.i][row][col];
-						cell.defer = '';
+						var td = jS.getTd(jS.i, row, col)
+								.show()
+								.removeAttr('colSpan')
+								.removeAttr('rowSpan'),
+							cell = jS.spreadsheets[jS.i][row][col];
+
+						cell.up = cell.down = cell.left = cell.right = cell.defer = null;
+
 						jS.calcDependencies(jS.i, row, col);
 					}
 				}
-
-				td
-					.removeAttr('colspan')
-					.removeAttr('rowspan');
 
 				jS.setDirty(true);
 				jS.setChanged(true);
