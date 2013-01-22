@@ -53,19 +53,19 @@
                 //Here is where we initiate the sheets
                 //every time sheet is created it creates a new jQuery.sheet.instance (array), to manipulate each sheet, the jQuery object is returned
 
-	            window.loadSheet = function (url) {
-                    var urls = {tables: url, menuLeft: 'menu.left.html', menuRight: 'menu.right.html'}, results = {}, loadCount = 3, loaded = 0;
+	            window.loadSheet = function (obj, url) {
+                    var urls = {tables: url || $(obj).attr('href'), menuLeft: 'menu.left.html', menuRight: 'menu.right.html'}, results = {}, loadCount = 3, loaded = 0;
 
                     for(var type in urls) {
                         var tempUrl = urls[type] + (type == 'tables' ? ' #sheetParent table' : '');
                         $('<div />')
-                                .data('url', urls[type])
+                                .data('type', type)
                                 .load(tempUrl, function() {
-                            results[$(this).data('url')] = $(this).html();
+                            results[$(this).data('type')] = $(this).html();
                             loaded++;
                             if (loadCount == loaded) {
                                 $('#sheet')
-                                        .html(results[url])
+                                        .html(results.tables)
                                         .sheet({
                                             sheetFullScreen: function(e, jS) {
                                                 console.log($(this).isSheetFullScreen());
@@ -75,11 +75,11 @@
                                             },
                                             title: 'Spreadsheet Playground',
                                             menuLeft: function(jS) {
-                                                return  results['menu.left.html'].replace(/sheetInstance/g, "$.sheet.instance[" + jS.I + "]");
+                                                return  results.menuLeft.replace(/sheetInstance/g, "$.sheet.instance[" + jS.I + "]");
                                             },
                                             menuRight: function (jS){
                                                 //we want to be able to edit the html for the menu to make them multi-instance
-                                                var menu = results['menu.right.html'].replace(/sheetInstance/g, "$.sheet.instance[" + jS.I + "]");
+                                                var menu = results.menuRight.replace(/sheetInstance/g, "$.sheet.instance[" + jS.I + "]");
                                                 menu = $(menu);
 
                                                 //The following is just so you get an idea of how to style cells
@@ -102,7 +102,15 @@
                     }
 	            };
 
-	            loadSheet('examples/charts.html');
+	            loadSheet({}, 'examples/charts.html');
+
+                $('#pseudoSheetsMoreInfo').click(function() {
+                    $(this).next().dialog({
+                        title: "What is a pseudo sheet?",
+                        modal: true
+                    });
+                })
+                    .next().hide();
             });
         </script>
         <!--Page styles-->
@@ -178,40 +186,40 @@
                             <span id="themeSwitcher"></span>
                             <ul style="padding-left: 15px;">
                                 <li>
-                                    <a href="#" onclick="loadSheet('examples/charts.html');return false;">Charts</a>
+                                    <a href="examples/charts.html" onclick="loadSheet(this);return false;">Charts</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="loadSheet('examples/inputs.html');return false;">Inputs</a>
+                                    <a href="examples/inputs.html" onclick="loadSheet(this);return false;">Inputs</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="loadSheet('examples/dates.html');return false;">Dates</a>
+                                    <a href="examples/dates.html" onclick="loadSheet(this);return false;">Dates</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="loadSheet('examples/empty.html');return false;">Empty</a>
+                                    <a href="examples/empty.html" onclick="loadSheet(this);return false;">Empty</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="loadSheet('examples/financial.html');return false;">Financial</a>
+                                    <a href="examples/financial.html" onclick="loadSheet(this);return false;">Financial</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="loadSheet('examples/information.html');return false;">Information</a>
+                                    <a href="examples/information.html" onclick="loadSheet(this);return false;">Information</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="loadSheet('examples/logical.html');return false;">Logical</a>
+                                    <a href="examples/logical.html" onclick="loadSheet(this);return false;">Logical</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="loadSheet('examples/math.html'); return false;">Math</a>
+                                    <a href="examples/math.html" onclick="loadSheet(this); return false;">Math</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="loadSheet('examples/mild.stress.test.html'); return false;">Mild Stress Test</a>
+                                    <a href="examples/mild.stress.test.html" onclick="loadSheet(this); return false;">Mild Stress Test</a>
                                </li>
                                 <li>
-                                    <a href="#" onclick="loadSheet('examples/mortgage.estimator.html'); return false;">Mortgage Estimator</a>
+                                    <a href="examples/mortgage.estimator.html" onclick="loadSheet(this); return false;">Mortgage Estimator</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="loadSheet('examples/statistical.html'); return false;">Statistical</a>
+                                    <a href="examples/statistical.html" onclick="loadSheet(this); return false;">Statistical</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="loadSheet('examples/string.html'); return false;">String</a>
+                                    <a href="examples/string.html" onclick="loadSheet(this); return false;">String</a>
                                 </li>
                                 <li>
                                     <a href="examples/json.test.html">Json Data Transformation Service</a>
@@ -220,7 +228,10 @@
                                     <a href="examples/xml.test.html">XML Data Transformation Service</a>
                                 </li>
                             </ul>
-                            <h2 style="width: 100%; text-align: center;">Pseudo Sheets<a href="">(?)<a/></h2>
+                            <h2 style="width: 100%; text-align: center;">Pseudo Sheets
+                                <a href="#" id="pseudoSheetsMoreInfo">(?)<a/>
+                                <span>jQuery.pseudoSheet is a new sister plugin to jQuery.sheet that applies the functionality of a spreadsheet to elements within a web page without the spreadsheet interface.</span>
+                            </h2>
                             <ul style="padding-left: 15px;">
                                 <li>
                                     <a href="examples/pseudosheet.html">jQuery.pseudoSheet</a>
