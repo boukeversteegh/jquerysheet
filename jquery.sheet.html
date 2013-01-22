@@ -81,11 +81,11 @@
 
                                                 //The following is just so you get an idea of how to style cells
                                                 menu.find('.colorPickerCell').colorPicker().change(function(){
-                                                    $.sheet.instance[I].cellChangeStyle('background-color', $(this).val());
+                                                    $.sheet.instance[jS.I].cellChangeStyle('background-color', $(this).val());
                                                 });
 
                                                 menu.find('.colorPickerFont').colorPicker().change(function(){
-                                                    $.sheet.instance[I].cellChangeStyle('color', $(this).val());
+                                                    $.sheet.instance[jS.I].cellChangeStyle('color', $(this).val());
                                                 });
 
                                                 menu.find('.colorPickers').children().eq(1).css('background-image', "url('images/palette.png')");

@@ -15,10 +15,7 @@
 		$.sheet.preLoad('../');
         $(function() {
             $('#sheetParent').sheet({
-                buildSheet: true,
-                inlineMenu: $('<div />'),
-                autoFiller: true,
-                urlMenu: '../menu.html'
+                allowCellsLineBreaks: false
             });
         });
     </script>

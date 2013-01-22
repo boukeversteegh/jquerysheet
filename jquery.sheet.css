@@ -30,7 +30,6 @@
 .jSBarHelper {
 	float: right;
 	position: relative;
-	z-index: 99999;
 	height: 0px;
 	border: none ! important;
 	left: -20px;
@@ -39,7 +38,6 @@
 }
 .jSBarHelper * {
 	position: absolute;
-	z-index: 99999;
 	cursor: pointer;
 	height: 12px;
 	width: 14px;
@@ -156,7 +154,6 @@
 	overflow: scroll;
 	height: inherit;
 	width: inherit;
-	z-index: 3;
 }
 
 /* Sheet styling */
@@ -224,7 +221,6 @@
 	background-image: none ! important;
 	border-width: 0px;
 	position: absolute ! important;
-	z-index: 5;
 }
 /* Bar item styling */
 
@@ -281,7 +277,6 @@
 {
 	position: absolute;
 	background-image: none ! important;
-	z-index: 9;
 }
 
 .colorPickers *
@@ -311,7 +306,6 @@
 	left: 0px;
 	cursor: crosshair ! important;
 	display: none;
-	z-index: 10;
 }
 
 .jSTitle

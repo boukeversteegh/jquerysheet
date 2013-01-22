@@ -324,6 +324,28 @@ jQuery.fn.extend({
 	 *
 	 * frozenAt {Object} default {row: 0,col: 0}, Gives the ability to freeze cells at a certain row/col
 	 *
+	 * contextmenuTop {Object} default is standard list of commands for context menus when right click or click on menu dropdown
+	 *      Javascript example:
+	 *          {
+	 *              "What I want my command to say": function() {}
+	 *          }
+	 *
+	 * contextmenuLeft {Object} default is standard list of commands for context menus when right click
+	 *      Javascript example:
+	 *          {
+	 *              "What I want my command to say": function() {}
+	 *          }
+	 *
+	 * contextmenuCell {Object} default is standard list of commands for context menus when right click or click on menu dropdown
+	 *      Javascript example:
+	 *          {
+	 *              "What I want my command to say": function() {}
+	 *          }
+	 *
+	 * hiddenRows {Array} default [], Hides certain rows from being displayed initially. [sheet Index][row index]. example: [[1]] hides first row in first spreadsheet; [[],[1]] hides first row in second spreadsheet
+	 *
+	 * hiddenColumns {Array} default [], Hides certain columns from being displayed initially. [sheet Index][column index]. example: [[1]] hides first column in first spreadsheet; [[],[1]] hides first column in second spreadsheet
+	 *
 	 * @methodOf jQuery.fn
 	 * @namespace
 	 *
@@ -381,8 +403,7 @@ jQuery.fn.extend({
 					},
 					allowCellsLineBreaks: true,
 					frozenAt: {row: 0,col: 0},
-					headerHeight: 0,
-					contextmenuTopDefault: {
+					contextmenuTop: {
 						"Toggle freeze columns to here": function() {
 							var col = jS.getTdLocation(jS.obj.cellActive()).col;
 							jS.s.frozenAt.col = (jS.s.frozenAt.col == col ? 0 : col);
@@ -404,7 +425,7 @@ jQuery.fn.extend({
 							return false;
 						}
 					},
-					contextmenuLeftDefault: {
+					contextmenuLeft: {
 						"Toggle freeze rows to here": function() {
 							var row = jS.getTdLocation(jS.obj.cellActive()).row;
 							jS.s.frozenAt.row = (jS.s.frozenAt.row == row ? 0 : row);
@@ -426,7 +447,7 @@ jQuery.fn.extend({
 							return false;
 						}
 					},
-					contextmenuCellDefault: {
+					contextmenuCell: {
 						"Insert column after": function(){
 							jS.controlFactory.addColumn(jS.colLast);
 							return false;
@@ -467,7 +488,9 @@ jQuery.fn.extend({
 						"Delete spreadsheet": function() {
 							jS.deleteSheet();
 						}
-					}
+					},
+					hiddenRows: [],
+					hiddenColumns: []
 				},
 				events = jQuery.sheet.events;
 
@@ -1640,7 +1663,7 @@ jQuery.sheet = {
 						var menu = jS.obj.barMenuTop().hide();
 						
 						if (!menu.length) {
-							menu = jS.controlFactory.makeMenu('top', s.contextmenuTopDefault);
+							menu = jS.controlFactory.makeMenu('top', s.contextmenuTop);
 						}
 
 						if (!target) {
@@ -1701,7 +1724,7 @@ jQuery.sheet = {
 						menu = jS.obj.barMenuLeft();
 						
 						if (!menu.length) {
-							menu = jS.controlFactory.makeMenu('left', s.contextmenuLeftDefault);
+							menu = jS.controlFactory.makeMenu('left', s.contextmenuLeft);
 						}
 
 						menu
@@ -1734,7 +1757,7 @@ jQuery.sheet = {
 					var menu = jS.obj.cellMenu();
 					
 					if (!menu.length) {
-						menu = jS.controlFactory.makeMenu('cell', s.contextmenuCellDefault);
+						menu = jS.controlFactory.makeMenu('cell', s.contextmenuCell);
 					}
 
 					menu
@@ -1756,10 +1779,6 @@ jQuery.sheet = {
 					var header = jS.controls.header = $('<div id="' + jS.id.header + '" class="' + jS.cl.header + '"></div>'),
 						firstRow = $('<table><tr /></table>').prependTo(header),
 						firstRowTr = $('<tr />');
-
-					if (jS.s.headerHeight) {
-						header.height(jS.s.headerHeight);
-					}
 
 					if (s.title) {
 						if ($.isFunction(s.title)) {
@@ -1965,7 +1984,7 @@ jQuery.sheet = {
 
 								jS.autoFillerGoToTd();
 							})
-							.appendTo(enclosure)
+							.prependTo(enclosure)
 							.disableSelectionSpecial();
 					jS.controls.scrolls = jS.obj.scrolls().add(scroll);
 
@@ -2116,6 +2135,18 @@ jQuery.sheet = {
 									toggleHideStyleX.text(style);
 								}
 							});
+
+					if (s.hiddenRows[jS.i]) {
+						for(var row in s.hiddenRows[jS.i]) {
+							jS.toggleHide.row(s.hiddenRows[jS.i][row]);
+						}
+					}
+
+					if (s.hiddenColumns[jS.i]) {
+						for(var col in s.hiddenColumns[jS.i]) {
+							jS.toggleHide.column(s.hiddenColumns[jS.i][col]);
+						}
+					}
 				},
 
 				/**
@@ -2143,8 +2174,6 @@ jQuery.sheet = {
 						pane = jS.obj.pane().html(sheet);
 
 					jS.controlFactory.scroll(enclosure, pane, sheet);
-
-					jS.controlFactory.hide(enclosure, pane, sheet)
 
 					if (jS.isSheetEditable()) {
 						var autoFiller = jS.controlFactory.autoFiller();
@@ -2250,6 +2279,8 @@ jQuery.sheet = {
 					jS.checkMinSize(sheet);
 
 					jS.controlFactory.tab();
+
+					jS.controlFactory.hide(enclosure, pane, sheet);
 
 					jS.setChanged(true);
 
@@ -3542,21 +3573,23 @@ jQuery.sheet = {
 					if (!this.hiddenRows[jS.i]) this.hiddenRows[jS.i] = [];
 					if (!this.rowIndexOffset[jS.i]) this.rowIndexOffset[jS.i] = [];
 
-					if ($row.length && $row.is(':visible')) {
+					if ($row.length && !$row.data('hidden')) {
+						$row.data('hidden', true);
 						this.hiddenRows[jS.i].push(i + 1);
-						for (var j = 1; j <= i; j++) {
+						/*for (var j = 1; j <= i; j++) {
 							if (!this.rowIndexOffset[jS.i][j]) this.rowIndexOffset[jS.i][j] = 0;
 							this.rowIndexOffset[jS.i][j]++;
-						}
+						}*/
 					} else {
-						this.hiddenRows[jS.i].each(function(j) {
+						$.each(this.hiddenRows[jS.i], function(j) {
 							if ($row.is(this)) {
+								$row.removeData('hidden');
 								jS.toggleHide.hiddenRows[jS.i].splice(j, 1);
-								for (var h = 1; h <= i; h++) {
+								/*for (var h = 1; h <= i; h++) {
 									if (!this.rowIndexOffset[jS.i][h]) this.rowIndexOffset[jS.i][h] = 1;
 									this.rowIndexOffset[jS.i][h]--;
 									this.rowIndexOffset[jS.i][h] = Math.max(this.rowIndexOffset[jS.i][h], 0);
-								}
+								}*/
 							}
 						});
 					}
