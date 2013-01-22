@@ -386,7 +386,7 @@ jQuery.fn.extend({
 						"Toggle freeze columns to here": function() {
 							var col = jS.getTdLocation(jS.obj.cellActive()).col;
 							jS.s.frozenAt.col = (jS.s.frozenAt.col == col ? 0 : col);
-				},
+						},
 						"Insert column after": function(){
 							jS.controlFactory.addColumn(jS.colLast);
 							return false;
@@ -489,10 +489,10 @@ jQuery.fn.extend({
 
 			if (!jQuery.sheet.instance.length) jQuery.sheet.instance = $([]);
 
-			var instance = jQuery.sheet.createInstance(jQuery, jQuery.extend(defaults, settings), jQuery.sheet.instance.length);
-			jQuery.sheet.instance = jQuery.sheet.instance.add(instance);
+			jS = jQuery.sheet.createInstance(jQuery, jQuery.extend(defaults, settings), jQuery.sheet.instance.length);
+			jQuery.sheet.instance = jQuery.sheet.instance.add(jS);
 
-			me.data('sheetInstance', instance);
+			me.data('sheetInstance', jS);
 		});
 		return this;
 	},
@@ -669,7 +669,7 @@ jQuery.sheet = {
 		if (me.styleSheet) { //IE compatibility
 			for (var index in indexes) {
 				var nthColSelector = '', nthTdSelector = '';
-				if (indexes[index] > limit) {
+				if (indexes[index] >= limit) {
 					nthTdSelector += jQuery.sheet.repeat('+' + elementName, indexes[index]);
 				}
 				if (nthColSelector && nthTdSelector) {
@@ -681,7 +681,7 @@ jQuery.sheet = {
 			}
 		} else {
 			for (var index in indexes) {
-				if (indexes[index] > limit) {
+				if (indexes[index] >= limit) {
 					style.push(parentSelectorString + ' ' + elementName + ':nth-child(' + indexes[index] + ')');
 				}
 			}
@@ -1096,11 +1096,12 @@ jQuery.sheet = {
 			 * @param {String} formula
 			 * @param {Integer} calcCount
 			 * @param {Date} calcLast
+			 * @param {Date} calcDependenciesLast
 			 * @returns {Object} cell
 			 * @methodOf jS
 			 * @name createCell
 			 */
-			createCell: function(td, sheet, row, col, value, formula, calcCount, calcLast) {
+			createCell: function(td, sheet, row, col, value, formula, calcCount, calcLast, calcDependenciesLast) {
 				//first create cell
 				if (!jS.spreadsheets[sheet]) jS.spreadsheets[sheet] = [];
 				if (!jS.spreadsheets[sheet][row]) jS.spreadsheets[sheet][row] = [];
@@ -1111,6 +1112,7 @@ jQuery.sheet = {
 					value: value || '',
 					calcCount: calcCount || 0,
 					calcLast: calcLast || -1,
+					calcDependenciesLast: calcDependenciesLast || -1,
 					html: [],
 					sheet: sheet
 				};
@@ -1973,37 +1975,13 @@ jQuery.sheet = {
 								indexes = indexes || [];
 
 								jS.obj.barHelper().remove();
-								var style = [];
+								var style = styleOverride || $.sheet.nthCss('col', '#' + jS.id.sheet + jS.i, this, indexes, jS.s.frozenAt.col) +
+									$.sheet.nthCss('td', '#' + jS.id.sheet + jS.i + ' ' + 'tr', this, indexes, jS.s.frozenAt.col);
 
-								if (this.styleSheet) { //IE compatibility
-									for (var index in indexes) {
-										var nthColSelector = '', nthTdSelector = '';
-										if (indexes[index] > (jS.s.frozenAt.col + 1)) {
-											nthColSelector += repeat('+col', indexes[index]);
-											nthTdSelector += repeat('+td', indexes[index]);
-										}
-										if (nthColSelector && nthTdSelector) {
-											style.push('#' + jS.id.sheet + jS.i + ' ' + 'col:first-child' + nthColSelector);
-											style.push('#' + jS.id.sheet + jS.i + ' ' + 'tr td:first-child' + nthTdSelector);
-										}
-									}
-									if (style.length || styleOverride) {
-										this.styleSheet.cssText = styleOverride || style.join(',') + '{display: none;}';
-									} else {
-										this.styleSheet.cssText = '';
-									}
+								if (this.styleSheet) {
+									this.styleSheet.cssText = style;
 								} else {
-									for (var index in indexes) {
-										if (indexes[index] > (jS.s.frozenAt.col + 1)) {
-											style.push('#' + jS.id.sheet + jS.i + ' col:nth-child(' + indexes[index] + ')');
-											style.push('#' + jS.id.sheet + jS.i + ' tr td:nth-child(' + indexes[index] + ')');
-										}
-									}
-									if (style.length || styleOverride) {
-										scrollStyleX.text(styleOverride || style.join(',') + '{display: none;}');
-									} else {
-										scrollStyleX.text('');
-									}
+									scrollStyleX.text(style);
 								}
 
 								jS.scrolledArea.col.start = indexes[0] || 1;
@@ -2015,35 +1993,12 @@ jQuery.sheet = {
 
 								jS.obj.barHelper().remove();
 
-								var style = [];
+								var style = styleOverride || $.sheet.nthCss('tr', '#' + jS.id.sheet + jS.i, this, indexes, jS.s.frozenAt.row);
 
 								if (this.styleSheet) { //IE compatibility
-									for (var index in indexes) {
-										var nthSelector = '';
-										if (indexes[index]> (jS.s.frozenAt.row + 1)) {
-											nthSelector += repeat('+tr', indexes[index]);
-										}
-										if (nthSelector) {
-											style.push('#' + jS.id.sheet + jS.i + ' ' + 'tr:first-child' + nthSelector);
-										}
-									}
-									if (style.length || styleOverride) {
-										this.styleSheet.cssText = styleOverride || style.join(',') + '{display: none;}';
-									} else {
-										this.styleSheet.cssText = '';
-									}
+									this.styleSheet.cssText = style;
 								} else {
-									for (var index in indexes) {
-										if (indexes[index] > (jS.s.frozenAt.row + 1)) {
-											style.push('#' + jS.id.sheet + jS.i + ' tr:nth-child(' + indexes[index] + ')');
-										}
-									}
-
-									if (style.length || styleOverride) {
-										scrollStyleY.text(styleOverride || style.join(',') + '{display: none;}');
-									} else {
-										scrollStyleY.text('');
-									}
+									scrollStyleY.text(style);
 								}
 
 								jS.scrolledArea.row.start = indexes[0] || 1;
@@ -2138,23 +2093,30 @@ jQuery.sheet = {
 				hide: function(enclosure, pane, sheet) {
 					pane = pane || jS.obj.pane();
 
-					jS.controls.toggleHide.y[jS.i] = $('<style id="' + jS.id.toggleHideStyleY + jS.i + '"></style>')
-						.appendTo(pane)
-						.bind('update', function(e, ids) {
-							var style = [];
+					var toggleHideStyleY = jS.controls.toggleHide.y[jS.i] = $('<style id="' + jS.id.toggleHideStyleY + jS.i + '"></style>')
+							.appendTo(pane)
+							.bind('updateStyle', function(e) {
+								var style = $.sheet.nthCss('tr', '#' + jS.id.sheet + jS.i, this, jS.toggleHide.hiddenRows[jS.i], jS.toggleHide.hiddenRows[jS.i].length);
 
-							jS.toggleHide.hiddenRows[jS.i].each(function() {
-								style.push('#' + jS.id.sheet + jS.i + ' tr:nth-child(' + (this.rowIndex + 1) + ')');
+								if (this.styleSheet) {
+									this.styleSheet.cssText = style;
+								} else {
+									toggleHideStyleY.text(style);
+								}
+							}),
+
+						toggleHideStyleX = jS.controls.toggleHide.x[jS.i] = $('<style id="' + jS.id.toggleHideStyleX + jS.i + '"></style>')
+							.appendTo(pane)
+							.bind('updateStyle', function() {
+								var style = $.sheet.nthCss('col', '#' + jS.id.sheet + jS.i, this, jS.toggleHide.hiddenColumns[jS.i], jS.toggleHide.hiddenColumns[jS.i].length) +
+									$.sheet.nthCss('td', '#' + jS.id.sheet + jS.i + ' tr', this, jS.toggleHide.hiddenColumns[jS.i], jS.toggleHide.hiddenColumns[jS.i].length);
+
+								if (this.styleSheet) {
+									this.styleSheet.cssText = style;
+								} else {
+									toggleHideStyleX.text(style);
+								}
 							});
-
-							jS.controls.toggleHide.y[jS.i].text(style.join(',') + '{display:none;}');
-						});
-
-					jS.controls.toggleHide.x[jS.i] = $('<style id="' + jS.id.toggleHideStyleX + jS.i + '"></style>')
-						.appendTo(pane)
-						.bind('update', function() {
-
-						});
 				},
 
 				/**
@@ -2852,9 +2814,6 @@ jQuery.sheet = {
 											cell.formula = null;
 										}
 
-										//reset the cell's value
-										cell.calcCount = 0;
-
 										jS.setChanged(true);
 
 										if (v != prevVal || forceCalc) {
@@ -3058,7 +3017,7 @@ jQuery.sheet = {
 				 * @name cellOnDblClick
 				 */
 				cellOnDblClick: function(e) {
-					jS.cellLast.isEdit = jS.isSheetEdit = true;
+					jS.cellLast.isEdit = true;
 					jS.controlFactory.inPlaceEdit();
 					//jS.log('click, in place edit activated');
 				},
@@ -3576,51 +3535,57 @@ jQuery.sheet = {
 				hiddenRows: [],
 				row: function(i) {
 					i = i || jS.rowLast;
-					var row = $(jS.rows()[i]),
+					var row = jS.rows()[i],
+						$row = $(row),
 						style = [];
 
-					if (!this.hiddenRows[jS.i]) this.hiddenRows[jS.i] = $([]);
+					if (!this.hiddenRows[jS.i]) this.hiddenRows[jS.i] = [];
 
-					if (row.length && row.is(':visible')) {
-						this.hiddenRows[jS.i] = this.hiddenRows[jS.i].add(row);
+					if ($row.length && $row.is(':visible')) {
+						this.hiddenRows[jS.i].push(i + 1);
 					} else {
 						this.hiddenRows[jS.i].each(function(j) {
-							if (row.is(this)) {
-								this.hiddenRows[jS.i].splice(j, 1);
+							if ($row.is(this)) {
+								jS.toggleHide.hiddenRows[jS.i].splice(j, 1);
 							}
 						});
 					}
 
-					jS.obj.toggleHideStyleY().trigger('update')
+					jS.obj.toggleHideStyleY().trigger('updateStyle');
 				},
 				rowShowAll: function() {
 					jS.obj.toggleHideStyleY().html('');
-					this.hiddenRows[jS.i] = $([]);
+					this.hiddenRows[jS.i] = [];
 				},
 
 				hiddenColumns: [],
 				column: function(i) {
-					if (!i) {
-						i = jS.obj.cellActive().attr('cellIndex');
-					}
-					if (i) {
-						//We need to hide both the col and td of the same i
-						var o = jS.obj.barTop(i);
-						if (o.is(':visible')) {
-							jS.obj.sheet().find('tbody tr').each(function() {
-								$(this).children().eq(i).hide();
-							});
-							o.hide();
-							jS.obj.sheet().find('colgroup col').eq(i).hide();
-						}
+					i = i || jS.colLast;
+					var col = jS.cols()[i],
+						$col = $(col),
+						style = [];
+
+					if (!this.hiddenColumns[jS.i]) this.hiddenColumns[jS.i] = [];
+
+					if ($col.length && $col.is(':visible')) {
+						this.hiddenColumns[jS.i].push(i + 1);
 					} else {
-						alert(jS.msg.toggleHideColumn);
+						this.hiddenColumns[jS.i].each(function(j) {
+							if ($col.is(this)) {
+								jS.toggleHide.hiddenColumns[jS.i].splice(j, 1);
+							}
+						});
 					}
+
+					jS.obj.toggleHideStyleX().trigger('updateStyle');
 				},
-				columnAll: function() {
-				
+				columnShowAll: function() {
+					jS.obj.toggleHideStyleX().html('');
+					this.hiddenColumns[jS.i] = [];
 				}
 			},
+
+			merged: [],
 
 			/**
 			 * Merges cells together
@@ -3629,39 +3594,59 @@ jQuery.sheet = {
 			 */
 			merge: function() {
 				var cellsValue = [],
-					cells = jS.obj.cellHighlighted(),
-					cellFirstLoc = jS.getTdLocation(cells.first()),
-					cellLastLoc = jS.getTdLocation(cells.last()),
-					colI = Math.max(cellFirstLoc.col, cellLastLoc.col) - Math.min(cellFirstLoc.col, cellLastLoc.col);
-				
-				if (cells.length > 1 && cellFirstLoc.row) {
-					for (var i = cellFirstLoc.col; i <= cellLastLoc.col; i++) {
-						var td = jS.getTd(jS.i, cellFirstLoc.row, i),
-							cell = jS.spreadsheets[jS.i][cellFirstLoc.row][i];
-						
-						cellsValue.push(cell.formula ? "(" + cell.formula.substring(1) + ")" : cell.value);
-						
-						if (i != cellFirstLoc.col) {
-							cell.formula = null;
-							cell.value;
-							cell.html = '';
+					tds = jS.obj.cellHighlighted(),
+					tdFirstLoc = jS.getTdLocation(tds.first()),
+					tdLastLoc = jS.getTdLocation(tds.last()),
+					colI = 0,
+					rowI = 0,
+					firstCell = jS.spreadsheets[jS.i][tdFirstLoc.row][tdFirstLoc.col];
 
-							td
-								.removeData('formula')
-								.html('')
-								.hide();
+				if (tds.length > 1 && tdFirstLoc.row) {
+					jS.setDirty(true);
+					jS.setChanged(true);
+
+					//create a group to be merged into 1
+					if (!jS.merged[jS.i + '_' + tdFirstLoc.row + '_' + tdFirstLoc.col]) jS.merged[jS.i + '_' + tdFirstLoc.row + '_' + tdFirstLoc.col] = [];
+					var merged = jS.merged[jS.i + '_' + tdFirstLoc.row + '_' + tdFirstLoc.col];
+
+					for (var row = tdFirstLoc.row; row <= tdLastLoc.row; row++) {
+						if (row) rowI++;
+						for (var col = tdFirstLoc.col; col <= tdLastLoc.col; col++) {
+							if (row == tdFirstLoc.row) colI++;
+							var td = jS.getTd(jS.i, tdLastLoc.row, col),
+								cell = jS.spreadsheets[jS.i][row][col];
+
+							merged.push(cell);
+
+							cellsValue.push(cell.formula ? "(" + cell.formula.substring(1) + ")" : cell.value);
+
+							if (col != tdFirstLoc.col) {
+								cell.formula = null;
+								cell.value = '';
+								cell.html = '';
+								cell.defer = firstCell;
+
+								td
+									.removeData('formula')
+									.html('')
+									.hide();
+							}
+
+							jS.calcDependencies(jS.i, row, col);
 						}
 					}
 
-					jS.spreadsheets[jS.i][cellFirstLoc.row][cellFirstLoc.row].value = cellsValue.join('');
-					var cell = cells.first()
+
+					firstCell.value = cellsValue.join(' ');
+					firstCell.formula = (firstCell.formula ? cellsValue.join(' ') : '');
+
+					tds.first()
 						.show()
-						.attr('colspan', colI + 1)
-						.html(cellsValue.join(''));
-					
-					jS.setDirty(true);
-					jS.setChanged(true);
-					jS.calc();
+						.attr('rowspan', rowI)
+						.attr('colspan', colI);
+
+					jS.calcDependencies(jS.i, tdFirstLoc.row, tdFirstLoc.col);
+					jS.evt.cellEditDone();
 				}
 			},
 
@@ -3671,36 +3656,30 @@ jQuery.sheet = {
 			 * @name unmerge
 			 */
 			unmerge: function() {
-				var cell = jS.obj.cellHighlighted().first(),
-					loc = jS.getTdLocation(cell),
-					formula = cell.data('formula'),
-					v = cell.text();
-				v = (formula ? formula : v);
-				
-				var rowI = cell.attr('rowspan') * 1,
-					colI = cell.attr('colspan') * 1;
-				
-				//rowI = parseInt(rowI ? rowI : 1); //we have to have a minimum here;
-				colI = parseInt(colI ? colI : 1);
-				
-				td = '<td />',
-					tds = '';
-				
-				if (colI) {
-					for (var i = 0; i <= colI; i++) {
-						tds += td;
+				var td = jS.obj.cellHighlighted().first();
+				var loc = jS.getTdLocation(td);
+				var cellFirst = jS.spreadsheets[jS.i][loc.row][loc.col]
+				var formula = td.data('formula');
+
+				var rowMax = Math.max(td.attr('rowspan'), 1);
+				var colMax = Math.max(td.attr('colspan'), 1);
+
+				for (var row = loc.row; row <= loc.row + rowMax; row++) {
+					for (var col = loc.col; col <= loc.col + colMax; col++) {
+						jS.getTd(jS.i, row, row).show();
+						var cell = jS.spreadsheets[jS.i][row][col];
+						cell.defer = '';
+						jS.calcDependencies(jS.i, row, col);
 					}
 				}
-				
-				for (var i = loc.col; i <= colI; i++) {
-					jS.getTd(jS.i, loc.row, i).show();
-				}
-				
-				cell.removeAttr('colspan');
-				
+
+				td
+					.removeAttr('colspan')
+					.removeAttr('rowspan');
+
 				jS.setDirty(true);
 				jS.setChanged(true);
-				jS.calc();
+				jS.calcDependencies(jS.i, loc.row, loc.col);
 			},
 
 			/**
@@ -4700,23 +4679,23 @@ jQuery.sheet = {
 					delete cell.result;
 				}
 
-
 				switch (cell.state) {
 					case 'updating': return s.error({error: jS.msg.loopDetected});
 					case 'updatingDependencies': return cell.value;
+				}
+
+				if (cell.defer) {//merging creates a defer property, which points the cell to another location to get the other value
+					return this.updateCellValue(cell.defer.sheet, cell.defer.row, cell.defer.col);
 				}
 				
 				cell.state = 'updating';
 				cell.html = [];
 				cell.fnCount = 0;
 				
-				if (
-					cell.calcCount < 1 && (
-						cell.calcLast != jS.calcLast &&
-						cell.calcLast != jS.calcDependenciesLast
-					)
-				) {
-					cell.calcLast = Math.max(jS.calcLast, jS.calcDependenciesLast);
+				if (cell.calcLast != jS.calcLast || cell.calcDependenciesLast != jS.calcDependenciesLast) {
+					cell.calcLast = jS.calcLast;
+					cell.calcDependenciesLast = jS.calcDependenciesLast;
+
 					cell.calcCount++;
 					if (cell.formula) {
 						try {
@@ -4772,7 +4751,6 @@ jQuery.sheet = {
 					var dependantCell = dependencies[i],
 						dependantCellLoc = jS.getTdLocation(dependantCell.td);
 
-					dependantCell.calcCount = 0;
 					jS.updateCellValue(dependantCell.sheet, dependantCellLoc.row, dependantCellLoc.col);
 					jS.updateCellDependencies(dependantCell.sheet, dependantCellLoc.row, dependantCellLoc.col);
 				}
@@ -5200,7 +5178,6 @@ jQuery.sheet = {
 				jS.calcLast = new Date();
 				jSE.calc(tableI, jS.spreadsheetsToArray()[tableI], jS.updateCellValue);
 				jS.trigger('sheetCalculation', [{which: 'speadsheet'}]);
-				jS.isSheetEdit = false;
 				jS.setChanged(false);
 				jS.log('Calculation Ended');
 			},
@@ -6289,7 +6266,7 @@ jQuery.sheet = {
 			appendToFormula: function(v) {
 				var formula = jS.obj.formula(),
 					fV = formula.val();
-				
+
 				if (fV.charAt(0) != '=') {
 					fV = '=' + fV;
 				}
@@ -6841,12 +6818,6 @@ var jSE = jQuery.sheet.engine = {
 	 * @name calc
 	 */
 	calc: function(tableI, spreadsheets, ignite) {
-		for (var j = 1; j < spreadsheets.length; j++) {
-			for (var k = 1; k < spreadsheets[j].length; k++) {
-				spreadsheets[j][k].calcCount = 0;
-			}
-		}
-		
 		for (var j = 1; j < spreadsheets.length; j++) {
 			for (var k = 1; k < spreadsheets[j].length; k++) {
 				ignite(tableI, j, k);
