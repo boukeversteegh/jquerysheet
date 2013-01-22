@@ -350,7 +350,7 @@ jQuery.fn.extend({
 	 *
 	 * allowCellsLineBreaks {Boolean} default true, allows cells to accept line breaks, otherwise they are stripped
 	 *
-	 * frozenAt {Object} default {row: 0,col: 0}, Gives the ability to freeze cells at a certain row/col
+	 * frozenAt {Object} default [{row: 0,col: 0}], Gives the ability to freeze cells at a certain row/col
 	 *
 	 * contextmenuTop {Object} default is standard list of commands for context menus when right click or click on menu dropdown
 	 *      Javascript example:
@@ -431,11 +431,11 @@ jQuery.fn.extend({
 							.replace(/ /g, '&nbsp;');
 					},
 					allowCellsLineBreaks: true,
-					frozenAt: {row: 0,col: 0},
+					frozenAt: [],
 					contextmenuTop: {
 						"Toggle freeze columns to here": function() {
 							var col = jS.getTdLocation(jS.obj.cellActive()).col;
-							jS.s.frozenAt.col = (jS.s.frozenAt.col == col ? 0 : col);
+							jS.frozenAt().col = (jS.frozenAt().col == col ? 0 : col);
 						},
 						"Insert column after": function(){
 							jS.controlFactory.addColumn(jS.colLast);
@@ -457,7 +457,7 @@ jQuery.fn.extend({
 					contextmenuLeft: {
 						"Toggle freeze rows to here": function() {
 							var row = jS.getTdLocation(jS.obj.cellActive()).row;
-							jS.s.frozenAt.row = (jS.s.frozenAt.row == row ? 0 : row);
+							jS.frozenAt().row = (jS.frozenAt().row == row ? 0 : row);
 						},
 						"Insert row after": function(){
 							jS.controlFactory.addRow(jS.rowLast);
@@ -554,12 +554,12 @@ jQuery.fn.extend({
 	 * @returns {*}
 	 */
 	disableSelectionSpecial : function() { 
-			this.each(function() { 
-					this.onselectstart = function() { return false; }; 
-					this.unselectable = "on"; 
-					jQuery(this).css('-moz-user-select', 'none'); 
-			});
-			return this;
+		this.each(function() {
+			this.onselectstart = function() { return false; };
+			this.unselectable = "on";
+			jQuery(this).css('-moz-user-select', 'none');
+		});
+		return this;
 	},
 
 	/**
@@ -715,17 +715,14 @@ jQuery.sheet = {
 	},
 
 
-	nthCss: function(elementName, parentSelectorString, me, indexes, limit, css) {
+	nthCss: function(elementName, parentSelectorString, me, indexes, min, css) {
 		var style = [];
 		css = css || '{display: none;}';
 		if (me.styleSheet) { //IE compatibility
 			for (var index in indexes) {
-				var nthColSelector = '', nthTdSelector = '';
-				if (indexes[index] >= limit) {
-					nthTdSelector += jQuery.sheet.repeat('+' + elementName, indexes[index]);
-				}
-				if (nthColSelector && nthTdSelector) {
-					style.push(parentSelectorString + ' ' +  elementName + ':first-child' + nthTdSelector);
+				var nthSelector;
+				if (indexes[index] > min) {
+					style.push(parentSelectorString + ' ' +  elementName + ':first-child' + jQuery.sheet.repeat('+' + elementName, indexes[index]));
 				}
 			}
 			if (style.length) {
@@ -733,7 +730,7 @@ jQuery.sheet = {
 			}
 		} else {
 			for (var index in indexes) {
-				if (indexes[index] >= limit) {
+				if (indexes[index] > min) {
 					style.push(parentSelectorString + ' ' + elementName + ':nth-child(' + indexes[index] + ')');
 				}
 			}
@@ -799,16 +796,7 @@ jQuery.sheet = {
 			 * @memberOf jS
 			 * @named scrolledArea
 			 */
-			scrolledArea: {
-				col: {
-					start: 0,
-					end: 0
-				},
-				row: {
-					start: 0,
-					end: 0
-				}
-			},
+			scrolledArea: [],
 
 			/**
 			 * The internal storage array of the spreadsheets for an instance, constructed as array 3 levels deep, spreadsheet, rows, cells, can easily be used for custom exporting/saving
@@ -1539,11 +1527,11 @@ jQuery.sheet = {
 					 */
 					top: function(pane) {
 						if (jS.busy) return false;
-						if (!(jS.scrolledArea.col.end <= (jS.s.frozenAt.col + 1))) return false;
+						if (!(jS.scrolledArea[jS.i].col.end <= (jS.frozenAt().col + 1))) return false;
 
 						jS.obj.barHelper().remove();
 						
-						var bar = jS.obj.barTop(jS.s.frozenAt.col + 1),
+						var bar = jS.obj.barTop(jS.frozenAt().col + 1),
 							pos = bar.position(),
 							handle = $('<div id="' + jS.id.barHandleFreezeTop + jS.i + '" class="' + jS.cl.uiBarHandleFreezeTop + ' ' + jS.cl.barHelper + ' ' + jS.cl.barHandleFreezeTop + '" />')
 								.height(s.colMargin + s.boxModelCorrection)
@@ -1564,7 +1552,7 @@ jQuery.sheet = {
 								jS.busy = false;
 								var target = jS.nearest(handle, jS.controls.bar.x.tds());
 								jS.obj.barHelper().remove();
-								jS.s.frozenAt.col = jS.getTdLocation(target).col - 1;
+								jS.s.frozenAt().col = jS.getTdLocation(target).col - 1;
 								jS.evt.scroll.start('x', pane);
 							},
 							containment: 'parent'
@@ -1580,11 +1568,11 @@ jQuery.sheet = {
 					 */
 					left: function(pane) {
 						if (jS.busy) return false;
-						if (!(jS.scrolledArea.row.end <= (jS.s.frozenAt.row + 1))) return false;
+						if (!(jS.scrolledArea[jS.i].row.end <= (jS.frozenAt().row + 1))) return false;
 
 						jS.obj.barHelper().remove();
 						
-						var bar = jS.obj.barLeft(jS.s.frozenAt.row + 1),
+						var bar = jS.obj.barLeft(jS.frozenAt().row + 1),
 							pos = bar.position(),
 							handle = $('<div id="' + jS.id.barHandleFreezeLeft + jS.i + '" class="' + jS.cl.uiBarHandleFreezeLeft + ' ' + jS.cl.barHelper + ' ' + jS.cl.barHandleFreezeLeft + '" />')
 								.width(s.colMargin)
@@ -1605,7 +1593,7 @@ jQuery.sheet = {
 								jS.busy = false;
 								var target = jS.nearest(handle, jS.controls.bar.y.tds());
 								jS.obj.barHelper().remove();
-								jS.s.frozenAt.row = jS.getTdLocation(target).row - 1;
+								jS.frozenAt().row = jS.getTdLocation(target).row - 1;
 								jS.evt.scroll.start('y', pane);
 							},
 							containment: 'parent'
@@ -2023,8 +2011,8 @@ jQuery.sheet = {
 								indexes = indexes || [];
 
 								jS.obj.barHelper().remove();
-								var style = styleOverride || $.sheet.nthCss('col', '#' + jS.id.sheet + jS.i, this, indexes, jS.s.frozenAt.col) +
-									$.sheet.nthCss('td', '#' + jS.id.sheet + jS.i + ' ' + 'tr', this, indexes, jS.s.frozenAt.col);
+								var style = styleOverride || $.sheet.nthCss('col', '#' + jS.id.sheet + jS.i, this, indexes, jS.frozenAt().col + 1) +
+									$.sheet.nthCss('td', '#' + jS.id.sheet + jS.i + ' ' + 'tr', this, indexes, jS.frozenAt().col + 1);
 
 								if (this.styleSheet) {
 									this.styleSheet.cssText = style;
@@ -2032,8 +2020,9 @@ jQuery.sheet = {
 									scrollStyleX.text(style);
 								}
 
-								jS.scrolledArea.col.start = indexes[0] || 1;
-								jS.scrolledArea.col.end = indexes.pop() || 1;
+								if (!jS.scrolledArea[jS.i]) jS.scrolledArea[jS.i] = {col: {start: 0, end: 0},row: {start: 0, end: 0}};
+								jS.scrolledArea[jS.i].col.start = indexes[0] || 1;
+								jS.scrolledArea[jS.i].col.end = indexes.pop() || 1;
 							}),
 						scrollStyleY = jS.controls.bar.y.scroll[jS.i] = $('<style type="text/css" id="' + jS.id.scrollStyleY + jS.i + '"></style>')
 							.bind('updateStyle', function(e, indexes, styleOverride) {
@@ -2041,7 +2030,7 @@ jQuery.sheet = {
 
 								jS.obj.barHelper().remove();
 
-								var style = styleOverride || $.sheet.nthCss('tr', '#' + jS.id.sheet + jS.i, this, indexes, jS.s.frozenAt.row);
+								var style = styleOverride || $.sheet.nthCss('tr', '#' + jS.id.sheet + jS.i, this, indexes, jS.frozenAt().row + 1);
 
 								if (this.styleSheet) { //IE compatibility
 									this.styleSheet.cssText = style;
@@ -2049,8 +2038,9 @@ jQuery.sheet = {
 									scrollStyleY.text(style);
 								}
 
-								jS.scrolledArea.row.start = indexes[0] || 1;
-								jS.scrolledArea.row.end = indexes.pop() || 1;
+								if (!jS.scrolledArea[jS.i]) jS.scrolledArea[jS.i] = {col: {start: 0, end: 0},row: {start: 0, end: 0}};
+								jS.scrolledArea[jS.i].row.start = indexes[0] || 1;
+								jS.scrolledArea[jS.i].row.end = indexes.pop() || 1;
 							});
 
 					var xStyle, yStyle;
@@ -4270,6 +4260,11 @@ jQuery.sheet = {
 				}
 			},
 
+			frozenAt: function() {
+				if (!jS.s.frozenAt[jS.i]) jS.s.frozenAt[jS.i] = {row: 0, col: 0};
+				return jS.s.frozenAt[jS.i];
+			},
+
 			/**
 			 * instance busy state
 			 * @memberOf jS
@@ -5964,7 +5959,7 @@ jQuery.sheet = {
 					case 'top':
 						rows.start = 1;
 						rows.end = size.rows;
-						visibleRow.start = visibleRow.end = jS.scrolledArea.row.end;
+						visibleRow.start = visibleRow.end = jS.scrolledArea[jS.i].row.end;
 
 						cols.start = first;
 						cols.end = last;
@@ -5980,7 +5975,7 @@ jQuery.sheet = {
 
 						cols.start = 1;
 						cols.end = size.cols;
-						visibleCol.start = visibleCol.end = jS.scrolledArea.col.end;
+						visibleCol.start = visibleCol.end = jS.scrolledArea[jS.i].col.end;
 
 						break;
 					case 'corner': //all
