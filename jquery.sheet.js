@@ -2005,9 +2005,37 @@ jQuery.sheet = {
 								jS.scrolledArea.row.end = indexes.pop() || 1;
 							});
 
+					var xStyle, yStyle;
+
+					function styleString(o) {
+						if (o && o[0] && o[0].styleSheet) return o[0].styleSheet.cssText;
+						return o.text();
+					}
+
 					pane
 						.append(scrollStyleX)
-						.append(scrollStyleY);
+						.append(scrollStyleY)
+						.bind('resizeScroll', function() {
+							xStyle = styleString(scrollStyleX);
+							yStyle = styleString(scrollStyleY);
+
+							scrollStyleX.trigger('updateStyle');
+							scrollStyleY.trigger('updateStyle');
+
+							scrollChild
+								.height(sheet.height())
+								.width(sheet.width());
+
+							scroll
+								.height(enclosure.height())
+								.width(enclosure.width());
+
+							jS.evt.scroll.start('x', pane, sheet);
+							jS.evt.scroll.start('y', pane, sheet);
+
+							scrollStyleX.trigger('updateStyle', [null, xStyle]);
+							scrollStyleY.trigger('updateStyle', [null, yStyle]);
+						});
 
 					if (!$.fn.mousewheel) return;
 
@@ -2059,35 +2087,6 @@ jQuery.sheet = {
 
 							return false;
 						});
-
-					var xStyle, yStyle;
-
-					function styleString(o) {
-						if (o && o[0] && o[0].styleSheet) return o[0].styleSheet.cssText;
-						return o.text();
-					}
-
-					pane.bind('resizeScroll', function() {
-						xStyle = styleString(scrollStyleX);
-						yStyle = styleString(scrollStyleY);
-
-						scrollStyleX.trigger('updateStyle');
-						scrollStyleY.trigger('updateStyle');
-
-						scrollChild
-							.height(sheet.height())
-							.width(sheet.width());
-
-						scroll
-							.height(enclosure.height())
-							.width(enclosure.width());
-
-						jS.evt.scroll.start('x', pane, sheet);
-						jS.evt.scroll.start('y', pane, sheet);
-
-						scrollStyleX.trigger('updateStyle', [null, xStyle]);
-						scrollStyleY.trigger('updateStyle', [null, yStyle]);
-					});
 				},
 
 				hide: function(enclosure, pane, sheet) {
@@ -3533,6 +3532,7 @@ jQuery.sheet = {
 			 */
 			toggleHide: {
 				hiddenRows: [],
+				rowIndexOffset: [],
 				row: function(i) {
 					i = i || jS.rowLast;
 					var row = jS.rows()[i],
@@ -3540,13 +3540,23 @@ jQuery.sheet = {
 						style = [];
 
 					if (!this.hiddenRows[jS.i]) this.hiddenRows[jS.i] = [];
+					if (!this.rowIndexOffset[jS.i]) this.rowIndexOffset[jS.i] = [];
 
 					if ($row.length && $row.is(':visible')) {
 						this.hiddenRows[jS.i].push(i + 1);
+						for (var j = 1; j <= i; j++) {
+							if (!this.rowIndexOffset[jS.i][j]) this.rowIndexOffset[jS.i][j] = 0;
+							this.rowIndexOffset[jS.i][j]++;
+						}
 					} else {
 						this.hiddenRows[jS.i].each(function(j) {
 							if ($row.is(this)) {
 								jS.toggleHide.hiddenRows[jS.i].splice(j, 1);
+								for (var h = 1; h <= i; h++) {
+									if (!this.rowIndexOffset[jS.i][h]) this.rowIndexOffset[jS.i][h] = 1;
+									this.rowIndexOffset[jS.i][h]--;
+									this.rowIndexOffset[jS.i][h] = Math.max(this.rowIndexOffset[jS.i][h], 0);
+								}
 							}
 						});
 					}
@@ -3559,6 +3569,7 @@ jQuery.sheet = {
 				},
 
 				hiddenColumns: [],
+				columnIndexOffset: [],
 				column: function(i) {
 					i = i || jS.colLast;
 					var col = jS.cols()[i],
@@ -6083,6 +6094,7 @@ jQuery.sheet = {
 				td = td[0] || td;
 
 				if (td.cellIndex == u || td.parentNode == u || td.parentNode.rowIndex == u) return result;
+
 				return {
 					col: parseInt(td.cellIndex),
 					row: parseInt(td.parentNode.rowIndex)
