@@ -338,10 +338,7 @@ jFNA.external = jQuery.sheet.advancedfn.external = {
 		arr = this.sanitize(arr);
 		return jFNA.external.sum(arr) / arr.length;
 	},
-	sanitize: function(arr) {
-		arrHelpers.foldPrepare(arr, arguments);
-		arr = arrHelpers.toNumbers(arr);
-		
-		return arr;
+	sanitize: function() {
+		return arrHelpers.toNumbers(arguments);
 	}
 };
