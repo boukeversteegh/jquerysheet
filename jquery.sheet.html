@@ -56,9 +56,12 @@
 	            window.loadSheet = function (url) {
                     var urls = {tables: url, menuLeft: 'menu.left.html', menuRight: 'menu.right.html'}, results = {}, loadCount = 3, loaded = 0;
 
-                    $.each(urls, function(i) {
-                        $.get(urls[i], function(result) {
-                            results[this.url] = result;
+                    for(var type in urls) {
+                        var tempUrl = urls[type] + (type == 'tables' ? ' #sheetParent table' : '');
+                        $('<div />')
+                                .data('url', urls[type])
+                                .load(tempUrl, function() {
+                            results[$(this).data('url')] = $(this).html();
                             loaded++;
                             if (loadCount == loaded) {
                                 $('#sheet')
@@ -96,10 +99,10 @@
                                         });
                             }
                         });
-                    });
+                    }
 	            };
 
-	            loadSheet('sheets/numberstesting.html');
+	            loadSheet('examples/charts.html');
             });
         </script>
         <!--Page styles-->
@@ -127,17 +130,17 @@
                 z-index:
                 100;
             }
-            
-			#lockedMenu * {
-				font-size: .85em ! important;
-			}
-			
-            #structures {
-                text-align: left;
-                font-size: 1.5em;
-                padding: 10px;
-                border: none;
+
+            #lockedMenu
+            {
+                width: 225px;
+                background-image: none;
             }
+
+			#lockedMenu * {
+				font-size: .95em ! important;
+                text-decoration: none;
+			}
             
             #header {
                 text-align: left;
@@ -170,18 +173,60 @@
             <table style="width: 100%;">
                 <tr>
                     <td rowspan="2" style="width: 170px; vertical-align: top;">
-                        <div id="lockedMenu" class="ui-widget-header ui-corner-all" style="background-image: none;">
-                            <h2>Spreadsheets</h2>
+                        <div id="lockedMenu" class="ui-widget-header ui-corner-all">
+                            <h2 style="width: 100%; text-align: center;">Spreadsheets</h2>
                             <span id="themeSwitcher"></span>
                             <ul style="padding-left: 15px;">
                                 <li>
-                                    <a href="#" onclick="loadSheet('sheets/numberstesting.html'); return false;">Playground</a>
+                                    <a href="#" onclick="loadSheet('examples/charts.html');return false;">Charts</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="loadSheet('sheets/enduser.documentation.html'); return false;">Enduser Documentation</a>
+                                    <a href="#" onclick="loadSheet('examples/inputs.html');return false;">Inputs</a>
                                 </li>
                                 <li>
-                                    <a href="#" onclick="loadSheet('sheets/developer.documentation.html');return false;">Developer Documentation</a>
+                                    <a href="#" onclick="loadSheet('examples/dates.html');return false;">Dates</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="loadSheet('examples/empty.html');return false;">Empty</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="loadSheet('examples/financial.html');return false;">Financial</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="loadSheet('examples/information.html');return false;">Information</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="loadSheet('examples/logical.html');return false;">Logical</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="loadSheet('examples/math.html'); return false;">Math</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="loadSheet('examples/mild.stress.test.html'); return false;">Mild Stress Test</a>
+                               </li>
+                                <li>
+                                    <a href="#" onclick="loadSheet('examples/mortgage.estimator.html'); return false;">Mortgage Estimator</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="loadSheet('examples/statistical.html'); return false;">Statistical</a>
+                                </li>
+                                <li>
+                                    <a href="#" onclick="loadSheet('examples/string.html'); return false;">String</a>
+                                </li>
+                                <li>
+                                    <a href="examples/json.test.html">Json Data Transformation Service</a>
+                                </li>
+                                <li>
+                                    <a href="examples/xml.test.html">XML Data Transformation Service</a>
+                                </li>
+                            </ul>
+                            <h2 style="width: 100%; text-align: center;">Pseudo Sheets<a href="">(?)<a/></h2>
+                            <ul style="padding-left: 15px;">
+                                <li>
+                                    <a href="examples/pseudosheet.html">jQuery.pseudoSheet</a>
+                                </li>
+                                <li>
+                                    <a href="examples/pseudosheet.testform.html">jQuery.pseudoSheet Test Form</a>
                                 </li>
                             </ul>
 							<div style="text-align: center;">
@@ -204,176 +249,13 @@
                 </tr>
             </table>
         </div>
-        <h2 id="structures" class="ui-state-default">Structures</h2>
-        <div class="wrapper ui-corner-all">
-            <table style="width: 100%;">
-                <tr>
-                    <td class="ui-widget-header ui-corner-tl">
-                        HTML
-                    </td>
-                    <td class="ui-widget-header">
-                        XML
-                    </td>
-                    <td class="ui-widget-header ui-corner-tr">
-                        JSON
-                    </td>
-                </tr>
-                <tr>
-                    <td style="width: 33%; vertical-align: top;">
-                        &lt;TABLE&nbsp;title=""&gt;
-                        <br>
-                        &nbsp;&nbsp;&lt;COLGROUP&gt;
-                        <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&lt;COL&nbsp;width=""&nbsp;style="width:&nbsp;;"/&gt;
-                        <br>
-                        &nbsp;&nbsp;&lt;/COLGROUP&gt;
-                        <br>
-                        &nbsp;&nbsp;&lt;TBODY&gt;
-                        <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&lt;TR&nbsp;&gt;
-                        <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;TD&nbsp;&nbsp;class="Classes&nbsp;used&nbsp;for&nbsp;styling."&gt;&lt;/TD&gt;
-                        <br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&lt;/TR&gt;
-                        <br>
-                        &nbsp;&nbsp;&lt;/TBODY&gt;
-                        <br>
-                        &lt;/TABLE&gt;
-                        <br>
-                        <br>
-                    </td>
-                    <td style="width: 33%; vertical-align: top;">
-                        &lt;documents&gt;
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&lt;document&gt; //repeats
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &lt;metadata&gt;
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;columns&gt;{Column_Count}&lt;/columns&gt;
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;rows&gt;{Row_Count}&lt;/rows&gt;
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;title&gt;&lt;/title&gt;
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &lt;/metadata&gt;
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &lt;data&gt;
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;r{Row_Index}&gt; //repeats
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;c{Column_Index} style="" width="0" cl="{Classes used for styling}"&gt;&lt;/c{Column_Index}&gt; //repeats
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;/r{Row_Index}&gt;
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &lt;/data&gt;
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&lt;/document&gt;
-                        <br/>
-                        &lt;/documents&gt;
-                        <br/>
-                    </td>
-                    <td style="width: 33%; vertical-align: top;">
-                        [
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;{ //repeats
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; metadata: {
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; columns: Column_Count,
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; rows: Row_Count,
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; title: ''
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; },
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; data: {
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; r{Row_Index}: { //repeats
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; c{Column_Index}: { //repeats
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; value: '',
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; style: '',
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; width: 0,
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; cl: {Classes used for styling}
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; }
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; }
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; }
-                        <br/>
-                        &nbsp;&nbsp; &nbsp;}
-                        <br/>
-                        ];
-                    </td>
-                </tr>
-            </table>
-            <table style="width: 100%">
-                <tr>
-                    <td class="ui-widget-header ui-corner-tl" style="width: 50%;">
-                        Export Methods
-                    </td>
-                    <td class="ui-widget-header ui-corner-tr" style="width: 50%;">
-                        Import (makeTable) Methods
-                    </td>
-                </tr>
-                <tr>
-                    <td style="vertical-align: top;">
-                        <ul>
-                            <li>
-                                jQuery().sheetInstance.export.html()
-                            </li>
-                            <li>
-                                jQuery().sheetInstance.export.xml()
-                            </li>
-                            <li>
-                                jQuery().sheetInstance.export.json()
-                            </li>
-                        </ul>
-                    </td>
-                    <td style="vertical-align: top;">
-                        <ul>
-                            <li>
-                                jQuery.sheet.makeTable.fromSize('10x100')
-                            </li>
-                            <li>
-                                jQuery.sheet.makeTable.xml()
-                            </li>
-                            <li>
-                                jQuery.sheet.makeTable.json()
-                            </li>
-                        </ul>
-                        Use these like this:
-                        <br/>
-                        $(function() {
-                        <br/>
-                        &nbsp;&nbsp;$('#div').sheet({
-                        <br/>
-                        &nbsp;&nbsp;&nbsp;&nbsp;buildSheet: jQuery.sheet.makeTable.xml(myXmlVariable)
-                        <br/>
-                        &nbsp;&nbsp;});
-                        <br/>
-                        });
-                        <br/>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" style="text-align: center;">
-                        <span style="font-size: 0.9em;">(*NOTE: jQuery.sheet.instance[instanceIndex] == jQuery().sheetInstance)</span>
-					</td>
-                </tr>
-            </table>
-        </div>
         <div id="footer" class="ui-corner-all">
             <a href="http://visop-dev.com/Project+jQuery.sheet">jQuery.sheet() The Web Based Spreadsheet</a>
+            | <a href="http://visop-dev.com/contact+us">Get Support!</a>
             | <a href="http://www.VisOp-Dev.com">Home</a>
-            | <a href="http://plugins.jquery.com/project/sheet">Project</a>
-            | <a href="http://code.google.com/p/jquerysheet">Code</a>
+            | <a href="https://code.google.com/p/jquerysheet/">Code</a>
+            | <a href="http://visop-dev.com/doc/js3/index.html">Developer Documentation</a>
+            | <a href="">End User Documentation</a>
             <br/>
             <a href="http://www.opensource.org/licenses/mit-license.html">MIT license</a>
         </div>
