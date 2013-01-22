@@ -306,7 +306,10 @@
 							if (this['formula']) Column['formula'] = this['formula'];
 							if (this['value']) Column['value'] = this['value'];
 							if (this.td.attr('style')) Column['style'] = this.td.attr('style');
-							if (this.td.attr('class')) Column['class'] = this.td.attr('class');
+							if (this.td.attr('class'))
+								Column['class'] = (this.td.attr('class') + '')
+									.replace(jS.cl.uiCellActive, '')
+									.replace(jS.cl.uiCellHighlighted, '');
 
 							if (row * 1 == 1) {
 								spreadsheet.metadata.widths.push($(jS.col(null, column)).css('width'));
@@ -382,7 +385,11 @@
 							if (this.formula) output += '<formula>' + this.formula + '</formula>';
 							if (this.value) output += '<value>' + this.value + '</value>';
 							if (this.td.attr('style')) output += '<style>' + this.td.attr('style') + '</style>';
-							if (this.td.attr('class')) output += '<class>' + this.td.attr('class') + '</class>';
+							if (this.td.attr('class')) output += '<class>' +
+									(this.td.attr('class') + '')
+										.replace(jS.cl.uiCellActive, '')
+										.replace(jS.cl.uiCellHighlighted, '') +
+								'</class>';
 							output += '</column>';
 
 							if (row * 1 == 1) {

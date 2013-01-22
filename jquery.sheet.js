@@ -103,6 +103,32 @@ jQuery.fn.extend({
 	 *          })
 	 *          .sheet();
 	 *
+	 * sheetFormulaKeydown - occurs just after keydown on either inline or static formula
+	 *      arguments: e (jQuery event)
+	 *      example:
+	 *          $(obj).sheet({
+	 *              sheetFormulaKeydown: function(e) {
+	 *
+	 *              }
+	 *          });
+	 *      or:
+	 *          $(obj).bind('sheetFormulaKeydown') {
+	 *
+	 *          })
+	 *          .sheet();
+	 * sheetCellEdit - occurs just before a cell has been a cell is started to edit
+	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), cell (jQuery.sheet.instance.spreadsheet cell)
+	 *      example:
+	 *          $(obj).sheet({
+	 *              sheetCellEdit: function(e, jS, cell) {
+	 *
+	 *              }
+	 *          });
+	 *      or:
+	 *          $(obj).bind('sheetCellEdit', function(e, jS, cell) {
+	 *
+	 *          })
+	 *          .sheet();
 	 *
 	 * sheetCellEdited - occurs just after a cell has been updated
 	 *      arguments: e (jQuery event), jS (jQuery.sheet instance), cell (jQuery.sheet.instance.spreadsheet cell)
@@ -308,7 +334,9 @@ jQuery.fn.extend({
 	 *
 	 * autoAddCells {Boolean} default true, allows you to add cells by selecting the last row/column and add cells by pressing either tab (column) or enter (row)
 	 *
-	 * resizable {Boolean} default true, turns resizing on and off, depends on jQuery ui
+	 * resizableCells {Boolean} default true, turns resizing on and off for cells, depends on jQuery ui
+	 *
+	 * resizableSheet {Boolean} default true, turns resizing on and off for sheet, depends on jQuery ui
 	 *
 	 * autoFiller {Boolean} default true, turns on/off the auto filler, the little square that follows the active cell around that you can drag and fill the values of other cells in with.
 	 *
@@ -374,7 +402,8 @@ jQuery.fn.extend({
 					formulaVariables:       {},
 					cellSelectModel: 	'excel',
 					autoAddCells:		true,
-					resizable: 			true,
+					resizableCells: 	true,
+					resizableSheet:     true,
 					autoFiller: 		true,
 					minSize: 			{rows: 1, cols: 1},
 					alertFormulaErrors:	false,
@@ -660,7 +689,7 @@ jQuery.sheet = {
 	 * events list
 	 * @memberOf jQuery.sheet
 	 */
-	events: ['sheetAddRow','sheetAddColumn','sheetSwitch','sheetRename','sheetTabSortStart','sheetTabSortUpdate','sheetCellEdited','sheetCalculation','sheetAdd','sheetDelete','sheetDeleteRow','sheetDeleteColumn','sheetOpen','sheetAllOpened','sheetSave', 'sheetFullScreen'],
+	events: ['sheetAddRow','sheetAddColumn','sheetSwitch','sheetRename','sheetTabSortStart','sheetTabSortUpdate','sheetCellEdit','sheetCellEdited','sheetCalculation','sheetAdd','sheetDelete','sheetDeleteRow','sheetDeleteColumn','sheetOpen','sheetAllOpened','sheetSave', 'sheetFullScreen', 'sheetFormulaKeydown'],
 
 	preLoad: function(path) {
 		var g = function() {
@@ -1841,7 +1870,7 @@ jQuery.sheet = {
 
 						//Edit box menu
 						var formula = $('<textarea id="' + jS.id.formula + '" class="' + jS.cl.formula + '"></textarea>')
-							.keydown(jS.evt.keyDownHandler.formulaKeydown)
+							.keydown(jS.evt.keydownHandler.formulaKeydown)
 							.keyup(function() {
 								jS.obj.inPlaceEdit().val(jS.obj.formula().val());
 							})
@@ -1872,7 +1901,7 @@ jQuery.sheet = {
 
 						// resizable formula area - a bit hard to grab the handle but is there!
 						var formulaResizeParent = $('<span />');
-						jS.resizable(jS.obj.formula().wrap(formulaResizeParent).parent(), {
+						jS.resizableSheet(jS.obj.formula().wrap(formulaResizeParent).parent(), {
 							minHeight: jS.obj.formula().height(),
 							maxHeight: 78,
 							handles: 's',
@@ -1889,7 +1918,7 @@ jQuery.sheet = {
 						jS.setNav(true);
 						
 						$document
-							.keydown(jS.evt.keyDownHandler.documentKeydown);
+							.keydown(jS.evt.keydownHandler.documentKeydown);
 					}
 					
 					firstRowTr.appendTo(firstRow);
@@ -2259,7 +2288,7 @@ jQuery.sheet = {
 					jS.themeRoller.start(sheet);
 
 					// resizable container div
-					jS.resizable(s.parent, {
+					jS.resizableSheet(s.parent, {
 						minWidth: s.width * 0.1,
 						minHeight: s.height * 0.1,
 
@@ -2497,16 +2526,16 @@ jQuery.sheet = {
 				/**
 				 * Key down handlers
 				 * @memberOf jS.evt
-				 * @name keyDownHandler
+				 * @name keydownHandler
 				 * @namespace
 				 */
-				keyDownHandler: {
+				keydownHandler: {
 
 					/**
 					 *
 					 * @param {Object} e jQuery event
 					 * @returns {*}
-					 * @methodOf jS.evt.keyDownHandler
+					 * @methodOf jS.evt.keydownHandler
 					 * @name enterOnInPlaceEdit
 					 */
 					enterOnInPlaceEdit: function(e) {
@@ -2521,7 +2550,7 @@ jQuery.sheet = {
 					 *
 					 * @param {Object} e jQuery event
 					 * @returns {*}
-					 * @methodOf jS.evt.keyDownHandler
+					 * @methodOf jS.evt.keydownHandler
 					 * @name enter
 					 */
 					enter: function(e) {
@@ -2537,7 +2566,7 @@ jQuery.sheet = {
 					 *
 					 * @param {Object} e jQuery event
 					 * @returns {*}
-					 * @methodOf jS.evt.keyDownHandler
+					 * @methodOf jS.evt.keydownHandler
 					 * @name tab
 					 */
 					tab: function(e) {
@@ -2548,7 +2577,7 @@ jQuery.sheet = {
 					 *
 					 * @param {Object} e jQuery event
 					 * @returns {*}
-					 * @methodOf jS.evt.keyDownHandler
+					 * @methodOf jS.evt.keydownHandler
 					 * @name findCell
 					 */
 					findCell: function(e) {
@@ -2563,7 +2592,7 @@ jQuery.sheet = {
 					 *
 					 * @param {Object} e jQuery event
 					 * @returns {*}
-					 * @methodOf jS.evt.keyDownHandler
+					 * @methodOf jS.evt.keydownHandler
 					 * @name redo
 					 */
 					redo: function(e) {
@@ -2578,7 +2607,7 @@ jQuery.sheet = {
 					 *
 					 * @param {Object} e jQuery event
 					 * @returns {*}
-					 * @methodOf jS.evt.keyDownHandler
+					 * @methodOf jS.evt.keydownHandler
 					 * @name undo
 					 */
 					undo: function(e) {
@@ -2593,7 +2622,7 @@ jQuery.sheet = {
 					 * Manages the page up and down buttons
 					 * @param {Boolean} reverse Go up or down
 					 * @returns {Boolean}
-					 * @methodOf jS.evt.keyDownHandler
+					 * @methodOf jS.evt.keydownHandler
 					 * @name pageUpDown
 					 */
 					pageUpDown: function(reverse) {
@@ -2625,12 +2654,14 @@ jQuery.sheet = {
 					 *
 					 * @param {Object} e jQuery event
 					 * @returns {*}
-					 * @methodOf jS.evt.keyDownHandler
+					 * @methodOf jS.evt.keydownHandler
 					 * @name formulaKeydown
 					 */
 					formulaKeydown: function(e) {
 						if (jS.readOnly[jS.i]) return false;
 						if (jS.cellLast.row < 0 || jS.cellLast.col < 0) return false;
+
+						jS.trigger('sheetFormulaKeydown', [false]);
 
 						switch (e.keyCode) {
 							case key.ESCAPE: 	jS.evt.cellEditAbandon();
@@ -2646,7 +2677,7 @@ jQuery.sheet = {
 					 * @param {Boolean} ifTrue
 					 * @param e {Object} jQuery event
 					 * @returns {*}
-					 * @methodOf jS.evt.keyDownHandler
+					 * @methodOf jS.evt.keydownHandler
 					 * @name formulaKeydownIf
 					 */
 					formulaKeydownIf: function(ifTrue, e) {
@@ -2661,7 +2692,7 @@ jQuery.sheet = {
 					 *
 					 * @param {Object} e jQuery event
 					 * @returns {*}
-					 * @methodOf jS.evt.keyDownHandler
+					 * @methodOf jS.evt.keydownHandler
 					 * @name documentKeydown
 					 */
 					documentKeydown: function(e) {
@@ -2670,7 +2701,7 @@ jQuery.sheet = {
 
 						if (jS.nav) {
 							switch (e.keyCode) {
-								case key.TAB: 		jS.evt.keyDownHandler.tab(e);
+								case key.TAB: 		jS.evt.keydownHandler.tab(e);
 									break;
 								case key.ENTER:
 								case key.LEFT:
@@ -2678,16 +2709,16 @@ jQuery.sheet = {
 								case key.RIGHT:
 								case key.DOWN:		(e.shiftKey ? jS.evt.cellSetHighlightFromKeyCode(e) : jS.evt.cellSetFocusFromKeyCode(e));
 									break;
-								case key.PAGE_UP:	jS.evt.keyDownHandler.pageUpDown(true);
+								case key.PAGE_UP:	jS.evt.keydownHandler.pageUpDown(true);
 									break;
-								case key.PAGE_DOWN:	jS.evt.keyDownHandler.pageUpDown();
+								case key.PAGE_DOWN:	jS.evt.keydownHandler.pageUpDown();
 									break;
 								case key.HOME:
 								case key.END:		jS.evt.cellSetFocusFromKeyCode(e);
 									break;
 								case key.V:
 									if (e.ctrlKey) {
-										return jS.evt.keyDownHandler.formulaKeydownIf(!jS.evt.pasteOverCells(e), e);
+										return jS.evt.keydownHandler.formulaKeydownIf(!jS.evt.pasteOverCells(e), e);
 									} else {
 										jS.obj.cellActive().dblclick();
 										return true;
@@ -2695,7 +2726,7 @@ jQuery.sheet = {
 									break;
 								case key.Y:
 									if (e.ctrlKey) {
-										return jS.evt.keyDownHandler.formulaKeydownIf(!jS.evt.keyDownHandler.redo(e), e);
+										return jS.evt.keydownHandler.formulaKeydownIf(!jS.evt.keydownHandler.redo(e), e);
 									} else {
 										jS.obj.cellActive().dblclick();
 										return true;
@@ -2703,7 +2734,7 @@ jQuery.sheet = {
 									break;
 								case key.Z:
 									if (e.ctrlKey) {
-										return jS.evt.keyDownHandler.formulaKeydownIf(!jS.evt.keyDownHandler.undo(e), e);
+										return jS.evt.keydownHandler.formulaKeydownIf(!jS.evt.keydownHandler.undo(e), e);
 									} else {
 										jS.obj.cellActive().dblclick();
 										return true;
@@ -2713,7 +2744,7 @@ jQuery.sheet = {
 									break;
 								case key.F:
 									if (e.ctrlKey) {
-										return jS.evt.keyDownHandler.formulaKeydownIf(jS.evt.keyDownHandler.findCell(e), e);
+										return jS.evt.keydownHandler.formulaKeydownIf(jS.evt.keydownHandler.findCell(e), e);
 									} else {
 										jS.obj.cellActive().dblclick();
 										return true;
@@ -2775,34 +2806,17 @@ jQuery.sheet = {
 				 * @name inPlaceEditOnKeyDown
 				 */
 				inPlaceEditOnKeyDown: function(e) {
+
+					jS.trigger('sheetFormulaKeydown', [true]);
+
 					switch (e.keyCode) {
-						case key.ENTER: 	return jS.evt.keyDownHandler.enterOnInPlaceEdit(e);
+						case key.ENTER: 	return jS.evt.keydownHandler.enterOnInPlaceEdit(e);
 							break;
-						case key.TAB: 		return jS.evt.keyDownHandler.tab(e);
+						case key.TAB: 		return jS.evt.keydownHandler.tab(e);
 							break;
 						case key.ESCAPE:	jS.evt.cellEditAbandon(); return false;
 							break;
 					}
-				},
-
-				/**
-				 * On formula change
-				 * @param {Object} e jQuery event
-				 * @methodOf jS.evt
-				 * @name formulaChange
-				 */
-				formulaChange: function(e) {
-					jS.obj.inPlaceEdit().val(jS.obj.formula().val());
-				},
-
-				/**
-				 * On in place edit change
-				 * @param {Object} e jQuery event
-				 * @methodOf jS.evt
-				 * @name inPlaceEditChange
-				 */
-				inPlaceEditChange: function(e) {
-					jS.obj.formula().val(jS.obj.inPlaceEdit().val());
 				},
 
 				/**
@@ -4326,7 +4340,7 @@ jQuery.sheet = {
 
 					jS.controls.bar.x.controls[jS.i] = jS.obj.barTopControls().add(barController);
 					
-					jS.resizable(barController, {
+					jS.resizableCells(barController, {
 						handles: 'e',
 						start: function(e, ui) {
 							jS.autoFillerHide();
@@ -4374,7 +4388,7 @@ jQuery.sheet = {
 					
 						me = bar.parent().add(bar).add(barController);
 
-					jS.resizable(child, {
+					jS.resizableCells(child, {
 						handles: 's',
 						start: function() {
 							jS.autoFillerHide();
@@ -4462,21 +4476,23 @@ jQuery.sheet = {
 				jS.autoFillerNotGroup = true; //make autoFiller directional again.
 				//This finished up the edit of the last cell
 				jS.evt.cellEditDone();
-				
-				jS.followMe(td);
-				
+
 				var loc = jS.getTdLocation(td);
+				if ( !jS.spreadsheets[jS.i] || !jS.spreadsheets[jS.i][loc.row] || !jS.spreadsheets[jS.i][loc.row][loc.col] ) return;
+				var cell = jS.spreadsheets[jS.i][loc.row][loc.col],
+					v;
+
+				jS.trigger('sheetCellEdit', [cell]);
+
+				jS.followMe(td);
 				
 				//Show where we are to the user
 				jS.labelUpdate(loc);
 
-				if ( !jS.spreadsheets[jS.i] || !jS.spreadsheets[jS.i][loc.row] || !jS.spreadsheets[jS.i][loc.row][loc.col] ) return;
-				
-				var v;
-				if (jS.spreadsheets[jS.i][loc.row][loc.col].formula) {
-					v = '=' + jS.spreadsheets[jS.i][loc.row][loc.col].formula;
+				if (cell.formula) {
+					v = '=' + cell.formula;
 				} else {
-					v = jS.spreadsheets[jS.i][loc.row][loc.col].value;
+					v = cell.value;
 				}
 
 				var formula = jS.obj.formula()
@@ -6625,9 +6641,13 @@ jQuery.sheet = {
 		if (!$.nearest) {
 			jS.nearest = emptyFN;
 		}
-		
-		if (!$.ui || !s.resizable) {
+
+		jS.resizableCells = jS.resizableSheet = jS.resizable;
+		if (!$.ui) {
 			jS.resizable = jS.draggable = emptyFN;
+		} else {
+			if (!s.resizableCells) jS.resizableCells = emptyFN;
+			if (!s.resizableSheet) jS.resizableSheet = emptyFN;
 		}
 		
 		if (!$.support.boxModel) {
