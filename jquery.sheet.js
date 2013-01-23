@@ -1548,10 +1548,10 @@ jQuery.sheet = {
 						jS.draggable(handle, {
 							axis: 'x',
 							start: function() {
-								jS.busy = true;
+								jS.setBusy(true);
 							},
 							stop: function(e, ui) {
-								jS.busy = false;
+								jS.setBusy(false);
 								var target = jS.nearest(handle, jS.controls.bar.x.tds());
 								jS.obj.barHelper().remove();
 								jS.s.frozenAt().col = jS.getTdLocation(target).col - 1;
@@ -1589,10 +1589,10 @@ jQuery.sheet = {
 						jS.draggable(handle, {
 							axis: 'y',
 							start: function() {
-								jS.busy = true;
+								jS.setBusy(true);
 							},
 							stop: function(e, ui) {
-								jS.busy = false;
+								jS.setBusy(false);
 								var target = jS.nearest(handle, jS.controls.bar.y.tds());
 								jS.obj.barHelper().remove();
 								jS.frozenAt().row = jS.getTdLocation(target).row - 1;
@@ -3233,7 +3233,9 @@ jQuery.sheet = {
 						pos = $.extend({
 							axis: 'x',
 							value:0,
-							pixel: 1}, pos);
+							pixel: 1,
+							max: 0
+						}, pos);
 
 						if (!jS.evt.scroll.axis) {
 							jS.evt.scroll.start(pos.axis);
@@ -3247,10 +3249,13 @@ jQuery.sheet = {
 							pos.value = me.p[arrHelpers.getClosestValues(me.v, Math.abs(pos.pixel / (me.sheetArea - me.area)) * 100)];
 						}
 
-						if (pos.value > me.max) pos.value = me.max;
+						pos.max = pos.max || me.max;
+
+						if (pos.value > pos.max) pos.value = pos.max;
 
 						var i = me.min, indexes = [];
-						while (i <= me.max) {
+
+						while (i <= pos.max) {
 							if (i < pos.value && i >= me.min) {
 								indexes.push(i);
 							}
@@ -4291,7 +4296,7 @@ jQuery.sheet = {
 			 * @memberOf jS
 			 * @name busy
 			 */
-			busy: false,
+			busy: true,
 
 
 			/**
@@ -4360,7 +4365,7 @@ jQuery.sheet = {
 						handles: 'e',
 						start: function(e, ui) {
 							jS.autoFillerHide();
-							jS.busy = true;
+							jS.setBusy(true);
 							this.col = $(jS.col(sheet, i));
 						},
 						resize: function(e, ui) {
@@ -4370,7 +4375,7 @@ jQuery.sheet = {
 								.css('width', ui.size.width + 'px');
 						},
 						stop: function(e, ui) {
-							jS.busy = false;
+							jS.setBusy(false);
 							pane.trigger('resizeScroll');
 							jS.followMe();
 						}
@@ -4408,7 +4413,7 @@ jQuery.sheet = {
 						handles: 's',
 						start: function() {
 							jS.autoFillerHide();
-							jS.busy = true;
+							jS.setBusy(true);
 						},
 						resize: function(e, ui) {
 							me
@@ -4417,7 +4422,7 @@ jQuery.sheet = {
 								.css('height', ui.size.height + 'px');
 						},
 						stop: function(e, ui) {
-							jS.busy = false;
+							jS.setBusy(false);
 							pane.trigger('resizeScroll');
 							jS.followMe();
 						}
@@ -5677,12 +5682,12 @@ jQuery.sheet = {
 				}
 
 				if (x > 0 || x < 0) { //left || right
-					jS.evt.scroll.scrollTo({axis: 'x', value: jS.scrolledArea[jS.i].col.end + x});
+					jS.evt.scroll.scrollTo({axis: 'x', value: jS.scrolledArea[jS.i].col.end + x, max: jS.scrolledArea[jS.i].col.end + y});
 					jS.evt.scroll.stop();
 				}
 
 				if (y > 0 || y < 0) { //up || down
-					jS.evt.scroll.scrollTo({axis: 'y', value: jS.scrolledArea[jS.i].row.end + y});
+					jS.evt.scroll.scrollTo({axis: 'y', value: jS.scrolledArea[jS.i].row.end + y, max: jS.scrolledArea[jS.i].row.end + y});
 					jS.evt.scroll.stop();
 				}
 
