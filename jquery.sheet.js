@@ -526,7 +526,7 @@ jQuery.fn.extend({
 			//destroy already existing spreadsheet
 			var jS = me.getSheet();
 			if (jS) {
-				var tables = me.children();
+				var tables = me.children().detach();
 				jS.kill();
 				me.html(tables);
 
@@ -1285,7 +1285,7 @@ jQuery.sheet = {
 								cells: function() {
 									//table / tbody / tr / td
 									var cells = jS.rowCells(sheet, i);
-									if (!cells) return {};
+									if (!cells || !cells[0]) return [];
 									return cells[0].parentNode;
 								},
 								col: function() { return ''; },
@@ -2167,7 +2167,6 @@ jQuery.sheet = {
 
 					if (jS.s.hiddenRows[jS.i]) {
 						for(var row in jS.s.hiddenRows[jS.i]) {
-							console.log(jS.s.hiddenRows[jS.i][row]);
 							jS.toggleHide.row(jS.s.hiddenRows[jS.i][row]);
 						}
 					}
@@ -4070,7 +4069,7 @@ jQuery.sheet = {
 			 * @name checkMinSize
 			 */
 			checkMinSize: function(o) {
-				var size = jS.sheetSize(),
+				var size = jS.sheetSize(o),
 					addRows = 0,
 					addCols = 0;
 				
@@ -6770,7 +6769,6 @@ jQuery.sheet = {
 					}
 				});
 				jQuery.sheet.instance = $([]);
-				jQuery(document).unbind('keydown');
 			}
 		}
 	},
