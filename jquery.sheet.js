@@ -3618,7 +3618,7 @@ jQuery.sheet = {
 					if ($col.length && $col.is(':visible')) {
 						this.hiddenColumns[jS.i].push(i + 1);
 					} else {
-						this.hiddenColumns[jS.i].each(function(j) {
+						$.each(this.hiddenColumns[jS.i], function(j) {
 							if ($col.is(this)) {
 								jS.toggleHide.hiddenColumns[jS.i].splice(j, 1);
 							}
