@@ -2029,7 +2029,6 @@ jQuery.sheet = {
 								if (!jS.scrolledArea[jS.i]) jS.scrolledArea[jS.i] = {col: {start: 0, end: 0},row: {start: 0, end: 0}};
 								jS.scrolledArea[jS.i].col.start = indexes[0] || 1;
 								jS.scrolledArea[jS.i].col.end = indexes.pop() || 1;
-								console.log(jS.scrolledArea[jS.i].col.end);
 							}),
 						scrollStyleY = jS.controls.bar.y.scroll[jS.i] = $('<style type="text/css" id="' + jS.id.scrollStyleY + jS.i + '"></style>')
 							.bind('updateStyle', function(e, indexes, styleOverride) {
@@ -3066,6 +3065,8 @@ jQuery.sheet = {
 				 * @name cellOnDblClick
 				 */
 				cellOnDblClick: function(e) {
+					if (jS.busy) return false;
+
 					jS.cellLast.isEdit = true;
 					jS.controlFactory.inPlaceEdit();
 					//jS.log('click, in place edit activated');
@@ -3229,12 +3230,17 @@ jQuery.sheet = {
 					 * @name scrollTo
 					 */
 					scrollTo: function(pos) {
+						pos = $.extend({
+							axis: 'x',
+							value:0,
+							pixel: 1}, pos);
+
 						if (!jS.evt.scroll.axis) {
 							jS.evt.scroll.start(pos.axis);
 						}
 						var me = jS.evt.scroll.axis[pos.axis];
 
-						if (pos.value == me.value && me.value !== u) return;
+						//if (pos.value == me.value && me.value !== u) return;
 
 						if (!pos.value) {
 							if (!me.p) return;
@@ -3245,7 +3251,7 @@ jQuery.sheet = {
 
 						var i = me.min, indexes = [];
 						while (i <= me.max) {
-							if (i < pos.value && i > me.min) {
+							if (i < pos.value && i >= me.min) {
 								indexes.push(i);
 							}
 							i++;
@@ -3426,9 +3432,9 @@ jQuery.sheet = {
 			 * @name toggleFullScreen
 			 */
 			toggleFullScreen: function() {
+				jS.evt.cellEditDone();
 				var fullScreen = jS.obj.fullScreen();
 				if (fullScreen.is(':visible')) {
-					jS.evt.cellEditDone();
 					$body.removeClass('bodyNoScroll');
 					s.parent = fullScreen.data('parent');
 					
@@ -3448,7 +3454,6 @@ jQuery.sheet = {
 
 					jS.trigger('sheetFullScreen', [false]);
 				} else { //here we make a full screen
-					jS.evt.cellEditDone();
 					$body.addClass('bodyNoScroll');
 					
 					var w = $window.width() - 15,
@@ -5601,8 +5606,8 @@ jQuery.sheet = {
 					paneWidth = pane.width(),
 					paneHeight = pane.height(),
 					loc = jS.getTdLocation(td),
-					tdWidth = td.width(),
-					tdHeight = td.height(),
+					width = td.width(),
+					height = td.height(),
 					visibleFold = {
 						top: 0,
 						bottom: paneHeight,
@@ -5616,22 +5621,23 @@ jQuery.sheet = {
 					x = 0,
 					y = 0,
 					max = 3,
-					tdPos,
+					pos = td.position(),
 					tdLocation,
 					directions,
-					tdTemp = jS.getTd(jS.i, loc.row, loc.col);
+					tdTemp = jS.getTd(jS.i, loc.row, loc.col),
+					heightTemp = tdTemp.height(),
+					widthTemp = tdTemp.width();
 
 				while (move == true && i < max) {
 					xHidden = $(cols[loc.col + x]).is(':hidden');
 					yHidden = tdTemp.is(':hidden');
 
 					move = false;
-					tdPos = tdTemp.position();
 					tdLocation = {
-						top: parseInt(tdPos.top),
-						bottom: parseInt(tdPos.top + tdHeight),
-						left: parseInt(tdPos.left),
-						right: parseInt(tdPos.left + tdWidth)
+						top: parseInt(pos.top),
+						bottom: parseInt(pos.top + heightTemp),
+						left: parseInt(pos.left),
+						right: parseInt(pos.left + widthTemp)
 					};
 					directions = {
 						up: yHidden || tdLocation.top < visibleFold.top,
@@ -5658,26 +5664,29 @@ jQuery.sheet = {
 						move = true;
 					}
 
-					tdTemp = jS.getTd(jS.i, (jS.scrolledArea[jS.i].row.end + 1) + y, (jS.scrolledArea[jS.i].col.end + 1) + x);
-					console.log([jS.i, (jS.scrolledArea[jS.i].row.end + 1) + y, (jS.scrolledArea[jS.i].col.end + 1) + x]);
-					tdWidth = tdTemp.width();
-					tdHeight = tdTemp.height();
+					tdTemp = jS.getTd(jS.i, jS.scrolledArea[jS.i].row.end + y, jS.scrolledArea[jS.i].col.end + x);
+					console.log([jS.i, jS.scrolledArea[jS.i].row.end + y, jS.scrolledArea[jS.i].col.end + x]);
+					if (i == 0) {
+						widthTemp = 0;
+						heightTemp = 0;
+						pos = tdTemp.position();
+					}
+					widthTemp += tdTemp.width();
+					heightTemp += tdTemp.height();
 					i++;
 				}
 
-				if (move) {
-					if (x > 0 || x < 0) { //left || right
-						jS.evt.scroll.scrollTo({axis: 'x', value: loc.col + x});
-					}
-
-					if (y > 0 || y < 0) { //up || down
-						jS.evt.scroll.scrollTo({axis: 'y', value: loc.row + y});
-					}
-
+				if (x > 0 || x < 0) { //left || right
+					jS.evt.scroll.scrollTo({axis: 'x', value: jS.scrolledArea[jS.i].col.end + x});
 					jS.evt.scroll.stop();
 				}
 
-				jS.autoFillerGoToTd(td, tdHeight, tdWidth);
+				if (y > 0 || y < 0) { //up || down
+					jS.evt.scroll.scrollTo({axis: 'y', value: jS.scrolledArea[jS.i].row.end + y});
+					jS.evt.scroll.stop();
+				}
+
+				jS.autoFillerGoToTd(td, height, width);
 			},
 
 			/**
@@ -5755,6 +5764,7 @@ jQuery.sheet = {
 			 */
 			openSheet: function(tables) {
 				if (!jS.isDirty ? true : confirm(jS.msg.openSheet)) {
+					jS.setBusy(true);
 					var header = jS.controlFactory.header(),
 						ui = jS.controlFactory.ui(),
 						tabContainer = jS.controlFactory.tabContainer();
@@ -5775,6 +5785,7 @@ jQuery.sheet = {
 					jS.setActiveSheet(0);
 
 					jS.setDirty(false);
+					jS.setBusy(false);
 
 					jS.trigger('sheetAllOpened');
 					return true;
