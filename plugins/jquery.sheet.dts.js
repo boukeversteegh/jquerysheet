@@ -280,6 +280,7 @@
 
 				$.each(jS.spreadsheets, function(sheet) {
 					jS.i = sheet;
+					jS.evt.cellEditDone();
 					var metadata = [];
 					var spreadsheet = {
 						"title": (jS.obj.sheet().attr('title') || ''),
@@ -368,6 +369,7 @@
 
 				$.each(jS.spreadsheets, function(sheet) {
 					jS.i = sheet;
+					jS.evt.cellEditDone();
 					var widths = [];
 					output += '<spreadsheet title="' + (jS.obj.sheet().attr('title') || '') + '">';
 
