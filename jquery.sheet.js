@@ -3252,7 +3252,7 @@ jQuery.sheet = {
 
 						var i = me.min, indexes = [];
 
-						console.log([me, pos.value]);
+						//console.log([me, pos.value]);
 						while (i <= pos.value || i <= pos.max) {
 							if (i < pos.value && i > me.min) {
 								indexes.push(i);
@@ -5648,7 +5648,7 @@ jQuery.sheet = {
 						right: tdLocation.right - tempWidth > visibleFold.right
 					};
 
-					console.log([tempTd, directions, tdLocation, visibleFold, tempHeight, tempWidth]);
+					//console.log([tempTd, directions, tdLocation, visibleFold, tempHeight, tempWidth]);
 
 					if (directions.left) {
 						x--;
