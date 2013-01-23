@@ -3194,7 +3194,7 @@ jQuery.sheet = {
 								x.sheetArea = sheet.width();
 								x.scrollUpdate = function() {
 									var scroll = jS.obj.scroll();
-									scroll.scrollLeft(parseInt((x.value + 1) * (scroll.width() / me.size.cols)));
+									scroll.scrollLeft(x.value * (scroll.width() / me.size.cols));
 									return;
 								}
 
@@ -3209,7 +3209,7 @@ jQuery.sheet = {
 								y.sheetArea = sheet.height() ;
 								y.scrollUpdate = function() {
 									var scroll = jS.obj.scroll();
-									scroll.scrollTop(parseInt((y.value + 1) * (scroll.height() / me.size.rows)));
+									scroll.scrollTop(y.value * (scroll.height() / me.size.rows));
 									return;
 								}
 								break;
@@ -3232,9 +3232,8 @@ jQuery.sheet = {
 					scrollTo: function(pos) {
 						pos = $.extend({
 							axis: 'x',
-							value:0,
-							pixel: 1,
-							max: 0
+							value: 0,
+							pixel: 1
 						}, pos);
 
 						if (!jS.evt.scroll.axis) {
@@ -3251,12 +3250,11 @@ jQuery.sheet = {
 
 						pos.max = pos.max || me.max;
 
-						if (pos.value > pos.max) pos.value = pos.max;
-
 						var i = me.min, indexes = [];
 
-						while (i <= pos.max) {
-							if (i < pos.value && i >= me.min) {
+						console.log([me, pos.value]);
+						while (i <= pos.value || i <= pos.max) {
+							if (i < pos.value && i > me.min) {
 								indexes.push(i);
 							}
 							i++;
@@ -5610,9 +5608,7 @@ jQuery.sheet = {
 					cols = jS.cols(),
 					paneWidth = pane.width(),
 					paneHeight = pane.height(),
-					loc = jS.getTdLocation(td),
-					width = td.width(),
-					height = td.height(),
+					panePos = pane.offset(),
 					visibleFold = {
 						top: 0,
 						bottom: paneHeight,
@@ -5620,38 +5616,39 @@ jQuery.sheet = {
 						right: paneWidth
 					},
 					move = true,
-					xHidden,
-					yHidden,
 					i = 0,
 					x = 0,
 					y = 0,
 					max = 3,
-					pos = td.position(),
-					tdLocation,
+					tdPos = td.offset(),
+					tdLoc = jS.getTdLocation(td),
+					tdWidth = td.width(),
+					tdHeight = td.height(),
+					tdLocation = {
+						top: tdPos.top - panePos.top,
+						bottom: (tdPos.top + tdWidth) - panePos.top,
+						left: tdPos.left - panePos.left,
+						right: (tdPos.left + tdHeight) - panePos.left
+					},
 					directions,
-					tdTemp = jS.getTd(jS.i, loc.row, loc.col),
-					heightTemp = tdTemp.height(),
-					widthTemp = tdTemp.width();
+					tempHeight = 0,
+					tempWidth = 0;
 
 				while (move == true && i < max) {
-					xHidden = $(cols[loc.col + x]).is(':hidden');
-					yHidden = tdTemp.is(':hidden');
+					var tempTd = jS.getTd(jS.i, jS.scrolledArea[jS.i].row.end + y, jS.scrolledArea[jS.i].col.end + x),
+						xHidden = $(cols[tdLoc.col + x]).is(':hidden'),
+						yHidden = td.is(':hidden');
 
 					move = false;
-					tdLocation = {
-						top: parseInt(pos.top),
-						bottom: parseInt(pos.top + heightTemp),
-						left: parseInt(pos.left),
-						right: parseInt(pos.left + widthTemp)
-					};
+
 					directions = {
-						up: yHidden || tdLocation.top < visibleFold.top,
-						down: tdLocation.bottom > visibleFold.bottom,
-						left: xHidden || tdLocation.left < visibleFold.left,
-						right: tdLocation.right > visibleFold.right
+						up: yHidden,
+						down: tdLocation.bottom - tempHeight > visibleFold.bottom,
+						left: xHidden,
+						right: tdLocation.right - tempWidth > visibleFold.right
 					};
 
-					//console.log([directions, tdLocation, visibleFold]);
+					console.log([tempTd, directions, tdLocation, visibleFold, tempHeight, tempWidth]);
 
 					if (directions.left) {
 						x--;
@@ -5669,29 +5666,23 @@ jQuery.sheet = {
 						move = true;
 					}
 
-					tdTemp = jS.getTd(jS.i, jS.scrolledArea[jS.i].row.end + y, jS.scrolledArea[jS.i].col.end + x);
-					console.log([jS.i, jS.scrolledArea[jS.i].row.end + y, jS.scrolledArea[jS.i].col.end + x]);
-					if (i == 0) {
-						widthTemp = 0;
-						heightTemp = 0;
-						pos = tdTemp.position();
-					}
-					widthTemp += tdTemp.width();
-					heightTemp += tdTemp.height();
+					tempHeight += tempTd.height();
+					tempWidth += tempTd.width();
+
 					i++;
 				}
 
 				if (x > 0 || x < 0) { //left || right
-					jS.evt.scroll.scrollTo({axis: 'x', value: jS.scrolledArea[jS.i].col.end + x, max: jS.scrolledArea[jS.i].col.end + y});
-					jS.evt.scroll.stop();
+					jS.evt.scroll.scrollTo({axis: 'x', value: jS.scrolledArea[jS.i].col.end + x});
+					//jS.evt.scroll.stop();
 				}
 
 				if (y > 0 || y < 0) { //up || down
-					jS.evt.scroll.scrollTo({axis: 'y', value: jS.scrolledArea[jS.i].row.end + y, max: jS.scrolledArea[jS.i].row.end + y});
-					jS.evt.scroll.stop();
+					jS.evt.scroll.scrollTo({axis: 'y', value: jS.scrolledArea[jS.i].row.end + y});
+					//jS.evt.scroll.stop();
 				}
 
-				jS.autoFillerGoToTd(td, height, width);
+				jS.autoFillerGoToTd(td, tdHeight, tdWidth);
 			},
 
 			/**
