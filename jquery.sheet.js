@@ -1715,7 +1715,11 @@ jQuery.sheet = {
 								.blur(function() {
 									if (menu) menu.hide();
 								})
-								.css('padding-left', target.position().left + target.width() - s.colMargin);
+								.css('padding-left', target.position().left + target.width() - s.colMargin)
+								.bind('destroy', function() {
+									barMenuParentTop.remove();
+									jS.controls.bar.x.menuParent[jS.i] = null;
+								});
 
 							jS.controls.bar.x.menuParent[jS.i] = barMenuParentTop;
 						}
@@ -3306,6 +3310,8 @@ jQuery.sheet = {
 			 */
 			refreshColumnLabels: function(start) {
 				start = start || 0;
+
+				jS.obj.barMenuParentTop().trigger('destroy');
 
 				var tds = jS.controls.bar.x.td[jS.i];
 
@@ -5594,17 +5600,16 @@ jQuery.sheet = {
 
 				var pane = jS.obj.pane(),
 					cols = jS.cols(),
-					paneOffset = pane.offset(),
 					paneWidth = pane.width(),
 					paneHeight = pane.height(),
 					tdLoc = jS.getTdLocation(td),
 					tdWidth = td.width(),
 					tdHeight = td.height(),
 					visibleFold = {
-						top: parseInt(paneOffset.top),
-						bottom: parseInt(paneOffset.top + paneHeight),
-						left: parseInt(paneOffset.left),
-						right: parseInt(paneOffset.left + paneWidth)
+						top: 0,
+						bottom: paneHeight,
+						left: 0,
+						right: paneWidth
 					},
 					move = true,
 					rowHidden,
@@ -5618,11 +5623,12 @@ jQuery.sheet = {
 					directions;
 
 				while (move == true && i < max) {
+					setTimeout(function() {
 					rowHidden = td.is(':hidden');
 					colHidden = $(cols[tdLoc.col]).is(':hidden');
 
 					move = false;
-					tdPos = td.offset();
+					tdPos = td.position();
 					tdLocation = {
 						top: parseInt(tdPos.top),
 						bottom: parseInt(tdPos.top + tdHeight),
@@ -5636,7 +5642,7 @@ jQuery.sheet = {
 						right: tdLocation.right > visibleFold.right
 					};
 
-					//console.log(directions);
+					//console.log([directions, tdLocation, visibleFold]);
 
 					if (directions.left) {
 						jS.evt.scroll.scrollTo({axis: 'x', value: tdLoc.col + -x});
@@ -5661,7 +5667,7 @@ jQuery.sheet = {
 					if (move) {
 						jS.evt.scroll.stop();
 					}
-
+					}, i * 100);
 					i++;
 				}
 
