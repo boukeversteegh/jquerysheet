@@ -1069,6 +1069,7 @@ jQuery.sheet = {
 			 * @name kill
 			 */
 			kill: function() {
+				$document.unbind('keydown');
 				jS.obj.fullScreen().remove();
 				jS.obj.inPlaceEdit().trigger('destroy');
 				s.parent
@@ -1284,6 +1285,7 @@ jQuery.sheet = {
 								cells: function() {
 									//table / tbody / tr / td
 									var cells = jS.rowCells(sheet, i);
+									if (!cells) return {};
 									return cells[0].parentNode;
 								},
 								col: function() { return ''; },
@@ -2155,9 +2157,18 @@ jQuery.sheet = {
 								}
 							});
 
-					if (s.hiddenRows[jS.i]) {
-						for(var row in s.hiddenRows[jS.i]) {
-							jS.toggleHide.row(s.hiddenRows[jS.i][row]);
+					s.hiddenColumns[jS.i] = s.hiddenColumns[jS.i] || [];
+					s.hiddenRows[jS.i] = s.hiddenRows[jS.i] || [];
+
+					if (!s.hiddenColumns[jS.i].length || !s.hiddenRows[jS.i].length) {
+						s.hiddenRows[jS.i] = arrHelpers.toNumbers((sheet.data('hiddenrows') || '' + '').split(','));
+						s.hiddenColumns[jS.i] = arrHelpers.toNumbers((sheet.data('hiddencolumns') || '' + '').split(','));
+					}
+
+					if (jS.s.hiddenRows[jS.i]) {
+						for(var row in jS.s.hiddenRows[jS.i]) {
+							console.log(jS.s.hiddenRows[jS.i][row]);
+							jS.toggleHide.row(jS.s.hiddenRows[jS.i][row]);
 						}
 					}
 
