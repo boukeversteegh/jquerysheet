@@ -6040,6 +6040,7 @@ jQuery.sheet = {
 				}
 
 				setActive();
+				jS.themeRoller.cell.clearHighlighted();
 				jS.themeRoller.cell.setHighlighted(td);
 
 				jS.highlightedLast.td = td;
