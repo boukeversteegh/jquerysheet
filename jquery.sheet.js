@@ -1546,7 +1546,7 @@ jQuery.sheet = {
 								jS.setBusy(false);
 								var target = jS.nearest(handle, jS.controls.bar.x.tds());
 								jS.obj.barHelper().remove();
-								jS.s.frozenAt().col = jS.getTdLocation(target).col - 1;
+								jS.frozenAt().col = jS.getTdLocation(target).col - 1;
 								jS.evt.scroll.start('x', pane);
 							},
 							containment: 'parent'
