@@ -2369,42 +2369,50 @@ jQuery.sheet = {
 				inPlaceEdit: function(td) {
 					td = td || jS.obj.cellActive();
 
+					if (!td.length) {
+						td = $(jS.rowTds(null, 1)[1]);
+						jS.cellEdit(td);
+					}
+
 					jS.obj.inPlaceEdit().trigger('destroy');
 					var formula = jS.obj.formula(),
 						offset = td.offset(),
 						style = td.attr('style'),
 						w = td.width(),
-						h = td.height(),
-						textarea = jS.controls.inPlaceEdit[jS.i] = $('<textarea id="' + jS.id.inPlaceEdit + '" class="' + jS.cl.inPlaceEdit + ' ' + jS.cl.uiInPlaceEdit + '" data-i="' + jS.i + '"/>')
-							.css('left', offset.left)
-							.css('top', offset.top)
-							.width(w)
-							.height(h)
-							.keydown(jS.evt.inPlaceEditOnKeyDown)
-							.keyup(function() {
-								formula.val(textarea.val());
-							})
-							.change(function() {
-								formula.val(textarea.val());
-							})
-							.focus(function() {
-								jS.setNav(false);
-							})
-							.focusout(function() {
-								jS.setNav(true);
-							})
-							.blur(function() {
-								jS.setNav(true);
-							})
-							.bind('paste', jS.evt.pasteOverCells)
-							.appendTo($body)
-							.val(formula.val())
-							.focus()
-							.select()
-							.bind('destroy', function() {
-								textarea.remove();
-								jS.controls.inPlaceEdit[textarea.data('i')] = false;
-							});
+						h = td.height();
+
+					if (!offset) return; //If the td is a dud, we do not want a textarea
+
+					var textarea = jS.controls.inPlaceEdit[jS.i] = $('<textarea id="' + jS.id.inPlaceEdit + '" class="' + jS.cl.inPlaceEdit + ' ' + jS.cl.uiInPlaceEdit + '" data-i="' + jS.i + '"/>')
+						.css('left', offset.left)
+						.css('top', offset.top)
+						.width(w)
+						.height(h)
+						.keydown(jS.evt.inPlaceEditOnKeyDown)
+						.keyup(function() {
+							formula.val(textarea.val());
+						})
+						.change(function() {
+							formula.val(textarea.val());
+						})
+						.focus(function() {
+							jS.setNav(false);
+						})
+						.focusout(function() {
+							jS.setNav(true);
+						})
+						.blur(function() {
+							jS.setNav(true);
+						})
+						.bind('paste', jS.evt.pasteOverCells)
+						.appendTo($body)
+						.val(formula.val())
+						.focus()
+						.select()
+						.bind('destroy', function() {
+							textarea.remove();
+							jS.controls.inPlaceEdit[textarea.data('i')] = false;
+						});
 
 					//Make the textarrea resizable automatically
 					if ($.fn.elastic) {
@@ -2812,7 +2820,7 @@ jQuery.sheet = {
 				 * @name inPlaceEditOnKeyDown
 				 */
 				inPlaceEditOnKeyDown: function(e) {
-
+					jS.cellLast.isEdit = true;
 					jS.trigger('sheetFormulaKeydown', [true]);
 
 					switch (e.keyCode) {
@@ -2832,57 +2840,54 @@ jQuery.sheet = {
 				 * @name cellEditDone
 				 */
 				cellEditDone: function(forceCalc) {
-					switch (jS.cellLast.isEdit || forceCalc) {
-						case true:
-							jS.obj.inPlaceEdit().trigger('destroy');
-							var formula = jS.obj.formula(),
-								td = jS.obj.cellActive();
+					jS.obj.inPlaceEdit().trigger('destroy');
+					if (jS.cellLast.isEdit || forceCalc) {
+						var formula = jS.obj.formula(),
+							td = jS.obj.cellActive();
 
-							switch(jS.isFormulaEditable(td)) {
-								case true:
-									//Lets ensure that the cell being edited is actually active
-									if (td && jS.cellLast.row > 0 && jS.cellLast.col > 0) {
-										//first, let's make it undoable before we edit it
-										jS.cellUndoable.add(td);
+						if (jS.isFormulaEditable(td)) {
+							//Lets ensure that the cell being edited is actually active
+							if (td && jS.cellLast.row > 0 && jS.cellLast.col > 0) {
+								//first, let's make it undoable before we edit it
+								jS.cellUndoable.add(td);
 
-										//This should return either a val from textbox or formula, but if fails it tries once more from formula.
-										var v = formula.val(),
-											prevVal = td.text(),
-											cell = jS.spreadsheets[jS.i][jS.cellLast.row][jS.cellLast.col];
+								//This should return either a val from textbox or formula, but if fails it tries once more from formula.
+								var v = formula.val(),
+									prevVal = td.text(),
+									cell = jS.spreadsheets[jS.i][jS.cellLast.row][jS.cellLast.col];
 
-										if (v.charAt(0) == '=') {
-											td
-												.data('formula', v)
-												.html('');
-											cell.value = v;
-											cell.formula = v;
-										} else {
-											td
-												.removeData('formula')
-												.html(s.encode(v));
-											cell.value = v;
-											cell.formula = null;
-										}
+								if (v.charAt(0) == '=') {
+									td
+										.data('formula', v)
+										.html('');
+									cell.value = v;
+									cell.formula = v;
+								} else {
+									td
+										.removeData('formula')
+										.html(s.encode(v));
+									cell.value = v;
+									cell.formula = null;
+								}
 
-										jS.setChanged(true);
+								jS.setChanged(true);
 
-										if (v != prevVal || forceCalc) {
-											jS.calcDependencies(jS.i, jS.cellLast.row, jS.cellLast.col);
-										}
+								if (v != prevVal || forceCalc) {
+									jS.calcDependencies(jS.i, jS.cellLast.row, jS.cellLast.col);
+								}
 
-										//Save the newest version of that cell
-										jS.cellUndoable.add(td);
+								//Save the newest version of that cell
+								jS.cellUndoable.add(td);
 
-										//formula.focus().select();
-										jS.cellLast.isEdit = false;
+								//formula.focus().select();
+								jS.cellLast.isEdit = false;
 
-										jS.setDirty(true);
+								jS.setDirty(true);
 
-										//perform final function call
-										jS.trigger('sheetCellEdited', [cell]);
-									}
+								//perform final function call
+								jS.trigger('sheetCellEdited', [cell]);
 							}
-							break;
+						}
 					}
 				},
 
@@ -3068,7 +3073,6 @@ jQuery.sheet = {
 				cellOnDblClick: function(e) {
 					if (jS.isBusy()) return false;
 
-					jS.cellLast.isEdit = true;
 					jS.controlFactory.inPlaceEdit();
 					//jS.log('click, in place edit activated');
 				},
@@ -5804,7 +5808,7 @@ jQuery.sheet = {
 			 * @name openSheet
 			 */
 			openSheet: function(tables) {
-				if (!jS.isDirty ? true : confirm(jS.msg.openSheet)) {
+				if (jS.isDirty ? confirm(jS.msg.openSheet) : true) {
 					jS.setBusy(true);
 					var header = jS.controlFactory.header(),
 						ui = jS.controlFactory.ui(),
