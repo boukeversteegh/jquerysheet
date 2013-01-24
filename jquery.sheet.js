@@ -996,8 +996,6 @@ jQuery.sheet = {
 				barTop: 				'jSBarTop',
 				barHandleFreezeTop: 	'jSBarHandleFreezeTop',
 				barTopParent: 			'jSBarTopParent',
-				cellActive:				'jSCellActive',
-				cellHighlighted: 		'jSCellHighighted',
 				chart:					'jSChart',
 				formula: 				'jSFormula',
 				formulaParent:			'jSFormulaParent',
@@ -2373,7 +2371,8 @@ jQuery.sheet = {
 						offset = td.offset(),
 						style = td.attr('style'),
 						w = td.width(),
-						h = td.height();
+						h = td.height(),
+						val = formula.val();
 
 					if (!offset) return; //If the td is a dud, we do not want a textarea
 
@@ -2404,6 +2403,7 @@ jQuery.sheet = {
 						.focus()
 						.select()
 						.bind('destroy', function() {
+							jS.cellLast.isEdit = (textarea.val() != val);
 							textarea.remove();
 							jS.controls.inPlaceEdit[textarea.data('i')] = false;
 						});
@@ -2814,7 +2814,6 @@ jQuery.sheet = {
 				 * @name inPlaceEditOnKeyDown
 				 */
 				inPlaceEditOnKeyDown: function(e) {
-					jS.cellLast.isEdit = true;
 					jS.trigger('sheetFormulaKeydown', [true]);
 
 					switch (e.keyCode) {
@@ -2893,7 +2892,6 @@ jQuery.sheet = {
 				 */
 				cellEditAbandon: function(skipCalc) {
 					jS.obj.inPlaceEdit().trigger('destroy');
-					jS.themeRoller.cell.clearActive();
 					jS.themeRoller.bar.clearActive();
 					jS.themeRoller.cell.clearHighlighted();
 
@@ -3519,8 +3517,6 @@ jQuery.sheet = {
 					.attr('cellspacing', '0');
 
 				jS.controls.sheets = jS.obj.sheets().add(o);
-					
-				o.children('tbody').children('tr').children('td.' + jS.cl.cellActive).removeClass(jS.cl.cellActive);
 				
 				return o;
 			},
@@ -4123,20 +4119,6 @@ jQuery.sheet = {
 				cell: {
 
 					/**
-					 * Sets active jS.obj.cellActive() by adding class jS.cl.cellActive
-					 * @methodOf jS.themeRoller.cell
-					 * @name setActive
-					 */
-					setActive: function() {
-						this.clearActive();
-
-						this.setHighlighted(
-							jS.obj.cellActive()
-								.addClass(jS.cl.cellActive)
-						);
-					},
-
-					/**
 					 * Highlights td object
 					 * @param {jQuery|HTMLElement} td td object
 					 * @methodOf jS.themeRoller.cell
@@ -4144,17 +4126,7 @@ jQuery.sheet = {
 					 */
 					setHighlighted: function(td) {
 						$(td)
-							.addClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
-					},
-
-					/**
-					 * Clears active jS.obj.cellActive();
-					 * @methodOf jS.themeRoller.cell
-					 * @name clearActive
-					 */
-					clearActive: function() {
-						jS.obj.cellActive()
-							.removeClass(jS.cl.cellActive);
+							.addClass(jS.cl.uiCellHighlighted);
 					},
 
 					/**
@@ -4175,7 +4147,7 @@ jQuery.sheet = {
 					clearHighlighted: function() {
 						if (jS.themeRoller.cell.isHighlighted()) {
 							jS.obj.cellHighlighted()
-								.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
+								.removeClass(jS.cl.uiCellHighlighted);
 						}
 						
 						jS.highlightedLast.rowStart = 0;
@@ -4454,11 +4426,11 @@ jQuery.sheet = {
 				sheets = (makeClone ? sheets.clone() : sheets);
 				
 				//Get rid of highlighted cells and active cells
-				sheets.find('td.' + jS.cl.cellActive)
-					.removeClass(jS.cl.cellActive + ' ' + jS.cl.uiCellActive);
+				sheets.find('td.' + jS.cl.uiCellActive)
+					.removeClass(jS.cl.uiCellActive);
 
-				sheets.find('td.' + jS.cl.cellHighlighted)
-					.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
+				sheets.find('td.' + jS.cl.uiCellHighlighted)
+					.removeClass(jS.cl.uiCellHighlighted);
 				return sheets;
 			},
 
@@ -4498,6 +4470,8 @@ jQuery.sheet = {
 			 * @param {Boolean} isDrag should be determined by if the user is dragging their mouse around setting cells
 			 */
 			cellEdit: function(td, isDrag) {
+				if (td.is(jS.cellLast.td)) return;
+
 				jS.autoFillerNotGroup = true; //make autoFiller directional again.
 				//This finished up the edit of the last cell
 				jS.evt.cellEditDone();
@@ -4548,8 +4522,8 @@ jQuery.sheet = {
 					jS.themeRoller.cell.clearHighlighted();
 					
 					jS.highlightedLast.td = td;
-					
-					jS.themeRoller.cell.setActive(); //themeroll the cell and bars
+
+					jS.themeRoller.cell.setHighlighted(td); //themeroll the cell and bars
 					jS.themeRoller.bar.setActive('left', jS.cellLast.row);
 					jS.themeRoller.bar.setActive('top', jS.cellLast.col);
 
@@ -4680,25 +4654,21 @@ jQuery.sheet = {
 			 */
 			cellStyleToggle: function(setClass, removeClass) {
 				//Lets check to remove any style classes
-				var uiCell = jS.obj.cellHighlighted();
+				var tds = jS.obj.cellHighlighted();
 				
-				jS.cellUndoable.add(uiCell);
+				jS.cellUndoable.add(tds);
 				
 				if (removeClass) {
-					uiCell.removeClass(removeClass);
+					tds.removeClass(removeClass);
 				}
 				//Now lets add some style
-				if (uiCell.hasClass(setClass)) {
-					uiCell.removeClass(setClass);
+				if (tds.hasClass(setClass)) {
+					tds.removeClass(setClass);
 				} else {
-					uiCell.addClass(setClass);
+					tds.addClass(setClass);
 				}
 				
-				jS.cellUndoable.add(uiCell);
-				
-				//jS.obj.formula()
-					//.focus()
-					//.select();
+				jS.cellUndoable.add(tds);
 				return false;
 			},
 
@@ -4837,7 +4807,9 @@ jQuery.sheet = {
 						dependantCellLoc = jS.getTdLocation(dependantCell.td);
 
 					jS.updateCellValue(dependantCell.sheet, dependantCellLoc.row, dependantCellLoc.col);
-					jS.updateCellDependencies(dependantCell.sheet, dependantCellLoc.row, dependantCellLoc.col);
+					if (dependantCellLoc.row && dependantCellLoc.col) {
+						jS.updateCellDependencies(dependantCell.sheet, dependantCellLoc.row, dependantCellLoc.col);
+					}
 				}
 				cell.state = null;
 			},
@@ -6418,7 +6390,7 @@ jQuery.sheet = {
 				 * @memberOf jS.cellUndoable
 				 * @name i
 				 */
-				i: null,
+				i: [],
 
 				/**
 				 * undo stack
@@ -6436,35 +6408,39 @@ jQuery.sheet = {
 				undoOrRedo: function(undo) {
 					//hide the autoFiller, it can get confused
 					jS.autoFillerHide();
+
+					if (!this.stack[jS.i]) return;
 					
-					if (undo && this.i > 0) {
-						this.i--;
-						this.i--;
-					} else if (!undo && this.i < this.stack.length) {
-						this.i++;
-						this.i++;
+					if (undo && this.i[jS.i] > 0) {
+						//this.i[jS.i]--;
+						this.i[jS.i]--;
+					} else if (!undo && this.i[jS.i] < this.stack[jS.i].length) {
+						//this.i[jS.i]++;
+						this.i[jS.i]++;
 					}
 					
 					var cells = this.get();
-					for(var cell in cells) {
-						var o = $(cells[cell]),
-							id = o.attr('undoable');
-						if (id) {
-							$('#' + id).replaceWith(
-								o
-									.removeAttr('undoable')
-									.attr('id', id)
-							);
-						} else {
-							jS.log('Not available.');
-						}
+					console.log(cells);
+					for(var i in cells) {
+						var td = cells[i].td,
+							loc = jS.getTdLocation(td);
+
+						console.log(td);
+
+						jS.spreadsheets[jS.i][loc.row][loc.col] = cells[i];
+
+						td
+							.data('formula', cells[i]['formula'])
+							.attr('style', cells[i]['style'])
+							.attr('class', cells[i]['class'])
+							.html('');
+
+						jS.cellLast.td = $([]);
+
+						jS.calcDependencies(jS.i, loc.row, loc.col);
+
+						jS.cellEdit(td);
 					}
-					
-					jS.themeRoller.cell.clearActive();
-					jS.themeRoller.bar.clearActive();
-					jS.themeRoller.cell.clearHighlighted();
-					
-					jS.calc();
 				},
 
 				/**
@@ -6474,7 +6450,10 @@ jQuery.sheet = {
 				 * @methodOf jS.cellUndoable
 				 */
 				get: function() { //
-					return this.stack[this.i];
+					if (!this.stack[jS.i]) this.stack[jS.i] = [];
+					if (!this.i[jS.i]) this.i[jS.i] = 0;
+
+					return this.stack[jS.i][this.i[jS.i]];
 				},
 
 				/**
@@ -6485,34 +6464,40 @@ jQuery.sheet = {
 				 */
 				add: function(tds) {
 					var cells = {};
-					for(var td in tds) {
-						var td = $(tds[td]),
-							loc = jS.loc(td),
-							cell = jS.spreadsheets[jS.i][loc.row][loc.row];
+					$.each(tds, function() {
+						var td = $(this),
+							loc = jS.getTdLocation(this);
 
-						var id = jS.i + '_' + loc.row + '_' + loc.row;
-						if (!cells[id]) cells[id] = {};
-						for (var attr in cell) {
-							if (attr != 'td') {
+						if (loc.col > 0 & loc.row > 0) {
+							var	cell = jS.spreadsheets[jS.i][loc.row][loc.col];
+
+							var id = jS.i + '_' + loc.row + '_' + loc.row;
+							if (!cells[id]) cells[id] = {};
+							for (var attr in cell) {
 								cells[id][attr] = cell[attr];
 							}
+							cells[id]['style'] = td.attr('style');
+							cells[id]['class'] = td.attr('class');
+							cells[id][attr].sheet = jS.i;
 						}
+					});
 
-					}
-					
-					this.stack[this.i++] = cells;
-						
-					if (this.stack.length > this.i) {
-						for (var i = this.stack.length; i > this.i; i--) {
-							this.stack.pop();
+					if (!this.stack[jS.i]) this.stack[jS.i] = [];
+					if (!this.i[jS.i]) this.i[jS.i] = 0;
+
+					this.stack[jS.i][this.i[jS.i]++] = cells;
+
+					if (this.stack[jS.i].length > this.i) {
+						for (var i = this.stack[jS.i].length; i > this.i[jS.i]; i--) {
+							this.stack[jS.i].pop();
 						}
 					}
-					
-					
-					if (this.stack.length > 20) { //undoable count, we want to be careful of too much memory consumption
-						this.stack.shift(); //drop the first value
+
+
+					if (this.stack[jS.i].length > 20) { //undoable count, we want to be careful of too much memory consumption
+						this.stack[jS.i].shift(); //drop the first value
 					}
-						
+
 				}
 			},
 
