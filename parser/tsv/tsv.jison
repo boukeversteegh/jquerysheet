@@ -2,21 +2,24 @@
 
 /* lexical grammar */
 %lex
-%s DOUBLE_QUOTATION_ON SINGLE_QUOTATION_ON
+%s SINGLE_QUOTATION_ON DOUBLE_QUOTATION_ON
 %%
+<SINGLE_QUOTATION_ON>'"'            {return 'CHAR';}
+<DOUBLE_QUOTATION_ON>"'"            {return 'CHAR';}
 <DOUBLE_QUOTATION_ON>'"' {
-	this.popState('d');
+	this.popState('DOUBLE_QUOTATION_ON');
 	return 'DOUBLE_QUOTATION';
+}
 '"' {
-	this.begin('d');
+	this.begin('DOUBLE_QUOTATION_ON');
 	return 'DOUBLE_QUOTATION';
 }
 <SINGLE_QUOTATION_ON>"'" {
-	this.popState('s');
+	this.popState('SINGLE_QUOTATION_ON');
 	return 'SINGLE_QUOTATION';
 }
 "'" {
-	this.begin('s');
+	this.begin('SINGLE_QUOTATION_ON');
 	return 'SINGLE_QUOTATION';
 }
 <DOUBLE_QUOTATION_ON>(\n|"\n")      {return 'CHAR';}
@@ -38,6 +41,9 @@ cells :
 	rows EOF {
         return $1;
     }
+    | EOF {
+        return '';
+    }
 ;
 
 rows :
@@ -54,26 +60,26 @@ row :
 	END_OF_LINE {
 		$$ = [];
 	}
-	| columns {
+	| column {
 		$$ = [$1];
 	}
-	| row columns {
+	| row column {
 		$1 = $1 || [];
 		$1.push($2);
 		$$ = $1;
 	}
 ;
 
-columns :
+column :
 	COLUMN {
 		$$ = '';
 	}
 	| string {
 		$$ = $1;
     }
-	| columns string {
-		$$ = $2;
-	}
+    | string COLUMN {
+        $$ = $1;
+    }
 ;
 
 string :
