@@ -76,17 +76,20 @@
 					tables = tables.add(table);
 
 					$.each(this['rows'], function() {
-						var tr = $('<tr />')
-							.attr('height', this['height'])
-							.css('height', this['height'])
-							.appendTo(table);
+						if (this['height']) {
+							var tr = $('<tr />')
+								.attr('height', this['height'])
+								.css('height', this['height'])
+								.appendTo(table);
+						}
 						$.each(this['columns'], function() {
 							var td = $('<td />')
-								.attr('class', this['class'] || '')
-								.attr('style', this['style'] || '')
-								.data('formula', (this['formula'] ? '=' + this['formula'] : ''))
-								.html(this['value'] || '')
 								.appendTo(tr);
+
+							if (this['class']) td.attr('class', this['class'] || '');
+							if (this['style']) td.attr('style', this['style'] || '');
+							if (this['formula']) td.data('formula', (this['formula'] ? '=' + this['formula'] : ''))
+							if (this['value']) td.html(this['value'] || '')
 						});
 					});
 
@@ -166,9 +169,14 @@
 									$.each(this.childNodes, function(l, row) { //row
 										switch (this.nodeName.toLowerCase()) {
 											case 'row':
-												var tr = $('<tr/>').appendTo(tbody)
-													.css('height', (this.attributes['height'] ? this.attributes['height'].nodeValue : ''))
-													.attr('height', (this.attributes['height'] ? this.attributes['height'].nodeValue : ''));
+												var tr = $('<tr/>').appendTo(tbody);
+
+												if (this.attributes['height']) {
+													tr
+														.css('height', (this.attributes['height'] ? this.attributes['height'].nodeValue : ''))
+														.attr('height', (this.attributes['height'] ? this.attributes['height'].nodeValue : ''));
+												}
+
 												$.each(this.childNodes, function(m, columns) {
 													switch (this.nodeName.toLowerCase()) {
 														case 'columns':
