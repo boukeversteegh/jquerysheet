@@ -91,14 +91,16 @@
 					});
 
 					if (!this['metadata']) return;
-					if (!this['metadata']['width']) return;
+					if (!this['metadata']['widths']) return;
 
-					var colgroup = $('<colgroup />');
-					$.each(this['metadata']['widths'], function() {
+					var colgroup = $('<colgroup />')
+						.prependTo(table);
+					for(var width in this['metadata']['widths']) {
 						var col = $('<col />')
-							.attr('width', this['width'])
-							.css('width', this['width']);
-					});
+							.attr('width', this['metadata']['widths'][width])
+							.css('width', this['metadata']['widths'][width])
+							.appendTo(colgroup);
+					}
 				});
 
 				return tables;
