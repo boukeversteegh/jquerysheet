@@ -317,7 +317,7 @@
 							if (this['formula']) Column['formula'] = this['formula'];
 							if (this['value']) Column['value'] = this['value'];
 							if (this.td.attr('style')) Column['style'] = this.td.attr('style');
-							if (this.td.attr('class'))
+							if ($.trim(this.td.attr('class')))
 								Column['class'] = (this.td.attr('class') + '')
 									.replace(jS.cl.uiCellActive, '')
 									.replace(jS.cl.uiCellHighlighted, '');
