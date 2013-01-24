@@ -1398,9 +1398,6 @@ jQuery.sheet = {
 							break;
 					}
 					
-					//make undoable
-					jS.cellUndoable.add(sheet);
-					
 					var cells = $(o.cells()),
 						loc = o.loc(cells),
 						col = o.col(),
@@ -1433,9 +1430,6 @@ jQuery.sheet = {
 						//offset formulas
 						jS.offsetFormulas(loc, o.offset, isBefore);
 					}
-
-					//Let's make it redoable
-					jS.cellUndoable.add(sheet);
 
 					jS.obj.pane().trigger('resizeScroll');
 				},
@@ -6451,8 +6445,9 @@ jQuery.sheet = {
 						this.i++;
 					}
 					
-					this.get().clone().each(function() {
-						var o = $(this),
+					var cells = this.get();
+					for(var cell in cells) {
+						var o = $(cells[cell]),
 							id = o.attr('undoable');
 						if (id) {
 							$('#' + id).replaceWith(
@@ -6463,7 +6458,7 @@ jQuery.sheet = {
 						} else {
 							jS.log('Not available.');
 						}
-					});
+					}
 					
 					jS.themeRoller.cell.clearActive();
 					jS.themeRoller.bar.clearActive();
@@ -6479,7 +6474,7 @@ jQuery.sheet = {
 				 * @methodOf jS.cellUndoable
 				 */
 				get: function() { //
-					return $(this.stack[this.i]);
+					return this.stack[this.i];
 				},
 
 				/**
@@ -6489,17 +6484,23 @@ jQuery.sheet = {
 				 * @methodOf jS.cellUndoable
 				 */
 				add: function(tds) {
-					var oldTds = tds.clone().each(function() {
-						var o = $(this),
-							id = o.attr('id');
-						if (!id) return;
-						o
-							.removeAttr('id') //id can only exist in one location, on the sheet, so here we use the id as the attr 'undoable'
-							.attr('undoable', id)
-							.removeClass(jS.cl.cellHighlighted + ' ' + jS.cl.uiCellHighlighted);
-					});
+					var cells = {};
+					for(var td in tds) {
+						var td = $(tds[td]),
+							loc = jS.loc(td),
+							cell = jS.spreadsheets[jS.i][loc.row][loc.row];
+
+						var id = jS.i + '_' + loc.row + '_' + loc.row;
+						if (!cells[id]) cells[id] = {};
+						for (var attr in cell) {
+							if (attr != 'td') {
+								cells[id][attr] = cell[attr];
+							}
+						}
+
+					}
 					
-					this.stack[this.i++] = oldTds;
+					this.stack[this.i++] = cells;
 						
 					if (this.stack.length > this.i) {
 						for (var i = this.stack.length; i > this.i; i--) {
