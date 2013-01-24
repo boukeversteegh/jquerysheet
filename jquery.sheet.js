@@ -1284,7 +1284,7 @@ jQuery.sheet = {
 							o = {
 								cells: function() {
 									//table / tbody / tr / td
-									var cells = jS.rowCells(sheet, i);
+									var cells = jS.rowTds(sheet, i);
 									if (!cells || !cells[0]) return [];
 									return cells[0].parentNode;
 								},
@@ -1338,8 +1338,8 @@ jQuery.sheet = {
 						case "col":
 							o = {
 								cells: function() {
-									var cellStart = jS.rowCells(sheet, 1)[i],
-										lastRow = jS.rowCells(sheet),
+									var cellStart = jS.rowTds(sheet, 1)[i],
+										lastRow = jS.rowTds(sheet),
 										cellEnd = lastRow[lastRow.length - 1],
 
 										loc1 = jS.getTdLocation(cellStart),
@@ -1528,7 +1528,7 @@ jQuery.sheet = {
 					 * @name top
 					 */
 					top: function(pane) {
-						if (jS.busy) return false;
+						if (jS.isBusy()) return false;
 						if (!(jS.scrolledArea[jS.i].col.end <= (jS.frozenAt().col + 1))) return false;
 
 						jS.obj.barHelper().remove();
@@ -1569,7 +1569,7 @@ jQuery.sheet = {
 					 * @name left
 					 */
 					left: function(pane) {
-						if (jS.busy) return false;
+						if (jS.isBusy()) return false;
 						if (!(jS.scrolledArea[jS.i].row.end <= (jS.frozenAt().row + 1))) return false;
 
 						jS.obj.barHelper().remove();
@@ -1678,7 +1678,7 @@ jQuery.sheet = {
 					 * @name top
 					 */
 					top: function(e, i, target) {
-						if (jS.busy) return false;
+						if (jS.isBusy()) return false;
 						var menu = jS.obj.barMenuTop().hide();
 						
 						if (!menu.length) {
@@ -1738,7 +1738,7 @@ jQuery.sheet = {
 					 * @name left
 					 */
 					left: function(e, i) {
-						if (jS.busy) return false;
+						if (jS.isBusy()) return false;
 						jS.obj.barMenuLeft().hide();
 						
 						if (i) jS.obj.barHandleFreezeLeft().remove();
@@ -1774,7 +1774,7 @@ jQuery.sheet = {
 				 * @name cellMenu
 				 */
 				cellMenu: function(e) {
-					if (jS.busy) return false;
+					if (jS.isBusy()) return false;
 					jS.obj.cellMenu().hide();
 					
 					var menu = jS.obj.cellMenu();
@@ -2002,10 +2002,12 @@ jQuery.sheet = {
 								'<div></div>' +
 							'</div>')
 							.scroll(function() {
-								jS.evt.scroll.scrollTo({axis: 'x', pixel: this.scrollLeft}, 0);
-								jS.evt.scroll.scrollTo({axis: 'y', pixel: this.scrollTop}, 0);
+								if (!jS.isBusy()) {
+									jS.evt.scroll.scrollTo({axis: 'x', pixel: this.scrollLeft}, 0);
+									jS.evt.scroll.scrollTo({axis: 'y', pixel: this.scrollTop}, 0);
 
-								jS.autoFillerGoToTd();
+									jS.autoFillerGoToTd();
+								}
 							})
 							.prependTo(enclosure)
 							.disableSelectionSpecial();
@@ -2228,7 +2230,7 @@ jQuery.sheet = {
 						pane
 							.mousedown(function(e) {
 								jS.setNav(true);
-								if (jS.busy) return false;
+								if (jS.isBusy()) return false;
 
 								if (jS.isTd(e.target)) {
 									jS.evt.cellOnMouseDown(e);
@@ -2242,7 +2244,7 @@ jQuery.sheet = {
 							})
 							.mouseover(function(e) {
 								//This manages bar resize, bar menu, and bar selection
-								if (jS.busy) return false;
+								if (jS.isBusy()) return false;
 
 								if (!jS.isBar(e.target)) return;
 								var bar = $(e.target),
@@ -2268,7 +2270,7 @@ jQuery.sheet = {
 								}
 							})
 							.bind('contextmenu', function(e) {
-								if (jS.busy) return false;
+								if (jS.isBusy()) return false;
 
 								if (jS.isBar(e.target)) {
 									var o = $(e.target),
@@ -3032,7 +3034,6 @@ jQuery.sheet = {
 
 						//if the td exists, lets go to it
 						if (td) {
-							jS.themeRoller.cell.clearHighlighted();
 							jS.cellEdit(td);
 							return false;
 						}
@@ -3065,7 +3066,7 @@ jQuery.sheet = {
 				 * @name cellOnDblClick
 				 */
 				cellOnDblClick: function(e) {
-					if (jS.busy) return false;
+					if (jS.isBusy()) return false;
 
 					jS.cellLast.isEdit = true;
 					jS.controlFactory.inPlaceEdit();
@@ -3192,8 +3193,8 @@ jQuery.sheet = {
 									.trigger('updateStyle');
 								x.area = pane.width();
 								x.sheetArea = sheet.width();
-								x.scrollUpdate = function() {
-									var scroll = jS.obj.scroll();
+								x.scrollUpdate = function(scroll) {
+									scroll = scroll || jS.obj.scroll();
 									scroll.scrollLeft(x.value * (scroll.width() / me.size.cols));
 									return;
 								}
@@ -3207,8 +3208,8 @@ jQuery.sheet = {
 									.trigger('updateStyle');
 								y.area = pane.height();
 								y.sheetArea = sheet.height() ;
-								y.scrollUpdate = function() {
-									var scroll = jS.obj.scroll();
+								y.scrollUpdate = function(scroll) {
+									scroll = scroll || jS.obj.scroll();
 									scroll.scrollTop(y.value * (scroll.height() / me.size.rows));
 									return;
 								}
@@ -3252,9 +3253,8 @@ jQuery.sheet = {
 
 						var i = me.min, indexes = [];
 
-						//console.log([me, pos.value]);
 						while (i <= pos.value || i <= pos.max) {
-							if (i < pos.value && i > me.min) {
+							if (i < pos.value && i >= me.min) {
 								indexes.push(i);
 							}
 							i++;
@@ -3274,9 +3274,9 @@ jQuery.sheet = {
 					 * @methodOf jS.evt.scroll
 					 * @name stop
 					 */
-					stop: function() {
-						if (this.axis.x.scrollUpdate) this.axis.x.scrollUpdate();
-						if (this.axis.y.scrollUpdate) this.axis.y.scrollUpdate();
+					stop: function(scrollX, scrollY) {
+						if (this.axis.x.scrollUpdate) this.axis.x.scrollUpdate(scrollX);
+						if (this.axis.y.scrollUpdate) this.axis.y.scrollUpdate(scrollY);
 
 						if (jS.evt.scroll.td) {
 							jS.evt.scroll.td = null;
@@ -4294,17 +4294,26 @@ jQuery.sheet = {
 			 * @memberOf jS
 			 * @name busy
 			 */
-			busy: true,
+			busy: [],
+
 
 
 			/**
-			 * Set the spreadsheet's busy status
+			 * Set the spreadsheet busy status
 			 * @param {Boolean} busy
 			 * @memberOf jS
 			 * @name setBusy
 			 */
 			setBusy: function(busy) {
-				jS.busy = busy;
+				if (busy) {
+					jS.busy.push(busy);
+				} else {
+					jS.busy.pop();
+				}
+			},
+
+			isBusy: function() {
+				return (jS.busy.length > 0 ? true : false);
 			},
 
 			/**
@@ -4576,7 +4585,7 @@ jQuery.sheet = {
 						var lastLoc = loc; //we keep track of the most recent location because we don't want tons of recursion here
 						jS.obj.pane()
 							.mousemove(function(e) {
-								if (jS.busy) return false;
+								if (jS.isBusy()) return false;
 
 								var endLoc = jS.getTdLocation(e.target);
 
@@ -5605,39 +5614,46 @@ jQuery.sheet = {
 				if (!td.length) return;
 
 				var pane = jS.obj.pane(),
+					sheet = jS.obj.sheet(),
 					cols = jS.cols(),
 					paneWidth = pane.width(),
 					paneHeight = pane.height(),
 					panePos = pane.offset(),
 					visibleFold = {
-						top: 0,
-						bottom: paneHeight,
-						left: 0,
-						right: paneWidth
+						top: panePos.top,
+						bottom: panePos.top + paneHeight,
+						left: panePos.left,
+						right: panePos.left + paneWidth
 					},
 					move = true,
 					i = 0,
 					x = 0,
 					y = 0,
-					max = 3,
+					max = 5,
 					tdPos = td.offset(),
 					tdLoc = jS.getTdLocation(td),
 					tdWidth = td.width(),
 					tdHeight = td.height(),
 					tdLocation = {
-						top: tdPos.top - panePos.top,
-						bottom: (tdPos.top + tdWidth) - panePos.top,
-						left: tdPos.left - panePos.left,
-						right: (tdPos.left + tdHeight) - panePos.left
+						top: tdPos.top,
+						bottom: tdPos.top + tdHeight,
+						left: tdPos.left,
+						right: tdPos.left + tdWidth
 					},
+					tdParent = td.parent(),
+					tdInBottomRowOfSameCol = $(jS.rowTds(sheet)[tdLoc.col]),
 					directions,
 					tempHeight = 0,
 					tempWidth = 0;
 
+				//$.sheet.debugPositionBox(null, null, visibleFold);
+
+				jS.setBusy(true);
+
 				while (move == true && i < max) {
 					var tempTd = jS.getTd(jS.i, jS.scrolledArea[jS.i].row.end + y, jS.scrolledArea[jS.i].col.end + x),
-						xHidden = $(cols[tdLoc.col + x]).is(':hidden'),
-						yHidden = td.is(':hidden');
+						xHidden = tdInBottomRowOfSameCol.is(':hidden'),
+						yHidden = tdParent.is(':hidden');
 
 					move = false;
 
@@ -5648,11 +5664,12 @@ jQuery.sheet = {
 						right: tdLocation.right - tempWidth > visibleFold.right
 					};
 
-					//console.log([tempTd, directions, tdLocation, visibleFold, tempHeight, tempWidth]);
+					//$.sheet.debugPositionBox(tdLocation.right -tempWidth, tdLocation.bottom - tempHeight, null, 'green', directions);
 
 					if (directions.left) {
 						x--;
 						move = true;
+						jS.evt.scroll.scrollTo({axis: 'x', value: jS.scrolledArea[jS.i].col.end + x});
 					} else if (directions.right) {
 						x++;
 						move = true;
@@ -5661,6 +5678,7 @@ jQuery.sheet = {
 					if (directions.up) {
 						y--;
 						move = true;
+						jS.evt.scroll.scrollTo({axis: 'y', value: jS.scrolledArea[jS.i].row.end + y});
 					} else if (directions.down) {
 						y++;
 						move = true;
@@ -5672,15 +5690,19 @@ jQuery.sheet = {
 					i++;
 				}
 
-				if (x > 0 || x < 0) { //left || right
-					jS.evt.scroll.scrollTo({axis: 'x', value: jS.scrolledArea[jS.i].col.end + x});
-					//jS.evt.scroll.stop();
+				if (x > 0) { //right
+					jS.evt.scroll.scrollTo({axis: 'x', value: (jS.scrolledArea[jS.i].col.end + 1) + x});
+					jS.evt.scroll.stop();
 				}
 
-				if (y > 0 || y < 0) { //up || down
-					jS.evt.scroll.scrollTo({axis: 'y', value: jS.scrolledArea[jS.i].row.end + y});
-					//jS.evt.scroll.stop();
+				if (y > 0) { //down
+					jS.evt.scroll.scrollTo({axis: 'y', value: (jS.scrolledArea[jS.i].row.end + 1) + y});
+					jS.evt.scroll.stop();
 				}
+
+				setTimeout(function(){
+					jS.setBusy(false);
+				}, 10);
 
 				jS.autoFillerGoToTd(td, tdHeight, tdWidth);
 			},
@@ -6521,9 +6543,9 @@ jQuery.sheet = {
 			 * @param {Index} row Index of row
 			 * @returns {Element}
 			 * @methodOf jS
-			 * @name rowCells
+			 * @name rowTds
 			 */
-			rowCells: function(o, row) {
+			rowTds: function(o, row) {
 				o = o || jS.obj.sheet();
 
 				var rows = jS.rows(o);
@@ -6567,7 +6589,7 @@ jQuery.sheet = {
 				o = o || jS.obj.sheet();
 				//table / tbody / tr / td
 
-				var lastRow = jS.rowCells(o),
+				var lastRow = jS.rowTds(o),
 					loc = jS.getTdLocation(lastRow[lastRow.length - 1]);
 				return {
 					cols: loc.col,
@@ -6616,6 +6638,10 @@ jQuery.sheet = {
 				jS.calc();
 			}
 		};
+		jS.setBusy(true);
+
+		//got tired of ie crashing when console not available
+		if (!window.console) window.console = {log: function(){}};
 		
 		if (!window.scrollBarSize) {
 			window.scrollBarSize = $.sheet.getScrollBarSize();
@@ -6626,7 +6652,7 @@ jQuery.sheet = {
 			$body = $('body'),
 			emptyFN = function() {},
 			u = undefined;
-		
+
 		//ready the sheet's parser
 		jS.formulaLexer = function() {};
 		jS.formulaLexer.prototype = formula.lexer;
@@ -6700,7 +6726,7 @@ jQuery.sheet = {
 		
 		$window
 			.resize(function() {
-				if (jS && !jS.busy) { //We check because jS might have been killed
+				if (jS && !jS.isBusy()) { //We check because jS might have been killed
 					s.width = s.parent.width();
 					s.height = s.parent.height();
 					jS.sheetSyncSize();
@@ -6738,6 +6764,8 @@ jQuery.sheet = {
 		if (s.origHtml.length) {
 			jS.openSheet(s.origHtml);
 		}
+
+		jS.setBusy(false);
 
 		return jS;
 	},
@@ -6889,6 +6917,26 @@ jQuery.sheet = {
 			width: w1 - w2,
 			height: h1 - h2
 		};
+	},
+
+	debugPositionBox: function(x, y, box, color, which) {
+		color = color || '#'+Math.floor(Math.random()*16777215).toString(16);
+		if (box) {
+			var $box = jQuery([]);
+			$box = $box.add(this.debugPositionBox(box.left, box.top, null, color, 'top-left'));
+			$box = $box.add(this.debugPositionBox(box.right, box.top, null, color, 'top-right'));
+			$box = $box.add(this.debugPositionBox(box.left, box.bottom, null, color, 'bottom-left'));
+			$box = $box.add(this.debugPositionBox(box.right, box.bottom, null, color, 'bottom-right'));
+			return $box;
+		}
+		return jQuery('<div style="width: 10px; height: 10px; position: absolute;"></div>')
+			.css('top', (y - 5) + 'px')
+			.css('left', (x + 5) + 'px')
+			.css('background-color', color)
+			.click(function() {
+				console.log(which || 'none');
+			})
+			.appendTo('body');
 	}
 };
 
