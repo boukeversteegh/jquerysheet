@@ -1,5 +1,5 @@
 /**
- * @project jQuery.sheet() The Web Based Spreadsheet - http://code.google.com/p/jquerysheet/
+ * @project jQuery.sheet() The Ajax Spreadsheet - http://code.google.com/p/jquerysheet/
  * @author RobertLeePlummerJr@gmail.com
  * $Id$
  * Licensed under MIT

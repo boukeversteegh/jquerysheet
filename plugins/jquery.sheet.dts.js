@@ -1,5 +1,5 @@
 /**
- * @project jQuery.sheet() The Web Based Spreadsheet - http://code.google.com/p/jquerysheet/
+ * @project jQuery.sheet() The Ajax Spreadsheet - http://code.google.com/p/jquerysheet/
  * @author RobertLeePlummerJr@gmail.com
  * $Id$
  * Licensed under MIT
@@ -71,7 +71,8 @@
 				var tables = $([]);
 
 				$.each(json, function() {
-					var table = $('<table />').attr('title', this['title'] || '');
+					var table = $('<table />');
+					if (this['title']) table.attr('title', this['title'] || '');
 
 					tables = tables.add(table);
 
@@ -94,15 +95,23 @@
 					});
 
 					if (!this['metadata']) return;
-					if (!this['metadata']['widths']) return;
-
-					var colgroup = $('<colgroup />')
-						.prependTo(table);
-					for(var width in this['metadata']['widths']) {
-						var col = $('<col />')
-							.attr('width', this['metadata']['widths'][width])
-							.css('width', this['metadata']['widths'][width])
-							.appendTo(colgroup);
+					if (this['metadata']['widths']) {
+						var colgroup = $('<colgroup />')
+							.prependTo(table);
+						for(var width in this['metadata']['widths']) {
+							var col = $('<col />')
+								.attr('width', this['metadata']['widths'][width])
+								.css('width', this['metadata']['widths'][width])
+								.appendTo(colgroup);
+						}
+					}
+					if (this['metadata']['frozenAt']) {
+						if (this['metadata']['frozenAt']['row']) {
+							table.data('frozenatrow', this['metadata']['frozenAt']['row']);
+						}
+						if (this['metadata']['frozenAt']['col']) {
+							table.data('frozenatcol', this['metadata']['frozenAt']['col']);
+						}
 					}
 				});
 
@@ -213,6 +222,18 @@
 								case 'metadata':
 									$.each(this.childNodes, function() {
 										switch (this.nodeName.toLowerCase()) {
+											case 'frozenat':
+												$.each(this.childNodes, function() {
+													switch (this.nodeName.toLowerCase()) {
+														case 'row':
+															table.data('frozenatrow', (this.textContent || this.text) * 1);
+															break;
+														case 'col':
+															table.data('frozenatcol', (this.textContent || this.text) * 1);
+															break;
+													}
+												});
+												break;
 											case 'widths':
 												$.each(this.childNodes, function() {
 													switch (this.nodeName.toLowerCase()) {
@@ -296,7 +317,8 @@
 						"title": (jS.obj.sheet().attr('title') || ''),
 						"rows": [],
 						"metadata": {
-							"widths": []
+							"widths": [],
+							"frozenAt": $.extend({}, jS.frozenAt())
 						}
 					};
 					output.push(spreadsheet);
@@ -317,10 +339,17 @@
 							if (this['formula']) Column['formula'] = this['formula'];
 							if (this['value']) Column['value'] = this['value'];
 							if (this.td.attr('style')) Column['style'] = this.td.attr('style');
-							if ($.trim(this.td.attr('class')))
-								Column['class'] = (this.td.attr('class') + '')
-									.replace(jS.cl.uiCellActive, '')
-									.replace(jS.cl.uiCellHighlighted, '');
+
+							var cl = $.trim(
+								(this.td.attr('class') || '')
+									.replace(jS.cl.uiCellActive , '')
+									.replace(jS.cl.uiCellHighlighted, '')
+
+							);
+
+							if (cl.length) {
+								Column['class'] = cl;
+							}
 
 							if (row * 1 == 1) {
 								spreadsheet.metadata.widths.push($(jS.col(null, column)).css('width'));
@@ -380,7 +409,9 @@
 				$.each(jS.spreadsheets, function(sheet) {
 					jS.i = sheet;
 					jS.evt.cellEditDone();
-					var widths = [];
+					var frozenAt = $.extend({}, jS.frozenAt()),
+						widths = [];
+
 					output += '<spreadsheet title="' + (jS.obj.sheet().attr('title') || '') + '">';
 
 					output += '<rows>';
@@ -413,7 +444,17 @@
 					});
 					output += '</rows>';
 
-					output += '<metadata><widths>' + widths.join('') + '</widths></metadata>';
+					output += '<metadata>' +
+						(
+							frozenAt.row || frozenAt.col ?
+								'<frozenAt>' +
+									(frozenAt.row ? '<row>' + frozenAt.row + '</row>' : '') +
+									(frozenAt.col ? '<col>' + frozenAt.col + '</col>' : '') +
+								'</frozenAt>' :
+								''
+						) +
+						'<widths>' + widths.join('') + '</widths>' +
+					'</metadata>';
 
 					output += '</spreadsheet>';
 				});

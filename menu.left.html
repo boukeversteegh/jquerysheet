@@ -11,6 +11,14 @@
 	<li>
 		<a href="#">Edit</a>
 		<ul>
+            <li><a onclick="sheetInstance.cellUndoable.undoOrRedo(true); return false;">Undo</a></li>
+            <li><a onclick="sheetInstance.cellUndoable.undoOrRedo(); return false;">Redo</a></li>
+            <li><a class="jSCut">Cut</a></li>
+            <li><a class="jSCopy">Copy</a></li>
+            <li><a class="jSPaste">Paste</a></li>
+            <li><a onclick="sheetInstance.merge(); return false;">Merge</a></li>
+            <li><a onclick="sheetInstance.unmerge(); return false;">Un-Merge</a></li>
+            <li><a onclick="sheetInstance.cellFind(); return false;">Find</a></li>
 			<li>
 				<a href="#">Cell</a>
 				<ul>
@@ -20,8 +28,6 @@
 			<li>
 				<a menu="menuEditRow_menuInstance">Row</a>
 				<ul>
-					<li><a onclick="sheetInstance.merge(); return false;">Merge</a></li>
-					<li><a onclick="sheetInstance.unmerge(); return false;">Un-Merge</a></li>
 					<li><a onclick="sheetInstance.controlFactory.addRow(); return false;" title="Adds an additional row to bottom of the spreadsheet.">Add Row</a></li>
 					<li><a onclick="sheetInstance.controlFactory.addRowMulti(); return false;" title="Adds an additional rows to bottom of the spreadsheet.">Add Multi-Rows</a></li>
 					<li><a onclick="sheetInstance.deleteRow(); return false;" title="Delets the current row thats highlighted.">Delete Row</a></li>
@@ -52,9 +58,9 @@
 					<li><a onclick="sheetInstance.deleteSheet(); return false;" title="Delete the current spreadsheet.">Delete Spreadsheet</a></li>
 					<li><a onclick="sheetInstance.calc(); return false;" title="Recompiles the current sheet">Refresh Calculations</a></li>
 					<li><a onclick="sheetInstance.sheetTitle(); return false;" title="Change the title of the sheet.">Title</a></li>
+                    <li><a onclick="sheetInstance.toggleState(); return false;">Toggle Edit & ReadOnly</a></li>
 				</ul>
 			</li>
-			<li><a onclick="sheetInstance.cellFind(); return false;">Find</a></li>
 			<li><a onclick="sheetInstance.getTdRange(null, sheetInstance.obj.formula().val()); return false;">Get Cell Range</a></li>
 			<li>
 				<a href="#">Wrap Cell Range</a>
@@ -66,9 +72,6 @@
 					<li><a onclick="sheetInstance.getTdRange(null, sheetInstance.obj.formula().val(), 'MIN'); return false;" title="Wrap with MIN">MIN()</a></li>
 				</ul>
 			</li>
-			<li><a onclick="sheetInstance.cellUndoable.undoOrRedo(true); return false;">Undo</a></li>
-			<li><a onclick="sheetInstance.cellUndoable.undoOrRedo(); return false;">Redo</a></li>
-			<li><a onclick="sheetInstance.toggleState(); return false;">Toggle State</a></li>
 		</ul>
 	</li>
 	<li>
@@ -161,6 +164,7 @@
 			<li><a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleBottom', 'styleTop styleMiddle'); return false;">Bottom</a></li>
 			<li><a class="cellStyleToggle" onclick="sheetInstance.fontReSize('up'); return false;">Font Size +</a></li>
 			<li><a class="cellStyleToggle" onclick="sheetInstance.fontReSize('down'); return false;">Font Size -</a></li>
+			<li><a class="cellStyleToggle" onclick="sheetInstance.cellStyleToggle('styleWrap'); return false;">Wrap</a></li>
 		</ul>
 	</li>
 </ul>

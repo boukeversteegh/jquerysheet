@@ -7,23 +7,31 @@
 <SINGLE_QUOTATION_ON>'"'            {return 'CHAR';}
 <DOUBLE_QUOTATION_ON>"'"            {return 'CHAR';}
 <DOUBLE_QUOTATION_ON>'"' {
-	this.popState('DOUBLE_QUOTATION_ON');
+	this.popState();
 	return 'DOUBLE_QUOTATION';
 }
-'"' {
+([\t\n]'"') {
 	this.begin('DOUBLE_QUOTATION_ON');
 	return 'DOUBLE_QUOTATION';
 }
 <SINGLE_QUOTATION_ON>"'" {
-	this.popState('SINGLE_QUOTATION_ON');
+	this.popState();
 	return 'SINGLE_QUOTATION';
 }
-"'" {
+([\t\n]"'") {
 	this.begin('SINGLE_QUOTATION_ON');
 	return 'SINGLE_QUOTATION';
 }
 <DOUBLE_QUOTATION_ON>(\n|"\n")      {return 'CHAR';}
 <SINGLE_QUOTATION_ON>(\n|"\n")      {return 'CHAR';}
+<DOUBLE_QUOTATION_ON>(?=(\t)) {
+	this.popState();
+	return 'FAKE_DOUBLE_QUOTATION';
+}
+<SINGLE_QUOTATION_ON>(?=(\t)) {
+	this.popState();
+	return 'FAKE_DOUBLE_QUOTATION';
+}
 (\n|"\n")                           {return 'END_OF_LINE';}
 (\t)                                {return 'COLUMN';}
 (\s)								{return 'CHAR';}
@@ -83,7 +91,13 @@ column :
 ;
 
 string :
-	DOUBLE_QUOTATION chars DOUBLE_QUOTATION {
+	DOUBLE_QUOTATION chars FAKE_DOUBLE_QUOTATION {
+		$$ = $1 + $2;
+	}
+	| SINGLE_QUOTATION chars FAKE_SINGLE_QUOTATION {
+		$$ = $1 + $2;
+	}
+	| DOUBLE_QUOTATION chars DOUBLE_QUOTATION {
 		$$ = $2;
 	}
 	| SINGLE_QUOTATION chars SINGLE_QUOTATION {

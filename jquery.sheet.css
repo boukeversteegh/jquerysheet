@@ -26,6 +26,11 @@
 	margin: 0px;
 }
 
+.jSHeader img
+{
+	border: none;
+}
+
 /* Menu */
 .jSBarHelper {
 	float: right;
@@ -53,14 +58,13 @@
 	background-image: none;
 	border: none ! important;
 	position: absolute;
-	z-index: 999999;
+	z-index: 1001;
 }
 .jSMenu *
 {
 	border-color: inherit ! important;
 	border-width: 1px;
 	text-decoration: none ! important;
-	white-space: nowrap;
 	width: auto;
 }
 
@@ -70,7 +74,7 @@
 	padding: 0px ! important;
 	margin: 0px ! important;
 	border: none ! important;
-	z-index: 999999;
+	z-index: 1001;
 	position:relative;
 	margin:0;
 	padding:0;
@@ -125,6 +129,10 @@
 	display:block;
 }
 
+#global-zeroclipboard-html-bridge {
+	opacity:0.01;
+	filter:alpha(opacity=1);
+}
 
 .jSUI
 {
@@ -185,15 +193,10 @@
 	border-style: solid ! important;
 	margin: 0px ! important;
 	font-size: 1em;
-	color:  inherit;
-}
-
-.noBreak .jS td, .noBreak .jS th
-{
 	-moz-border-radius: 0px 0px 0px 0px;
 	overflow: hidden;
 	text-overflow: ellipsis ! important;
-	white-space: nowrap ! important;
+	white-space: nowrap;
 }
 
 .jSCellHighighted {
@@ -360,4 +363,7 @@
 .styleHidden 	
 { display: none; }
 .styleWrap
-{ word-wrap: break-word; }
+{
+	word-wrap: break-word ! important;
+	white-space: normal ! important;
+}

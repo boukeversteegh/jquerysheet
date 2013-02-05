@@ -6,7 +6,7 @@
         <meta http-equiv="Expires" content="-1">
         <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
         <meta content="utf-8" http-equiv="encoding">
-        <title>jQuery.sheet - The Web Based Spreadsheet</title>
+        <title>jQuery.sheet - The Ajax Spreadsheet</title>
         <!--Required-->
         <link rel="stylesheet" type="text/css" href="jquery.sheet.css" />
         <link rel="stylesheet" type="text/css" href="jquery-ui/theme/jquery-ui.min.css" />
@@ -36,7 +36,7 @@
 				<script type="text/javascript" src="plugins/jquery.colorPicker.min.js"></script>
 			<!--/ColorPicker-->
 			<!--Theme Switcher Tool-->
-				<!--<script type="text/javascript" src="http://jqueryui.com/themeroller/themeswitchertool/"></script>-->
+				<script type="text/javascript" src="plugins/jquery.themeswitcher.js"></script>
 			<!--/Theme Switcher Tool-->
 			<!--Elastic-->
 				<script type="text/javascript" src="plugins/jquery.elastic.min.js"></script>
@@ -47,9 +47,17 @@
 			<!--Finance-->
 				<script type="text/javascript" src="plugins/jquery.sheet.financefn.js"></script>
 			<!--/Finance-->
+            <!--Zero Clipboard-->
+            <script type="text/javascript" src="plugins/ZeroClipboard.js"></script>
+            <!--/Zero Clipboard-->
 		<!--/Optional-->
         <script type="text/javascript">
             $(function(){
+
+                $('#themeSwitcher').themeswitcher({
+                    imgpath: "plugins/jquery.themeswitcher.images/",
+                    loadTheme: "start"
+                });
                 //Here is where we initiate the sheets
                 //every time sheet is created it creates a new jQuery.sheet.instance (array), to manipulate each sheet, the jQuery object is returned
 
@@ -65,38 +73,58 @@
                             loaded++;
                             if (loadCount == loaded) {
                                 $('#sheet')
-                                        .html(results.tables)
-                                        .sheet({
-                                            sheetFullScreen: function(e, jS) {
-                                                console.log($(this).isSheetFullScreen());
-                                            },
-                                            sheetAllOpened: function() {
-                                                console.log('All sheets loaded.');
-                                            },
-                                            title: 'Spreadsheet Playground',
-                                            menuLeft: function(jS) {
-                                                return  results.menuLeft.replace(/sheetInstance/g, "$.sheet.instance[" + jS.I + "]");
-                                            },
-                                            menuRight: function (jS){
-                                                //we want to be able to edit the html for the menu to make them multi-instance
-                                                var menu = results.menuRight.replace(/sheetInstance/g, "$.sheet.instance[" + jS.I + "]");
-                                                menu = $(menu);
-
-                                                //The following is just so you get an idea of how to style cells
-                                                menu.find('.colorPickerCell').colorPicker().change(function(){
-                                                    $.sheet.instance[jS.I].cellChangeStyle('background-color', $(this).val());
+                                    .html(results.tables)
+                                    .sheet({
+                                        sheetFullScreen: function(e, jS) {
+                                            console.log($(this).isSheetFullScreen());
+                                        },
+                                        sheetAllOpened: function() {
+                                            console.log('All sheets loaded.');
+                                        },
+                                        title: 'Demo',
+                                        menuLeft: function(jS) {
+                                            var menu = $(results.menuLeft.replace(/sheetInstance/g, "$.sheet.instance[" + jS.I + "]")),
+                                                copy = menu.find('.jSCopy').mouseover(function() { $(this).one('mouseout', function() {return false;})}),
+                                                cut = menu.find('.jSCut').mouseover(function() { $(this).one('mouseout', function() {return false;})}),
+                                                paste = menu.find('.jSPaste').click(function() {
+                                                    alert('Press Ctrl + V to paste over highlighted cells');
                                                 });
 
-                                                menu.find('.colorPickerFont').colorPicker().change(function(){
-                                                    $.sheet.instance[jS.I].cellChangeStyle('color', $(this).val());
-                                                });
+                                            var clip = new ZeroClipboard(copy.add(cut), {
+                                                moviePath: "plugins/ZeroClipboard.swf"
+                                            });
 
-                                                menu.find('.colorPickers').children().eq(1).css('background-image', "url('images/palette.png')");
-                                                menu.find('.colorPickers').children().eq(3).css('background-image', "url('images/palette_bg.png')");
+                                            clip.on('mousedown', function(client) {
+                                                clip.setText(jS.tdsToTsv());
+                                                $(this).mousedown();
+                                            });
 
-                                                return menu;
-                                            }
-                                        });
+                                            cut.mousedown(function() {
+                                                jS.tdsToTsv(null, true);
+                                            });
+
+                                            return menu;
+                                        },
+                                        menuRight: function (jS){
+                                            //we want to be able to edit the html for the menu to make them multi-instance
+                                            var menu = results.menuRight.replace(/sheetInstance/g, "$.sheet.instance[" + jS.I + "]");
+                                            menu = $(menu);
+
+                                            //The following is just so you get an idea of how to style cells
+                                            menu.find('.colorPickerCell').colorPicker().change(function(){
+                                                jS.cellChangeStyle('background-color', $(this).val());
+                                            });
+
+                                            menu.find('.colorPickerFont').colorPicker().change(function(){
+                                                jS.cellChangeStyle('color', $(this).val());
+                                            });
+
+                                            menu.find('.colorPickers').children().eq(1).css('background-image', "url('images/palette.png')");
+                                            menu.find('.colorPickers').children().eq(3).css('background-image', "url('images/palette_bg.png')");
+
+                                            return menu;
+                                        }
+                                    });
                             }
                         });
                     }
@@ -171,8 +199,10 @@
         <h1 id="header" class="ui-state-default">
         	<a href="http://visop-dev.com/Project+jQuery.sheet">
         		<img src="images/logo.png" style="position: absolute;top: -20px; left: 20px; border: none;" />
-        		jQuery.sheet - The Web Based Spreadsheet, Examples and Documentation
+        		jQuery.sheet - The Ajax Spreadsheet, Demo
         	</a>
+            <br />
+            <span id="themeSwitcher"></span>
         </h1>
         <div id="mainWrapper" class="ui-corner-all wrapper">
             <table style="width: 100%;">
@@ -180,13 +210,15 @@
                     <td rowspan="2" style="width: 170px; vertical-align: top;">
                         <div id="lockedMenu" class="ui-widget-header ui-corner-all">
                             <h2 style="width: 100%; text-align: center;">Spreadsheets</h2>
-                            <span id="themeSwitcher"></span>
                             <ul style="padding-left: 15px;">
                                 <li>
                                     <a href="examples/charts.html" onclick="loadSheet(this);return false;">Charts</a>
                                 </li>
                                 <li>
                                     <a href="examples/inputs.html" onclick="loadSheet(this);return false;">Inputs</a>
+                                </li>
+                                <li>
+                                    <a href="examples/inputs.get.html">Get Inputs</a>
                                 </li>
                                 <li>
                                     <a href="examples/dates.html" onclick="loadSheet(this);return false;">Dates</a>
@@ -207,6 +239,9 @@
                                     <a href="examples/math.html" onclick="loadSheet(this); return false;">Math</a>
                                 </li>
                                 <li>
+                                    <a href="examples/globalize.html">Number and Date Culture Formats</a>
+                                </li>
+                                <li>
                                     <a href="examples/mild.stress.test.html" onclick="loadSheet(this); return false;">Mild Stress Test</a>
                                </li>
                                 <li>
@@ -223,6 +258,9 @@
                                 </li>
                                 <li>
                                     <a href="examples/cells.merged.html" onclick="loadSheet(this); return false;">Merged Cells</a>
+                                </li>
+                                <li>
+                                    <a href="examples/toggle.state.html">Toggle State</a>
                                 </li>
                                 <li>
                                     <a href="examples/json.test.html">Json Data Transformation Service</a>
@@ -264,12 +302,13 @@
             </table>
         </div>
         <div id="footer" class="ui-corner-all">
-            <a href="http://visop-dev.com/Project+jQuery.sheet">jQuery.sheet() The Web Based Spreadsheet</a>
+            <a href="http://visop-dev.com/Project+jQuery.sheet">jQuery.sheet() The Ajax Spreadsheet</a>
             | <a href="http://visop-dev.com/contact+us">Get Support!</a>
             | <a href="http://www.VisOp-Dev.com">Home</a>
             | <a href="https://code.google.com/p/jquerysheet/">Code</a>
             | <a href="http://visop-dev.com/doc/js3/index.html">Developer Documentation</a>
-            | <a href="">End User Documentation</a>
+            | <a href="http://visop-dev.com/jQuery.sheet+-+End+User+Documentation">End User Documentation</a>
+            | <a href="http://jqueryui.com/themeroller/">Create your own theme</a>
             <br/>
             <a href="http://www.opensource.org/licenses/mit-license.html">MIT license</a>
         </div>
