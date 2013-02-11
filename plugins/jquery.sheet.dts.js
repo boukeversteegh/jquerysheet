@@ -309,7 +309,7 @@
 			json: function(jS) {
 				var output = [], i = 1 * jS.i;
 
-				$.each(jS.spreadsheets, function(sheet) {
+				for (var sheet in jS.spreadsheets) {
 					jS.i = sheet;
 					jS.evt.cellEditDone();
 					var metadata = [];
@@ -323,29 +323,37 @@
 					};
 					output.push(spreadsheet);
 
-					$.each(jS.spreadsheets[sheet], function (row) {
-						if (row == 0) return;
-						var Row = {
-							"height": (jS.spreadsheets[sheet][row][1].td.parent().attr('height') || jS.s.colMargin + 'px'),
-							"columns": []
-						};
+					for (var row in jS.spreadsheets[sheet]) {
+						if (row == 0) continue;
+						var parentAttr = jS.spreadsheets[sheet][row][1].td[0].parentNode.attributes,
+							Row = {
+								"height": null,
+								"columns": [],
+								"height": (parentAttr['height'] ? parentAttr['height'].value : jS.s.colMargin + 'px')
+							};
 						spreadsheet.rows.push(Row);
 
-						$.each(jS.spreadsheets[sheet][row], function(column) {
-							if (column == 0) return;
-							var Column = {};
+						for (var column in jS.spreadsheets[sheet][row]) {
+							if (column == 0) continue;
+							var cell = jS.spreadsheets[sheet][row][column],
+								Column = {},
+								attr = cell.td[0].attributes,
+								cl = (attr['class'] ? $.trim(
+									(attr['class'].value || '')
+										.replace(jS.cl.uiCellActive , '')
+										.replace(jS.cl.uiCellHighlighted, '')
+								) : ''),
+								parent = cell.td[0].parentNode;
+
 							Row.columns.push(Column);
 
-							if (this['formula']) Column['formula'] = this['formula'];
-							if (this['value']) Column['value'] = this['value'];
-							if (this.td.attr('style')) Column['style'] = this.td.attr('style');
+							if (!Row["height"]) {
+								Row["height"] = (parent.attributes['height'] ? parent.attributes['height'].value : jS.s.colMargin + 'px');
+							}
 
-							var cl = $.trim(
-								(this.td.attr('class') || '')
-									.replace(jS.cl.uiCellActive , '')
-									.replace(jS.cl.uiCellHighlighted, '')
-
-							);
+							if (cell['formula']) Column['formula'] = cell['formula'];
+							if (cell['value']) Column['value'] = cell['value'];
+							if (attr['style'] && attr['style'].value) Column['style'] = attr['style'].value;
 
 							if (cl.length) {
 								Column['class'] = cl;
@@ -354,9 +362,9 @@
 							if (row * 1 == 1) {
 								spreadsheet.metadata.widths.push($(jS.col(null, column)).css('width'));
 							}
-						});
-					});
-				});
+						}
+					}
+				}
 				jS.i = i;
 
 				return output;
@@ -404,9 +412,10 @@
 			 * @name xml
 			 */
 			xml: function(jS) {
-				var output = '<spreadsheets>', i = 1 * jS.i;
+				var output = '<?xml version="1.0" encoding="UTF-8"?><spreadsheets xmlns="http://www.w3.org/1999/xhtml">',
+					i = 1 * jS.i;
 
-				$.each(jS.spreadsheets, function(sheet) {
+				for(var sheet in jS.spreadsheets) {
 					jS.i = sheet;
 					jS.evt.cellEditDone();
 					var frozenAt = $.extend({}, jS.frozenAt()),
@@ -415,33 +424,38 @@
 					output += '<spreadsheet title="' + (jS.obj.sheet().attr('title') || '') + '">';
 
 					output += '<rows>';
-					$.each(jS.spreadsheets[sheet], function (row) {
-						if (row == 0) return;
-
-						output += '<row height="' + (jS.spreadsheets[sheet][row][1].td.parent().attr('height') || jS.s.colMargin + 'px') + '">';
+					for(var row in jS.spreadsheets[sheet]) {
+						if (row == 0) continue;
+						var parentAttr = jS.spreadsheets[sheet][row][1].td[0].parentNode.attributes;
+						output += '<row height="' + (parentAttr['height'] ? parentAttr['height'].value : jS.s.colMargin + 'px') + '">';
 						output += '<columns>';
-						$.each(jS.spreadsheets[sheet][row], function(column) {
-							if (column == 0) return;
+						for(var column in jS.spreadsheets[sheet][row]) {
+							if (column == 0) continue;
+
+							var cell = jS.spreadsheets[sheet][row][column],
+								attr = cell.td[0].attributes,
+								cl = (attr['class'] ? $.trim(
+									(attr['class'].value || '')
+										.replace(jS.cl.uiCellActive, '')
+										.replace(jS.cl.uiCellHighlighted, '')
+								) : '');
 
 							output += '<column>';
 
-							if (this.formula) output += '<formula>' + this.formula + '</formula>';
-							if (this.value) output += '<value>' + this.value + '</value>';
-							if (this.td.attr('style')) output += '<style>' + this.td.attr('style') + '</style>';
-							if (this.td.attr('class')) output += '<class>' +
-									(this.td.attr('class') + '')
-										.replace(jS.cl.uiCellActive, '')
-										.replace(jS.cl.uiCellHighlighted, '') +
-								'</class>';
+							if (cell.formula) output += '<formula>' + cell.formula + '</formula>';
+							if (cell.value) output += '<value>' + cell.value + '</value>';
+							if (attr['style']) output += '<style>' + attr['style'].value + '</style>';
+							if (cl) output += '<class>' + cl + '</class>';
+
 							output += '</column>';
 
 							if (row * 1 == 1) {
 								widths[column] = '<width>' + $(jS.col(null, column)).css('width') + '</width>';
 							}
-						});
+						}
 						output += '</columns>';
 						output += '</row>';
-					});
+					}
 					output += '</rows>';
 
 					output += '<metadata>' +
@@ -457,7 +471,7 @@
 					'</metadata>';
 
 					output += '</spreadsheet>';
-				});
+				}
 
 				output += '</spreadsheets>';
 

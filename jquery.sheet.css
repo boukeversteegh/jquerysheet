@@ -185,9 +185,9 @@
 	border-color: inherit ! important;
 	color:  inherit ! important;
 }
-.jS td:not(.jSBarLeft):not(.jSBarTop):not(.jSBarCorner), .jS th {
+.jS td {
 	height: inherit;
-	border-width: 1px ! important;
+	border-width: 1px;
 	border-color: inherit;
 	padding: 0px ! important;
 	border-style: solid ! important;
@@ -195,8 +195,21 @@
 	font-size: 1em;
 	-moz-border-radius: 0px 0px 0px 0px;
 	overflow: hidden;
-	text-overflow: ellipsis ! important;
+	text-overflow: ellipsis;
 	white-space: nowrap;
+	-ms-text-overflow: ellipsis;
+}
+
+.jS td.jSBarCorner {
+	border-width: 0px;
+}
+
+.jS td.jSBarLeft {
+	border-width: 1px 0px 1px 0px;
+}
+
+.jS td.jSBarTop {
+	border-width: 0px 1px 0px 1px;
 }
 
 .jSCellHighighted {
@@ -236,6 +249,7 @@
 
 .jSBarTopParent .jSBarController .ui-resizable-handle {
 	height: 16px;
+	width: 10px;
 }
 .jSBarLeft .jSBarController {
 	width: 0px;
@@ -248,6 +262,7 @@
 .jSBarLeft .jSBarController .ui-resizable-handle {
 	width: 16px;
 	display: inline ! important;
+	height: 10px;
 }
 .jSBarHandleFreezeTop
 {
@@ -364,6 +379,10 @@
 { display: none; }
 .styleWrap
 {
-	word-wrap: break-word ! important;
-	white-space: normal ! important;
+	white-space: pre-wrap ! important;       /* css-3 */
+	white-space: -moz-pre-wrap ! important;  /* Mozilla, since 1999 */
+	white-space: -pre-wrap ! important;      /* Opera 4-6 */
+	white-space: -o-pre-wrap ! important;    /* Opera 7 */
+	word-wrap: break-word;
+	-ms-text-overflow: clip;
 }

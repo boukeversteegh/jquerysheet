@@ -2,28 +2,51 @@
 
 /* lexical grammar */
 %lex
-%s SINGLE_QUOTATION_ON DOUBLE_QUOTATION_ON
+%s SINGLE_QUOTATION_ON DOUBLE_QUOTATION_ON INITIAL
 %%
+
+/* single quote handling*/
+<SINGLE_QUOTATION_ON>(\n|"\n")      {return 'CHAR';}
 <SINGLE_QUOTATION_ON>'"'            {return 'CHAR';}
-<DOUBLE_QUOTATION_ON>"'"            {return 'CHAR';}
-<DOUBLE_QUOTATION_ON>'"' {
-	this.popState();
-	return 'DOUBLE_QUOTATION';
-}
-([\t\n]'"') {
-	this.begin('DOUBLE_QUOTATION_ON');
-	return 'DOUBLE_QUOTATION';
-}
 <SINGLE_QUOTATION_ON>"'" {
 	this.popState();
+	return 'SINGLE_QUOTATION';
+}
+<SINGLE_QUOTATION_ON>(?=(\t)) {
+	this.popState();
+	return 'FAKE_DOUBLE_QUOTATION';
+}
+<INITIAL>("'") {
+	this.begin('SINGLE_QUOTATION_ON');
 	return 'SINGLE_QUOTATION';
 }
 ([\t\n]"'") {
 	this.begin('SINGLE_QUOTATION_ON');
 	return 'SINGLE_QUOTATION';
 }
+
+/* double quote handling*/
 <DOUBLE_QUOTATION_ON>(\n|"\n")      {return 'CHAR';}
-<SINGLE_QUOTATION_ON>(\n|"\n")      {return 'CHAR';}
+<DOUBLE_QUOTATION_ON>"'"            {return 'CHAR';}
+<DOUBLE_QUOTATION_ON>'"' {
+	this.popState();
+	return 'DOUBLE_QUOTATION';
+}
+<DOUBLE_QUOTATION_ON>(?=(\t)) {
+	this.popState();
+	return 'FAKE_DOUBLE_QUOTATION';
+}
+<INITIAL>('"') {
+
+ 	this.begin('DOUBLE_QUOTATION_ON');
+ 	return 'DOUBLE_QUOTATION';
+}
+([\t\n]'"') {
+	this.begin('DOUBLE_QUOTATION_ON');
+	return 'DOUBLE_QUOTATION';
+}
+
+/*spreadsheet control characters*/
 <DOUBLE_QUOTATION_ON>(?=(\t)) {
 	this.popState();
 	return 'FAKE_DOUBLE_QUOTATION';
@@ -46,7 +69,10 @@
 %% /* language grammar */
 
 cells :
-	rows EOF {
+	string EOF {
+        return $1;
+    }
+	| rows EOF {
         return $1;
     }
     | EOF {
@@ -92,10 +118,10 @@ column :
 
 string :
 	DOUBLE_QUOTATION chars FAKE_DOUBLE_QUOTATION {
-		$$ = $1 + $2;
+		$$ = $2 + $3;
 	}
 	| SINGLE_QUOTATION chars FAKE_SINGLE_QUOTATION {
-		$$ = $1 + $2;
+		$$ = $2 + $3;
 	}
 	| DOUBLE_QUOTATION chars DOUBLE_QUOTATION {
 		$$ = $2;

@@ -6,40 +6,78 @@
     <meta http-equiv="Expires" content="-1">
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
-    <link rel="stylesheet" type="text/css" href="../jquery-ui/theme/jquery-ui.min.css" />
-    <script type="text/javascript" src="../jquery-1.8.3.min.js"></script>
+    <title>jQuery.sheet - The Ajax Spreadsheet DTS Plugin Testing</title>
+	<link rel="stylesheet" type="text/css" href="../jquery-ui/theme/jquery-ui.min.css" />
+	<script type="text/javascript" src="../jquery-1.8.3.min.js"></script>
 	<script type="text/javascript" src="../jquery-ui/ui/jquery-ui.min.js"></script>
-    <script type="text/javascript" src="../jquery.sheet.js"></script>
-    <script type="text/javascript">
-	    $.sheet.preLoad('../');
-        $(function(){
-            var sheetOrig = $('#sheet')
-		        .height($(window).height() - 30)
-		        .sheet();
+	<script type="text/javascript" src="../jquery.sheet.js"></script>
+	<script type="text/javascript">
+		$.sheet.preLoad('../');
+		$(function () {
+            $('#tabs').tabs();
 
-            var jS = sheetOrig.getSheet();
-            var xml = $.sheet.dts.fromTables.xml(jS);
-            if (window.console) console.log(xml);
-            var tables = $.sheet.dts.toTables.xml(xml);
-            if (window.console) console.log(tables.html());
-            $('#sheetFromXml')
-                .html(tables)
-		        .height($(window).height() - 30)
-                .sheet();
+			var sheetOrig = $('#sheet')
+				.height($(window).height() - 50)
+				.sheet();
 
-	        $.sheet.instance.each(function(i) {
-		        $.sheet.scrollLocker(i);
-                $.sheet.switchSheetLocker(i);
-	        });
-        });
-    </script>
+            $('#exportAndCreate').mousedown(function() {
+                var jS = sheetOrig.getSheet(),
+                    dtsType = $('#dtsType').val(),
+                    json,
+                    xml,
+                    tables;
+
+                switch (dtsType) {
+                case "json":
+                    json = $.sheet.dts.fromTables.json(jS);
+                    tables = $.sheet.dts.toTables.json(json);
+
+                    $('#dtsValue').val(JSON.stringify(json));
+                    break;
+                case "xml":
+                    xml = $.sheet.dts.fromTables.xml(jS);
+                    tables = $.sheet.dts.toTables.xml(xml);
+
+                    $('#dtsValue').val(xml);
+                    break;
+                }
+
+                $('#dtsUI')
+                        .show()
+                        .dialog({
+                            modal: true,
+                            title: 'Congratulations! You just exported sheet ' + dtsType + ' and imported to create an exact copy! Here is what the ' + dtsType + ' looks like:',
+                            width: $(window).width() * 0.8,
+                            height: $(window).height() * 0.8
+                        });
+
+                if (window.console) console.log(tables.html());
+
+                $('#sheetFromDts')
+                    .html(tables)
+                    .height($(window).height() - 30)
+                    .sheet();
+
+                $.sheet.instance.each(function (i) {
+                    $.sheet.scrollLocker(i);
+                    $.sheet.switchSheetLocker(i);
+                });
+            });
+		});
+	</script>
 </head>
 <body>
+Data Transformation Type: <select id="dtsType">
+    <option value="json">JSON</option>
+    <option value="xml">XML</option>
+</select>
+<input id="exportAndCreate" type="button" value="CLICK ME!" />
+<div id="dtsUI" style="display: none;"><textarea id="dtsValue" style="width: 100%; height: 100%;"></textarea></div>
 <table style="width: 100%;">
-	<tr>
-		<td style="width: 50%;">
-			<div id="sheet" title="xml test">
-				<table title="simple table 1" data-frozenatrow="2" data-frozenatcol="2">
+    <tr>
+        <td style="width: 50%;">
+            <div id="sheet" title="Data Transformation Service Plugin Test">
+                <table title="simple table 1" data-frozenatrow="2" data-frozenatcol="2">
                     <colgroup>
                         <col width="90px;">
                         <col width="190px;">
@@ -608,7 +646,7 @@
                         <td></td>
                         <td></td>
                     </tr>
-				</table>
+                </table>
                 <table title="simple table 2">
                     <tr>
                         <td data-formula="=SHEET1!A1 + 100" class="styleBold styleCenter"></td>
@@ -1171,12 +1209,12 @@
                         <td></td>
                     </tr>
                 </table>
-			</div>
-		</td>
-		<td style="width: 50%;">
-			<div id="sheetFromXml" title="Came from xml output from the sheet to the left"></div>
-		</td>
-	</tr>
+            </div>
+        </td>
+        <td style="width: 50%;">
+            <div id="sheetFromDts" title="Came from the dts output from the sheet to the left"></div>
+        </td>
+    </tr>
 </table>
 </body>
 </html>
