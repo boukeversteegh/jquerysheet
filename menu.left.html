@@ -77,10 +77,10 @@
 	<li>
 		<a href="#">View</a>
 		<ul>
-			<li><a onclick="sheetInstance.viewSource(true); return false;" title="Shows the HTML that makes up the current spreadsheet.">Pretty Source</a></li>
-			<li><a onclick="sheetInstance.viewSource(false); return false;" title="Shows the compact HTML that makes up the current spreadsheet.">Compact Source</a></li>
-			<li><a onclick="sheetInstance.print(sheetInstance.HTMLtoPrettySource(jQuery(sheetInstance.exportSheet.xml(true))[0])); return false;">As XML</a></li>
-			<li><a onclick="sheetInstance.print(JSON.stringify(sheetInstance.exportSheet.json())); return false;">As JSON</a></li>
+			<li><a onclick="$(sheetInstance.tables()).viewSource(true); return false;" title="Shows the HTML that makes up the current spreadsheet.">Pretty Source</a></li>
+			<li><a onclick="$(sheetInstance.tables()).viewSource(); return false;" title="Shows the compact HTML that makes up the current spreadsheet.">Compact Source</a></li>
+			<li><a onclick="$($.sheet.dts.fromTables.xml(sheetInstance)).viewSource(true); return false;">As XML</a></li>
+			<li><a onclick="$.print(JSON.stringify($.sheet.dts.fromTables.json(sheetInstance))); return false;">As JSON</a></li>
 			<li>
 				<a menu="menuViewFunctionReference_menuInstance">Function Reference</a>
 				<ul>

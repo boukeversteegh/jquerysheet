@@ -117,21 +117,22 @@ var jSF = jQuery.sheet.financefn = {
 			html: Globalize.format( pmt, "c" )
 		};
 	},
-	NPER: function(rate, pmt, pv, fv, type) { //not working yet
+	NPER: function(rate, pmt, pv, fv, type) { //Taken from LibreOffice - http://opengrok.libreoffice.org/xref/core/sc/source/core/tool/interpr2.cxx#1382 ScInterpreter::ScZZR()
+		var log = Math.log;
+		rate = parseFloat(rate || 0);
+		pmt = parseFloat(pmt || 0);
+		pv = parseFloat(pv || 0);
+		fv = fv || 0;
 		type = type || 0;
-		if ((rate == 0) && (pmt != 0)) {
-			var nper = (-(fv + pv) / pmt);
-		} else if (rate <= 0.0) {
-			return null;
+
+		if (rate == 0.0) {
+	         return (-(pv + fv)/pmt);
+		} else if (type > 0.0) {
+	         return (log(-(rate*fv-pmt*(1.0+rate))/(rate*pv+pmt*(1.0+rate)))
+                   /log(1.0+rate));
 		} else {
-			var tmp = (pmt * (1.0 + rate * type) - fv * rate) /
-				(pv * rate + pmt * (1.0 + rate * type));
-			if (tmp <= 0.0) {
-				return null;
-			}
-			var nper = (math.log10(tmp) / math.log10(1.0 + rate));
+		     return (log(-(rate*(fv-pmt))/(rate*(pv+pmt)))/log(1.0+rate));
 		}
-		return (isFinite(nper) ? nper: null);
 	},
 	FV: function(rate, nper, pmt, pv, type) { //not working yet
 		pv = (pv ? pv : 0);

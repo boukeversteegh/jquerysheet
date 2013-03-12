@@ -13,24 +13,24 @@
 									{return 'TIME_24';}
 'SHEET'[0-9]+
 %{
-	if (yy.lexer.obj.type == 'cell') return 'SHEET'; //js
-	return 'VARIABLE'; //js
+	if (yy.lexer.obj.type == 'cell') return 'SHEET';//js
+	return 'VARIABLE';//js
 
 	//php if ($this->type == 'cell') return 'SHEET';
 	//php return 'VARIABLE';
 %}
 '$'[A-Za-z]+'$'[0-9]+
 %{
-	if (yy.lexer.obj.type == 'cell') return 'FIXEDCELL'; //js
-	return 'VARIABLE'; //js
+	if (yy.lexer.obj.type == 'cell') return 'FIXEDCELL';//js
+	return 'VARIABLE';//js
 
 	//php if ($this->type == 'cell') return 'FIXEDCELL';
     //php return 'VARIABLE';
 %}
 [A-Za-z]+[0-9]+
 %{
-	if (yy.lexer.obj.type == 'cell') return 'CELL'; //js
-	return 'VARIABLE'; //js
+	if (yy.lexer.obj.type == 'cell') return 'CELL';//js
+	return 'VARIABLE';//js
 
 	//php if ($this->type == 'cell') return 'CELL';
     //php return 'VARIABLE';
@@ -62,6 +62,7 @@
 "!"									{return "!";}
 "="									{return '=';}
 "%"									{return '%';}
+[#]									{return '#';}
 <<EOF>>								{return 'EOF';}
 
 
@@ -94,28 +95,40 @@ expression :
 		}
 	| TIME_AMPM
 		{
-			$$ = yy.lexer.handler.time.apply(yy.lexer.obj, [$1, true]); //js
+			$$ = yy.lexer.handler.time.apply(yy.lexer.obj, [$1, true]);//js
 		}
 	| TIME_24
 		{
-			$$ = yy.lexer.handler.time.apply(yy.lexer.obj, [$1]); //js
+			$$ = yy.lexer.handler.time.apply(yy.lexer.obj, [$1]);//js
 		}
 	| number
-		{$$ = $1 * 1;}
+		{
+			$$ = $1 * 1;
+
+			if (isNaN($$)) $$ = 0;//js
+		}
 	| STRING
 		{
 			$$ = $1.substring(1, $1.length - 1);//js
 			//php $$ = substr($1, 1, -1);
 		}
 	| expression '=' expression
-		{$$ = $1 == $3;}
+		{
+			//php $$ = $1 == $3;
+
+			$$ = yy.lexer.handler.callFunction.apply(yy.lexer.obj, ['EQUAL', [$1, $3]]);//js
+		}
 	| expression '+' expression
 		{
-			if (!isNaN($1) && !isNaN($3)) { //js
-				$$ = ($1 * 1) + ($3 * 1); //js
-			} else { //js
-				$$ = yy.lexer.handler.concatenate.apply(yy.lexer.obj, [$1,$3]); //js
-			} //js
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.push(null);//js
+
+			if (!isNaN($1) && !isNaN($3)) {//js
+				$$ = ($1 * 1) + ($3 * 1);//js
+			} else {//js
+				$$ = yy.lexer.handler.concatenate.apply(yy.lexer.obj, [$1,$3]);//js
+			}//js
 
 			//php if (is_numeric($1) && is_numeric($3)) {
 			//php   $$ = $1 + $3;
@@ -126,76 +139,143 @@ expression :
 	| '(' expression ')'
 		{$$ = $2 * 1;}
 	| expression '<' '=' expression
-		{$$ = ($1 * 1) <= ($4 * 1);}
+		{
+			//php $$ = ($1 * 1) <= ($4 * 1);
+			$$ = yy.lexer.handler.callFunction.apply(yy.lexer.obj, ['LESS_EQUAL', [$1, $3]]);//js
+		}
 	| expression '>' '=' expression
-		{$$ = ($1 * 1) >= ($4 * 1);}
+		{
+			//php $$ = ($1 * 1) >= ($4 * 1);
+			$$ = yy.lexer.handler.callFunction.apply(yy.lexer.obj, ['GREATER_EQUAL', [$1, $3]]);//js
+		}
 	| expression '<' '>' expression
-		{$$ = ($1 * 1) != ($4 * 1);}
+		{
+			$$ = ($1 * 1) != ($4 * 1);
+
+			if (isNaN($$)) $$ = 0;//js
+
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.push(null);//js
+		}
 	| expression NOT expression
-		{$$ = $1 != $3;}
+		{
+			$$ = $1 != $3;
+
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.push(null);//js
+		}
 	| expression '>' expression
-		{$$ = ($1 * 1) > ($3 * 1);}
+		{
+			//php $$ = ($1 * 1) > ($3 * 1);
+
+			$$ = yy.lexer.handler.callFunction.apply(yy.lexer.obj, ['GREATER', [$1, $3]]);//js
+		}
 	| expression '<' expression
-		{$$ = ($1 * 1) < ($3 * 1);}
+		{
+			//php $$ = ($1 * 1) < ($3 * 1);
+
+			$$ = yy.lexer.handler.callFunction.apply(yy.lexer.obj, ['LESS', [$1, $3]]);//js
+		}
 	| expression '-' expression
-		{$$ = ($1 * 1) - ($3 * 1);}
+		{
+			$$ = ($1 * 1) - ($3 * 1);
+
+			if (isNaN($$)) $$ = 0;//js
+
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.push(null);//js
+		}
 	| expression '*' expression
-		{$$ = ($1 * 1) * ($3 * 1);}
+		{
+			$$ = ($1 * 1) * ($3 * 1);
+
+			if (isNaN($$)) $$ = 0;//js
+
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.push(null);//js
+		}
 	| expression '/' expression
-		{$$ = ($1 * 1) / ($3 * 1);}
+		{
+			$$ = ($1 * 1) / ($3 * 1);
+
+			if (isNaN($$)) $$ = 0;//js
+
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.push(null);//js
+		}
 	| expression '^' expression
 		{
 			$$ = Math.pow(($1 * 1), ($3 * 1));//js
+
+			if (isNaN($$)) $$ = 0;//js
+
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.pop();//js
+			yy.lexer.obj.html.push(null);//js
+
 			//php $$ = pow(($1 * 1), ($3 * 1));
 		}
 	| '-' expression
-		{$$ = $2 * -1;}
+		{
+			$$ = $2 * -1;
+			if (isNaN($$)) $$ = 0;//js
+		}
 	| '+' expression
-		{$$ = $2 * 1;}
+		{
+			$$ = $2 * 1;
+			if (isNaN($$)) $$ = 0;//js
+		}
 	| E
 		{/*$$ = Math.E;*/;}
 	| FUNCTION '(' ')'
 		{
-			$$ = yy.lexer.handler.callFunction($1, '', yy.lexer.obj);//js
+			$$ = yy.lexer.handler.callFunction.apply(yy.lexer.obj, [$1, '']);//js
 			//php $$ = $this->callFunction($1);
 		}
 	| FUNCTION '(' expseq ')'
 		{
-			$$ = yy.lexer.handler.callFunction($1, $3, yy.lexer.obj);//js
+			$$ = yy.lexer.handler.callFunction.apply(yy.lexer.obj, [$1, $3]);//js
 			//php $$ = $this->callFunction($1, $3);
 		}
 	| cell
+	| error
+	| error error
 ;
 
 cell :
 	FIXEDCELL
 		{
-			$$ = yy.lexer.handler.fixedCellValue.apply(yy.lexer.obj, new Array($1));//js
+			$$ = yy.lexer.handler.fixedCellValue.apply(yy.lexer.obj, [$1]);//js
 			//php $$ = $this->fixedCellValue($1);
 		}
 	| FIXEDCELL ':' FIXEDCELL
 		{
-			$$ = yy.lexer.handler.fixedCellRangeValue.apply(yy.lexer.obj, new Array($1, $3));//js
+			$$ = yy.lexer.handler.fixedCellRangeValue.apply(yy.lexer.obj, [$1, $3]);//js
 			//php $$ = $this->fixedCellRangeValue($1, $3);
 		}
 	| CELL
 		{
-			$$ = yy.lexer.handler.cellValue.apply(yy.lexer.obj, new Array($1));//js
+			$$ = yy.lexer.handler.cellValue.apply(yy.lexer.obj, [$1]);//js
 			//php $$ = $this->cellValue($1);
 		}
 	| CELL ':' CELL
 		{
-			$$ = yy.lexer.handler.cellRangeValue.apply(yy.lexer.obj, new Array($1, $3));//js
+			$$ = yy.lexer.handler.cellRangeValue.apply(yy.lexer.obj, [$1, $3]);//js
 			//php $$ = $this->cellRangeValue($1, $3);
 		}
 	| SHEET '!' CELL
 		{
-			$$ = yy.lexer.handler.remoteCellValue.apply(yy.lexer.obj, new Array($1, $3));//js
+			$$ = yy.lexer.handler.remoteCellValue.apply(yy.lexer.obj, [$1, $3]);//js
 			//php $$ = $this->remoteCellValue($1, $3);
 		}
 	| SHEET '!' CELL ':' CELL
 		{
-			$$ = yy.lexer.handler.remoteCellRangeValue.apply(yy.lexer.obj, new Array($1, $3, $5));//js
+			$$ = yy.lexer.handler.remoteCellRangeValue.apply(yy.lexer.obj, [$1, $3, $5]);//js
 			//php $$ = $this->remoteCellRangeValue($1, $3, $5);
 		}
 ;
@@ -206,21 +286,21 @@ expseq :
 			$$ = [$1];//js
 			//php $$ = array($1);
 		}
-	| expression ';' expseq
+	| expseq ';' expression
 	    {
-	        $$ = ($.isArray($3) ? $3 : [$3]);//js
-		    $$.push($1);//js
+	        $1.push($3);//js
+	        $$ = $1;//js
 
-			//php $$ = (is_array($3) ? $3 : array());
-			//php $$[] = $1;
+			//php $1[] = $3;
+			//php $$ = $1;
 	    }
- 	| expression ',' expseq
+ 	| expseq ',' expression
 		{
-	        $$ = ($.isArray($3) ? $3 : [$3]);//js
-		    $$.push($1);//js
+	        $1.push($3);//js
+	        $$ = $1;//js
 
-			//php $$ = (is_array($3) ? $3 : array());
-			//php $$[] = $1;
+			//php $1[] = $3;
+			//php $$ = $1;
 	    }
  ;
 
@@ -228,7 +308,7 @@ expseq :
 variableSequence :
 	VARIABLE
 		{
-			$$ = [$1]; //js
+			$$ = [$1];//js
 			//php $$ = array($1);
 		}
 	| variableSequence DECIMAL VARIABLE
@@ -248,11 +328,20 @@ number :
 		}
 	| NUMBER DECIMAL NUMBER
 		{
-			$$ = ($1 + '.' + $3) * 1; //js
+			$$ = ($1 + '.' + $3) * 1;//js
 			//php $$ = $1 . '.' . $3;
 		}
 	| number '%'
 		{
 			$$ = $1 * 0.01;
+		}
+;
+
+error :
+	'#' VARIABLE '!' {
+			$$ = $1 + $2 + $3;
+      	}
+    | VARIABLE '#' VARIABLE '!' {
+			$$ = $2 + $3 + $4;
 		}
 ;

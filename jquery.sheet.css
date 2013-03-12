@@ -55,7 +55,7 @@
 
 .jSMenu {
 	padding: 3px;
-	background-image: none;
+	background-image: none ! important;
 	border: none ! important;
 	position: absolute;
 	z-index: 1001;
@@ -169,9 +169,10 @@
     table-layout: fixed;
     empty-cells: show;
 	background-image: none ! important;
+	border-color: inherit ! important;
 	border-width: 1px ! important;
 	cursor: cell;
-	*border-collapse: collapse; /* IE7 and below */
+	border-collapse: collapse; /* IE7 and below */
 	width: 0px ! important;
 }
 .jS tbody
@@ -181,9 +182,18 @@
 	border-color: inherit ! important;
 }
 
+.jS colgroup {
+	border-color: inherit ! important;
+}
+.jS col {
+	background-image: none ! important;
+	border-color: inherit ! important;
+}
+
 .jS tr {
 	border-color: inherit ! important;
 	color:  inherit ! important;
+	background-image: none ! important;
 }
 .jS td {
 	height: inherit;
@@ -193,6 +203,7 @@
 	border-style: solid ! important;
 	margin: 0px ! important;
 	font-size: 1em;
+	background-image: none ! important;
 	-moz-border-radius: 0px 0px 0px 0px;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -234,8 +245,12 @@
 {
     overflow: hidden ! important;
 	background-image: none ! important;
-	border-width: 0px;
+	border-width: 0px ! important;
 	position: absolute ! important;
+}
+
+.jSEnclosure {
+	border-width: 0px ! important;
 }
 /* Bar item styling */
 
@@ -250,6 +265,10 @@
 .jSBarTopParent .jSBarController .ui-resizable-handle {
 	height: 16px;
 	width: 10px;
+}
+
+.jSBarLeft {
+	border-left-width: 0px ! important;
 }
 .jSBarLeft .jSBarController {
 	width: 0px;
@@ -341,6 +360,16 @@
 	position: relative ! important;
 }
 
+.jSDropdown {
+	cursor: pointer;
+	width: 100%;
+}
+.jSCheckbox, .jSCheckbox * {
+	cursor: pointer;
+}
+.jSRadio, .jSRadio * {
+	cursor: pointer;
+}
 .bodyNoScroll
 {
 	overflow: hidden ! important;
